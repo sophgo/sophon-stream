@@ -1,0 +1,5 @@
+#cmakedefine TIANJI_VERSION
+#cmakedefine GPU_VERSION
+#cmakedefine TEST_MODE_SAVE_WITH_TRACKID
+#cmakedefine FUSE_VERSION
+#cmakedefine QUALITY_QUEUE

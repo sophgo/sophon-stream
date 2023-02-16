@@ -1,0 +1,46 @@
+logLevel: debug
+logServerUrl: 192.168.8.12:12202
+volumePath: ../volumes
+mqUrl: nats://192.168.8.12:4222
+liveUrl: rtmp://192.168.8.12:1935/live/input6
+minSize: 20
+factor: 0.709
+pBoxThreshold: 0.88
+rBoxThreshold: 0.90
+oBoxThreshold: 0.70
+pNmsThreshold0: 0.5
+pNmsThreshold1: 0.7
+rNmsThreshold0: 0.6
+oNmsThreshold0: 0.6
+oNmsThreshold1: 0.6
+gpuScale: 0.27
+dataPipeMaxSize: 20
+dataPipeHighLevel: 4096
+skipFrames: 3
+
+trackMaxAge: 20
+trackUpdateTime: 4
+trackTimebase: 3000000
+widthTrackScale: 1.8
+heightTrackScale: 1.5
+trackIou: 0.25
+minHins: 3
+
+thresArea: 400.0
+thresRatioLowBound: 0.8
+thresRatioUpBound: 1.2
+widthMtcnn: 640.0
+heightMtcnn: 360.0
+margin: 10.0
+boxWeight: 0.5
+centerWeight: 0.3
+sideWeight: 0.2
+maxQuScore: 19.0
+qualityTopN: 1
+
+grpcPort: 50051
+grpcRecvMax: 104857600
+grpcSendMax: 104857600
+maxChannelCount: 10
+openTimeout: 3000000
+reopenCount: -1
