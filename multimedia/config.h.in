@@ -1,0 +1,2 @@
+#cmakedefine GPU_VERSION
+#cmakedefine LYN_VERSION
