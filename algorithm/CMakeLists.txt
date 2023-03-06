@@ -8,6 +8,19 @@ SET(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fPIC")
+set(FFMPEG_DIR  /opt/sophon/sophon-ffmpeg-latest/lib/cmake)
+find_package(FFMPEG REQUIRED)
+include_directories(${FFMPEG_INCLUDE_DIRS})
+link_directories(${FFMPEG_LIB_DIRS})
+
+set(OpenCV_DIR  /opt/sophon/sophon-opencv-latest/lib/cmake/opencv4)
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+link_directories(${OpenCV_LIB_DIRS})
+
+find_package(libsophon REQUIRED)
+include_directories(${LIBSOPHON_INCLUDE_DIRS})
+link_directories(${LIBSOPHON_LIB_DIRS})
 
 include_directories(../share)
 
@@ -29,6 +42,10 @@ link_libraries(Logger)
 
 add_library(algorithmApi SHARED
     src/post_process/NoopPostprocess.cpp
+    src/pre_process/Yolov5Pre.cpp
+    src/inference/Yolov5Inference.cpp
+    src/factory/Yolov5Factory.cpp
+    src/context/SophgoContext.cpp
     src/AlgorithmFactorySelector.cpp
     src/Algorithm.cpp)
-
+target_link_libraries(algorithmApi ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)

@@ -63,7 +63,7 @@ using SingletonAlgorithmFactorySelector = common::Singleton<AlgorithmFactorySele
 #define REGISTER_ALGORITHM_FACTORY(side, algorithmName, AlgorithmFactoryClass) \
     struct AlgorithmFactoryClass##Register { \
         AlgorithmFactoryClass##Register() { \
-            auto& algorithmFactorySelector = ::lynxi::ivs::algorithm::SingletonAlgorithmFactorySelector::getInstance(); \
+            auto& algorithmFactorySelector = ::sophon_stream::algorithm::SingletonAlgorithmFactorySelector::getInstance(); \
             algorithmFactorySelector.setAlgoritemFactoryFetcher(side, \
                                                                 algorithmName, \
                                                                 []() -> algorithm::AlgorithmFactory& { \

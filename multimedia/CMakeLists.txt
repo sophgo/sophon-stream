@@ -28,31 +28,16 @@ find_package(PkgConfig REQUIRED)
 include_directories(../share/3rdparty/nlohmann-json/include)
 
 # ffmpeg
-pkg_check_modules(FFMPEG REQUIRED libavcodec libavutil libavformat libswscale libavfilter libswresample)
+set(FFMPEG_DIR  /opt/sophon/sophon-ffmpeg-latest/lib/cmake)
+find_package(FFMPEG REQUIRED)
 include_directories(${FFMPEG_INCLUDE_DIRS})
-link_libraries(${FFMPEG_LIBRARIES})
-add_compile_options(${FFMPEG_CFLAGS_OTHER})
+link_directories(${FFMPEG_LIB_DIRS})
 
 # opencv
-pkg_check_modules(OPENCV REQUIRED opencv)
-include_directories(${OPENCV_INCLUDE_DIRS})
-link_libraries(${OPENCV_LIBRARIES})
-add_compile_options(${OPENCV_CFLAGS_OTHER})
-
-# boost
-find_path(BOOST_INCLUDE_DIR boost/cstdlib.hpp PATHS /usr/local/include)
-include_directories(${BOOST_INCLUDE_DIR})
-find_library(BOOST_FS_LIBRARIES boost_filesystem)
-find_library(BOOST_SYS_LIBRARIES boost_system)
-find_library(BOOST_RE_LIBRARIES boost_regex)
-find_library(BOOST_PROGRAM_OPTIONS boost_program_options)
-link_libraries(${BOOST_FS_LIBRARIES} ${BOOST_SYS_LIBRARIES} ${BOOST_RE_LIBRARIES} ${BOOST_PROGRAM_OPTIONS})
-
-# libbson
-#pkg_check_modules(LIBBSON REQUIRED libbson-1.0)
-#include_directories(${LIBBSON_INCLUDE_DIRS})
-#link_libraries(${LIBBSON_LIBRARIES})
-#add_compile_options(${LIBBSON_CFLAGS_OTHER})
+set(OpenCV_DIR  /opt/sophon/sophon-opencv-latest/lib/cmake/opencv4)
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+link_directories(${OpenCV_LIB_DIRS})
 
 include_directories(.)
 include_directories(../share)
