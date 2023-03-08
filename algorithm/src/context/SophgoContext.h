@@ -26,8 +26,12 @@ struct SophgoContext :public Context {
     std::vector<bm_image> m_converto_imgs;
 
     //configuration
-    float m_confThreshold= 0.5;
-    float m_nmsThreshold = 0.5;
+    // float m_confThreshold= 0.5;
+    // float m_nmsThreshold = 0.5;
+
+    // float m_outThreshold = 0.5; // for unet if n_class = 1
+
+    vector<float> m_thresh; // json --> Context --> SophgoContext
 
     std::vector<std::string> m_class_names;
     int m_class_num = 80; // default is coco names

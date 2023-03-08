@@ -20,8 +20,9 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
     float confThresh;
     float nmsThresh;
     std::string coco_names_file;
-    pSophgoContext->m_confThreshold= confThresh;
-    pSophgoContext->m_nmsThreshold = nmsThresh;
+    pSophgoContext->m_thresh = context.threthold;
+    // pSophgoContext->m_confThreshold= confThresh;
+    // pSophgoContext->m_nmsThreshold = nmsThresh;
     std::ifstream ifs(coco_names_file);
     if (ifs.is_open()) {
       std::string line;
@@ -32,6 +33,9 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
     }
 
     //1. get network
+    BMNNHandlePtr handle = std::make_shared<BMNNHandle>(pSophgoContext->deviceId);
+    pSophgoContext->m_bmContext = std::make_shared<BMNNContext>(handle, pSophgoContext->modelPath[0].c_str());
+    
     pSophgoContext->m_bmNetwork = pSophgoContext->m_bmContext->network(0);
     
     //2. get input
