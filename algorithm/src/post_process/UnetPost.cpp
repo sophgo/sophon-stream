@@ -17,6 +17,25 @@ float UnetPost::sigmoid(float x)
   return 1.0 / (1 + expf(-x));
 }
 
+
+common::Frame UnetPost::bm_image2Frame(bm_image & img)
+{
+    common::Frame f;
+
+    f.mWidth = img.width;
+    f.mHeight = img.height;
+    f.mDataType = common::data_bmcv2stream(img.data_type);
+    f.mFormatType = common::format_bmcv2stream(img.image_format);
+    f.mChannel = 1;
+    f.mDataSize = img.width * img.height * sizeof(uchar);
+    void * buffers;
+    bm_image_copy_device_to_host(img, &buffers);
+    f.mData = std::make_shared<void>(buffers);
+
+    return f;
+}
+
+
 void UnetPost::postProcess(algorithm::Context& context,
     common::ObjectMetadatas& objectMetadatas)
     {
@@ -96,7 +115,11 @@ void UnetPost::postProcess(algorithm::Context& context,
             ret = bmcv_image_resize(pSophgoContext->m_bmContext->handle(), 1, &bmcv_resize_attr, &result, &result_resized);
             assert(BM_SUCCESS == ret);
 
-            // save results
+            // save result to Metadata
+            auto Metadata = objectMetadatas[batch_idx]->mSegmentedObjectMetadatas;
+            common::SegmentedObjectMetadata SegData;
+            SegData.mFrame = std::make_shared<common::Frame>(bm_image2Frame(result_resized));
+            Metadata.push_back(std::make_shared<common::SegmentedObjectMetadata>(SegData));
 
             bm_image_destroy(result);
         }

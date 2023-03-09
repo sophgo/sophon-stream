@@ -14,6 +14,8 @@ class UnetPost : public algorithm::PostProcess {
 
         void postProcess(algorithm::Context& context,
                         common::ObjectMetadatas & objectMetadatas) override;
+
+        common::Frame bm_image2Frame(bm_image & img);
 };
 }
 }

@@ -12,6 +12,7 @@
 #include "TrackedObjectMetadata.h"
 #include "DetectedObjectMetadata.h"
 #include "RecognizedObjectMetadata.h"
+#include "SegmentedObjectMetadata.h"
 
 namespace sophon_stream {
 namespace common {
@@ -96,6 +97,8 @@ struct ObjectMetadata {
 
     std::shared_ptr<common::DetectedObjectMetadata> mDetectedObjectMetadata;
     std::vector<std::shared_ptr<common::RecognizedObjectMetadata>> mRecognizedObjectMetadatas;
+
+    std::vector<std::shared_ptr<common::SegmentedObjectMetadata>> mSegmentedObjectMetadatas;
 
 };
 
