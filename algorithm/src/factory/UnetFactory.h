@@ -23,7 +23,7 @@ class UnetFactory : public algorithm::AlgorithmFactory{
     * create preprocess
     * @return preprocess object
    */
-  std::shared_ptr<algorithm::PreProcess> makePreprocess() override;
+  std::shared_ptr<algorithm::PreProcess> makePreProcess() override;
 
   /**
    * create inference

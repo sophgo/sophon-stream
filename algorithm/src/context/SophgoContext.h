@@ -31,7 +31,6 @@ struct SophgoContext :public Context {
     //configuration
     // float m_confThreshold= 0.5;
     // float m_nmsThreshold = 0.5;
-
     // float m_outThreshold = 0.5; // for unet if n_class = 1
 
     std::vector<float> m_thresh; // json --> Context --> SophgoContext

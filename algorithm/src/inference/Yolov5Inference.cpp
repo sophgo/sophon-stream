@@ -20,7 +20,8 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
     float confThresh;
     float nmsThresh;
     std::string coco_names_file;
-    pSophgoContext->m_thresh = context.threthold;
+    pSophgoContext->m_thresh = context.threthold; // thresh[0] confThresh, thresh[1] nmsThresh
+    pSophgoContext->m_class_num = context.numClass;
     // pSophgoContext->m_confThreshold= confThresh;
     // pSophgoContext->m_nmsThreshold = nmsThresh;
     std::ifstream ifs(coco_names_file);

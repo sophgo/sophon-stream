@@ -10,6 +10,8 @@ class UnetPost : public algorithm::PostProcess {
     public:
         void init(algorithm::Context& context) override;
 
+        float sigmoid(float x);
+
         void postProcess(algorithm::Context& context,
                         common::ObjectMetadatas & objectMetadatas) override;
 };
