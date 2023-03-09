@@ -35,8 +35,7 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
     //1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(pSophgoContext->deviceId);
     pSophgoContext->m_bmContext = std::make_shared<BMNNContext>(handle, pSophgoContext->modelPath[0].c_str());
-    
-    pSophgoContext->m_bmNetwork = pSophgoContext->m_bmContext->network(0);
+
     
     //2. get input
     pSophgoContext->max_batch = pSophgoContext->m_bmNetwork->maxBatch();
@@ -94,13 +93,6 @@ common::ErrorCode Yolov5Inference::predict(algorithm::Context& context) {
 }
 
 void Yolov5Inference::uninit() {
-}
-
-static void* function(){
-  return nullptr;
-}
-static void* fuck(void){
-  return nullptr;
 }
 
 } // namespace inference

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "AlgorithmFactorySelector.h"
 
 namespace sophon_stream {

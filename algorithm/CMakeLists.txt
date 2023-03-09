@@ -42,6 +42,7 @@ link_libraries(Logger)
 
 add_library(algorithmApi SHARED
     src/post_process/NoopPostprocess.cpp
+    src/post_process/Yolov5Post.cpp
     src/pre_process/Yolov5Pre.cpp
     src/inference/Yolov5Inference.cpp
     src/factory/Yolov5Factory.cpp

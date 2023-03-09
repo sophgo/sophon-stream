@@ -19,6 +19,9 @@ class Yolov5Pre : public algorithm::PreProcess {
      */
     common::ErrorCode preProcess(algorithm::Context& context,
                                  common::ObjectMetadatas& objectMetadatas) override;
+
+  private:
+
 };
 
 } // namespace pre_process

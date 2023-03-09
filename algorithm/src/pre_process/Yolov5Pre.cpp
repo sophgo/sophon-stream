@@ -38,9 +38,10 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             } else {
             image_aligned = image1;
             }
-        #if USE_ASPECT_RATIO
+        #ifdef USE_ASPECT_RATIO
             bool isAlignWidth = false;
-            float ratio = get_aspect_scaled_ratio(images[i].width, images[i].height, m_net_w, m_net_h, &isAlignWidth);
+            float ratio = context::get_aspect_scaled_ratio(images[i].width, images[i].height, 
+            pSophgoContext->m_net_w, pSophgoContext->m_net_h, &isAlignWidth);
             bmcv_padding_atrr_t padding_attr;
             memset(&padding_attr, 0, sizeof(padding_attr));
             padding_attr.dst_crop_sty = 0;
@@ -51,22 +52,23 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             padding_attr.if_memset = 1;
             if (isAlignWidth) {
             padding_attr.dst_crop_h = images[i].height*ratio;
-            padding_attr.dst_crop_w = m_net_w;
+            padding_attr.dst_crop_w = pSophgoContext->m_net_w;
 
-            int ty1 = (int)((m_net_h - padding_attr.dst_crop_h) / 2);
+            int ty1 = (int)((pSophgoContext->m_net_h - padding_attr.dst_crop_h) / 2);
             padding_attr.dst_crop_sty = ty1;
             padding_attr.dst_crop_stx = 0;
             }else{
-            padding_attr.dst_crop_h = m_net_h;
+            padding_attr.dst_crop_h = pSophgoContext->m_net_h;
             padding_attr.dst_crop_w = images[i].width*ratio;
 
-            int tx1 = (int)((m_net_w - padding_attr.dst_crop_w) / 2);
+            int tx1 = (int)((pSophgoContext->m_net_w - padding_attr.dst_crop_w) / 2);
             padding_attr.dst_crop_sty = 0;
             padding_attr.dst_crop_stx = tx1;
             }
 
             bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
-            auto ret = bmcv_image_vpp_convert_padding(m_bmContext->handle(), 1, image_aligned, &m_resized_imgs[i],
+            auto ret = bmcv_image_vpp_convert_padding(pSophgoContext->m_bmContext->handle(), 1, image_aligned, 
+            &pSophgoContext->m_resized_imgs[i],
                 &padding_attr, &crop_rect);
         #else
             auto ret = bmcv_image_vpp_convert(pSophgoContext->m_bmContext->handle(), 1, 

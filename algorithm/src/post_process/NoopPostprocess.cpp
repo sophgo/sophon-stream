@@ -1,5 +1,3 @@
-#pragma once
-
 #include "NoopPostprocess.h"
 //#include "../context/GpuContext.h"
 namespace sophon_stream {

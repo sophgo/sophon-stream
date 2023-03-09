@@ -20,6 +20,23 @@
 namespace sophon_stream {
 namespace algorithm {
 namespace context {
+
+float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *pIsAligWidth)
+{
+  float ratio;
+  float r_w = (float)dst_w / src_w;
+  float r_h = (float)dst_h / src_h;
+  if (r_h > r_w){
+    *pIsAligWidth = true;
+    ratio = r_w;
+  }
+  else{
+    *pIsAligWidth = false;
+    ratio = r_h;
+  }
+  return ratio;
+}
+        
 /**
  * context初始化
  * @param[in] json: 初始化的json字符串

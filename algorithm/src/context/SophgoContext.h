@@ -6,10 +6,13 @@
 #include "../../share/common/ff_decode.hpp"
 //#include "aiModelManagerWrapper.h" //neural network related APIs
 
+#define USE_ASPECT_RATIO
+
 namespace sophon_stream {
 namespace algorithm {
 namespace context {
 
+float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *pIsAligWidth);
 
 struct SophgoContext :public Context {
     std::vector<std::pair<int,std::vector<std::vector<float>>>> boxes; // 输出结果
@@ -31,10 +34,11 @@ struct SophgoContext :public Context {
 
     // float m_outThreshold = 0.5; // for unet if n_class = 1
 
-    vector<float> m_thresh; // json --> Context --> SophgoContext
+    std::vector<float> m_thresh; // json --> Context --> SophgoContext
 
     std::vector<std::string> m_class_names;
     int m_class_num = 80; // default is coco names
+    int m_frame_h, m_frame_w;
     int m_net_h, m_net_w;
     int max_batch;
     int output_num;
