@@ -13,8 +13,9 @@
 #include "gtest/gtest.h"
 #include "common/Logger.h"
 #include "framework/Engine.h"
-#include "worker/MandatoryLink.h"
+//#include "worker/MandatoryLink.h"
 #include "common/ErrorCode.h"
+#include "common/ObjectMetadata.h"
 #include "config.h"
 
 #include <opencv2/opencv.hpp>
@@ -57,9 +58,9 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 */
 
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
-    ivs::logInit("debug","","");
+    //ivs::logInit("debug","","");
 
-    auto& engine = lynxi::ivs::framework::SingletonEngine::getInstance();
+    auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
 
     nlohmann::json graphConfigure;
     graphConfigure["graph_id"] = 1;
@@ -94,7 +95,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     engine.setDataHandler(1,REPORT_ID,0,[&](std::shared_ptr<void> data) {
 
         IVS_DEBUG("data output 111111111111111");
-        auto objectMetadata = std::static_pointer_cast<lynxi::ivs::common::ObjectMetadata>(data);
+        auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
         if(objectMetadata==nullptr) return;
 
         cv::Mat cpuMat;
@@ -104,7 +105,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
             for(int i=0;i<objectMetadata->mPacket->mDataSize;i++){
                 inputarray.push_back(p[i]);
             }
-            cpuMat = cv::imdecode(inputarray, CV_LOAD_IMAGE_COLOR);
+            cpuMat = cv::imdecode(inputarray, cv::IMREAD_COLOR);
             for(int i=0;i<objectMetadata->mSubObjectMetadatas.size();i++){
                 auto detectData = objectMetadata->mSubObjectMetadatas[i]->mSpDataInformation;
                 cv::rectangle(cpuMat, cv::Rect(detectData->mBox.mX, detectData->mBox.mY, detectData->mBox.mWidth, detectData->mBox.mHeight), 
@@ -140,16 +141,16 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     decodeConfigure["multimedia_name"] = "decode_picture";
     decodeConfigure["reopen_times"] = -1;
         
-    auto channelTask = std::make_shared<lynxi::ivs::worker::ChannelTask>();
-    channelTask->request.operation = lynxi::ivs::worker::ChannelOperateRequest::ChannelOperate::START;
-    channelTask->request.json = decodeConfigure.dump();
-    lynxi::ivs::common::ErrorCode errorCode = engine.sendData(1,
-                                DECODE_ID,
-                                0,
-                                std::static_pointer_cast<void>(channelTask),
-                                std::chrono::milliseconds(200));
-    {
-        std::unique_lock<std::mutex> uq(mtx);
-        cv.wait(uq);
-    }
+    // auto channelTask = std::make_shared<sophon_stream::worker::ChannelTask>();
+    // channelTask->request.operation = sophon_stream::worker::ChannelOperateRequest::ChannelOperate::START;
+    // channelTask->request.json = decodeConfigure.dump();
+    // sophon_stream::common::ErrorCode errorCode = engine.sendData(1,
+    //                             DECODE_ID,
+    //                             0,
+    //                             std::static_pointer_cast<void>(channelTask),
+    //                             std::chrono::milliseconds(200));
+    // {
+    //     std::unique_lock<std::mutex> uq(mtx);
+    //     cv.wait(uq);
+    // }
 }

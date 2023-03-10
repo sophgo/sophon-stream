@@ -14,9 +14,12 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
 
+include(src/framework/framework.cmake)
+
 include(run.cmake)
 
-include(src/framework/framework.cmake)
 #include(src/grpc/grpc.cmake)
 include(src/apps/apps.cmake)
 #include(test/test.cmake)
+
+

@@ -1,9 +1,9 @@
 
 # opencv
-pkg_check_modules(OPENCV REQUIRED opencv)
-include_directories(${OPENCV_INCLUDE_DIRS})
-link_libraries(${OPENCV_LIBRARIES})
-add_compile_options(${OPENCV_CFLAGS_OTHER})
+# pkg_check_modules(OPENCV REQUIRED opencv)
+# include_directories(${OPENCV_INCLUDE_DIRS})
+# link_libraries(${OPENCV_LIBRARIES})
+# add_compile_options(${OPENCV_CFLAGS_OTHER})
 
 # spdlog https://github.com/gabime/spdlog
 #include_directories(3rdparty/spdlog/include)
