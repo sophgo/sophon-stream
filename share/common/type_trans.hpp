@@ -7,7 +7,7 @@
 namespace sophon_stream {
 namespace common {
 
-bm_image_format_ext format_stream2bmcv(FormatType & t)
+static bm_image_format_ext format_stream2bmcv(FormatType & t)
 {
     bm_image_format_ext format_bmcv;
     switch(t)
@@ -37,7 +37,7 @@ bm_image_format_ext format_stream2bmcv(FormatType & t)
     return format_bmcv;
 }
 
-FormatType format_bmcv2stream(bm_image_format_ext & t)
+static FormatType format_bmcv2stream(bm_image_format_ext & t)
 {
     FormatType format_stream;
     switch(t)
@@ -67,7 +67,7 @@ FormatType format_bmcv2stream(bm_image_format_ext & t)
     return format_stream;
 }
 
-bm_image_data_format_ext data_stream2bmcv(DataType & t)
+static bm_image_data_format_ext data_stream2bmcv(DataType & t)
 {
     bm_image_data_format_ext data_bmcv;
     switch(t)
@@ -85,7 +85,7 @@ bm_image_data_format_ext data_stream2bmcv(DataType & t)
     return data_bmcv;
 }
 
-DataType data_bmcv2stream(bm_image_data_format_ext & t)
+static DataType data_bmcv2stream(bm_image_data_format_ext & t)
 {
     DataType data_stream;
     switch(t)

@@ -44,9 +44,13 @@ add_library(algorithmApi SHARED
     src/post_process/NoopPostprocess.cpp
     src/post_process/Yolov5Post.cpp
     src/pre_process/Yolov5Pre.cpp
+    src/pre_process/HostEncodePre.cpp
     src/inference/Yolov5Inference.cpp
+    src/inference/NoopInference.cpp
     src/factory/Yolov5Factory.cpp
+    src/factory/HostEncodeFactory.cpp
     src/context/SophgoContext.cpp
+    src/context/HostContext.cpp
     src/AlgorithmFactorySelector.cpp
     src/Algorithm.cpp)
 target_link_libraries(algorithmApi ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)

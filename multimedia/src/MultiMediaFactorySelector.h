@@ -63,7 +63,7 @@ using SingletonMultiMediaFactorySelector = common::Singleton<MultiMediaFactorySe
 #define REGISTER_MULTIMEDIA_FACTORY(side, multimediaName, MultiMediaFactoryClass) \
     struct MultiMediaFactoryClass##Register { \
         MultiMediaFactoryClass##Register() { \
-            auto& multimediaFactorySelector = ::lynxi::ivs::multimedia::SingletonMultiMediaFactorySelector::getInstance(); \
+            auto& multimediaFactorySelector = ::sophon_stream::multimedia::SingletonMultiMediaFactorySelector::getInstance(); \
             multimediaFactorySelector.setMultiMediaFactoryFetcher(side, \
                                                                 multimediaName, \
                                                                 []() -> multimedia::MultiMediaFactory& { \

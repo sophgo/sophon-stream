@@ -7,11 +7,23 @@
 //#include "aiModelManagerWrapper.h" //neural network related APIs
 
 namespace sophon_stream {
-namespace algorithm {
+namespace multimedia {
 namespace context {
 
 
-struct SophgoContext :public Context {
+struct SophgoContext :public multimedia::Context {
+
+    static constexpr const char* JSON_URL = "url";
+    static constexpr const char* JSON_RESIZE_RATE = "resize_rate";
+    static constexpr const char* JSON_TIMEOUT = "timeout";
+    static constexpr const char* JSON_CHANNELID = "channel_id";
+    static constexpr const char* JSON_SOURCE_TYPE = "source_type";
+    static constexpr const char* JSON_ROI = "roi";
+    static constexpr const char* JSON_X = "x";
+    static constexpr const char* JSON_Y = "y";
+    static constexpr const char* JSON_W = "w";
+    static constexpr const char* JSON_H = "h";
+
     std::vector<std::pair<int,std::vector<std::vector<float>>>> boxes; // 输出结果
     /**
      * context初始化

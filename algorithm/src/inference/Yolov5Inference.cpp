@@ -24,19 +24,11 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
     pSophgoContext->m_class_num = context.numClass;
     // pSophgoContext->m_confThreshold= confThresh;
     // pSophgoContext->m_nmsThreshold = nmsThresh;
-    std::ifstream ifs(coco_names_file);
-    if (ifs.is_open()) {
-      std::string line;
-      while(std::getline(ifs, line)) {
-        line = line.substr(0, line.length() - 1);
-        pSophgoContext->m_class_names.push_back(line);
-      }
-    }
 
     //1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(pSophgoContext->deviceId);
     pSophgoContext->m_bmContext = std::make_shared<BMNNContext>(handle, pSophgoContext->modelPath[0].c_str());
-
+    pSophgoContext->m_bmNetwork = pSophgoContext->m_bmContext->network(0);
     
     //2. get input
     pSophgoContext->max_batch = pSophgoContext->m_bmNetwork->maxBatch();

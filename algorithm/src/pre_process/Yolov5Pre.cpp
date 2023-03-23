@@ -1,6 +1,7 @@
 #include "Yolov5Pre.h"
 #include "../context/SophgoContext.h"
 #include "common/Logger.h"
+#include "common/type_trans.hpp"
 
 namespace sophon_stream {
 namespace algorithm {
@@ -9,14 +10,54 @@ namespace pre_process {
 common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
     common::ObjectMetadatas& objectMetadatas) {
         context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
-
         std::vector<bm_image> images;
+        for(auto& objMetadata:objectMetadatas){
+            pSophgoContext->m_frame_w = objMetadata->mFrame->mWidth;
+            pSophgoContext->m_frame_h = objMetadata->mFrame->mHeight;
+            int width = objMetadata->mFrame->mWidth;
+            int height = objMetadata->mFrame->mHeight;
+            std::shared_ptr<void> data = objMetadata->mFrame->mData;
+            // 转格式
+            sophon_stream::common::FormatType format_type_stream = objMetadata->mFrame->mFormatType;
+            sophon_stream::common::DataType data_type_stream = objMetadata->mFrame->mDataType;
+            bm_image_format_ext format_type_bmcv = common::format_stream2bmcv(format_type_stream);
+            bm_image_data_format_ext data_type_bmcv = common::data_stream2bmcv(data_type_stream);
+            // 转成bm_image
+            bm_image image;
+            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, data_type_bmcv, &image);
+            bm_image_attach(image, objMetadata->mFrame->mData.get());
+            images.push_back(image);
+            std::cout<< "format type is : "<<static_cast<int>(format_type_bmcv)<<std::endl;
+            // static int a = 0;
+            // char szpath[256] = {0}; 
+            // sprintf(szpath,"out%d.bmp",a);
+            // std::string strPath(szpath);
+            // bm_image_write_to_bmp(image, strPath.c_str());
+            // a++;
+        }
+
+        
+
+       
         std::shared_ptr<BMNNTensor> input_tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
         int image_n = images.size();
+        std::cout<< "image count : "<<image_n<<std::endl;
+        
         //1. resize image
         int ret = 0;
         for(int i = 0; i < image_n; ++i) {
-            bm_image image1 = images[i];
+            bm_image image0 = images[i];
+            bm_image image1;
+            if(image0.image_format != FORMAT_BGR_PLANAR){
+                bm_image_create(pSophgoContext->m_bmContext->handle(), image0.height, image0.width,
+                    FORMAT_BGR_PLANAR, image0.data_type, &image1);
+                    bm_image_alloc_dev_mem(image1, BMCV_IMAGE_FOR_IN);
+                    bmcv_image_storage_convert(pSophgoContext->m_bmContext->handle(),1,&image0,&image1);
+            }
+            else{
+                image1 = image0;
+            }
+
             bm_image image_aligned;
             bool need_copy = image1.width & (64-1);
             if(need_copy){
@@ -70,6 +111,21 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             auto ret = bmcv_image_vpp_convert_padding(pSophgoContext->m_bmContext->handle(), 1, image_aligned, 
             &pSophgoContext->m_resized_imgs[i],
                 &padding_attr, &crop_rect);
+
+            // static int a = 0;
+            // char szResizepath[256] = {0}; 
+            // sprintf(szResizepath,"resize%d.bmp",a);
+            // std::string strResizePath(szResizepath);
+            //             char szOriginpath[256] = {0}; 
+            // sprintf(szOriginpath,"origin%d.bmp",a);
+            // std::string strOriginPath(szOriginpath);
+            //             char szAlignpath[256] = {0}; 
+            // sprintf(szAlignpath,"out%d.bmp",a);
+            // std::string strAlignPath(szAlignpath);
+            // bm_image_write_to_bmp(pSophgoContext->m_resized_imgs[i], strResizePath.c_str());
+            // bm_image_write_to_bmp(image1, strOriginPath.c_str());
+            // bm_image_write_to_bmp(image_aligned, strAlignPath.c_str());
+            // a++;
         #else
             auto ret = bmcv_image_vpp_convert(pSophgoContext->m_bmContext->handle(), 1, 
             images[i], &pSophgoContext->m_resized_imgs[i]);
@@ -82,7 +138,10 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             std::string fname = cv::format("resized_img_%d.jpg", i);
             cv::imwrite(fname, resized_img);
         #endif
-            // bm_image_destroy(image1);
+            if(image0.image_format != FORMAT_BGR_PLANAR){
+                bm_image_destroy(image1);
+            }
+            
             if(need_copy) bm_image_destroy(image_aligned);
         }
         

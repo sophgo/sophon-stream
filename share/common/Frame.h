@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-
+#include "bmlib_runtime.h"
 #include "Rational.h"
 
 namespace sophon_stream {
@@ -70,7 +70,8 @@ struct Frame {
     int mHeight;
     int mHeightStep;
     std::size_t mDataSize;
-    std::shared_ptr<void> mData;
+    bm_handle_t mHandle;
+    std::shared_ptr<bm_device_mem_t> mData;
 };
 
 } // namespace common

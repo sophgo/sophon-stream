@@ -35,7 +35,6 @@ struct SophgoContext :public Context {
 
     std::vector<float> m_thresh; // json --> Context --> SophgoContext
 
-    std::vector<std::string> m_class_names;
     int m_class_num = 80; // default is coco names
     int m_frame_h, m_frame_w;
     int m_net_h, m_net_w;

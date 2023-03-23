@@ -26,7 +26,9 @@ class Yolov5Post : public algorithm::PostProcess {
   private:
     float sigmoid(float x);
     int argmax(float* data, int num);
+  private:
     void NMS(YoloV5BoxVec &dets, float nmsConfidence);
+    
 };
 
 } // namespace post_process

@@ -1,14 +1,3 @@
-/**********************************************
-
- Copyright (c) 2018 LynxiTech Inc - All rights reserved.
-
- NOTICE: All information contained here is, and remains
- the property of LynxiTech Incorporation. This file can not
- be copied or distributed without permission of LynxiTech Inc.
-
- Author: written by chao.tang, 2020-03-11
-
-**************************************************/
 
 #include "Yolov5Factory.h"
 
@@ -55,8 +44,8 @@ std::shared_ptr<algorithm::PostProcess> Yolov5Factory::makePostProcess() {
     return std::static_pointer_cast<algorithm::PostProcess>(std::make_shared<post_process::Yolov5Post>());
 }
 
-//注册lyn YoloV3
-REGISTER_ALGORITHM_FACTORY("sophogo", "Yolov5", Yolov5Factory);
+//注册sophgo Yolov5
+REGISTER_ALGORITHM_FACTORY("sophgo", "Yolov5", Yolov5Factory);
 
 } // namespace factory
 } // namespace algorithm

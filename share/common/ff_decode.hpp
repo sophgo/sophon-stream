@@ -1,3 +1,15 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-DEMO is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+/*
+ * This is a wrapper header of BMruntime & BMCV, aiming to simplify user's program.
+ */
+#pragma once
 #include <iostream>
 #include <queue>
 #include <mutex>
@@ -16,6 +28,11 @@ extern "C"
 #include <libswscale/swscale.h>
 }
 
+#define QUEUE_MAX_SIZE 5
+#define EXTRA_FRAME_BUFFER_NUM 5
+#define USEING_MEM_HEAP2 4
+#define USEING_MEM_HEAP1 2
+
 typedef struct {
     uint8_t* start;
     int      size;
@@ -33,7 +50,7 @@ int map_avformat_to_bmformat(int avformat);
 /**
  * @brief convert avformat to bm_image.
  */
-bm_status_t avframe_to_bm_image(bm_handle_t &handle, AVFrame &in, bm_image &out);
+bm_status_t avframe_to_bm_image(bm_handle_t &handle, AVFrame *in, bm_image *out, bool is_jpeg);
 
 /**
  * @brief picture decode. support jpg and png

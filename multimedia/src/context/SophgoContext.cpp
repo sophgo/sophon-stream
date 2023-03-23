@@ -1,153 +1,122 @@
 #include "SophgoContext.h"
 #include <nlohmann/json.hpp>
 
-#define JSON_ALGORITHM_NAME_FIELD "algorithm_name"
-#define JSON_ALGORITHM_MODEL_PATH_FIELD "model_path"
-#define JSON_ALGORITHM_MAX_BATCHSIZE_FIELD "max_batchsize"
-#define JSON_ALGORITHM_INPUT_NODE_NAME_FIELD "input_node_name"
-#define JSON_ALGORITHM_INPUT_SHAPE_FIELD "input_shape"
-#define JSON_ALGORITHM_NUM_INPUTS_FIELD "num_inputs"
-#define JSON_ALGORITHM_OUTPUT_NODE_NAME_FIELD "output_node_name"
-#define JSON_ALGORITHM_OUTPUT_SHAPE_FIELD "output_shape"
-#define JSON_ALGORITHM_THRETHOLD_FIELD "threthold"
-#define JSON_ALGORITHM_NUM_CLASS_FIELD "num_class"
-#define JSON_ALGORITHM_NUM_OUTPUTS_FIELD "num_outputs"
-#define JSON_ALGORITHM_MIN_SIZE_FIELD "min_size"
-#define JSON_ALGORITHM_PYRAMID_FIELD "pyramid"
-#define JSON_ALGORITHM_LABEL_NAMES_FIELD "label_names"
-
 
 namespace sophon_stream {
-namespace algorithm {
+namespace multimedia {
 namespace context {
+
+constexpr const char* SophgoContext::JSON_URL;
+constexpr const char* SophgoContext::JSON_RESIZE_RATE;
+constexpr const char* SophgoContext::JSON_TIMEOUT;
+constexpr const char* SophgoContext::JSON_CHANNELID;
+constexpr const char* SophgoContext::JSON_SOURCE_TYPE;
+constexpr const char* SophgoContext::JSON_ROI;
+constexpr const char* SophgoContext::JSON_X;
+constexpr const char* SophgoContext::JSON_Y;
+constexpr const char* SophgoContext::JSON_W;
+constexpr const char* SophgoContext::JSON_H;
+
 /**
  * context初始化
  * @param[in] json: 初始化的json字符串
  * @return 错误码
  */
 common::ErrorCode SophgoContext::init(const std::string& json) {
-    common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
-    do {
-        auto configure = nlohmann::json::parse(json, nullptr, false);
-        if (!configure.is_object()) {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
+        common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+        do {
+                auto configure = nlohmann::json::parse(json, nullptr, false);
+                if (!configure.is_object()) {
+                IVS_ERROR("Parse json fail or json is not object, json: {0}", json);
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+                }
 
-        auto algotirhmNameIt = configure.find(JSON_ALGORITHM_NAME_FIELD);
-        if (configure.end() == algotirhmNameIt
-                || !algotirhmNameIt->is_string()) {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
+                auto urlIt = configure.find(JSON_URL);
+                if (configure.end() == urlIt
+                        || !urlIt->is_string()) {
+                IVS_ERROR("Can not find {0} with string type in worker json configure, json: {1}",
+                        JSON_URL,
+                        json);
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+                }
+                mUrl = urlIt->get<std::string>();
 
-        auto maxBatchSizeCon = configure.find(JSON_ALGORITHM_MAX_BATCHSIZE_FIELD);
-        if (configure.end() != maxBatchSizeCon
-                && maxBatchSizeCon->is_number_integer()) {
-            maxBatchSize = maxBatchSizeCon->get<int>();
-        }
+        //        auto resizeRateIt = configure.find(JSON_RESIZE_RATE);
+        //        if (configure.end() == resizeRateIt
+        //                || !resizeRateIt->is_number_float()) {
+        //            IVS_ERROR("Can not find {0} with float type in worker json configure, json: {1}",
+        //                      JSON_RESIZE_RATE,
+        //                      json);
+        //            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        //            break;
+        //        }
+        //        mResizeRate = resizeRateIt->get<float>();
 
-        auto numClassCon = configure.find(JSON_ALGORITHM_NUM_CLASS_FIELD);
-        if (configure.end() != numClassCon
-                && numClassCon->is_number_integer()) {
-            numClass = numClassCon->get<int>();
-        }
+                auto timeoutIt = configure.find(JSON_TIMEOUT);
+                if (configure.end() != timeoutIt
+                        && timeoutIt->is_number_integer()) {
+                mTimeout = timeoutIt->get<int>();
+                }
 
-        auto modelPathCon = configure.find(JSON_ALGORITHM_MODEL_PATH_FIELD);
-        for(auto& temp : *modelPathCon) {
-//            if (configure.end() != temp
-//                    && temp.is_string()) {
-            modelPath.push_back(temp.get<std::string>());
-//            }
-        }
+                auto sourceTypeIter = configure.find(JSON_SOURCE_TYPE);
+                if(configure.end()==sourceTypeIter
+                        ||!sourceTypeIter->is_number_integer()){
+                IVS_ERROR("Can not find {0} with integer type in worker json configure, json: {1}",
+                        JSON_SOURCE_TYPE,
+                        json);
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+                }
 
-        auto inputNodeCon = configure.find(JSON_ALGORITHM_INPUT_NODE_NAME_FIELD);
-        for(auto& temp : *inputNodeCon) {
-//            if (configure.end() != temp
-//                    && temp.is_string()) {
-            inputNodeName.push_back(temp.get<std::string>());
-//            }
-        }
+                auto roiIt = configure.find(JSON_ROI);
+                if (configure.end() != roiIt
+                        && roiIt->is_object()) {
+                auto xIt = roiIt->find(JSON_X);
+                if (roiIt->end() == xIt
+                        || !xIt->is_number_integer()) {
+                        IVS_ERROR("Parse roi-x failed or x is not integer, json: {0}", json);
+                        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                        break;
+                }
+                mRoi.mX = *xIt;
+                auto yIt = roiIt->find(JSON_Y);
+                if (roiIt->end() == yIt
+                        || !yIt->is_number_integer()) {
+                        IVS_ERROR("Parse roi-y failed or y is not integer, json: {0}", json);
+                        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                        break;
+                }
+                mRoi.mY = *yIt;
+                auto wIt = roiIt->find(JSON_W);
+                if (roiIt->end() == wIt
+                        || !wIt->is_number_integer()) {
+                        IVS_ERROR("Parse roi-w failed or w is not integer, json: {0}", json);
+                        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                        break;
+                }
+                mRoi.mWidth = *wIt;
+                auto hIt = roiIt->find(JSON_H);
+                if (roiIt->end() == hIt
+                        || !hIt->is_number_integer()) {
+                        IVS_ERROR("Parse roi-h failed or h is not integer, json: {0}", json);
+                        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                        break;
+                }
+                mRoi.mHeight = *hIt;
+                }
+                else{
+                mRoi.mX = 0;
+                mRoi.mY = 0;
+                mRoi.mWidth = 0;
+                mRoi.mHeight = 0;
+                }
 
-        auto inputShapeCon = configure.find(JSON_ALGORITHM_INPUT_SHAPE_FIELD);
-        for(auto& temp : *inputShapeCon) {
-//            if (configure.end() != temp
-//                    && temp.is_array()) {
-            nodeDims node;
-            node.c = temp[0].get<int>();
-            node.h = temp[1].get<int>();
-            node.w = temp[2].get<int>();
-            inputShape.push_back(node);
-//            }
-        }
+                mSourceType = sourceTypeIter->get<int>();
 
-        auto numInputsCon = configure.find(JSON_ALGORITHM_NUM_INPUTS_FIELD);
-        for(auto& temp : *numInputsCon) {
-//            if (configure.end() != temp
-//                    && temp.is_number_integer()) {
-            numInputs.push_back(temp.get<int>());
-//            }
-        }
 
-        auto outputNodeCon = configure.find(JSON_ALGORITHM_OUTPUT_NODE_NAME_FIELD);
-        for(auto& temp : *outputNodeCon) {
-//            if (configure.end() != temp
-//                    && temp.is_string()) {
-            outputNodeName.push_back(temp.get<std::string>());
-//            }
-        }
-
-        auto outputShapeCon = configure.find(JSON_ALGORITHM_OUTPUT_SHAPE_FIELD);
-        for(auto& temp : *outputShapeCon) {
-//            if (configure.end() != temp
-//                    && temp.is_array()) {
-            nodeDims node;
-            node.c = temp[0].get<int>();
-            node.h = temp[1].get<int>();
-            node.w = temp[2].get<int>();
-            outputShape.push_back(node);
-//            }
-        }
-
-        auto numOutputsCon = configure.find(JSON_ALGORITHM_NUM_OUTPUTS_FIELD);
-        for(auto& temp : *numOutputsCon) {
-//            if (configure.end() != temp
-//                    && temp.is_number_integer()) {
-            numOutputs.push_back(temp.get<int>());
-//            }
-        }
-
-        auto thretholdCon = configure.find(JSON_ALGORITHM_THRETHOLD_FIELD);
-        for(auto& temp : *thretholdCon) {
-//            if (configure.end() != temp
-//                    && temp.is_number_float()) {
-            threthold.push_back(temp.get<float>());
-//            }
-        }
-        //TODO: parse other configure field
-        auto minSizeCon = configure.find(JSON_ALGORITHM_MIN_SIZE_FIELD);
-        if (configure.end() != minSizeCon
-                && minSizeCon->is_number_integer()) {
-            //minSize = minSizeCon->get<int>();
-        }
-
-        auto labelNamesCon = configure.find(JSON_ALGORITHM_LABEL_NAMES_FIELD);
-        for(auto& temp : *labelNamesCon) {
-//            if (configure.end() != temp
-//                    && temp.is_string()) {
-            labelNames.push_back(temp.get<std::string>());
-//            }
-        }
-
-        auto pyramidCon = configure.find(JSON_ALGORITHM_PYRAMID_FIELD);
-        if (configure.end() != pyramidCon
-                && pyramidCon->is_number_integer()) {
-            //pyramid = pyramidCon->get<int>();
-        }
-
-        //TODO: parse other configure field
-
-    } while (false);
+        } while (false);
 
     return errorCode;
 }

@@ -42,60 +42,60 @@ nlohmann::json makeEncodeConfig(const std::string& sharedObject,
         return algorithmConfigure;
 }
 
-nlohmann::json makeWorkerConfig(int workerId,std::string workerName,
+nlohmann::json makeElementConfig(int ElementId,std::string ElementName,
                                 std::string side,int deviceId,
                                 int threadNumber,int timeout,bool repeatTimeout,
                                 int batch,
                                 std::vector<nlohmann::json> algoConfig) {
-    nlohmann::json workerConf;
-    workerConf["id"] = workerId;
-    workerConf["name"] = workerName;
-    workerConf["side"] = side;
-    workerConf["device_id"] = deviceId;
-    workerConf["thread_number"] = threadNumber;
-    workerConf["milliseconds_timeout"] = timeout;
-    workerConf["repeated_timeout"] = repeatTimeout;
+    nlohmann::json ElementConf;
+    ElementConf["id"] = ElementId;
+    ElementConf["name"] = ElementName;
+    ElementConf["side"] = side;
+    ElementConf["device_id"] = deviceId;
+    ElementConf["thread_number"] = threadNumber;
+    ElementConf["milliseconds_timeout"] = timeout;
+    ElementConf["repeated_timeout"] = repeatTimeout;
 
     nlohmann::json moduleConfigure;
     moduleConfigure["batch"] = batch;
     for(auto& ac:algoConfig) {
         moduleConfigure["models"].push_back(ac);
     }
-    workerConf["configure"] = moduleConfigure;
-    return workerConf;
+    ElementConf["configure"] = moduleConfigure;
+    return ElementConf;
 }
 
-nlohmann::json makeDecoderWorkerConfig(int workerId,std::string workerName,
+nlohmann::json makeDecoderElementConfig(int ElementId,std::string ElementName,
                                 std::string side,int deviceId,
                                 int threadNumber,int timeout,bool repeatTimeout,
                                 int batch,
                                  const std::string& soPath) {
-    nlohmann::json workerConf;
-    workerConf["id"] = workerId;
-    workerConf["name"] = workerName;
-    workerConf["side"] = side;
-    workerConf["device_id"] = deviceId;
-    workerConf["thread_number"] = threadNumber;
-    workerConf["milliseconds_timeout"] = timeout;
-    workerConf["repeated_timeout"] = repeatTimeout;
+    nlohmann::json ElementConf;
+    ElementConf["id"] = ElementId;
+    ElementConf["name"] = ElementName;
+    ElementConf["side"] = side;
+    ElementConf["device_id"] = deviceId;
+    ElementConf["thread_number"] = threadNumber;
+    ElementConf["milliseconds_timeout"] = timeout;
+    ElementConf["repeated_timeout"] = repeatTimeout;
 
     nlohmann::json moduleConfigure;
     moduleConfigure["shared_object"] = soPath;
-    workerConf["configure"] = moduleConfigure;
-    return workerConf;
+    ElementConf["configure"] = moduleConfigure;
+    return ElementConf;
 }
-nlohmann::json makeModuleConfig(int id,std::vector<int> preWorkerIds,
-                                std::vector<int> moduleIds,std::vector<int> postWorkerIds) {
+nlohmann::json makeModuleConfig(int id,std::vector<int> preElementIds,
+                                std::vector<int> moduleIds,std::vector<int> postElementIds) {
     nlohmann::json config;
     config["id"] = id;
-    for(auto& preWorkerId:preWorkerIds) {
-        config["pre_worker_ids"].push_back(preWorkerId);
+    for(auto& preElementId:preElementIds) {
+        config["pre_Element_ids"].push_back(preElementId);
     }
     for(auto& moduleId:moduleIds) {
         config["module_ids"].push_back(moduleId);
     }
-    for(auto& postWorker:postWorkerIds) {
-        config["post_worker_ids"].push_back(postWorker);
+    for(auto& postElement:postElementIds) {
+        config["post_Element_ids"].push_back(postElement);
     }
     return config;
 }

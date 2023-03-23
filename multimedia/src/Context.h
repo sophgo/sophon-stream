@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "common/Logger.h"
 #include "common/ErrorCode.h"
 #include "common/Graphics.hpp"
 namespace sophon_stream {

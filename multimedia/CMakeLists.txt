@@ -39,6 +39,10 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIB_DIRS})
 
+find_package(libsophon REQUIRED)
+include_directories(${LIBSOPHON_INCLUDE_DIRS})
+link_directories(${LIBSOPHON_LIB_DIRS})
+
 include_directories(.)
 include_directories(../share)
 include_directories(../share/3rdparty/spdlog/include)
@@ -49,12 +53,16 @@ add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gte
 link_libraries(gtest)
 
 add_library(ivslogger ../share/common/Udp.cpp
-    ../share/common/Logger.cpp)
+    ../share/common/Logger.cpp
+    ../share/common/ff_decode.cpp)
 link_libraries(ivslogger)
 
 add_library(multiMediaApi SHARED
     src/MultiMediaFactorySelector.cpp
     src/MultiMedia.cpp
+    src/context/SophgoContext.cpp
+    src/process/SophgoDecode.cpp
+    src/factory/SophgoDecodeFactory.cpp
     #            src/context/GpuContext.cpp
     #            src/process/GpuDecode.cpp
     #            src/factory/GpuDecodeFactory.cpp
@@ -64,6 +72,8 @@ add_library(multiMediaApi SHARED
     #            src/process/decode/gpu/yuv2bgr.cu
     #            src/process/decode/gpu/Resize.cu
     )
+target_link_libraries(multiMediaApi ${FFMPEG_LIBS} 
+    ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 
 enable_testing()
 set(CMAKE_BUILD_TYPE Debug)

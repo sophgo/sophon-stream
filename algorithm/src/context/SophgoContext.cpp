@@ -36,7 +36,7 @@ float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *
   }
   return ratio;
 }
-        
+
 /**
  * context初始化
  * @param[in] json: 初始化的json字符串
