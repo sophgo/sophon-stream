@@ -22,19 +22,24 @@ common::ErrorCode UnetPre::preProcess(algorithm::Context& context,
         for(int i = 0;i < image_n; ++i)
         {
             // 从objectMetadata读取frame信息
-            std::shared_ptr<common::Frame> image_ptr = objectMetadatas[i]->mTransformFrame;
-            int width = image_ptr->mWidth;
-            int height = image_ptr->mHeight;
-            std::shared_ptr<void> data = image_ptr->mData;
+            pSophgoContext->m_frame_w = objectMetadatas[i]->mFrame->mWidth;
+            pSophgoContext->m_frame_h = objectMetadatas[i]->mFrame->mHeight;
+            int width = objectMetadatas[i]->mFrame->mWidth;
+            int height = objectMetadatas[i]->mFrame->mHeight;
             // 转格式
-            sophon_stream::common::FormatType format_type_stream = image_ptr->mFormatType;
-            sophon_stream::common::DataType data_type_stream = image_ptr->mDataType;
+            sophon_stream::common::FormatType format_type_stream = objectMetadatas[i]->mFrame->mFormatType;
+            sophon_stream::common::DataType data_type_stream = objectMetadatas[i]->mFrame->mDataType;
             bm_image_format_ext format_type_bmcv = common::format_stream2bmcv(format_type_stream);
             bm_image_data_format_ext data_type_bmcv = common::data_stream2bmcv(data_type_stream);
             // 转成bm_image
+            bm_image image1;
+            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, data_type_bmcv, &image1);
+            bm_image_attach(image1, objectMetadatas[i]->mFrame->mData.get());
+
+            // BGR_PACKED转PLANAR
             bm_image image;
-            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, data_type_bmcv, &image);
-            bm_image_copy_host_to_device(image, (void**)&data);
+            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, FORMAT_BGR_PLANAR, data_type_bmcv, &image);
+            bmcv_image_storage_convert(pSophgoContext->m_bmContext->handle(), 1, &image1, &image);
 
             bm_image image_aligned;
             bool need_copy = image.width & (64-1);
@@ -46,7 +51,7 @@ common::ErrorCode UnetPre::preProcess(algorithm::Context& context,
                 stride2[1] = FFALIGN(stride1[1], 64);
                 stride2[2] = FFALIGN(stride1[2], 64);
                 bm_image_create(pSophgoContext->m_bmContext->handle(), image.height, image.width, 
-                                format_type_bmcv, data_type_bmcv, &image_aligned, stride2);
+                                FORMAT_BGR_PLANAR, data_type_bmcv, &image_aligned, stride2);
                 bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
                 bmcv_copy_to_atrr_t copyToAttr;
                 memset(&copyToAttr, 0, sizeof(copyToAttr));
@@ -95,10 +100,12 @@ common::ErrorCode UnetPre::preProcess(algorithm::Context& context,
 #endif
             assert(BM_SUCCESS == ret);
 #if DUMP_FILE
-            cv::Mat resized_img;
-            cv::bmcv::toMAT(&pSophgoContext->m_resized_imgs[i], resized_img);
-            std::string fname = cv::format("resized_img_%d.jpg", i);
-            cv::imwrite(fname, resized_img);
+            static int b = 0;
+            char szpath2[256] = {0}; 
+            sprintf(szpath2,"resized%d.bmp",b);
+            std::string strPath2(szpath2);
+            bm_image_write_to_bmp(pSophgoContext->m_resized_imgs[i], strPath2.c_str());
+            b++;
 #endif
             if (need_copy) bm_image_destroy(image_aligned);
         }

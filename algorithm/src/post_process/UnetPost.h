@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../PostProcess.h"
+#include "../context/SophgoContext.h"
 
 namespace sophon_stream{
 namespace algorithm {
@@ -15,7 +16,7 @@ class UnetPost : public algorithm::PostProcess {
         void postProcess(algorithm::Context& context,
                         common::ObjectMetadatas & objectMetadatas) override;
 
-        common::Frame bm_image2Frame(bm_image & img);
+        std::shared_ptr<common::Frame> bm_image2Frame(bm_handle_t&& handle,bm_image & img);
 };
 }
 }
