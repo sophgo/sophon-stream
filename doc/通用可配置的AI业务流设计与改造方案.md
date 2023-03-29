@@ -780,10 +780,397 @@ ObjectMetadata在设计上并不针对具体的业务，当添加业务时，或
 
 
 ### 代码的可复用性和可维护性
-![engine](assets/engine.png)
-![algorithm](assets/algorithm.png)
+<!-- ![engine](assets/engine.png)
+![algorithm](assets/algorithm.png) -->
+Engine:
 
+```mermaid
+classDiagram
+class DataPipe{
+    + pushData(std::shared_ptr<void> data, 
+             const std::chrono::duration<Rep, Period>& timeout)
+    + getData()
+    + popData()
+    + setPushHandler(PushHandler pushHandler)
+    + setCapacity(std::size_t capacity)
+    + getSize()
+    + getCapacity()
 
+    - mDataQueue
+    - mDataQueueMutex
+    - mDataQueueCond
+    - mPushHandler
+    - mCapacity
+  }
+
+  class Engine{
+    + start(int graphId)
+    + stop(int graphId)
+    + pause(int graphId)
+    + resume(int graphId)
+    + addGraph(const std::string& json)
+    + removeGraph(int graphId)
+    + graphExist(int graphId)
+    + sendData(int graphId, 
+             int elementId, 
+             int inputPort, 
+             std::shared_ptr<void> data, 
+             const std::chrono::duration<Rep, Period>& timeout)
+    + setDataHandler(int graphId, 
+                        int elementId, 
+                        int outputPort, 
+                        DataHandler dataHandler)
+    + getSideAndDeviceId(int graphId,int elementId)
+
+    - mElementManagerMap
+    - mElementManagerMapLock
+  }
+
+  class Element{
+    + connect(Element& source,int srcElementPort,Element& dstElement,int dstElementPort)
+    + init(const std::string& json)
+    + uninit()
+    + start()
+    + stop()
+    + pause()
+    + resume()
+    + pushData(int inputPort, 
+             std::shared_ptr<void> data, 
+             const std::chrono::duration<Rep, Period>& timeout)
+    + setDataHandler(int outputPort, 
+                        DataHandler dataHandler)
+    + getId()
+    + getSide()
+    + getDeviceId()
+    + getThreadNumber()
+    + getThreadStatus()
+    + getMillisecondsTimeout()
+    + getRepeatedTimeout()
+
+    # initInternal(const std::string& json)
+    # uninitInternal()
+    # onStart()
+    # onStop()
+    # run()
+    # doWork()
+    # getDataCount(int inputPort)
+    # getData(int inputPort)
+    # popData(int inputPort)
+    # sendData(int outputPort,std::shared_ptr<void> data,const std::chrono::duration<Rep, Period>& timeout)
+    # getOutputDatapipeCapacity(int outputPort,int& capacity)
+    # getOutputDatapipeSize(int outputPort,int& size)
+
+    - onInputNotify()
+    - mId
+    - mSide
+    - mDeviceId
+    - mThreadNumber
+    - mThreads
+    - mThreadStatus
+    - mMillisecondsTimeout
+    - mRepeatedTimeout
+    - mMutex
+    - mCond
+    - mNotifyCount
+    - mInputDataPipeMap
+    - mOutputHandlerMap
+    - mOutputHandlerMapMtx
+    - mOutputDataPipeMap
+  }
+
+  class ElementManager{
+    + ErrorCode init(const std::string& json)
+    + uninit()
+    + start()
+    + stop()
+    + pause()
+    + resume()
+    + ErrorCode sendData(int elementId,int inputPort,std::shared_ptr<void> data,const std::chrono::duration<Rep, Period>& timeout) 
+    + setDataHandler(int elementId,int outputPort,DataHandler dataHandler)
+    + getSideAndDeviceId(int elementId)
+    + getId()
+  }
+
+  class ElementFactory{
+    + ErrorCode addElementMaker(const std::string& elementName,ElementMaker elementMaker)
+    + removeElementMaker(const std::string& elementName)
+    + make(const std::string& elementName)
+
+    - mElementMakerMap
+  }
+
+  class Module{
+    + getFirstWorkerId()
+    + getLastWorkerId()
+    + mId
+    + mPreModuleWorkerId
+    + mPostModuleWorkerId
+    + mPreWorkerIds
+    + mPostWorkerIds
+    + mSubModuleIds
+  }
+
+  class PreModuleElement{
+    + gCurrentElementId
+    - initInternal(const std::string& json)
+    - uninitInternal()
+    - doWork()
+    - mStep
+    - mModuleCount
+  }
+
+  class PostModuleElement{
+    + int gCurrentElementId
+    - initInternal(const std::string& json)
+    - uninitInternal()
+    - doWork()
+    - mStep
+    - mModuleCount
+  }
+
+  class AlgorithmApi{
+    + init(const std::string& side,int deviceId,const std::string& json)
+    + process(common::ObjectMetadatas& objectMetadatas)
+    + uninit()
+  }
+
+  class AlgorithmApiFactory{
+    + setAlgorithmApiMaker(AlgorithmApiMaker algorithmApiMaker)
+    + make()
+    - mAlgorithmApiMaker
+  }
+
+  class ActionElement{
+    - initInternal(const std::string& json)
+    - uninitInternal()
+    - doWork()
+    - sendProcessedData()
+    - mBatch
+    - mSharedObjectHandles
+    - mAlgorithmApis
+    - mMutex
+    - mLastDataCount
+    - mProcessedObjectMetadatas
+    - mPendingObjectMetadatas
+  }
+
+  class DecoderElement{
+    - initInternal(const std::string& json)
+    - uninitInternal()
+    - onStart()
+    - onStop()
+    - doWork()
+    - startTask(std::shared_ptr<ChannelTask>& channelTask)
+    - stopTask(std::shared_ptr<ChannelTask>& channelTask)
+    - pauseTask(std::shared_ptr<ChannelTask>& channelTask)
+    - resumeTask(std::shared_ptr<ChannelTask>& channelTask)
+    - parseJson(const std::string& json, std::string& url, int& sourceType, int& reopentimes)
+    - process(const bool lastFrame,const int sourceType,const int reopentimes,const int capacity,
+            const std::shared_ptr<ChannelTask>& channelTask, 
+            const std::shared_ptr<ChannelInfo>& channelInfo)
+    - reopen(const int reopentimes, const std::shared_ptr<ChannelTask>& channelTask, const std::shared_ptr<ChannelInfo>& channelInfo)
+    - mSkipCount
+    - mSharedObjectHandle
+    - mThreadsPool
+    - mThreadsPoolMtx
+  }
+
+  class MultiMediaApi{
+    + init(const std::string& side,int deviceId,const std::string& json)
+    + process(std::shared_ptr<common::ObjectMetadata>& objectMetadata)
+    + uninit()
+  }
+
+  class MultiMediaApiFactory{
+    + setMultiMediaApiMaker(MultiMediaApiMaker multimediaApiMaker)
+    + make()
+    - mMultiMediaApiMaker
+  }
+
+  class Engine{<<Singleton>>}
+  Element <|-- PreModuleElement
+  Element <|-- PostModuleElement
+  Element *-- DataPipe
+  Element o-- DataPipe
+  ElementManager *-- Element
+  ElementManager *-- Module
+  Engine *-- ElementManager
+  ElementManager o-- ElementFactory 
+  Element <|-- DecoderElement
+  Element <|-- ActionElement
+  ActionElement *-- AlgorithmApi
+  ActionElement o-- AlgorithmApiFactory
+  DecoderElement *-- MultiMediaApi
+  DecoderElement o-- MultiMediaApiFactory
+  
+```
+
+Algorithm:
+
+```mermaid
+classDiagram
+
+class Inference{
+      <<interface>>
+      + init(algorithm::Context& context)
+      + predict(algorithm::Context& context)
+      + uninit()
+    }
+
+    class PreProcess{
+      + preProcess(algorithm::Context& context,
+                common::ObjectMetadatas& objectMetadatas)
+    }
+
+    class PostProcess{
+      + init(algorithm::Context& context)
+      + postProcess(algorithm::Context& context,
+                common::ObjectMetadatas& objectMetadatas)
+    }
+
+    class Context{
+      + algorithmName
+      + deviceId
+      + maxBatchSize
+      + numBatch
+      + numClass
+      + modelPath
+      + inputNodeName
+      + inputShape
+      + outputNodeName
+      + outputShape
+      + numInputs
+      + numOutputs
+      + threthold
+      + labelNames
+      + data
+      + init(const std::string&)
+    }
+    class SophonContext {
+      + std::vector<BM_OUTPUT_T*> result
+      + bm_handle* handle
+      + init(const std::string& json)
+    }
+
+    class AlgorithmApi {
+      <<interface>>
+      + init(const std::string& side,
+                                    int deviceId,
+                                    const std::string& json)
+      + process(common::ObjectMetadatas& objectMetadatas)
+      + uninit()
+    }
+
+    class Algorithm{
+      + init(const std::string& side,
+                        int deviceId,
+                        const std::string& json)
+      + process(common::ObjectMetadatas& objectMetadatas)
+      + uninit()
+
+      - mContext
+      - mPreProcess
+      - mInference
+      - mPostProcess
+      - mAgency
+    }
+
+    class AlgorithmFactorySelector{
+      <<Singleton>>
+      + setAlgoritemFactoryFetcher(const std::string& side,
+                                  const std::string& algorithmName,
+                                  AlgorithmFactoryFetcher algorithmFactoryFetcher)
+      + fetch(const std::string& side,
+                                      const std::string& algorithmName)
+
+      - mAlgorithmFactoryFetcherMapMap
+    }
+
+    class AlgorithmFactory{
+      + makeContext()
+      + makePreProcess()
+      + makeInference()
+      + makePostProcess()
+    }
+
+    class YoloV5Factory{
+      + makeContext()
+      + makePreProcess()
+      + makeInference()
+      + makePostProcess()
+    }
+    class CrnnFactory{
+      + makeContext()
+      + makePreProcess()
+      + makeInference()
+      + makePostProcess()
+    }
+
+    class YoloV5Pre{
+      + preProcess(algorithm::Context& context,
+          common::ObjectMetadatas& objectMetadatas)
+    }
+    class CrnnPre{
+      + preProcess(algorithm::Context& context,
+          common::ObjectMetadatas& objectMetadatas)
+    }
+
+    class YoloV5Inference{
+      + preProcess(algorithm::Context& context,
+          common::ObjectMetadatas& objectMetadatas)
+    }
+    class CrnnInference{
+      + preProcess(algorithm::Context& context,
+          common::ObjectMetadatas& objectMetadatas)
+    }
+
+    class YoloV5Post{
+      + preProcess(algorithm::Context& context,
+          common::ObjectMetadatas& objectMetadatas)
+    }
+    class CrnnPost{
+      + preProcess(algorithm::Context& context,
+          common::ObjectMetadatas& objectMetadatas)
+    }
+
+    class AlgorithmFactory{
+      + makeContext()
+      + makePreProcess()
+      + makeInference()
+      + makePostProcess()
+    }
+
+    class YoloV5Factory{
+      + makeContext()
+      + makePreProcess()
+      + makeInference()
+      + makePostProcess()
+    }
+    class CrnnFactory{
+      + makeContext()
+      + makePreProcess()
+      + makeInference()
+      + makePostProcess()
+    }
+
+    class AlgorithmFactorySelector
+    AlgorithmApi  <|-- Algorithm
+    Algorithm *-- Context
+    Algorithm *-- Inference
+    Algorithm *-- PreProcess
+    Algorithm *-- PostProcess
+    PreProcess <|-- YoloV5Pre
+    PreProcess <|-- CrnnPre
+    Inference <|-- YoloV5Inference
+    Inference <|-- CrnnInference
+    PostProcess <|-- YoloV5Post
+    PostProcess <|-- CrnnPost
+    AlgorithmFactory <|-- YoloV5Factory
+    AlgorithmFactory <|-- CrnnFactory
+    Context <|-- SophonContext
+    Algorithm o-- AlgorithmFactorySelector
+    AlgorithmFactory o-- AlgorithmFactorySelector
+```
 
 为了支持ObjectMetadata，需要将检测和识别做成通用可配置的。ActionElement使用AlgorithmApi实现以ObjectMetadatas作为输入和输出的通用检测和识别。
 
