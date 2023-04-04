@@ -108,3 +108,45 @@ nlohmann::json makeConnectConfig(int srcId,int srcPort,int dstId,int dstPort) {
     connectConf["dst_port"] = dstPort;
     return connectConf;
 }
+
+nlohmann::json makeTrackerConfig(const std::string & sharedObject,
+                                const std::string & name,
+                                const std::string & algorithmName,
+                                int maxBatchSize,
+                                int topN,
+                                float iou,
+                                int maxAge,
+                                int minHins,
+                                int updateTimes,
+                                int baseTimes,
+                                float areaThresholds,
+                                float lowBound,
+                                float upBound,
+                                float qualityWidth,
+                                float qualityHeight,
+                                float margin,
+                                float maxScore,
+                                float latertalSide)
+{
+    nlohmann::json trackJson;
+    trackJson["shared_object"] = sharedObject;
+    trackJson["name"] = name;
+    trackJson["algorithm_name"] = algorithmName;
+    trackJson["max_batchsize"] = maxBatchSize;
+    trackJson["track_TopN"] = topN;
+    trackJson["track_Iou"] = iou;
+    trackJson["track_MaxAge"] = maxAge;
+    trackJson["track_MinHins"] = minHins;
+    trackJson["track_UpdateTimes"] = updateTimes;
+    trackJson["track_BaseTimes"] = baseTimes;
+    trackJson["quality_ta"] = areaThresholds;
+    trackJson["quality_trl"] = lowBound;
+    trackJson["quality_tru"] = upBound;
+    trackJson["quality_w"] = qualityWidth;
+    trackJson["quality_h"] = qualityHeight;
+    trackJson["quality_mg"] = margin;
+    trackJson["quality_maxSc"] = maxScore;
+    trackJson["quality_ls"] = latertalSide;
+
+    return trackJson;
+}
