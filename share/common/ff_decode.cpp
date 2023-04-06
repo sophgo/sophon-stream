@@ -1,14 +1,3 @@
-//===----------------------------------------------------------------------===//
-//
-// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
-//
-// SOPHON-DEMO is licensed under the 2-Clause BSD License except for the
-// third-party components.
-//
-//===----------------------------------------------------------------------===//
-/*
- * This is a wrapper header of BMruntime & BMCV, aiming to simplify user's program.
- */
 #include "ff_decode.hpp"
 #include <unistd.h>
 #include <iostream>
@@ -376,7 +365,7 @@ bm_status_t avframe_to_bm_image(bm_handle_t &handle, AVFrame *in, bm_image *out,
             bmcv_image_vpp_convert(handle, 1, tmp, out, &crop_rect);
         }
         bm_image_detach(tmp);
-        
+
         if (!data_on_device_mem)
         {
             bm_free_device(handle, input_addr[0]);
@@ -548,9 +537,13 @@ AVFrame *VideoDecFFM::grabFrame()
 
                 continue;
             }
-            av_log(video_dec_ctx, AV_LOG_ERROR, "av_read_frame ret(%d) maybe eof...\n", ret);
-            quit_flag = true;
-            return NULL;
+            else if (ret == AVERROR_EOF)
+            {
+                std::cout << " eof!~! " << std::endl;
+                av_log(video_dec_ctx, AV_LOG_ERROR, "av_read_frame ret(%d) maybe eof...\n", ret);
+                quit_flag = true;
+                return NULL;
+            }
         }
 
         if (pkt.stream_index != video_stream_idx)
@@ -623,8 +616,11 @@ void *VideoDecFFM::vidPushImage()
 
         bm_image *img = new bm_image;
         AVFrame *avframe = grabFrame();
-        if (quit_flag)
+        if (quit_flag){
+            delete img;
+            img = nullptr;
             break;
+        }
         avframe_to_bm_image(*(this->handle), avframe, img, false);
 
         std::lock_guard<std::mutex> my_lock_guard(lock);
@@ -638,7 +634,10 @@ bm_image *VideoDecFFM::grab()
     while (queue.empty())
     {
         if (quit_flag)
+        {
+            std::cout << " quit flag is true! " << std::endl;
             return nullptr;
+        }
         usleep(500);
     }
     bm_image *bm_img;

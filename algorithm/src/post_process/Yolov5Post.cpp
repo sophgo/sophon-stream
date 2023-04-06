@@ -103,6 +103,7 @@ void Yolov5Post::postProcess(algorithm::Context& context,
             for(int batch_idx = 0; batch_idx < pSophgoContext->max_batch; ++ batch_idx)
             {
                 yolobox_vec.clear();
+                if(pSophgoContext->mEndOfStream) continue;
                 int frame_width = pSophgoContext->m_frame_w;
                 int frame_height = pSophgoContext->m_frame_h;
 

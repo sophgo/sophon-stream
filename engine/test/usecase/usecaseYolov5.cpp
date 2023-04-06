@@ -137,59 +137,61 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         IVS_DEBUG("data output 111111111111111");
         auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
         if(objectMetadata==nullptr) return;
+        if(objectMetadata->mFrame->mEndOfStream)
+        {
+          cv.notify_one();
+          return;
+        }
 
-                  int width = objectMetadata->mFrame->mWidth;
-                  int height = objectMetadata->mFrame->mHeight;
-                  // 转格式
-                  sophon_stream::common::FormatType format_type_stream = objectMetadata->mFrame->mFormatType;
-                  sophon_stream::common::DataType data_type_stream = objectMetadata->mFrame->mDataType;
-                  bm_image_format_ext format_type_bmcv = sophon_stream::common::format_stream2bmcv(format_type_stream);
-                  bm_image_data_format_ext data_type_bmcv = sophon_stream::common::data_stream2bmcv(data_type_stream);
-                  // 转成bm_image
-                  bm_image image;
-                  bm_image_create(objectMetadata->mFrame->mHandle, height, width, format_type_bmcv, 
-                  data_type_bmcv, &image);
-                  bm_image_attach(image, objectMetadata->mFrame->mData.get());
+        int width = objectMetadata->mFrame->mWidth;
+        int height = objectMetadata->mFrame->mHeight;
+        // 转格式
+        sophon_stream::common::FormatType format_type_stream = objectMetadata->mFrame->mFormatType;
+        sophon_stream::common::DataType data_type_stream = objectMetadata->mFrame->mDataType;
+        bm_image_format_ext format_type_bmcv = sophon_stream::common::format_stream2bmcv(format_type_stream);
+        bm_image_data_format_ext data_type_bmcv = sophon_stream::common::data_stream2bmcv(data_type_stream);
+        // 转成bm_image
+        bm_image image;
+        bm_image_create(objectMetadata->mFrame->mHandle, height, width, format_type_bmcv, 
+        data_type_bmcv, &image);
+        bm_image_attach(image, objectMetadata->mFrame->mData.get());
 
-                  bm_image imageStorage;
-                  bm_image_create(objectMetadata->mFrame->mHandle, height, width, FORMAT_YUV420P, image.data_type, &imageStorage);
-                  bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image, &imageStorage);
-                  bm_image_destroy(image);
-                
-                for (auto subObj : objectMetadata->mSubObjectMetadatas) {
-                  
-      #if DEBUG
-                  cout << "  class id=" << bbox.class_id << ", score = " << bbox.score << " (x=" << bbox.x << ",y=" << bbox.y << ",w=" << bbox.width << ",h=" << bbox.height << ")" << endl;
-      #endif
-                  // draw image
-                  draw_bmcv(objectMetadata->mFrame->mHandle, subObj->mDetectedObjectMetadata->mClassify, coco_classnames,
-                  subObj->mDetectedObjectMetadata->mScores[0], subObj->mDetectedObjectMetadata->mBox.mX,
-                   subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
-                    subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage,true);
-
-                }
-#if 1
-              IVS_DEBUG("data output 666");
-                // save image
-                void* jpeg_data = NULL;
-                size_t out_size = 0;
-                int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, &imageStorage, &jpeg_data, &out_size);
-                if (ret == BM_SUCCESS) {
-                  std::string img_file = "a.jpg";
-                  FILE *fp = fopen(img_file.c_str(), "wb");
-                  fwrite(jpeg_data, out_size, 1, fp);
-                  fclose(fp);
-                }
-                free(jpeg_data);
-                bm_image_destroy(imageStorage);
-
+        bm_image imageStorage;
+        bm_image_create(objectMetadata->mFrame->mHandle, height, width, FORMAT_YUV420P, image.data_type, &imageStorage);
+        bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image, &imageStorage);
+        bm_image_destroy(image);
+      
+      for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+        
+#if DEBUG
+        cout << "  class id=" << bbox.class_id << ", score = " << bbox.score << " (x=" << bbox.x << ",y=" << bbox.y << ",w=" << bbox.width << ",h=" << bbox.height << ")" << endl;
 #endif
-    
+        // draw image
+        draw_bmcv(objectMetadata->mFrame->mHandle, subObj->mDetectedObjectMetadata->mClassify, coco_classnames,
+        subObj->mDetectedObjectMetadata->mScores[0], subObj->mDetectedObjectMetadata->mBox.mX,
+          subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
+          subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage,true);
+      }
+#if 1
+      IVS_DEBUG("data output 666");
+        // save image
+        void* jpeg_data = NULL;
+        size_t out_size = 0;
+        int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, &imageStorage, &jpeg_data, &out_size);
+        if (ret == BM_SUCCESS) {
+          std::string img_file = "a.jpg";
+          FILE *fp = fopen(img_file.c_str(), "wb");
+          fwrite(jpeg_data, out_size, 1, fp);
+          fclose(fp);
+        }
+        free(jpeg_data);
+        bm_image_destroy(imageStorage);
+#endif
     });
 
     nlohmann::json decodeConfigure;
     decodeConfigure["channel_id"] = 1;
-    decodeConfigure["url"] = "../test/out.avi";
+    decodeConfigure["url"] = "../test/test_car_person_1080P.mp4";
     //decodeConfigure["url"] = "../test/13.mp4";
     //decodeConfigure["url"] = "../test/18.mp4";
     decodeConfigure["resize_rate"] = 2.0f;
@@ -210,4 +212,5 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         std::unique_lock<std::mutex> uq(mtx);
         cv.wait(uq);
     }
+    usleep(1000000);
 }

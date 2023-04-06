@@ -11,23 +11,38 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
     common::ObjectMetadatas& objectMetadatas) {
         context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
         std::vector<bm_image> images;
-        for(auto& objMetadata:objectMetadatas){
-            pSophgoContext->m_frame_w = objMetadata->mFrame->mWidth;
-            pSophgoContext->m_frame_h = objMetadata->mFrame->mHeight;
-            int width = objMetadata->mFrame->mWidth;
-            int height = objMetadata->mFrame->mHeight;
-            std::shared_ptr<void> data = objMetadata->mFrame->mData;
-            // 转格式
-            sophon_stream::common::FormatType format_type_stream = objMetadata->mFrame->mFormatType;
-            sophon_stream::common::DataType data_type_stream = objMetadata->mFrame->mDataType;
-            bm_image_format_ext format_type_bmcv = common::format_stream2bmcv(format_type_stream);
-            bm_image_data_format_ext data_type_bmcv = common::data_stream2bmcv(data_type_stream);
-            // 转成bm_image
+        for(auto& objMetadata:objectMetadatas)
+        {
             bm_image image;
-            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, data_type_bmcv, &image);
-            bm_image_attach(image, objMetadata->mFrame->mData.get());
+            if(objMetadata->mFrame->mEndOfStream)
+            {
+                pSophgoContext->mEndOfStream = objMetadata->mFrame->mEndOfStream;
+                auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
+                pSophgoContext->m_frame_h = tensor->get_shape()->dims[2];
+                pSophgoContext->m_frame_w = tensor->get_shape()->dims[3];
+                bm_image_create(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_frame_h, pSophgoContext->m_frame_w, 
+                    FORMAT_RGB_PLANAR, DATA_TYPE_EXT_1N_BYTE, &image);
+                bm_image_alloc_dev_mem(image);
+            }
+            else
+            {
+                pSophgoContext->m_frame_w = objMetadata->mFrame->mWidth;
+                pSophgoContext->m_frame_h = objMetadata->mFrame->mHeight;
+                int width = objMetadata->mFrame->mWidth;
+                int height = objMetadata->mFrame->mHeight;
+                std::shared_ptr<void> data = objMetadata->mFrame->mData;
+                // 转格式
+                sophon_stream::common::FormatType format_type_stream = objMetadata->mFrame->mFormatType;
+                sophon_stream::common::DataType data_type_stream = objMetadata->mFrame->mDataType;
+                bm_image_format_ext format_type_bmcv = common::format_stream2bmcv(format_type_stream);
+                bm_image_data_format_ext data_type_bmcv = common::data_stream2bmcv(data_type_stream);
+                // 转成bm_image
+                bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, data_type_bmcv, &image);
+                bm_image_attach(image, objMetadata->mFrame->mData.get());
+            }
             images.push_back(image);
-            std::cout<< "format type is : "<<static_cast<int>(format_type_bmcv)<<std::endl;
+
+            // std::cout<< "format type is : "<<static_cast<int>(format_type_bmcv)<<std::endl;
             // static int a = 0;
             // char szpath[256] = {0}; 
             // sprintf(szpath,"out%d.bmp",a);
@@ -145,6 +160,10 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             if(need_copy) bm_image_destroy(image_aligned);
         }
         
+        if(0==image_n){
+            std::cout<<" image n is 0! "<<std::endl;
+            return common::ErrorCode::SUCCESS;
+        }
         //2. converto
         ret = bmcv_image_convert_to(pSophgoContext->m_bmContext->handle(), image_n, 
         pSophgoContext->converto_attr, pSophgoContext->m_resized_imgs.data(), pSophgoContext->m_converto_imgs.data());
@@ -156,6 +175,10 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
         bm_image_get_contiguous_device_mem(image_n, pSophgoContext->m_converto_imgs.data(), &input_dev_mem);
         input_tensor->set_device_mem(&input_dev_mem);
         input_tensor->set_shape_by_dim(0, image_n);  // set real batch number
+
+        for(int i = 0; i < image_n; ++i) {
+            bm_image_destroy(images[i]);
+        }
 
         return common::ErrorCode::SUCCESS;
     }

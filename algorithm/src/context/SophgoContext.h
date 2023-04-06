@@ -42,6 +42,7 @@ struct SophgoContext :public Context {
     int output_num;
     int min_dim;
     bmcv_convert_to_attr converto_attr;
+    bool mEndOfStream = false;
     
 };
 } // namespace context

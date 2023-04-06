@@ -81,7 +81,9 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
  */
 common::ErrorCode Yolov5Inference::predict(algorithm::Context& context) {
   context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
-  int ret = pSophgoContext->m_bmNetwork->forward();
+  int ret = 0;
+  if(!pSophgoContext->mEndOfStream) 
+    ret = pSophgoContext->m_bmNetwork->forward();
   return static_cast<common::ErrorCode>(ret);
 }
 
