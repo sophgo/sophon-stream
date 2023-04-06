@@ -43,9 +43,13 @@ link_libraries(Logger)
 add_library(algorithmApi SHARED
     src/post_process/NoopPostprocess.cpp
     src/post_process/Yolov5Post.cpp
+    src/post_process/UnetPost.cpp
     src/pre_process/Yolov5Pre.cpp
+    src/pre_process/UnetPre.cpp
     src/pre_process/HostEncodePre.cpp
+    src/pre_process/tracker/HungarianState.cpp
     src/inference/Yolov5Inference.cpp
+    src/inference/UnetInference.cpp
     src/inference/NoopInference.cpp
     src/factory/Yolov5Factory.cpp
     src/factory/HostEncodeFactory.cpp

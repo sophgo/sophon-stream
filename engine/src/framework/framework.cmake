@@ -14,12 +14,18 @@ add_library(framework
         src/framework/PostModuleElement.cpp
         )
 link_libraries(framework)
+
+# aux_source_directory(elements /src/element/)
+# add_library(derivedelement elements)
+
 add_library(derivedelement
     src/element/ActionElement.h
     src/element/ActionElement.cpp
     src/element/DecoderElement.h
     src/element/DecoderElement.cpp
     src/element/ReportElement.cpp
+    src/element/TrackerElement.h
+    src/element/TrackerElement.cpp
     )
 link_libraries(derivedelement)
 
