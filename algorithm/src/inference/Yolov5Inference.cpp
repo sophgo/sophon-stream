@@ -2,6 +2,7 @@
 #include "Yolov5Inference.h"
 #include <fstream>
 #include "../context/SophgoContext.h"
+#include "common/Clocker.h"
 
 namespace sophon_stream {
 namespace algorithm {
@@ -80,10 +81,12 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
  * @param[in] context: inputData and outputDat
  */
 common::ErrorCode Yolov5Inference::predict(algorithm::Context& context) {
+  Clocker clocker;
   context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
   int ret = 0;
   if(!pSophgoContext->mEndOfStream) 
     ret = pSophgoContext->m_bmNetwork->forward();
+    std::cout<<"yolov5 inference cost: "<<clocker.tell_us()<<std::endl;
   return static_cast<common::ErrorCode>(ret);
 }
 

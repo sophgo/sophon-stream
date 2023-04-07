@@ -54,15 +54,14 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
         if(objectMetadata == nullptr)   return;
 
         if(objectMetadata->mSegmentedObjectMetadatas[0]->mFrame != nullptr && 
-            objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mData != nullptr)
+            objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mSpData != nullptr)
         {
 
             int width = objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mWidth;
             int height = objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mHeight;
             // 转成bm_image
-            bm_image image1;
-            bm_image_create(objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mHandle, height, width, FORMAT_GRAY, DATA_TYPE_EXT_1N_BYTE, &image1);
-            bm_image_attach(image1, objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mData.get());
+            bm_image image1 = *objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mSpData;
+            
             static int idx = 0;
             char szpath[256] = {0}; 
             sprintf(szpath,"UnetResultyyy%d.bmp",idx);

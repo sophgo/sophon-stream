@@ -27,19 +27,19 @@ common::ErrorCode UnetPre::preProcess(algorithm::Context& context,
             int width = objectMetadatas[i]->mFrame->mWidth;
             int height = objectMetadatas[i]->mFrame->mHeight;
             // 转格式
-            sophon_stream::common::FormatType format_type_stream = objectMetadatas[i]->mFrame->mFormatType;
-            sophon_stream::common::DataType data_type_stream = objectMetadatas[i]->mFrame->mDataType;
-            bm_image_format_ext format_type_bmcv = common::format_stream2bmcv(format_type_stream);
-            bm_image_data_format_ext data_type_bmcv = common::data_stream2bmcv(data_type_stream);
+            // sophon_stream::common::FormatType format_type_stream = objectMetadatas[i]->mFrame->mFormatType;
+            // sophon_stream::common::DataType data_type_stream = objectMetadatas[i]->mFrame->mDataType;
+            // bm_image_format_ext format_type_bmcv = common::format_stream2bmcv(format_type_stream);
+            // bm_image_data_format_ext data_type_bmcv = common::data_stream2bmcv(data_type_stream);
             // 转成bm_image
-            bm_image image1;
-            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, data_type_bmcv, &image1);
-            bm_image_attach(image1, objectMetadatas[i]->mFrame->mData.get());
+            // bm_image image1 = *objectMetadatas[i]->mFrame->mSpData;
+            // bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, data_type_bmcv, &image1);
+            // bm_image_attach(image1, objectMetadatas[i]->mFrame->mSpData.get());
 
             // BGR_PACKED转PLANAR
             bm_image image;
-            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, FORMAT_BGR_PLANAR, data_type_bmcv, &image);
-            bmcv_image_storage_convert(pSophgoContext->m_bmContext->handle(), 1, &image1, &image);
+            bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &image);
+            bmcv_image_storage_convert(pSophgoContext->m_bmContext->handle(), 1, objectMetadatas[i]->mFrame->mSpData.get(), &image);
 
             bm_image image_aligned;
             bool need_copy = image.width & (64-1);
@@ -51,7 +51,7 @@ common::ErrorCode UnetPre::preProcess(algorithm::Context& context,
                 stride2[1] = FFALIGN(stride1[1], 64);
                 stride2[2] = FFALIGN(stride1[2], 64);
                 bm_image_create(pSophgoContext->m_bmContext->handle(), image.height, image.width, 
-                                FORMAT_BGR_PLANAR, data_type_bmcv, &image_aligned, stride2);
+                                FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &image_aligned, stride2);
                 bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
                 bmcv_copy_to_atrr_t copyToAttr;
                 memset(&copyToAttr, 0, sizeof(copyToAttr));

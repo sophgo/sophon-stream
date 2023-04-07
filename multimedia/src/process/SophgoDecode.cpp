@@ -65,42 +65,33 @@ common::ErrorCode SophgoDecode::process(multimedia::Context& context,
     context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
     if(pSophgoContext==nullptr) return (common::ErrorCode)(-1);
 
-    // int flags = 0;
-    // AVPacket* pkt = nullptr;
-    // double timeStamp = 0.0;
-
     objectMetadata = std::make_shared<common::ObjectMetadata>();
-    bm_image *img = decoder.grab();
+    //bm_image *img = decoder.grab();
+    int eof = 0;
+    std::shared_ptr<bm_image> spBmImage = decoder.grab(eof);
 
-    // static int a = 0;
-    // char szpath[256] = {0}; 
-    // sprintf(szpath,"out%d.bmp",a);
-    // std::string strPath(szpath);
-    // bm_image_write_to_bmp(*img, strPath.c_str());
-    // a++;
     objectMetadata->mFrame = std::make_shared<common::Frame>();
-    objectMetadata->mFrame->mHandle = m_handle;
-    objectMetadata->mFrame->mData.reset(new bm_device_mem_t, [&](bm_device_mem_t* p){
-            bm_free_device(objectMetadata->mFrame->mHandle, *p);
-            delete p;
-        });
     
-    if(img==nullptr){
-        std::cout<<" img is null! "<<std::endl;
+    objectMetadata->mFrame->mSpData = spBmImage;
+
+    objectMetadata->mFrame->mHandle = m_handle;
+    if(1==eof){
+        std::cout<<" last frame! "<<std::endl;
         objectMetadata->mFrame->mEndOfStream = true;
+        return common::ErrorCode::STREAM_END;
     }
     else{
-        bm_image2Frame(objectMetadata->mFrame,*img);
-        bm_malloc_device_byte(m_handle, objectMetadata->mFrame->mData.get(), objectMetadata->mFrame->mHeight
-            * objectMetadata->mFrame->mWidth * objectMetadata->mFrame->mChannel * sizeof(float));
-        bm_device_mem_t srcbm[3];
-        bm_image_get_device_mem(*img,srcbm);
-        bm_memcpy_d2d_byte(m_handle, *(objectMetadata->mFrame->mData), 0,srcbm[0],0,objectMetadata->mFrame->mHeight
-           * objectMetadata->mFrame->mWidth * objectMetadata->mFrame->mChannel * sizeof(float));
+        bm_image2Frame(objectMetadata->mFrame,*spBmImage);
+        // bm_malloc_device_byte(m_handle, objectMetadata->mFrame->mSpData->mData.get(), objectMetadata->mFrame->mHeight
+        //     * objectMetadata->mFrame->mWidth * objectMetadata->mFrame->mChannel * sizeof(float));
+        // bm_device_mem_t srcbm[3];
+        // bm_image_get_device_mem(*img,srcbm);
+        // bm_memcpy_d2d_byte(m_handle, *(objectMetadata->mFrame->mSpData->mData), 0,srcbm[0],0,objectMetadata->mFrame->mHeight
+        //    * objectMetadata->mFrame->mWidth * objectMetadata->mFrame->mChannel * sizeof(float));
         
-        bm_image_destroy(*img);
-            delete img;
-        img = nullptr;
+        // bm_image_destroy(*img);
+        //     delete img;
+        // img = nullptr;
     }
     return common::ErrorCode::SUCCESS;
 }

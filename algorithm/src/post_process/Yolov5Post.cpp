@@ -2,6 +2,7 @@
 #include "../context/SophgoContext.h"
 #include "common/Logger.h"
 #include "common/type_trans.hpp"
+#include "common/Clocker.h"
 
 namespace sophon_stream {
 namespace algorithm {
@@ -92,6 +93,7 @@ void draw_bmcv(bm_handle_t &&handle, int classId, float conf, int left, int top,
 
 void Yolov5Post::postProcess(algorithm::Context& context,
         common::ObjectMetadatas& objectMetadatas) {
+          Clocker clocker;
             context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
              YoloV5BoxVec yolobox_vec;
             std::vector<cv::Rect> bbox_vec;
@@ -253,52 +255,8 @@ void Yolov5Post::postProcess(algorithm::Context& context,
               objectMetadatas[batch_idx]->mSubObjectMetadatas.push_back(spObjData);
             }
             
-#if 0            
-                  int width = objectMetadatas[batch_idx]->mFrame->mWidth;
-                  int height = objectMetadatas[batch_idx]->mFrame->mHeight;
-                  std::shared_ptr<void> data = objectMetadatas[batch_idx]->mFrame->mData;
-                  // 转格式
-                  sophon_stream::common::FormatType format_type_stream = objectMetadatas[batch_idx]->mFrame->mFormatType;
-                  sophon_stream::common::DataType data_type_stream = objectMetadatas[batch_idx]->mFrame->mDataType;
-                  bm_image_format_ext format_type_bmcv = common::format_stream2bmcv(format_type_stream);
-                  bm_image_data_format_ext data_type_bmcv = common::data_stream2bmcv(data_type_stream);
-                  // 转成bm_image
-                  bm_image image;
-                  bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, format_type_bmcv, 
-                  data_type_bmcv, &image);
-                  bm_image_attach(image, objectMetadatas[batch_idx]->mFrame->mData.get());
-
-
-                  bm_image imageStorage;
-                  bm_image_create(pSophgoContext->m_bmContext->handle(), height, width, FORMAT_YUV420P, image.data_type, &imageStorage);
-                  bmcv_image_storage_convert(pSophgoContext->m_bmContext->handle(), 1, &image, &imageStorage);
-                  bm_image_destroy(image);
-                
-                for (auto bbox : yolobox_vec) {
-      #if DEBUG
-                  cout << "  class id=" << bbox.class_id << ", score = " << bbox.score << " (x=" << bbox.x << ",y=" << bbox.y << ",w=" << bbox.width << ",h=" << bbox.height << ")" << endl;
-      #endif
-                  // draw image
-                  draw_bmcv(pSophgoContext->m_bmContext->handle(), bbox.class_id, bbox.score, bbox.x, bbox.y, bbox.width, bbox.height, imageStorage);
-
-                }
-
-                // save image
-                void* jpeg_data = NULL;
-                size_t out_size = 0;
-                int ret = bmcv_image_jpeg_enc(pSophgoContext->m_bmContext->handle(), 1, &imageStorage, &jpeg_data, &out_size);
-                if (ret == BM_SUCCESS) {
-                  std::string img_file = "a.jpg";
-                  FILE *fp = fopen(img_file.c_str(), "wb");
-                  fwrite(jpeg_data, out_size, 1, fp);
-                  fclose(fp);
-                }
-                free(jpeg_data);
-                bm_image_destroy(imageStorage);
-#endif              
-
-                //detected_boxes.push_back(yolobox_vec);
             }
+            std::cout<<"yolov5 post cost: "<<clocker.tell_us()<<std::endl;
         }
 
 

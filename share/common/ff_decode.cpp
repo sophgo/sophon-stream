@@ -512,7 +512,7 @@ int VideoDecFFM::openCodecContext(int *stream_idx, AVCodecContext **dec_ctx, AVF
     return 0;
 }
 
-AVFrame *VideoDecFFM::grabFrame()
+AVFrame *VideoDecFFM::grabFrame(int& eof)
 {
     int ret = 0;
     int got_frame = 0;
@@ -533,15 +533,16 @@ AVFrame *VideoDecFFM::grabFrame()
                     av_log(video_dec_ctx, AV_LOG_WARNING, "av_read_frame failed ret(%d) retry time >60s.\n", ret);
                     break;
                 }
-                usleep(10 * 1000);
+                //usleep(10 * 1000);
 
                 continue;
             }
-            else if (ret == AVERROR_EOF)
+            else if (ret == AVERROR_EOF&&pkt.stream_index == video_stream_idx)
             {
                 std::cout << " eof!~! " << std::endl;
                 av_log(video_dec_ctx, AV_LOG_ERROR, "av_read_frame ret(%d) maybe eof...\n", ret);
                 quit_flag = true;
+                eof = 1;
                 return NULL;
             }
         }
@@ -610,12 +611,13 @@ void *VideoDecFFM::vidPushImage()
             }
             else
             {
-                usleep(2000);
+                //usleep(2000);
             }
         }
 
         bm_image *img = new bm_image;
-        AVFrame *avframe = grabFrame();
+        int eof = 0;
+        AVFrame *avframe = grabFrame(eof);
         if (quit_flag){
             delete img;
             img = nullptr;
@@ -629,6 +631,18 @@ void *VideoDecFFM::vidPushImage()
     return NULL;
 }
 
+std::shared_ptr<bm_image> VideoDecFFM::grab(int& eof){
+    std::shared_ptr<bm_image> spBmImage = nullptr;
+    AVFrame *avframe = grabFrame(eof);
+    if(1==eof) return spBmImage;
+    spBmImage.reset(new bm_image,[&](bm_image* p){
+                bm_image_destroy(*p);delete p;p=nullptr;});
+    
+    avframe_to_bm_image(*(this->handle), avframe, spBmImage.get(), false);
+
+    return spBmImage;
+}
+
 bm_image *VideoDecFFM::grab()
 {
     while (queue.empty())
@@ -638,7 +652,7 @@ bm_image *VideoDecFFM::grab()
             std::cout << " quit flag is true! " << std::endl;
             return nullptr;
         }
-        usleep(500);
+        //usleep(500);
     }
     bm_image *bm_img;
     {

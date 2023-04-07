@@ -373,7 +373,7 @@ class TrackerChannel {
 
             cv::Rect2f &&rectTracker = iter->getState();
 
-            if (frameMetdata->mFrame->mData == nullptr) {
+            if (frameMetdata->mFrame->mSpData == nullptr) {
                 if (frameMetdata->mFrame->mEndOfStream) {
 
                     TransTrack2Output::transTrack2Output(iter->getTrackObject(), iter->getTrackId(), fc, mTopN,

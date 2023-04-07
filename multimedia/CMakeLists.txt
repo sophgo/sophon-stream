@@ -13,8 +13,9 @@ if(GPU_VERSION)
     set(CMAKE_CUDA_STANDARD 11)
 endif(GPU_VERSION)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage")
-SET(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs")
+#SET(CMAKE_BUILD_TYPE "Debug")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
@@ -76,7 +77,6 @@ target_link_libraries(multiMediaApi ${FFMPEG_LIBS}
     ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 
 enable_testing()
-set(CMAKE_BUILD_TYPE Debug)
 
 # unit tests
 file(GLOB TEST_SOURCES  test/unitcase/*.cpp test/unitcase/*.c)

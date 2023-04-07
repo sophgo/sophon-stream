@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <memory>
 #include "bmlib_runtime.h"
+#include "bmcv_api.h"
+#include "bmcv_api_ext.h"
 #include "Rational.h"
 
 namespace sophon_stream {
@@ -22,6 +24,17 @@ enum class FormatType {
 enum class DataType {
     INTEGER, 
     FLOATING_POINT, 
+};
+
+struct SophonData{
+    SophonData(){
+            mData.reset(new bm_device_mem_t, [&](bm_device_mem_t* p){
+                bm_free_device(mHandle, *p);
+                delete p;
+        });
+    }
+    bm_handle_t mHandle;
+    std::shared_ptr<bm_device_mem_t> mData;
 };
 
 struct Frame {
@@ -49,7 +62,7 @@ struct Frame {
             || 0 == mHeight
             || 0 == mHeightStep
             || 0 == mDataSize
-            || !mData;
+            || !mSpData;
     }
 
     int mChannelId;
@@ -70,8 +83,9 @@ struct Frame {
     int mHeight;
     int mHeightStep;
     std::size_t mDataSize;
+    //std::shared_ptr<SophonData> mSpData;
     bm_handle_t mHandle;
-    std::shared_ptr<bm_device_mem_t> mData;
+    std::shared_ptr<bm_image> mSpData;
 };
 
 } // namespace common

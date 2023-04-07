@@ -7,6 +7,7 @@
 #include "common/type_trans.hpp"
 #include "config.h"
 #include <fstream>
+#include "common/Clocker.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -110,14 +111,15 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     ElementsConfigure.push_back(makeDecoderElementConfig(DECODE_ID,"decoder_element","sophgo",0,1,0,false,1, "../lib/libmultiMediaApi.so"));
     ElementsConfigure.push_back(makeElementConfig(REPORT_ID,"report_element","host",0,1,0,false,1, {}));
     nlohmann::json yolov3HeadJson = makeAlgorithmConfig("../lib/libalgorithmApi.so","cocoDetect","Yolov5",
-    { "../models/yolov5.bmodel" },
+   { "../models/yolov5s_int8_4b.bmodel" },
+    // { "../models/yolov5.bmodel" },
     1, { "000_net" }, { 1 }, {{3, 480, 800}},  {"082_convolutional",
                                 "094_convolutional",
                                 "106_convolutional"
                                }, { 3}, {{18, 15, 25},{18, 30, 50},{18,60,100}
     },
     { 0.3,0.4 },coco_classnames.size(),coco_classnames);
-    ElementsConfigure.push_back(makeElementConfig(YOLO_ID, "action_element", "sophgo", 0, 1, 200, false, 1, {yolov3HeadJson}));
+    ElementsConfigure.push_back(makeElementConfig(YOLO_ID, "action_element", "sophgo", 0, 1, 200, false, 4, {yolov3HeadJson}));
     nlohmann::json encodeJson = makeEncodeConfig("../lib/libalgorithmApi.so","","encode_picture",1);
     ElementsConfigure.push_back(makeElementConfig(ENCODE_ID,"action_element","host",0,1,200,true,1, {encodeJson}));
 
@@ -132,17 +134,30 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
     engine.addGraph(graphConfigure.dump());
 
+    sophon_stream::Clocker clocker;
+    unsigned long long frameCount = 0;
+
     engine.setDataHandler(1,REPORT_ID,0,[&](std::shared_ptr<void> data) {
 
         IVS_DEBUG("data output 111111111111111");
         auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
         if(objectMetadata==nullptr) return;
+        frameCount++;
+        std::cout<<"frame count is "<<frameCount<<std::endl;
+                  long totalCost = clocker.tell_us();
+          std::cout<<" total time cost "<<totalCost<<" us."<<std::endl;
+          double fps = static_cast<double>(frameCount)/totalCost;
+          std::cout<<"frame count is "<<frameCount<<" | fps is "<<fps*1000000<<" fps."<<std::endl;
         if(objectMetadata->mFrame->mEndOfStream)
         {
           cv.notify_one();
+          long totalCost = clocker.tell_us();
+          std::cout<<" total time cost "<<totalCost<<" us."<<std::endl;
+          double fps = static_cast<double>(frameCount)/totalCost;
+          std::cout<<"frame count is "<<frameCount<<" | fps is "<<fps*1000000<<" fps."<<std::endl;
           return;
         }
-
+#if 0
         int width = objectMetadata->mFrame->mWidth;
         int height = objectMetadata->mFrame->mHeight;
         // 转格式
@@ -151,15 +166,15 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         bm_image_format_ext format_type_bmcv = sophon_stream::common::format_stream2bmcv(format_type_stream);
         bm_image_data_format_ext data_type_bmcv = sophon_stream::common::data_stream2bmcv(data_type_stream);
         // 转成bm_image
-        bm_image image;
-        bm_image_create(objectMetadata->mFrame->mHandle, height, width, format_type_bmcv, 
-        data_type_bmcv, &image);
-        bm_image_attach(image, objectMetadata->mFrame->mData.get());
+        bm_image image = * objectMetadata->mFrame->mSpData;
+        // bm_image_create(objectMetadata->mFrame->mSpData->mHandle, height, width, format_type_bmcv, 
+        // data_type_bmcv, &image);
+        // bm_image_attach(image, objectMetadata->mFrame->mSpData->mData.get());
 
         bm_image imageStorage;
         bm_image_create(objectMetadata->mFrame->mHandle, height, width, FORMAT_YUV420P, image.data_type, &imageStorage);
         bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image, &imageStorage);
-        bm_image_destroy(image);
+        //bm_image_destroy(image);
       
       for (auto subObj : objectMetadata->mSubObjectMetadatas) {
         
@@ -187,6 +202,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         free(jpeg_data);
         bm_image_destroy(imageStorage);
 #endif
+
+#endif
     });
 
     nlohmann::json decodeConfigure;
@@ -203,6 +220,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     auto channelTask = std::make_shared<sophon_stream::element::ChannelTask>();
     channelTask->request.operation = sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
     channelTask->request.json = decodeConfigure.dump();
+    clocker.reset();
     sophon_stream::common::ErrorCode errorCode = engine.sendData(1,
                                 DECODE_ID,
                                 0,
@@ -212,5 +230,5 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         std::unique_lock<std::mutex> uq(mtx);
         cv.wait(uq);
     }
-    usleep(1000000);
+    //usleep(1000000);
 }
