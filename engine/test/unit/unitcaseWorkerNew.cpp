@@ -19,10 +19,10 @@
 */
 
 /**
-@file unitcaseWorkerNew.cpp
+@file unitcaseElementNew.cpp
 @brief 主程序
 @details
-    WorkerNew单元测试
+    ElementNew单元测试
 
 @author lzw
 @date 2020-06-12
@@ -31,32 +31,32 @@
 */
 
 #include "gtest/gtest.h"
-#include "framework/WorkerNew.h"
-#include "framework/WorkerFactory.h"
+#include "framework/ElementNew.h"
+#include "framework/ElementFactory.h"
 #include "common/Logger.h"
 #include <thread>
 #include <unistd.h>
 #include <map>
 
-using namespace lynxi::ivs::common;
-using namespace lynxi::ivs::framework;
+using namespace sophon_stream::common;
+using namespace sophon_stream::framework;
 
 /**
-@brief WorkerSource类
+@brief ElementSource类
 @details
     继承于Work类，重写了各个函数
 */
 
-class WorkerSource : public Worker {
+class ElementSource : public Element {
   public:
-    WorkerSource() {}
-    ErrorCode initInternal(const std::string& json) override{}
+    ElementSource() {}
+    ErrorCode initInternal(const std::string& json) override{return sophon_stream::common::ErrorCode::SUCCESS;}
     void uninitInternal() override{}
     void onStart()override{
-        IVS_INFO("WorkerSource start...");
+        IVS_INFO("ElementSource start...");
     }
     void onStop()override{
-        IVS_INFO("WorkerSource stop...");
+        IVS_INFO("ElementSource stop...");
     }
     ErrorCode doWork() override  {
 
@@ -67,24 +67,24 @@ class WorkerSource : public Worker {
         return ErrorCode::SUCCESS;
     }
 };
-REGISTER_WORKER("WorkerSource", WorkerSource)
+REGISTER_WORKER("ElementSource", ElementSource)
 
 /**
-@brief WorkerMid类
+@brief ElementMid类
 @details
     继承于Work类，重写了各个函数
 */
 
-class WorkerMid : public Worker {
+class ElementMid : public Element {
   public:
-    WorkerMid() {}
-    ErrorCode initInternal(const std::string& json) override{}
+    ElementMid() {}
+    ErrorCode initInternal(const std::string& json) override{return sophon_stream::common::ErrorCode::SUCCESS;}
     void uninitInternal() override{}
     void onStart()override{
-        IVS_INFO("WorkerMid start...");
+        IVS_INFO("ElementMid start...");
     }
     void onStop()override{
-        IVS_INFO("WorkerMid stop...");
+        IVS_INFO("ElementMid stop...");
     }
     ErrorCode doWork() override {
         auto data = getData(0);
@@ -94,24 +94,24 @@ class WorkerMid : public Worker {
         return ErrorCode::SUCCESS;
     }
 };
-REGISTER_WORKER("WorkerMid", WorkerMid)
+REGISTER_WORKER("ElementMid", ElementMid)
 
 /**
-@brief WorkerSink类
+@brief ElementSink类
 @details
     继承于Work类，重写了各个函数
 */
 
-class WorkerSink: public Worker{
+class ElementSink: public Element{
     public:
-        WorkerSink(){}
-        ErrorCode initInternal(const std::string& json) override{}
+        ElementSink(){}
+        ErrorCode initInternal(const std::string& json) override{return sophon_stream::common::ErrorCode::SUCCESS;}
         void uninitInternal() override{}
         void onStart()override{
-            IVS_INFO("WorkerSink start...");
+            IVS_INFO("ElementSink start...");
         }
         void onStop()override{
-            IVS_INFO("WorkerSink stop...");
+            IVS_INFO("ElementSink stop...");
         }
 
         ErrorCode doWork() override{
@@ -122,25 +122,25 @@ class WorkerSink: public Worker{
             return ErrorCode::SUCCESS;
         }
 };
-REGISTER_WORKER("WorkerSink", WorkerSink)
+REGISTER_WORKER("ElementSink", ElementSink)
 
 /**
-@brief WorkerNew单元测试函数入口
+@brief ElementNew单元测试函数入口
 
-@param [in] TestWorker    测试用例命名
+@param [in] TestElement    测试用例命名
 @param [in] OnepPipeLine  测试命名
 @return void 无返回值
 
 
 @UnitCase_ID
-Worker_UT_0014
+Element_UT_0014
 
 @UnitCase_Name
-unitcaseWorkerNew
+unitcaseElementNew
 
 @UnitCase_Description
-实例化sourceWorker，实例化midWorker，实例化sinkWorker，按顺序连接这三个Worker，设置sinkWorker端口0的回调函数，启动sourceWorker、midWorker和sinkWorker，
-sourceWorker发送数据，sinkWorker接收处理数据，并确认接收数据是否正确，程序运行结束。
+实例化sourceElement，实例化midElement，实例化sinkElement，按顺序连接这三个Element，设置sinkElement端口0的回调函数，启动sourceElement、midElement和sinkElement，
+sourceElement发送数据，sinkElement接收处理数据，并确认接收数据是否正确，程序运行结束。
 
 @UnitCase_Version
 V0.1
@@ -148,45 +148,45 @@ V0.1
 @UnitCase_Precondition
 
 @UnitCase_Input
-TestWorker, OnepPipeLine
+TestElement, OnepPipeLine
 
 @UnitCase_ExpectedResult
-sourceWorker、midWorker和sinkWorker能正常实例化和启动，并按照预定顺序先后连接，sourceWorker正常发送数据，sinkWorker正常接收处理数据，输入输出数据保持一致
+sourceElement、midElement和sinkElement能正常实例化和启动，并按照预定顺序先后连接，sourceElement正常发送数据，sinkElement正常接收处理数据，输入输出数据保持一致
 
 */
 
-TEST(TestWorker, OnepPipeLine) {
-    auto& workerFactory = SingletonWorkerFactory::getInstance();
-    auto workerSource = workerFactory.make("WorkerSource");
-    auto workerMid = workerFactory.make("WorkerMid");
-    auto workerSink = workerFactory.make("WorkerSink");
+TEST(TestElement, OnepPipeLine) {
+    auto& ElementFactory = SingletonElementFactory::getInstance();
+    auto elementSource = ElementFactory.make("ElementSource");
+    auto ElementMid = ElementFactory.make("ElementMid");
+    auto ElementSink = ElementFactory.make("ElementSink");
 
     std::string strResult;
     std::mutex mtx;
     std::condition_variable cv;
 
-    Worker::connect(*workerSource, 0, *workerMid, 0);
-    Worker::connect(*workerMid, 0, *workerSink, 0);
-    workerSink->setDataHandler(0,[&](std::shared_ptr<void> p){
+    Element::connect(*elementSource, 0, *ElementMid, 0);
+    Element::connect(*ElementMid, 0, *ElementSink, 0);
+    ElementSink->setDataHandler(0,[&](std::shared_ptr<void> p){
             int result = *std::static_pointer_cast<int>(p);
             strResult += std::to_string(result);
             if(result==9){
                 cv.notify_one();
             }
             });
-    workerSource->start();
-    workerMid->start();
-    workerSink->start();
+    elementSource->start();
+    ElementMid->start();
+    ElementSink->start();
     for(int i=0;i<10;i++){
         std::shared_ptr<int> data = std::make_shared<int>(i);
-        std::static_pointer_cast<WorkerSource>(workerSource)->pushData(0, data, std::chrono::seconds(4));
+        std::static_pointer_cast<ElementSource>(elementSource)->pushData(0, data, std::chrono::seconds(4));
     }
     {
         std::unique_lock<std::mutex> uq(mtx);
         cv.wait(uq);
     }
-    workerSink->stop();
-    workerMid->stop();
-    workerSource->stop();
+    ElementSink->stop();
+    ElementMid->stop();
+    elementSource->stop();
     EXPECT_EQ(strResult, "0123456789");
 }

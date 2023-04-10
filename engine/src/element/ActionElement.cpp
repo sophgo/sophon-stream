@@ -218,6 +218,18 @@ common::ErrorCode ActionElement::doWork() {
             popData(0);
         }
 
+        // 凑batch
+        if(mPendingObjectMetadatas.size() != 0 && mPendingObjectMetadatas.back()->mFrame->mEndOfStream)
+        {
+            while(mPendingObjectMetadatas.size() < mBatch)
+            {
+                auto ObjectMetadata = std::make_shared<common::ObjectMetadata>();
+                ObjectMetadata->mFrame = std::make_shared<common::Frame>();
+                ObjectMetadata->mFrame->mEndOfStream = true;
+                mPendingObjectMetadatas.push_back(ObjectMetadata);
+            }
+        }
+
         mLastDataCount = getDataCount(0);
 
         errorCode = sendProcessedData();
@@ -251,6 +263,12 @@ common::ErrorCode ActionElement::doWork() {
             return errorCode;
         }
     }
+
+    // if(mProcessedObjectMetadatas.back()->mFrame->mEndOfStream)
+    // {
+    //     uninit();
+    //     return common::ErrorCode::STREAM_END;
+    // }
 
     return common::ErrorCode::SUCCESS;
 }

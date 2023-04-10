@@ -149,7 +149,7 @@ common::ErrorCode DecoderElement::doWork() {
         errorCode = resumeTask(channelOperate);
     }
 
-    sendData(1, channelOperate, std::chrono::milliseconds(200));
+    //sendData(1, channelOperate, std::chrono::milliseconds(200));
     return errorCode;
 }
 

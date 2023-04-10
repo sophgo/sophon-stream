@@ -18,10 +18,10 @@ Logger::Logger(const std::string &path, const std::string &url) {
     // TODO: add log server sink
     std::string address;
     int port = 0;
-    analyseUrl(url, address, port);
-    auto udp_sink = std::make_shared<spdlog::sinks::udp_sink_mt>(address, port);
-    udp_sink->set_pattern("[_service][%n][file]%v");
-    sinks.push_back(udp_sink);
+    // analyseUrl(url, address, port);
+    // auto udp_sink = std::make_shared<spdlog::sinks::udp_sink_mt>(address, port);
+    // udp_sink->set_pattern("[_service][%n][file]%v");
+    // sinks.push_back(udp_sink);
 
     // Use sinks to create logger instance
     auto logger = std::make_shared<spdlog::logger>(LoggerName, sinks.begin(), sinks.end());

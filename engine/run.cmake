@@ -99,6 +99,14 @@ foreach(test_src ${TEST_SOURCES})
     target_link_libraries(${test_name} ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil)
 endforeach(test_src)
 
+# unitcase tests
+file(GLOB TEST_SOURCES test/unit/unitcaseWorkerNew.cpp)
+foreach(test_src ${TEST_SOURCES})
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src})
+    target_link_libraries(${test_name} ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil)
+endforeach(test_src)
+
 #add_library(gpuCode
 #    ../share/common/streamProcess/Resize.cu
 #    ../share/common/streamProcess/yuv2bgr.cu

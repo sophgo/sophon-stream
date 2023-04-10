@@ -44,7 +44,7 @@ Element::Element()
  * Destructor of class Element. 
  */
 Element::~Element() {
-    stop();
+    // stop();
 }
 
 /**
@@ -137,7 +137,7 @@ void Element::uninit() {
     int id = mId;
     IVS_INFO("Uninit start, element id: {0:d}", id);
 
-    stop();
+    // stop();
 
     uninitInternal();
 
