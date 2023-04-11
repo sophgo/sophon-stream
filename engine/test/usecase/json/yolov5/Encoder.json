@@ -1,0 +1,20 @@
+{
+    "configure":{
+        "batch":1,
+        "models":[
+            {
+                "algorithm_name":"encode_picture",
+                "max_batchsize":1,
+                "name":"",
+                "shared_object":"../lib/libalgorithmApi.so"
+            }
+        ]
+    },
+    "device_id":0,
+    "id":0,
+    "milliseconds_timeout":200,
+    "name":"action_element",
+    "repeated_timeout":true,
+    "side":"host",
+    "thread_number":1
+}

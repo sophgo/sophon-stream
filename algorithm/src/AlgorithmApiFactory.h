@@ -9,13 +9,14 @@
 
 namespace sophon_stream {
 namespace algorithm {
+
 /**
  * 算法模块API工厂
  */
 class AlgorithmApiFactory {
-  public:
-    // 新建一个AlgorithmApi对象
+public:
     using AlgorithmApiMaker = std::function<std::shared_ptr<algorithm::AlgorithmApi>()>;
+
     /**
      * 设置算法API产生器
      * @param[in] algorithmApiMaker:
@@ -23,14 +24,19 @@ class AlgorithmApiFactory {
     void setAlgorithmApiMaker(AlgorithmApiMaker algorithmApiMaker) {
         mAlgorithmApiMaker = algorithmApiMaker;
     }
+
     /**
      * 获取产生器
      */
     std::shared_ptr<algorithm::AlgorithmApi> make() {
-        return mAlgorithmApiMaker();
+        if (mAlgorithmApiMaker) {
+            return mAlgorithmApiMaker();
+        } else {
+            return std::shared_ptr<algorithm::AlgorithmApi>();
+        }
     }
-
-  private:
+    
+private:
     friend class common::Singleton<AlgorithmApiFactory>;
 
     AlgorithmApiFactory() {}

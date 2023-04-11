@@ -7,12 +7,11 @@
 
 namespace sophon_stream {
 namespace algorithm {
-
 /**
  * 算法模块API
  */
 class AlgorithmApi {
-public:
+  public:
     /**
      * 构造函数
      */
@@ -26,7 +25,6 @@ public:
     AlgorithmApi& operator =(const AlgorithmApi&) = delete;
     AlgorithmApi(AlgorithmApi&&) = default;
     AlgorithmApi& operator =(AlgorithmApi&&) = default;
-
     /**
      * 初始化函数
      * @param[in] side:  设备类型

@@ -113,44 +113,37 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     graphConfigure["graph_id"] = i+1;
     nlohmann::json ElementsConfigure;
 
-    ElementsConfigure.push_back(makeDecoderElementConfig(DECODE_ID, "decoder_element", "sophgo", 0, 1, 0, false, 1, "../lib/libmultiMediaApi.so"));
-    ElementsConfigure.push_back(makeElementConfig(REPORT_ID, "report_element", "host", 0, 1, 0, false, 1, {}));
-    nlohmann::json yolov5Json = makeAlgorithmConfig("../lib/libalgorithmApi.so", "cocoDetect", "Yolov5",
-                                                    {"../models/yolov5s_int8_4b.bmodel"},
-                                                    // { "../models/yolov5.bmodel" },
-                                                    1, {"000_net"}, {1}, {{3, 640, 640}}, {"082_convolutional", "094_convolutional", "106_convolutional"}, {3}, {{18, 15, 25}, {18, 30, 50}, {18, 60, 100}},
-                                                    {0.5, 0.5}, coco_classnames.size(), coco_classnames);
-    ElementsConfigure.push_back(makeElementConfig(YOLO_ID, "action_element", "sophgo", 0, 1, 0, false, 4, {yolov5Json}));
-    nlohmann::json encodeJson = makeEncodeConfig("../lib/libalgorithmApi.so", "", "encode_picture", 1);
-    ElementsConfigure.push_back(makeElementConfig(ENCODE_ID, "action_element", "host", 0, 1, 200, true, 1, {encodeJson}));
-
-
     std::ifstream istream;
     nlohmann::json decoder, action, encoder, reporter;
 
-    // istream.open("../test/usecase/json/yolov5/Encoder.json");
-    // assert(istream.is_open());
-    // istream >> decoder;
-    // ElementsConfigure.push_back(decoder);
-    // istream.close();
+    istream.open("../test/usecase/json/yolov5/Decoder.json");
+    assert(istream.is_open());
+    istream >> decoder;
+    decoder.at("id") = DECODE_ID;
+    ElementsConfigure.push_back(decoder);
+    istream.close();
+    std::cout << decoder << std::endl;
 
-    // istream.open("../test/usecase/json/yolov5/Action.json");
-    // assert(istream.is_open());
-    // istream >> action;
-    // ElementsConfigure.push_back(action);
-    // istream.close();
+    istream.open("../test/usecase/json/yolov5/Action.json");
+    assert(istream.is_open());
+    istream >> action;
+    action.at("id") = YOLO_ID;
+    ElementsConfigure.push_back(action);
+    istream.close();
 
-    // istream.open("../test/usecase/json/yolov5/Encoder.json");
-    // assert(istream.is_open());
-    // istream >> encoder;
-    // ElementsConfigure.push_back(encoder);
-    // istream.close();
+    istream.open("../test/usecase/json/yolov5/Encoder.json");
+    assert(istream.is_open());
+    istream >> encoder;
+    encoder.at("id") = ENCODE_ID;
+    ElementsConfigure.push_back(encoder);
+    istream.close();
 
-    // istream.open("../test/usecase/json/yolov5/Reporter.json");
-    // assert(istream.is_open());
-    // istream >> reporter;
-    // ElementsConfigure.push_back(reporter);
-    // istream.close();
+    istream.open("../test/usecase/json/yolov5/Reporter.json");
+    assert(istream.is_open());
+    istream >> reporter;
+    reporter.at("id") = REPORT_ID;
+    ElementsConfigure.push_back(reporter);
+    istream.close();
 
 
     graphConfigure["elements"] = ElementsConfigure;
