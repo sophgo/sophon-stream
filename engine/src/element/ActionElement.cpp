@@ -219,7 +219,7 @@ common::ErrorCode ActionElement::doWork() {
         }
 
         // 凑batch
-        if(mPendingObjectMetadatas.size() != 0 && mPendingObjectMetadatas.back()->mFrame->mEndOfStream)
+        if(mPendingObjectMetadatas.size() != 0 && mPendingObjectMetadatas.back()->mFrame!=nullptr&& mPendingObjectMetadatas.back()->mFrame->mEndOfStream)
         {
             while(mPendingObjectMetadatas.size() < mBatch)
             {

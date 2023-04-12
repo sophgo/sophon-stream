@@ -26,13 +26,13 @@ class TransTrack2Output {
     static void transTrack2Output(std::vector<std::shared_ptr<common::ObjectMetadata>> &objs, const unsigned long long trackId,
                                   const std::function<void (std::shared_ptr<common::ObjectMetadata>&)> &fc, const std::size_t topN,
                                   const float maxScore) {
-        IVS_CRITICAL("transTrack2Outpu");
+        // IVS_CRITICAL("transTrack2Output");
         //分值的筛选
-        for (auto iter = objs.begin(); iter != objs.end();) {
-            if ((*iter)->mTrackedObjectMetadata->mQualityScore < maxScore) {
-                objs.erase(iter);
-            } else iter++;
-        }
+        // for (auto iter = objs.begin(); iter != objs.end();) {
+        //     if ((*iter)->mTrackedObjectMetadata->mQualityScore < maxScore) {
+        //         objs.erase(iter);
+        //     } else iter++;
+        // }
 
         //排序
         std::sort(objs.begin(), objs.end(),sortByScore);
@@ -169,15 +169,15 @@ class Tracker {
 
     void timebaseFilter(const long timebase, const bool first,
                         std::shared_ptr<common::ObjectMetadata> &metadata, const PUT_TASK_FUNC fc,
-                        const float maxScore) {
+                        const float maxScore,const std::int64_t stamp) {
 
-        const std::int64_t stamp = metadata->getTimestamp();
+        //const std::int64_t stamp = metadata->getTimestamp();
         if (!first)
             mTimer += (stamp - mLastTime);
 
         mLastTime = stamp;
 
-        IVS_CRITICAL("mTimer:{0}----timebase:{1}", mTimer, timebase);
+        // IVS_CRITICAL("mTimer:{0}----timebase:{1}", mTimer, timebase);
 
         if ((mTimer > timebase) && (!first)) {
             pushbackObjs(metadata);
@@ -273,21 +273,27 @@ class TrackerChannel {
         for (auto iter = frameMetdata->mSubObjectMetadatas.begin(); iter != frameMetdata->mSubObjectMetadatas.end();) {
             //转换坐标
             std::vector<cv::Point2f> landmarks;
-            for(auto& element:(*iter)->mSpDataInformation->mKeyPoints){
-                cv::Point2f temp;
-                temp.x = element.second.mPoint.mX;
-                temp.y = element.second.mPoint.mY;
-                landmarks.push_back(temp);
-            }
-            cv::Rect2f rectFace;
+            // for(auto& element:(*iter)->mSpDataInformation->mKeyPoints){
+            //     cv::Point2f temp;
+            //     temp.x = element.second.mPoint.mX;
+            //     temp.y = element.second.mPoint.mY;
+            //     landmarks.push_back(temp);
+            // }
+            cv::Rect2f rect;
+            // rect.x = (*iter)->mSpDataInformation->mBox.mX;
+            // rect.y = (*iter)->mSpDataInformation->mBox.mY;
+            // rect.width = (*iter)->mSpDataInformation->mBox.mWidth;
+            // rect.height = (*iter)->mSpDataInformation->mBox.mHeight;
 
-            rectFace.x = (*iter)->mSpDataInformation->mBox.mX;
-            rectFace.y = (*iter)->mSpDataInformation->mBox.mY;
-            rectFace.width = (*iter)->mSpDataInformation->mBox.mWidth;
-            rectFace.height = (*iter)->mSpDataInformation->mBox.mHeight;
+            rect.x = (*iter)->mDetectedObjectMetadata->mBox.mX;
+            rect.y = (*iter)->mDetectedObjectMetadata->mBox.mY;
+            rect.width = (*iter)->mDetectedObjectMetadata->mBox.mWidth;
+            rect.height = (*iter)->mDetectedObjectMetadata->mBox.mHeight;
+
             // 计算
             (*iter)->mTrackedObjectMetadata = std::make_shared<common::TrackedObjectMetadata>();
-            mQualityControl.judgeQualityFace(landmarks, rectFace, (*iter)->mTrackedObjectMetadata->mQualityScore);
+            // 这步没有landmarks
+            mQualityControl.judgeQualityFace(landmarks, rect, (*iter)->mTrackedObjectMetadata->mQualityScore);
             IVS_DEBUG("face score:{0}",(*iter)->mTrackedObjectMetadata->mQualityScore);
             iter++;
         }
@@ -338,13 +344,13 @@ class TrackerChannel {
                         frameMetdata->mSubObjectMetadatas[d]->mTrackedObjectMetadata->mTrackerFilter = false;
 
                         cv::Rect2f rectBox;
-                        rectBox.x = frameMetdata->mSubObjectMetadatas[d]->mSpDataInformation->mBox.mX;
-                        rectBox.y = frameMetdata->mSubObjectMetadatas[d]->mSpDataInformation->mBox.mY;
-                        rectBox.width = frameMetdata->mSubObjectMetadatas[d]->mSpDataInformation->mBox.mWidth;
-                        rectBox.height = frameMetdata->mSubObjectMetadatas[d]->mSpDataInformation->mBox.mHeight;
+                        rectBox.x = frameMetdata->mSubObjectMetadatas[d]->mDetectedObjectMetadata->mBox.mX;
+                        rectBox.y = frameMetdata->mSubObjectMetadatas[d]->mDetectedObjectMetadata->mBox.mY;
+                        rectBox.width = frameMetdata->mSubObjectMetadatas[d]->mDetectedObjectMetadata->mBox.mWidth;
+                        rectBox.height = frameMetdata->mSubObjectMetadatas[d]->mDetectedObjectMetadata->mBox.mHeight;
                         mListTrackers[i].Update(rectBox, true);
                         mListTrackers[i].timebaseFilter(timebase, false, frameMetdata->mSubObjectMetadatas[d], fc,
-                                                        mQualityControl.getConfig().maxScore);
+                                                        mQualityControl.getConfig().maxScore,frameMetdata->mFrame->mTimestamp);
                     }
                 }
             }
@@ -352,15 +358,15 @@ class TrackerChannel {
             for (auto &i : unmatchedDets) {
 
                 cv::Rect2f rectBox;
-                rectBox.x = frameMetdata->mSubObjectMetadatas[i]->mSpDataInformation->mBox.mX;
-                rectBox.y = frameMetdata->mSubObjectMetadatas[i]->mSpDataInformation->mBox.mY;
-                rectBox.width = frameMetdata->mSubObjectMetadatas[i]->mSpDataInformation->mBox.mWidth;
-                rectBox.height = frameMetdata->mSubObjectMetadatas[i]->mSpDataInformation->mBox.mHeight;
+                rectBox.x = frameMetdata->mSubObjectMetadatas[i]->mDetectedObjectMetadata->mBox.mX;
+                rectBox.y = frameMetdata->mSubObjectMetadatas[i]->mDetectedObjectMetadata->mBox.mY;
+                rectBox.width = frameMetdata->mSubObjectMetadatas[i]->mDetectedObjectMetadata->mBox.mWidth;
+                rectBox.height = frameMetdata->mSubObjectMetadatas[i]->mDetectedObjectMetadata->mBox.mHeight;
                 auto &&trk = Tracker(rectBox, mTrackId, mTopN);
                 frameMetdata->mSubObjectMetadatas[i]->mTrackedObjectMetadata->mTrackId = trk.getTrackId();
                 frameMetdata->mSubObjectMetadatas[i]->mTrackedObjectMetadata->mTrackerFilter = false;
                 trk.timebaseFilter(timebase, true, frameMetdata->mSubObjectMetadatas[i], fc,
-                                   mQualityControl.getConfig().maxScore);
+                                   mQualityControl.getConfig().maxScore,frameMetdata->mFrame->mTimestamp);
                 mListTrackers.emplace_back(trk);
             }
         }
@@ -470,10 +476,14 @@ class TrackerChannel {
                 //iouMatrix[i][j] = -iou(dets[i].mCropBox, trks[j]);
 
                 cv::Rect2f rectBox;
-                rectBox.x = dets[i]->mSpDataInformation->mBox.mX;
-                rectBox.y = dets[i]->mSpDataInformation->mBox.mY;
-                rectBox.width = dets[i]->mSpDataInformation->mBox.mWidth;
-                rectBox.height = dets[i]->mSpDataInformation->mBox.mHeight;
+                // rectBox.x = dets[i]->mSpDataInformation->mBox.mX;
+                // rectBox.y = dets[i]->mSpDataInformation->mBox.mY;
+                // rectBox.width = dets[i]->mSpDataInformation->mBox.mWidth;
+                // rectBox.height = dets[i]->mSpDataInformation->mBox.mHeight;
+                rectBox.x = dets[i]->mDetectedObjectMetadata->mBox.mX;
+                rectBox.y = dets[i]->mDetectedObjectMetadata->mBox.mY;
+                rectBox.width = dets[i]->mDetectedObjectMetadata->mBox.mWidth;
+                rectBox.height = dets[i]->mDetectedObjectMetadata->mBox.mHeight;
                 iouMatrix[i][j] = -iou(rectBox, trks[j]);
             }
         }

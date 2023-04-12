@@ -68,9 +68,11 @@ common::ErrorCode SophgoDecode::process(multimedia::Context& context,
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     //bm_image *img = decoder.grab();
     int eof = 0;
-    std::shared_ptr<bm_image> spBmImage = decoder.grab(eof);
+    double timestamp = 0.0;
+    std::shared_ptr<bm_image> spBmImage = decoder.grab(eof, timestamp);
 
     objectMetadata->mFrame = std::make_shared<common::Frame>();
+    objectMetadata->mFrame->mTimestamp = timestamp*1000000;
     
     objectMetadata->mFrame->mSpData = spBmImage;
 
@@ -82,16 +84,6 @@ common::ErrorCode SophgoDecode::process(multimedia::Context& context,
     }
     else{
         bm_image2Frame(objectMetadata->mFrame,*spBmImage);
-        // bm_malloc_device_byte(m_handle, objectMetadata->mFrame->mSpData->mData.get(), objectMetadata->mFrame->mHeight
-        //     * objectMetadata->mFrame->mWidth * objectMetadata->mFrame->mChannel * sizeof(float));
-        // bm_device_mem_t srcbm[3];
-        // bm_image_get_device_mem(*img,srcbm);
-        // bm_memcpy_d2d_byte(m_handle, *(objectMetadata->mFrame->mSpData->mData), 0,srcbm[0],0,objectMetadata->mFrame->mHeight
-        //    * objectMetadata->mFrame->mWidth * objectMetadata->mFrame->mChannel * sizeof(float));
-        
-        // bm_image_destroy(*img);
-        //     delete img;
-        // img = nullptr;
     }
     return common::ErrorCode::SUCCESS;
 }

@@ -69,7 +69,7 @@ public:
     /* grab a bm_image from the cache queue*/
     bm_image *grab();
 
-    std::shared_ptr<bm_image> grab(int& eof);
+    std::shared_ptr<bm_image> grab(int& eof,double& timestamp);
  
 private:
     bool quit_flag = false;
@@ -88,6 +88,7 @@ private:
     AVCodec *decoder;
     AVCodecContext *video_dec_ctx;
     AVCodecParameters *video_dec_par;
+    AVStream *st;
  
     bm_handle_t *handle;
     std::mutex lock;
@@ -97,6 +98,6 @@ private:
                          enum AVMediaType type, int sophon_idx);
  
     void *vidPushImage();
-    AVFrame *grabFrame(int& eof);
+    AVFrame *grabFrame(int& eof,double& timestamp);
     void closeDec();
 };

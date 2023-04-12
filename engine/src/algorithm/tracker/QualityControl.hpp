@@ -52,6 +52,9 @@ class QualityControl {
     */
     bool judgeQualityFace(const std::vector<cv::Point2f> &landmarks, const cv::Rect2f &rectFace,
                           float &qualityScore) {
+    
+        return false;
+
         bool ret = false;
         bool box = false;
         bool ld = false;

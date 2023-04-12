@@ -22,16 +22,16 @@ public:
     HungarianState(const std::vector<std::vector<float>> & cost_matrix);
     ~HungarianState();
 
-    void clear_covers();
+    void _clear_covers();
     // int find_prime_in_row(int x);
 };
 
 // using HUNGARIAN_FUNC = std::function<void*(HungarianState &)>;
 
-typedef void* (*HUNGARIAN_FUNC)(HungarianState & state);
+typedef void* (*STEP_FUNC)(HungarianState & state);
 
 void * step1(HungarianState & s);
-void * step2(HungarianState & s);
+void * step6(HungarianState & s);
 void * step3(HungarianState & s);
 void * step4(HungarianState & s);
 void * step5(HungarianState & s);

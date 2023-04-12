@@ -46,151 +46,153 @@ common::ErrorCode TrackerChannels::init(const std::string& json) {
             errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
             break;
         }
+        auto model_list = configure.find("models");
+        for(auto modelConfigure : *model_list)
+        {
+            // 解析 trakcer的参数
+            auto topNCon = modelConfigure.find(JSON_ALGORITHM_TRACK_TOPN);
+            if (modelConfigure.end() != topNCon
+                    && topNCon->is_number_integer()) {
+                mTopN = topNCon->get<int>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
 
-        // 解析 trakcer的参数
-        auto topNCon = configure.find(JSON_ALGORITHM_TRACK_TOPN);
-        if (configure.end() != topNCon
-                && topNCon->is_number_integer()) {
-            mTopN = topNCon->get<int>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
+            auto IOUCon = modelConfigure.find(JSON_ALGORITHM_TRACK_IOU);
+            if (modelConfigure.end() != IOUCon
+                    && IOUCon->is_number_float()) {
+                mIou = IOUCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            auto maxAgeCon = modelConfigure.find(JSON_ALGORITHM_TRACK_MAX_AGE);
+            if (modelConfigure.end() != maxAgeCon
+                    && maxAgeCon->is_number_integer()) {
+                mMaxAge = maxAgeCon->get<int>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+
+            auto minHinsCon = modelConfigure.find(JSON_ALGORITHM_TRACK_MIN_HINS);
+            if (modelConfigure.end() != minHinsCon
+                    && minHinsCon->is_number_integer()) {
+                mMinHins = minHinsCon->get<int>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+
+            auto updateTimesCon = modelConfigure.find(JSON_ALGORITHM_TRACK_UPDATE_TIMES);
+            if (modelConfigure.end() != updateTimesCon
+                    && updateTimesCon->is_number_integer()) {
+                mUpdateTimes = updateTimesCon->get<int>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+
+            auto baseTimesCon = modelConfigure.find(JSON_ALGORITHM_TRACK_BASE_TIMES);
+            if (modelConfigure.end() != baseTimesCon
+                    && baseTimesCon->is_number_integer()) {
+                mTimebase = baseTimesCon->get<int>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            //   IVS_DEBUG("maxage:{0}-iou:{1}-minHins:{2}-updateTimes:{3}", mMaxAge, mIou, mMinHins, mUpdateTimes);
+            //解析质量判断的参数
+            float tempThresArea;
+            auto thresAreaCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_THRES_AREA);
+            if (modelConfigure.end() != thresAreaCon
+                    && thresAreaCon->is_number_float()) {
+                tempThresArea = thresAreaCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+
+            float tempThresRationLB;
+            auto thresRLBCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_THRES_RATIOLOWBOUND);
+            if (modelConfigure.end() != thresRLBCon
+                    && thresRLBCon->is_number_float()) {
+                tempThresRationLB = thresRLBCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            float tempThresRationUB;
+            auto thresRUBCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_THRES_RATIOUPBOUND);
+            if (modelConfigure.end() != thresRUBCon
+                    && thresRUBCon->is_number_float()) {
+                tempThresRationUB = thresRUBCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            float tempWidth;
+            auto widthCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_WIDTH);
+            if (modelConfigure.end() != widthCon
+                    && widthCon->is_number_float()) {
+                tempWidth = widthCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            float tempHeight;
+            auto heightCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_HEIGHT);
+            if (modelConfigure.end() != heightCon
+                    && heightCon->is_number_float()) {
+                tempHeight = heightCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            float tempMargin;
+            auto marginCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_MARGIN);
+            if (modelConfigure.end() != marginCon
+                    && marginCon->is_number_float()) {
+                tempMargin = marginCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            float tempMaxScore;
+            auto maxScoreCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_MAX_QUSCORE);
+            if (modelConfigure.end() != maxScoreCon
+                    && maxScoreCon->is_number_float()) {
+                tempMaxScore = maxScoreCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            float tempLateralSide;
+            auto lateralSideCon = modelConfigure.find(JSON_ALGORITHM_QUALITY_lATERAL_SIDE);
+            if (modelConfigure.end() != lateralSideCon
+                    && lateralSideCon->is_number_float()) {
+                tempLateralSide = lateralSideCon->get<float>();
+            } else {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+            QualityConfig tempCon(tempThresArea, tempThresRationLB, tempThresRationUB,
+                                tempWidth, tempHeight, tempMargin, tempMaxScore, tempLateralSide);
+            pQualityControl = std::make_shared<QualityControl>(tempCon);
         }
-
-        auto IOUCon = configure.find(JSON_ALGORITHM_TRACK_IOU);
-        if (configure.end() != IOUCon
-                && IOUCon->is_number_float()) {
-            mIou = IOUCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        auto maxAgeCon = configure.find(JSON_ALGORITHM_TRACK_MAX_AGE);
-        if (configure.end() != maxAgeCon
-                && maxAgeCon->is_number_integer()) {
-            mMaxAge = maxAgeCon->get<int>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-
-        auto minHinsCon = configure.find(JSON_ALGORITHM_TRACK_MIN_HINS);
-        if (configure.end() != minHinsCon
-                && minHinsCon->is_number_integer()) {
-            mMinHins = minHinsCon->get<int>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-
-        auto updateTimesCon = configure.find(JSON_ALGORITHM_TRACK_UPDATE_TIMES);
-        if (configure.end() != updateTimesCon
-                && updateTimesCon->is_number_integer()) {
-            mUpdateTimes = updateTimesCon->get<int>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-
-        auto baseTimesCon = configure.find(JSON_ALGORITHM_TRACK_BASE_TIMES);
-        if (configure.end() != baseTimesCon
-                && baseTimesCon->is_number_integer()) {
-            mTimebase = baseTimesCon->get<int>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        //   IVS_DEBUG("maxage:{0}-iou:{1}-minHins:{2}-updateTimes:{3}", mMaxAge, mIou, mMinHins, mUpdateTimes);
-        //解析质量判断的参数
-        float tempThresArea;
-        auto thresAreaCon = configure.find(JSON_ALGORITHM_QUALITY_THRES_AREA);
-        if (configure.end() != thresAreaCon
-                && thresAreaCon->is_number_float()) {
-            tempThresArea = thresAreaCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-
-        float tempThresRationLB;
-        auto thresRLBCon = configure.find(JSON_ALGORITHM_QUALITY_THRES_RATIOLOWBOUND);
-        if (configure.end() != thresRLBCon
-                && thresRLBCon->is_number_float()) {
-            tempThresRationLB = thresRLBCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        float tempThresRationUB;
-        auto thresRUBCon = configure.find(JSON_ALGORITHM_QUALITY_THRES_RATIOUPBOUND);
-        if (configure.end() != thresRUBCon
-                && thresRUBCon->is_number_float()) {
-            tempThresRationUB = thresRUBCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        float tempWidth;
-        auto widthCon = configure.find(JSON_ALGORITHM_QUALITY_WIDTH);
-        if (configure.end() != widthCon
-                && widthCon->is_number_float()) {
-            tempWidth = widthCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        float tempHeight;
-        auto heightCon = configure.find(JSON_ALGORITHM_QUALITY_HEIGHT);
-        if (configure.end() != heightCon
-                && heightCon->is_number_float()) {
-            tempHeight = heightCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        float tempMargin;
-        auto marginCon = configure.find(JSON_ALGORITHM_QUALITY_MARGIN);
-        if (configure.end() != marginCon
-                && marginCon->is_number_float()) {
-            tempMargin = marginCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        float tempMaxScore;
-        auto maxScoreCon = configure.find(JSON_ALGORITHM_QUALITY_MAX_QUSCORE);
-        if (configure.end() != maxScoreCon
-                && maxScoreCon->is_number_float()) {
-            tempMaxScore = maxScoreCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-
-        float tempLateralSide;
-        auto lateralSideCon = configure.find(JSON_ALGORITHM_QUALITY_lATERAL_SIDE);
-        if (configure.end() != lateralSideCon
-                && lateralSideCon->is_number_float()) {
-            tempLateralSide = lateralSideCon->get<float>();
-        } else {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
-        QualityConfig tempCon(tempThresArea, tempThresRationLB, tempThresRationUB,
-                              tempWidth, tempHeight, tempMargin, tempMaxScore, tempLateralSide);
-        pQualityControl = std::make_shared<QualityControl>(tempCon);
-
 
     } while(false);
 

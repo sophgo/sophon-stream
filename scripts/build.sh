@@ -15,7 +15,7 @@ if [ ! -d "build" ]; then
   mkdir build
 fi
 cd build
-# rm -rf *
+rm -rf *
 if [ "$1" == "Debug" ]; then
   cmake -DCMAKE_BUILD_TYPE=Debug ..
 elif [ "$1" == "Release" ]; then
@@ -30,7 +30,7 @@ if [ ! -d "build" ]; then
   mkdir build
 fi
 cd build
-# rm -rf *
+rm -rf *
 if [ "$1" == "Debug" ]; then
   cmake -DCMAKE_BUILD_TYPE=Debug ..
 elif [ "$1" == "Release" ]; then
@@ -48,7 +48,7 @@ if [ ! -d "lib" ]; then
   mkdir lib
 fi
 cd build
-# rm -rf *
+rm -rf *
 if [ "$1" == "Debug" ]; then
   cmake -DCMAKE_BUILD_TYPE=Debug ..
 elif [ "$1" == "Release" ]; then

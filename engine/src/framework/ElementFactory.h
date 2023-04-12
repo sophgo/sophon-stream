@@ -67,6 +67,7 @@ using SingletonElementFactory = common::Singleton<ElementFactory>;
     struct ElementClass##Register { \
         ElementClass##Register() { \
             auto& elementFactory = ::sophon_stream::framework::SingletonElementFactory::getInstance(); \
+            std::cout<<elementName<<std::endl; \
             elementFactory.addElementMaker(elementName, []() { \
                                              return std::make_shared<ElementClass>(); \
                                          }); \

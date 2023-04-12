@@ -398,6 +398,7 @@ common::ErrorCode DecoderElement::process(const bool lastFrame,const int sourceT
                      static_cast<void*>(objectMetadata.get()));
             return errorCode;
         }
+        //usleep(400000);
     } else {
         if(ret==common::ErrorCode::NOT_VIDEO_CHANNEL){
             return ret;

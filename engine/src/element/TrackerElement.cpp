@@ -12,6 +12,7 @@ namespace sophon_stream {
 namespace element {
 
 TrackerElement::TrackerElement(){
+    std::cout<<"TrackerElement construct!!!"<<std::endl;
 }
 
 TrackerElement::~TrackerElement() {
@@ -63,9 +64,14 @@ common::ErrorCode TrackerElement::doWork() {
         return common::ErrorCode::SUCCESS;
     }
     auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
-    IVS_CRITICAL("tracker before process");
+    if(objectMetadata->mFrame && objectMetadata->mFrame->mEndOfStream){
+        // IVS_CRITICAL("tracker element eof!!!");
+        // return common::ErrorCode::STREAM_END;
+    }
+        
+    // IVS_CRITICAL("tracker before process");
     mSpTrackerSort->process(objectMetadata,std::bind(&TrackerElement::putTask,this,std::placeholders::_1));
-    IVS_CRITICAL("tracker after process");
+    // IVS_CRITICAL("tracker after process");
     popData(0);
 
     common::ErrorCode errorCode = sendData(0,
@@ -76,14 +82,14 @@ common::ErrorCode TrackerElement::doWork() {
 }
 
 void TrackerElement::putTask(std::shared_ptr<common::ObjectMetadata>& data){
-    IVS_CRITICAL("tracker worker puttask");
+     IVS_CRITICAL("tracker element puttask");
         common::ErrorCode errorCode = sendData(0,
                                        std::static_pointer_cast<void>(data),
                                        std::chrono::milliseconds(200));
 }
 
-static constexpr const char* NAME = "tracker_worker";
-REGISTER_WORKER(NAME, TrackerElement)
 
+//static constexpr const char* NAME = "tracker_element";
+REGISTER_WORKER("tracker_element", TrackerElement)
 }
 }

@@ -15,6 +15,13 @@ add_library(framework
         )
 link_libraries(framework)
 
+add_library(tracker_lib
+        src/algorithm/tracker/HungarianState.cpp
+        src/algorithm/tracker/sort.cpp
+        src/algorithm/tracker/TrackerChannel.cpp
+        )
+link_libraries(tracker_lib)
+
 # aux_source_directory(elements /src/element/)
 # add_library(derivedelement elements)
 
@@ -23,9 +30,9 @@ add_library(derivedelement
     src/element/ActionElement.cpp
     src/element/DecoderElement.h
     src/element/DecoderElement.cpp
-    src/element/ReportElement.cpp
     src/element/TrackerElement.h
     src/element/TrackerElement.cpp
+    src/element/ReportElement.cpp
     )
 link_libraries(derivedelement)
 

@@ -15,6 +15,7 @@ common::ErrorCode
 ElementFactory::addElementMaker(const std::string& elementName, 
                               ElementMaker elementMaker) {
     auto elementMakerIt = mElementMakerMap.find(elementName);
+    std::cout << "current element added:" << elementName << std::endl;
     if (mElementMakerMap.end() != elementMakerIt) {
         IVS_ERROR("Repeated element name, name: {0}", elementName);
         return common::ErrorCode::REPEATED_WORKER_NAME;

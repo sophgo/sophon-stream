@@ -444,7 +444,6 @@ int VideoDecFFM::openCodecContext(int *stream_idx, AVCodecContext **dec_ctx, AVF
                                   int sophon_idx)
 {
     int ret, stream_index;
-    AVStream *st;
     AVCodec *dec = NULL;
     AVDictionary *opts = NULL;
 
@@ -512,7 +511,7 @@ int VideoDecFFM::openCodecContext(int *stream_idx, AVCodecContext **dec_ctx, AVF
     return 0;
 }
 
-AVFrame *VideoDecFFM::grabFrame(int& eof)
+AVFrame *VideoDecFFM::grabFrame(int& eof,double& timestamp)
 {
     int ret = 0;
     int got_frame = 0;
@@ -551,6 +550,7 @@ AVFrame *VideoDecFFM::grabFrame(int& eof)
         {
             continue;
         }
+        timestamp = pkt.pts * av_q2d(st->time_base);
 
         if (!frame)
         {
@@ -589,6 +589,7 @@ AVFrame *VideoDecFFM::grabFrame(int& eof)
                    av_get_pix_fmt_name((AVPixelFormat)frame->format));
             continue;
         }
+        timestamp = frame->pts * av_q2d(st->time_base);
 
         break;
     }
@@ -617,7 +618,8 @@ void *VideoDecFFM::vidPushImage()
 
         bm_image *img = new bm_image;
         int eof = 0;
-        AVFrame *avframe = grabFrame(eof);
+        double timestamp = 0.0;
+        AVFrame *avframe = grabFrame(eof,timestamp);
         if (quit_flag){
             delete img;
             img = nullptr;
@@ -631,9 +633,9 @@ void *VideoDecFFM::vidPushImage()
     return NULL;
 }
 
-std::shared_ptr<bm_image> VideoDecFFM::grab(int& eof){
+std::shared_ptr<bm_image> VideoDecFFM::grab(int& eof,double& timestamp){
     std::shared_ptr<bm_image> spBmImage = nullptr;
-    AVFrame *avframe = grabFrame(eof);
+    AVFrame *avframe = grabFrame(eof,timestamp);
     if(1==eof) return spBmImage;
     spBmImage.reset(new bm_image,[&](bm_image* p){
                 bm_image_destroy(*p);delete p;p=nullptr;});

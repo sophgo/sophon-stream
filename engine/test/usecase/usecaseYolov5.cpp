@@ -213,7 +213,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 
     nlohmann::json decodeConfigure;
     decodeConfigure["channel_id"] = 1;
-    decodeConfigure["url"] = "../test/test_car_person_1080P.mp4";
+    decodeConfigure["url"] = "../test/test_car_person_1080P.avi";
     // decodeConfigure["url"] = "../test/13.mp4";
     // decodeConfigure["url"] = "../test/18.mp4";
     decodeConfigure["resize_rate"] = 2.0f;

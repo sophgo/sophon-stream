@@ -7,7 +7,7 @@
 #include "common/type_trans.hpp"
 #include "config.h"
 #include <fstream>
-
+#include "common/Clocker.h"
 #include <opencv2/opencv.hpp>
 
 
@@ -17,9 +17,43 @@
 #define ENCODE_ID 7003
 #define REPORT_ID 7777
 
+#define MAX_GRAPH 1
+#define DOWNLOAD_IMAGE 0
+
+const std::vector<std::vector<int>> colors = {{255, 0, 0}, {255, 85, 0}, {255, 170, 0}, {255, 255, 0}, {170, 255, 0}, {85, 255, 0}, {0, 255, 0}, {0, 255, 85}, {0, 255, 170}, {0, 255, 255}, {0, 170, 255}, {0, 85, 255}, {0, 0, 255}, {85, 0, 255}, {170, 0, 255}, {255, 0, 255}, {255, 0, 170}, {255, 0, 85}, {255, 0, 0}, {255, 0, 255}, {255, 85, 255}, {255, 170, 255}, {255, 255, 255}, {170, 255, 255}, {85, 255, 255}};
+
+void draw_bmcv(bm_handle_t &handle, int classId, std::string track_id, std::vector<std::string> &class_names,
+               float conf, int left, int top, int width, int height, bm_image &frame, bool put_text_flag) // Draw the predicted bounding box
+{
+  int colors_num = colors.size();
+  // Draw a rectangle displaying the bounding box
+  bmcv_rect_t rect;
+  rect.start_x = left;
+  rect.start_y = top;
+  rect.crop_w = width;
+  rect.crop_h = height;
+  std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << "," << rect.crop_h << std::endl;
+  bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, colors[classId % colors_num][0], colors[classId % colors_num][1], colors[classId % colors_num][2]);
+
+  if (put_text_flag)
+  {
+    // Get the label for the class name and its confidence
+    std::string label = class_names[classId] + ":" + cv::format("%.2f", conf);
+    bmcv_point_t org = {left, top};
+    bmcv_color_t color = {colors[classId % colors_num][0], colors[classId % colors_num][1], colors[classId % colors_num][2]};
+    int thickness = 2;
+    float fontScale = 2;
+    //bmcv_image_put_text(handle, frame, label.c_str(), org, color, fontScale, thickness);
+    org = {left + width, top};
+    bmcv_image_put_text(handle, frame, track_id.c_str(), org, color, fontScale, thickness);
+  }
+}
+
+
 
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 {
+    logInit("debug","","");
     std::string coco_file = "../test/coco.names";
     std::vector<std::string> coco_classnames;
     std::ifstream ifs(coco_file);
@@ -31,94 +65,117 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
         }
     }
     auto & engine = sophon_stream::framework::SingletonEngine::getInstance();
-
-    nlohmann::json graphConfigure;
-    graphConfigure["graph_id"] = 1;
-    nlohmann::json ElementsConfigure;
-    ElementsConfigure.push_back(makeDecoderElementConfig(DECODE_ID, "decoder_element", "sophgo", 0, 1, 0, false, 1, "../lib/libmultiMediaApi.so"));
-    ElementsConfigure.push_back(makeElementConfig(REPORT_ID,"report_element","host",0,1,0,false,1, {}));
     
-    nlohmann::json yolov5Json = makeAlgorithmConfig("../lib/libalgorithmApi.so","cocoDetect","Yolov5",
-        { "../models/yolov5.bmodel" },
-        1, { "input.1" }, { 1 }, {{3, 640, 640}},  {"147","148","149"},
-        {3}, {{3,80,80,85},{3,40,40,85},{3,20,20,85}},
-        { 0.5,0.5 },coco_classnames.size(),coco_classnames);
-    
-    ElementsConfigure.push_back(makeElementConfig(YOLO_ID, "action_element", "sophgo", 0, 1, 200, false, 1, {yolov5Json}));
-    nlohmann::json encodeJson = makeEncodeConfig("../lib/libalgorithmApi.so","","encode_picture",1);
-    ElementsConfigure.push_back(makeElementConfig(ENCODE_ID,"action_element","host",0,1,200,true,1, {encodeJson}));
-
-    nlohmann::json trackJson = makeTrackerConfig("../lib/libalgorithmApi.so","trackerSort","tracker_sort",
-            1, 1, 0.25f, 20, 3, 4, 3000000,400.0f, 0.7f, 1.3f, 640.0f,360.0f, 10.0f, 19.0f, 112.0f );
-    ElementsConfigure.push_back(makeElementConfig(TRACK_ID, "tracker_element", "sophgo", 0, 1, 200, false, 1, {trackJson}));
-    
-    graphConfigure["elements"] = ElementsConfigure;
-    
-    graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID,0,YOLO_ID,0));
-    graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID,0,ENCODE_ID,0));
-    graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID,0,TRACK_ID,0));
-    graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID,0,REPORT_ID,0));
-
+    std::atomic_int32_t graph_cnt(0);
     std::mutex mtx;
     std::condition_variable cv;
-
-    engine.addGraph(graphConfigure.dump());
-    engine.setDataHandler(1,REPORT_ID,0,[&](std::shared_ptr<void> data) {
-        auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
-        if(objectMetadata == nullptr)
-            return;
-        cv::Mat cpuMat;
-        if(objectMetadata->mPacket && objectMetadata->mPacket->mData)
-        {
-            std::vector<uchar> inputarray;
-            uchar * p = static_cast<uchar*>(objectMetadata->mPacket->mData.get());
-            for(int i=0;i<objectMetadata->mPacket->mDataSize;i++){
-                inputarray.push_back(p[i]);
-            }
-            cpuMat = cv::imdecode(inputarray, 1);
-            for(int i=0;i<objectMetadata->mSubObjectMetadatas.size();i++){
-                auto detectData = objectMetadata->mSubObjectMetadatas[i]->mSpDataInformation;
-                cv::rectangle(cpuMat, cv::Rect(detectData->mBox.mX, detectData->mBox.mY, detectData->mBox.mWidth, detectData->mBox.mHeight), 
-                        cv::Scalar(0, 255, 0), 2);
-
-                for(auto pair:detectData->mKeyPoints){
-                    cv::circle(cpuMat, cv::Point(pair.second.mPoint.mX, pair.second.mPoint.mY), 1, cv::Scalar(255, 255, 0), 1, 8, 0);
-                }
-                cv::putText(cpuMat, std::to_string(objectMetadata->mSubObjectMetadatas[i]->mTrackedObjectMetadata->mTrackId), cv::Point(detectData->mBox.mX, detectData->mBox.mY), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 
-                        1.5, cv::Scalar(255, 255, 0), 2);
-                
-                cv::putText(cpuMat, std::to_string(objectMetadata->mSubObjectMetadatas[i]->getTimestamp()), cv::Point(detectData->mBox.mX+detectData->mBox.mWidth, detectData->mBox.mY+detectData->mBox.mHeight),
-                        cv::HersheyFonts::FONT_HERSHEY_PLAIN, 
-                        1.5, cv::Scalar(255, 255, 0), 2);
-
-                int subSubDataLen = objectMetadata->mSubObjectMetadatas[i]->mSubObjectMetadatas.size();
-                for(int j=0;j<subSubDataLen;j++){
-                    auto subSubData = objectMetadata->mSubObjectMetadatas[i]->mSubObjectMetadatas[j];
-                }
-            }
-            cv::imwrite("out.jpg", cpuMat);
-            if(objectMetadata->mPacket->mEndOfStream) cv.notify_one();
-        }
-    });
-    nlohmann::json decodeConfigure;
-    decodeConfigure["channel_id"] = 1;
-    decodeConfigure["url"] = "../test/out.avi";
-    decodeConfigure["resize_rate"] = 2.0f;
-    decodeConfigure["timeout"] = 0;
-    decodeConfigure["multimedia_name"] = "decode_picture";
-    decodeConfigure["source_type"] = 0;
-    decodeConfigure["reopen_times"] = -1;
+    sophon_stream::Clocker clocker;
+    std::atomic_uint32_t frameCount(0);
+    
+    for (int i = 0; i < MAX_GRAPH; i++)
+    {
+        nlohmann::json graphConfigure;
+        graphConfigure["graph_id"] = i+1;
+        nlohmann::json ElementsConfigure;
+        ElementsConfigure.push_back(makeDecoderElementConfig(DECODE_ID, "decoder_element", "sophgo", 0, 1, 0, false, 1, "../lib/libmultiMediaApi.so"));
+        ElementsConfigure.push_back(makeElementConfig(REPORT_ID,"report_element","host",0,1,0,false,1, {}));
         
-    auto channelTask = std::make_shared<sophon_stream::element::ChannelTask>();
-    channelTask->request.operation = sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
-    channelTask->request.json = decodeConfigure.dump();
-    sophon_stream::common::ErrorCode errorCode = engine.sendData(1,
-                                DECODE_ID,
-                                0,
-                                std::static_pointer_cast<void>(channelTask),
-                                std::chrono::milliseconds(200));
+        nlohmann::json yolov5Json = makeAlgorithmConfig("../lib/libalgorithmApi.so","cocoDetect","Yolov5",
+            { "../models/yolov5s_int8_4b.bmodel" },
+            // {"../models/data/model_1684x/yolo"},
+            1, { "input.1" }, { 1 }, {{3, 640, 640}},  {"147","148","149"},
+            {3}, {{3,80,80,85},{3,40,40,85},{3,20,20,85}},
+            { 0.5,0.5 },coco_classnames.size(),coco_classnames);
+        
+        ElementsConfigure.push_back(makeElementConfig(YOLO_ID, "action_element", "sophgo", 0, 1, 200, false, 4, {yolov5Json}));
+        nlohmann::json encodeJson = makeEncodeConfig("../lib/libalgorithmApi.so","","encode_picture",1);
+        ElementsConfigure.push_back(makeElementConfig(ENCODE_ID,"action_element","host",0,1,200,true,1, {encodeJson}));
+
+        nlohmann::json trackJson = makeTrackerConfig("../lib/libalgorithmApi.so","trackerSort","tracker_sort",
+                1, 1, 0.25f, 20, 3, 4, 3000000,400.0f, 0.7f, 1.3f, 640.0f,360.0f, 10.0f, 19.0f, 112.0f );
+        ElementsConfigure.push_back(makeElementConfig(TRACK_ID, "tracker_element", "sophgo", 0, 1, 200, false, 1, {trackJson}));
+        
+        graphConfigure["elements"] = ElementsConfigure;
+        
+        graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID,0,YOLO_ID,0));
+        graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID,0,TRACK_ID,0));
+        graphConfigure["connections"].push_back(makeConnectConfig(TRACK_ID,0,ENCODE_ID,0));
+        graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID,0,REPORT_ID,0));
+
+        engine.addGraph(graphConfigure.dump());
+        engine.setDataHandler(i+1,REPORT_ID,0,[&](std::shared_ptr<void> data) {
+            auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
+            if(objectMetadata == nullptr || objectMetadata->mFrame == nullptr)
+                return;
+            frameCount++;
+            if (objectMetadata->mFrame->mEndOfStream)
+            {
+                graph_cnt++;
+                if(graph_cnt==MAX_GRAPH){
+                cv.notify_one();
+                }
+                return;
+            }
+#if DOWNLOAD_IMAGE
+            if(objectMetadata->mFrame && objectMetadata->mFrame->mSpData)
+            {
+                int width = objectMetadata->mFrame->mWidth;
+                int height = objectMetadata->mFrame->mHeight;
+                bm_image image = * objectMetadata->mFrame->mSpData;
+
+                bm_image img;
+                bm_image_create(objectMetadata->mFrame->mHandle, height, width, FORMAT_YUV420P, image.data_type, &img);
+                bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image, &img);
+
+                for (auto subObj : objectMetadata->mSubObjectMetadatas)
+                {
+                    draw_bmcv(objectMetadata->mFrame->mHandle, subObj->mDetectedObjectMetadata->mClassify, std::to_string(subObj->mTrackedObjectMetadata->mTrackId),
+                        coco_classnames,
+                        subObj->mDetectedObjectMetadata->mScores[0], subObj->mDetectedObjectMetadata->mBox.mX,
+                        subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
+                        subObj->mDetectedObjectMetadata->mBox.mHeight, img,true);
+                }
+                void* jpeg_data = NULL;
+                size_t out_size = 0;
+                int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, &img, &jpeg_data, &out_size);
+                if (ret == BM_SUCCESS) {
+                std::string img_file = "tracker.jpg";
+                FILE *fp = fopen(img_file.c_str(), "wb");
+                fwrite(jpeg_data, out_size, 1, fp);
+                fclose(fp);
+                }
+                free(jpeg_data);
+                bm_image_destroy(img);
+            }
+#endif
+        });
+        nlohmann::json decodeConfigure;
+        decodeConfigure["channel_id"] = 1;
+        decodeConfigure["url"] = "../test/test_car_person_1080P.avi";
+        // decodeConfigure["url"] = "../test/out.avi";
+        decodeConfigure["resize_rate"] = 2.0f;
+        decodeConfigure["timeout"] = 0;
+        decodeConfigure["multimedia_name"] = "decode_picture";
+        decodeConfigure["source_type"] = 0;
+        decodeConfigure["reopen_times"] = -1;
+            
+        auto channelTask = std::make_shared<sophon_stream::element::ChannelTask>();
+        channelTask->request.operation = sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
+        channelTask->request.json = decodeConfigure.dump();
+        sophon_stream::common::ErrorCode errorCode = engine.sendData(i+1,
+                                    DECODE_ID,
+                                    0,
+                                    std::static_pointer_cast<void>(channelTask),
+                                    std::chrono::milliseconds(200));
+    }
+
+    
     {
         std::unique_lock<std::mutex> uq(mtx);
         cv.wait(uq);
     }
+    long totalCost = clocker.tell_us();
+    std::cout << " total time cost " << totalCost << " us." << std::endl;
+    double fps = static_cast<double>(frameCount) / totalCost;
+    std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000 << " fps." << std::endl;
 }
