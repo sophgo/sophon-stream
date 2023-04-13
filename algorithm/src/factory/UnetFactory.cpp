@@ -21,7 +21,7 @@ std::shared_ptr<algorithm::Context> UnetFactory::makeContext(){
  * create preprocess
  * @return preprocess object
 */
-std::shared_ptr<algorithm::PreProcess> UnetFactory::makePreprocess(){
+std::shared_ptr<algorithm::PreProcess> UnetFactory::makePreProcess(){
     return std::static_pointer_cast<algorithm::PreProcess>(std::make_shared<pre_process::UnetPre>());
 }
 

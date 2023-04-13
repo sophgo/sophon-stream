@@ -6,9 +6,6 @@ namespace sophon_stream {
 namespace algorithm {
 namespace inference {
 
-/**
- * gpu版本yolov3预处理
- */
 class Yolov5Inference : public algorithm::Inference {
   public:
     ~Yolov5Inference();

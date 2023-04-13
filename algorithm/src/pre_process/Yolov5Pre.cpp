@@ -34,10 +34,7 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             }
             images.push_back(*objMetadata->mFrame->mSpData);
         }
-
-        
-
-       
+               
         std::shared_ptr<BMNNTensor> input_tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
         int image_n = images.size();
         

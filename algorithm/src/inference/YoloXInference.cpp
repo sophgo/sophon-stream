@@ -1,4 +1,4 @@
-#include "Yolov5Inference.h"
+#include "YoloXInference.h"
 #include <fstream>
 #include "../context/SophgoContext.h"
 #include "common/Clocker.h"
@@ -7,16 +7,15 @@ namespace sophon_stream {
 namespace algorithm {
 namespace inference {
 
-Yolov5Inference::~Yolov5Inference() {
+YoloXInference::~YoloXInference()
+{
 
 }
 
-/**
- * init device and engine
- * @param[in] @param[in] context: model path,inputs and outputs name...
- */
-common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
+common::ErrorCode YoloXInference::init(algorithm::Context& context)
+{
     context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
+
     float confThresh;
     float nmsThresh;
     std::string coco_names_file;
@@ -74,24 +73,19 @@ common::ErrorCode Yolov5Inference::init(algorithm::Context& context) {
     return common::ErrorCode::SUCCESS;
 }
 
-
-/**
- * network predict output
- * @param[in] context: inputData and outputDat
- */
-common::ErrorCode Yolov5Inference::predict(algorithm::Context& context) {
+common::ErrorCode YoloXInference::predict(algorithm::Context& context) {
   Clocker clocker;
   context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
   int ret = 0;
   if(!pSophgoContext->mEndOfStream) 
     ret = pSophgoContext->m_bmNetwork->forward();
-    std::cout<<"yolov5 inference cost: "<<clocker.tell_us()<<std::endl;
+    std::cout<<"yoloX inference cost: "<<clocker.tell_us()<<std::endl;
   return static_cast<common::ErrorCode>(ret);
 }
 
-void Yolov5Inference::uninit() {
+void YoloXInference::uninit() {
 }
 
-} // namespace inference
-} // namespace algorithm
-} // namespace sophon_stream
+}
+}
+}

@@ -1,0 +1,12 @@
+{
+    "configure":{
+        "batch":1
+    },
+    "device_id":0,
+    "id":0,
+    "milliseconds_timeout":0,
+    "name":"report_element",
+    "repeated_timeout":false,
+    "side":"host",
+    "thread_number":1
+}

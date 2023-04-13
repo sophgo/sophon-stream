@@ -6,9 +6,6 @@ namespace sophon_stream {
 namespace algorithm {
 namespace pre_process {
 
-/**
- * gpu版本yolov3预处理
- */
 class Yolov5Pre : public algorithm::PreProcess {
   public :
     /**
