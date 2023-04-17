@@ -63,13 +63,16 @@ common::ErrorCode YoloXInference::init(algorithm::Context& context)
 
     // 5.converto
     float input_scale = tensor->get_scale();
-    input_scale = input_scale * 1.0 / 255.f;
+    // yolox原始模型输入是0-255,scale=1.0意味着不需要做缩放
+    input_scale /= 255;
     pSophgoContext->converto_attr.alpha_0 = input_scale;
     pSophgoContext->converto_attr.beta_0 = 0;
     pSophgoContext->converto_attr.alpha_1 = input_scale;
     pSophgoContext->converto_attr.beta_1 = 0;
     pSophgoContext->converto_attr.alpha_2 = input_scale;
     pSophgoContext->converto_attr.beta_2 = 0;
+    
+
     return common::ErrorCode::SUCCESS;
 }
 

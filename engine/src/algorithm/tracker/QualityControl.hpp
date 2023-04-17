@@ -11,8 +11,7 @@ namespace algorithm {
 namespace tracker_sort {
 
 struct QualityConfig {
-    /**< 比如360/3为边长上限，以mtcnn输入举例，输入为640*360,因为360×360的人脸太大所以这里DIVISOR为3
-     此场景适用于监控场景，人脸都比较小，如果是单人识别场景DIVISOR可调整为1*/
+    
     QualityConfig(const float ta, const float trl, const float tru, const float w,
                   const float h, const float mg, const float maxSc, const float ls): thresArea(ta),
         thresRatioLowBound(trl), thresRatioUpBound(tru), width(w), height(h), center(width / 2, height / 2),

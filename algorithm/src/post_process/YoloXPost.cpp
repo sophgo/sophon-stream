@@ -12,7 +12,40 @@ namespace post_process {
 
 void YoloXPost::init(algorithm::Context& context)
 {
+    context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
 
+    if(pSophgoContext->output_num == 3)
+    {
+        #define OUTPUTS_3
+    }
+
+    outlen_dim = 0;
+    int net_w = pSophgoContext->m_net_w;
+    int net_h = pSophgoContext->m_net_h;
+    std::vector<int> strides {8,16,32};
+    for(int i = 0;i<strides.size();++i)
+    {
+        int layer_w = net_w / strides[i];
+        int layer_h = net_h / strides[i];
+        outlen_dim += layer_w * layer_h; // 8400
+    }
+    grids_x_ = new int [outlen_dim];
+    grids_y_ = new int [outlen_dim];
+    expanded_strides_ = new int [outlen_dim];
+
+    channel_len = 0;
+    for (int i=0;i<strides.size();++i)  {
+        int layer_w = net_w/strides[i];
+        int layer_h = net_h/strides[i];
+        for (int m = 0; m < layer_h; ++m)   {
+            for (int n = 0; n < layer_w; ++n)    {
+                grids_x_[channel_len+m*layer_w+n] = n;
+                grids_y_[channel_len+m*layer_w+n] = m;
+                expanded_strides_[channel_len+m*layer_w+n] = strides[i];
+            }
+        }
+        channel_len += layer_w * layer_h;
+    }
 }
 
 int YoloXPost::argmax(float* data, int num)
@@ -32,46 +65,6 @@ int YoloXPost::argmax(float* data, int num)
 float YoloXPost::sigmoid(float x){
   return 1.0 / (1 + expf(-x));
 }
-
-// void YoloXPost::NMS(YoloXBoxVec &dets, float nmsConfidence)
-// {
-//     int length = dets.size();
-//     int index = length - 1;
-
-//     std::sort(dets.begin(), dets.end(), [](const YoloXBox& a, const YoloXBox& b) {
-//         return a.score < b.score;
-//         });
-
-//     std::vector<float> areas(length);
-//     for (int i=0; i<length; i++)
-//     {
-//         areas[i] = dets[i].width * dets[i].height;
-//     }
-
-//     while (index  > 0)
-//     {
-//         int i = 0;
-//         while (i < index)
-//         {
-//             float left    = std::max(dets[index].x,   dets[i].x);
-//             float top     = std::max(dets[index].y,    dets[i].y);
-//             float right   = std::min(dets[index].x + dets[index].width,  dets[i].x + dets[i].width);
-//             float bottom  = std::min(dets[index].y + dets[index].height, dets[i].y + dets[i].height);
-//             float overlap = std::max(0.0f, right - left) * std::max(0.0f, bottom - top);
-//             if (overlap / (areas[index] + areas[i] - overlap) > nmsConfidence)
-//             {
-//                 areas.erase(areas.begin() + i);
-//                 dets.erase(dets.begin() + i);
-//                 index --;
-//             }
-//             else
-//             {
-//                 i++;
-//             }
-//         }
-//         index--;
-//     }
-// }
 
 float overlap_FM(float x1, float w1, float x2, float w2)
 {
@@ -126,6 +119,12 @@ static void nms_sorted_bboxes(const std::vector<YoloXBox>& objects, std::vector<
     }
 }
 
+YoloXPost::~YoloXPost()
+{
+    // delete grids_x_;
+    // delete grids_y_;
+    // delete expanded_strides_;
+}
 
 void YoloXPost::postProcess(algorithm::Context& context, common::ObjectMetadatas& objectMetadatas)
 {
@@ -134,6 +133,7 @@ void YoloXPost::postProcess(algorithm::Context& context, common::ObjectMetadatas
     context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
     std::vector<std::shared_ptr<BMNNTensor>> outputTensors(pSophgoContext->output_num);
     // 三个输出，[batch,box_num,4],[,,1],[,,class_num]
+    // 单输出情况 [batch, box_num, class_num + 5]
     for(int i=0; i<pSophgoContext->output_num; i++){
         outputTensors[i] = pSophgoContext->m_bmNetwork->outputTensor(i);
     }
@@ -142,37 +142,8 @@ void YoloXPost::postProcess(algorithm::Context& context, common::ObjectMetadatas
     int net_w = pSophgoContext->m_net_w;
     int net_h = pSophgoContext->m_net_h;
 
-
-    // 这部分放到外面
-    int outlen_dim = 0;
-    std::vector<int> strides {8,16,32};
-    for(int i = 0;i<strides.size();++i)
-    {
-        int layer_w = net_w / strides[i];
-        int layer_h = net_h / strides[i];
-        outlen_dim += layer_w * layer_h; // 8400
-    }
-    int * grids_x_ = new int [outlen_dim];
-    int * grids_y_ = new int [outlen_dim];
-    int * expanded_strides_ = new int [outlen_dim];
-    int channel_len = 0;
-    for (int i=0;i<strides.size();++i)  {
-        int layer_w = net_w/strides[i];
-        int layer_h = net_h/strides[i];
-        for (int m = 0; m < layer_h; ++m)   {
-            for (int n = 0; n < layer_w; ++n)    {
-                grids_x_[channel_len+m*layer_w+n] = n;
-                grids_y_[channel_len+m*layer_w+n] = m;
-                expanded_strides_[channel_len+m*layer_w+n] = strides[i];
-            }
-        }
-        channel_len += layer_w * layer_h;
-    }
-    // end notes
-
     for(int batch_idx = 0; batch_idx < pSophgoContext->max_batch; ++batch_idx)
     {
-
         if(pSophgoContext->mEndOfStream) continue;
         
         int tx1 = 0, ty1 = 0;
@@ -184,26 +155,42 @@ void YoloXPost::postProcess(algorithm::Context& context, common::ObjectMetadatas
         float scale_x = 1.0 / scale_min;
         float scale_y = 1.0 / scale_min;
 
+        YoloXBoxVec yolobox_vec;
+
+#ifdef OUTPUTS_3
         int objectOffset = batch_idx * outlen_dim * 1;
         int boxOffset = batch_idx * outlen_dim * 4;
         int classOffset = batch_idx * outlen_dim * pSophgoContext->m_class_num;
-        
-        YoloXBoxVec yolobox_vec;
-
+        float* objectTensor = (float*)outputTensors[0]->get_cpu_data();
+        float* boxTensor = (float*)outputTensors[2]->get_cpu_data();
+        float* classTensor = (float*)outputTensors[1]->get_cpu_data();
+#else
+        float* tensor = (float*)outputTensors[0]->get_cpu_data();
+        int numDim3 = pSophgoContext->m_class_num + 5;
+        int batchOffset = batch_idx * outlen_dim * numDim3;
+#endif
         for(size_t i = 0; i < outlen_dim; ++i)
         {
             // 取出物体置信度
-            // auto output_tensor = outputTensors[tidx];
-            float* objectTensor = (float*)outputTensors[1]->get_cpu_data();
+#ifdef OUTPUTS_3
             float box_objectness = objectTensor[objectOffset + i];
+#else
+            float box_objectness = tensor[batchOffset + i * numDim3 + 4];
+#endif
             if(box_objectness < pSophgoContext->m_thresh[0])
                 continue;
             // 进入解码阶段
-            float* boxTensor = (float*)outputTensors[0]->get_cpu_data();
+#ifdef OUTPUTS_3
             float center_x = (boxTensor[boxOffset + i * 4 + 0] + grids_x_[i]) * expanded_strides_[i];
             float center_y = (boxTensor[boxOffset + i * 4 + 1] + grids_y_[i]) * expanded_strides_[i];
             float w_temp = exp(boxTensor[boxOffset + i * 4 + 2]) * expanded_strides_[i];
             float h_temp = exp(boxTensor[boxOffset + i * 4 + 3]) * expanded_strides_[i];
+#else
+            float center_x = (tensor[batchOffset + i * numDim3 + 0] + grids_x_[i]) * expanded_strides_[i];
+            float center_y = (tensor[batchOffset + i * numDim3 + 1] + grids_y_[i]) * expanded_strides_[i];
+            float w_temp = exp(tensor[batchOffset + i * numDim3 + 2]) * expanded_strides_[i];
+            float h_temp = exp(tensor[batchOffset + i * numDim3 + 3]) * expanded_strides_[i];
+#endif
             center_x *= scale_x;
             center_y *= scale_y;
             w_temp *= scale_x;
@@ -215,8 +202,11 @@ void YoloXPost::postProcess(algorithm::Context& context, common::ObjectMetadatas
 
             for(int class_idx = 0;class_idx < pSophgoContext->m_class_num;++class_idx)
             {
-                float* classTensor = (float*)outputTensors[2]->get_cpu_data();
+#ifdef OUTPUTS_3
                 float box_cls_score = classTensor[classOffset + i * pSophgoContext->m_class_num + class_idx];
+#else
+                float box_cls_score = tensor[batchOffset + i * numDim3 + 5 + class_idx];
+#endif
                 float box_prob = box_objectness * box_cls_score;
                 if(box_prob > pSophgoContext->m_thresh[0])
                 {
@@ -257,7 +247,6 @@ void YoloXPost::postProcess(algorithm::Context& context, common::ObjectMetadatas
         }
     }
     std::cout<<"yoloX post cost: "<<clocker.tell_us()<<std::endl;
-    
 }
 
 

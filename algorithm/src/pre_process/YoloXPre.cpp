@@ -8,6 +8,8 @@ namespace sophon_stream {
 namespace algorithm {
 namespace pre_process {
 
+#define DUMP_FILE 0
+
 common::ErrorCode YoloXPre::preProcess(algorithm::Context& context,
     common::ObjectMetadatas& objectMetadatas)
 {
@@ -57,23 +59,23 @@ common::ErrorCode YoloXPre::preProcess(algorithm::Context& context,
         bm_image image_aligned;
         bool need_copy = image1.width & (64-1);
         if(need_copy){
-        int stride1[3], stride2[3];
-        bm_image_get_stride(image1, stride1);
-        stride2[0] = FFALIGN(stride1[0], 64);
-        stride2[1] = FFALIGN(stride1[1], 64);
-        stride2[2] = FFALIGN(stride1[2], 64);
-        bm_image_create(pSophgoContext->m_bmContext->handle(), image1.height, image1.width,
-            image1.image_format, image1.data_type, &image_aligned, stride2);
+            int stride1[3], stride2[3];
+            bm_image_get_stride(image1, stride1);
+            stride2[0] = FFALIGN(stride1[0], 64);
+            stride2[1] = FFALIGN(stride1[1], 64);
+            stride2[2] = FFALIGN(stride1[2], 64);
+            bm_image_create(pSophgoContext->m_bmContext->handle(), image1.height, image1.width,
+                image1.image_format, image1.data_type, &image_aligned, stride2);
 
-        bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
-        bmcv_copy_to_atrr_t copyToAttr;
-        memset(&copyToAttr, 0, sizeof(copyToAttr));
-        copyToAttr.start_x = 0;
-        copyToAttr.start_y = 0;
-        copyToAttr.if_padding = 1;
-        bmcv_image_copy_to(pSophgoContext->m_bmContext->handle(), copyToAttr, image1, image_aligned);
-        } else {
-        image_aligned = image1;
+            bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
+            bmcv_copy_to_atrr_t copyToAttr;
+            memset(&copyToAttr, 0, sizeof(copyToAttr));
+            copyToAttr.start_x = 0;
+            copyToAttr.start_y = 0;
+            copyToAttr.if_padding = 1;
+            bmcv_image_copy_to(pSophgoContext->m_bmContext->handle(), copyToAttr, image1, image_aligned);
+            } else {
+            image_aligned = image1;
         }
 
         float scale_w = float(pSophgoContext->m_net_w) / image_aligned.width;
@@ -93,7 +95,7 @@ common::ErrorCode YoloXPre::preProcess(algorithm::Context& context,
         memset(&padding_attr, 0, sizeof(padding_attr));
         padding_attr.dst_crop_stx = 0;
         padding_attr.dst_crop_sty = 0;
-        padding_attr.dst_crop_h = pad_w;
+        padding_attr.dst_crop_w = pad_w;
         padding_attr.dst_crop_h = pad_h;
         padding_attr.padding_b = 114;
         padding_attr.padding_g = 114;
@@ -104,17 +106,20 @@ common::ErrorCode YoloXPre::preProcess(algorithm::Context& context,
             &pSophgoContext->m_resized_imgs[i],
                 &padding_attr, &crop_rect);
         assert(BM_SUCCESS == ret);
-        #if DUMP_FILE
-            cv::Mat resized_img;
-            cv::bmcv::toMAT(&m_resized_imgs[i], resized_img);
-            std::string fname = cv::format("resized_img_%d.jpg", i);
-            cv::imwrite(fname, resized_img);
-        #endif
+#if DUMP_FILE
+        // static int b = 0;
+        // char szpath2[256] = {0}; 
+        // sprintf(szpath2,"resized.bmp",b);
+        // std::string strPath2(szpath2);
+        bm_image_write_to_bmp(pSophgoContext->m_resized_imgs[i], "resized.bmp");
+        // b++;
+#endif
         if(image0.image_format != FORMAT_BGR_PLANAR){
             bm_image_destroy(image1);
         }
         if(need_copy) bm_image_destroy(image_aligned);
     }
+
     ret = bmcv_image_convert_to(pSophgoContext->m_bmContext->handle(), image_n, 
     pSophgoContext->converto_attr, pSophgoContext->m_resized_imgs.data(), pSophgoContext->m_converto_imgs.data());
     CV_Assert(ret == 0);

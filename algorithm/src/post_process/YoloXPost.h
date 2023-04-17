@@ -34,11 +34,17 @@ class YoloXPost : public algorithm::PostProcess {
 
     void postProcess(algorithm::Context& context,
                      common::ObjectMetadatas& objectMetadatas) override;
+    ~YoloXPost();
   private:
     float sigmoid(float x);
     int argmax(float* data, int num);
   private:
     // void NMS(YoloXBoxVec &dets, float nmsConfidence);
+    int outlen_dim;
+    int * grids_x_ = nullptr;
+    int * grids_y_ = nullptr;
+    int * expanded_strides_ = nullptr;
+    int channel_len;
     
 };
 

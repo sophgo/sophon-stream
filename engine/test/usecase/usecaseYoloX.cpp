@@ -10,7 +10,6 @@
 #include "common/Clocker.h"
 #include <opencv2/opencv.hpp>
 
-
 #define DECODE_ID 5000
 #define YOLO_ID 5001
 #define ENCODE_ID 5006
@@ -18,9 +17,10 @@
 
 const std::vector<std::vector<int>> colors = {{255, 0, 0}, {255, 85, 0}, {255, 170, 0}, {255, 255, 0}, {170, 255, 0}, {85, 255, 0}, {0, 255, 0}, {0, 255, 85}, {0, 255, 170}, {0, 255, 255}, {0, 170, 255}, {0, 85, 255}, {0, 0, 255}, {85, 0, 255}, {170, 0, 255}, {255, 0, 255}, {255, 0, 170}, {255, 0, 85}, {255, 0, 0}, {255, 0, 255}, {255, 85, 255}, {255, 170, 255}, {255, 255, 255}, {170, 255, 255}, {85, 255, 255}};
 
-void draw_bmcv(bm_handle_t &handle, int classId, std::vector<std::string> &class_names,
+void draw_bmcv(bm_handle_t &handle, int classId, const std::vector<std::string> &class_names,
                float conf, int left, int top, int width, int height, bm_image &frame, bool put_text_flag) // Draw the predicted bounding box
 {
+
   int colors_num = colors.size();
   // Draw a rectangle displaying the bounding box
   bmcv_rect_t rect;
@@ -30,18 +30,14 @@ void draw_bmcv(bm_handle_t &handle, int classId, std::vector<std::string> &class
   rect.crop_h = height;
   std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << "," << rect.crop_h << std::endl;
   bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, colors[classId % colors_num][0], colors[classId % colors_num][1], colors[classId % colors_num][2]);
-  // cv::rectangle(frame, cv::Point(left, top), cv::Point(right, bottom), cv::Scalar(0, 0, 255), 3);
 
   if (put_text_flag)
   {
-    // Get the label for the class name and its confidence
-    std::string label = class_names[classId] + ":" + cv::format("%.2f", conf);
-    // Display the label at the top of the bounding box
-    // int baseLine;
-    // cv::Size labelSize = getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-    // top = std::max(top, labelSize.height);
-    // //rectangle(frame, Point(left, top - int(1.5 * labelSize.height)), Point(left + int(1.5 * labelSize.width), top + baseLine), Scalar(0, 255, 0), FILLED);
-    // cv::putText(frame, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(0, 255, 0), 1);
+    std::string label;
+
+    /* code */
+    label = class_names[classId] + ":" + cv::format("%.2f", conf);
+
     bmcv_point_t org = {left, top};
     bmcv_color_t color = {colors[classId % colors_num][0], colors[classId % colors_num][1], colors[classId % colors_num][2]};
     int thickness = 2;
@@ -52,7 +48,6 @@ void draw_bmcv(bm_handle_t &handle, int classId, std::vector<std::string> &class
     }
   }
 }
-
 
 /**
 @brief SophonYoloX集成测试函数入口
@@ -98,7 +93,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
   for (int i = 0; i < MAX_GRAPH; i++)
   {
     nlohmann::json graphConfigure;
-    graphConfigure["graph_id"] = i+1;
+    graphConfigure["graph_id"] = i + 1;
     nlohmann::json ElementsConfigure;
 
     std::ifstream istream;
@@ -112,15 +107,13 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     istream.close();
     std::cout << decoder << std::endl;
 
-    istream.open("../test/usecase/json/yoloX/Action.json");
+    // istream.open("../test/usecase/json/yoloX/Action.json");
+    istream.open("../test/usecase/json/yoloX/Action_cls7.json");
     assert(istream.is_open());
     istream >> action;
     action.at("id") = YOLO_ID;
     ElementsConfigure.push_back(action);
     istream.close();
-
-    std::vector<std::string> class_names = action.at("configure").at("models")[0].at("label_names");
-
 
     istream.open("../test/usecase/json/yoloX/Encoder.json");
     assert(istream.is_open());
@@ -136,15 +129,16 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     ElementsConfigure.push_back(reporter);
     istream.close();
 
-
     graphConfigure["elements"] = ElementsConfigure;
     graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID, 0, YOLO_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, ENCODE_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID, 0, REPORT_ID, 0));
 
+    const std::vector<std::string> class_names = action.at("configure").at("models")[0].at("label_names");
+
     engine.addGraph(graphConfigure.dump());
 
-    engine.setDataHandler(i+1, REPORT_ID, 0, [&](std::shared_ptr<void> data)
+    engine.setDataHandler(i + 1, REPORT_ID, 0, [&, class_names](std::shared_ptr<void> data)
                           {
                             IVS_DEBUG("data output 111111111111111");
                             auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
@@ -154,50 +148,46 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                             if (objectMetadata->mFrame->mEndOfStream)
                             {
                               graph_cnt++;
-                              if(graph_cnt==MAX_GRAPH){
+                              if (graph_cnt == MAX_GRAPH)
+                              {
                                 cv.notify_one();
                               }
                               return;
                             }
 #if DOWNLOAD_IMAGE
-        int width = objectMetadata->mFrame->mWidth;
-        int height = objectMetadata->mFrame->mHeight;
-        // 转格式
-        sophon_stream::common::FormatType format_type_stream = objectMetadata->mFrame->mFormatType;
-        sophon_stream::common::DataType data_type_stream = objectMetadata->mFrame->mDataType;
-        bm_image_format_ext format_type_bmcv = sophon_stream::common::format_stream2bmcv(format_type_stream);
-        bm_image_data_format_ext data_type_bmcv = sophon_stream::common::data_stream2bmcv(data_type_stream);
-        // 转成bm_image
-        bm_image image = * objectMetadata->mFrame->mSpData;
-        // bm_image_create(objectMetadata->mFrame->mSpData->mHandle, height, width, format_type_bmcv, 
-        // data_type_bmcv, &image);
-        // bm_image_attach(image, objectMetadata->mFrame->mSpData->mData.get());
+                            int width = objectMetadata->mFrame->mWidth;
+                            int height = objectMetadata->mFrame->mHeight;
 
-        bm_image imageStorage;
-        bm_image_create(objectMetadata->mFrame->mHandle, height, width, FORMAT_YUV420P, image.data_type, &imageStorage);
-        bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image, &imageStorage);
-        //bm_image_destroy(image);
-      
-      for (auto subObj : objectMetadata->mSubObjectMetadatas) {
-        // draw image
-        draw_bmcv(objectMetadata->mFrame->mHandle, subObj->mDetectedObjectMetadata->mClassify, class_names,
-        subObj->mDetectedObjectMetadata->mScores[0], subObj->mDetectedObjectMetadata->mBox.mX,
-          subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
-          subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage,true);
-      }
-      IVS_DEBUG("data output 666");
-        // save image
-        void* jpeg_data = NULL;
-        size_t out_size = 0;
-        int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, &imageStorage, &jpeg_data, &out_size);
-        if (ret == BM_SUCCESS) {
-          std::string img_file = "a.jpg";
-          FILE *fp = fopen(img_file.c_str(), "wb");
-          fwrite(jpeg_data, out_size, 1, fp);
-          fclose(fp);
-        }
-        free(jpeg_data);
-        bm_image_destroy(imageStorage);
+                            // 转成bm_image
+                            bm_image image = *objectMetadata->mFrame->mSpData;
+                            bm_image imageStorage;
+                            bm_image_create(objectMetadata->mFrame->mHandle, height, width, FORMAT_YUV420P, image.data_type, &imageStorage);
+                            bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image, &imageStorage);
+                            // bm_image_destroy(image);
+
+                            for (auto subObj : objectMetadata->mSubObjectMetadatas)
+                            {
+                              // draw image
+                              draw_bmcv(objectMetadata->mFrame->mHandle, subObj->mDetectedObjectMetadata->mClassify, class_names,
+                                        subObj->mDetectedObjectMetadata->mScores[0], subObj->mDetectedObjectMetadata->mBox.mX,
+                                        subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
+                                        subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage, true);
+                            }
+                            IVS_DEBUG("data output 666");
+                            // save image
+                            // bm_image_write_to_bmp(imageStorage, "a.bmp");
+                            void *jpeg_data = NULL;
+                            size_t out_size = 0;
+                            int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, &imageStorage, &jpeg_data, &out_size);
+                            if (ret == BM_SUCCESS)
+                            {
+                              std::string img_file = "a.jpg";
+                              FILE *fp = fopen(img_file.c_str(), "wb");
+                              fwrite(jpeg_data, out_size, 1, fp);
+                              fclose(fp);
+                            }
+                            free(jpeg_data);
+                            bm_image_destroy(imageStorage);
 
 #endif
                           });
@@ -216,7 +206,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     auto channelTask = std::make_shared<sophon_stream::element::ChannelTask>();
     channelTask->request.operation = sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
     channelTask->request.json = decodeConfigure.dump();
-    sophon_stream::common::ErrorCode errorCode = engine.sendData(i+1,
+    sophon_stream::common::ErrorCode errorCode = engine.sendData(i + 1,
                                                                  DECODE_ID,
                                                                  0,
                                                                  std::static_pointer_cast<void>(channelTask),

@@ -17,7 +17,6 @@ bool dequals(float a, float b) {
 
 template <typename T>
 int np_argmax1d(std::vector<T> &C, int length) {
-    // fixed int --> T
     T tmp_max = C[0];
     int arg_max = 0;
 
@@ -100,32 +99,6 @@ void HungarianState::_clear_covers() {
     }
 }
 
-// int HungarianState::_find_prime_in_row(int row) {
-//     /*
-//     Find the first prime element in the specified row. Returns
-//     the column index, or -1 if no starred element was found.
-//     */
-//     int col = -1;
-//     // 2019.3.14 当vector传入的模板类型为bool时,
-//     std::vector<bool> compares(marked[0].size(), false);
-
-//     for (int i = 0; i < marked[0].size(); i++) {
-//         if (marked[row][i] == 2) {
-//             compares[i] = true;
-//             if (col < 0) {
-//                 col = i;
-//             }
-//         }
-//     }
-
-//     if (marked[row][col] != 2) {
-//         col = -1;
-//     }
-//     return col;
-
-// }
-
-// 如果有bug, 高岱恒eat shit.
 void *step1(HungarianState &state) {
     /*
      * 第一次执行step1的时候(当然,不同于step3到step6, step1在每次更新的时候只会执行一次),
@@ -153,7 +126,6 @@ void *step1(HungarianState &state) {
     //          C++ 没有and, 只能用&&.
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            // fixme :修正EPSILON的值. (已改正) 难道dequals还有问题?
             if (dequals(state.C[i][j], 0)) {
                 if (state.col_uncovered[j] && state.row_uncovered[i]) {
                     state.marked[i][j] = 1;
@@ -175,7 +147,6 @@ void *step1(HungarianState &state) {
 
 }
 
-// 如果有bug, 高岱恒eat shit.
 void *step3(HungarianState &state) {
     /*Cover each column containing a starred zero. If n columns are covered,
       the starred zeros describe a complete set of unique assignments.
@@ -201,10 +172,6 @@ void *step3(HungarianState &state) {
         marked[i].resize(cols, false);
     }
 
-    // 一般来说, 判断一个变量的值和一个常量是否相等,
-    // 用constant == variable的形式, 因为可能会误写
-    // marked[i][j] = 1; 这样会永远返回True, 对于复杂工程
-    // debug的时候比较费劲...
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             if (state.marked[i][j] == 1) {
@@ -222,7 +189,6 @@ void *step3(HungarianState &state) {
     //       [False, False, False]], dtype=bool)
     //>>> np.any(marked, axis=0)
     //array([ True, False, False], dtype=bool)
-    // fixme: 忘记实现state.col_uncovered部分, 只实现了np.any(...)部分. (已修改.)
     for (int j = 0; j < cols; j++) {
         for (int i = 0; i < rows; i++) {
             if (marked[i][j] == true) {
@@ -231,7 +197,6 @@ void *step3(HungarianState &state) {
         }
     }
 
-//   fixme: 正常的代码会进入30次step3, 而C++版本代码只会进入2次.
     if (tmp < state.C.size()) {
         return (void *)step4;
     } else {
@@ -240,7 +205,6 @@ void *step3(HungarianState &state) {
 
 }
 
-// 如果有bug, 高岱恒eat shit.
 void *step4(HungarianState &state) {
     /*
     Find a noncovered zero and prime it. If there is no starred zero
@@ -249,7 +213,6 @@ void *step4(HungarianState &state) {
     zero. Continue in this manner until there are no uncovered zeros
     left. Save the smallest uncovered value and Go to Step 6.
      *
-     * Step4和Step5是重点. 2019.3.14先把计算逻辑写完, 明天再梳理它为什么要这么做.
      * */
     // We convert to int as numpy operations are faster on int.
     std::vector<std::vector<int>> C;
@@ -264,7 +227,6 @@ void *step4(HungarianState &state) {
     //    C = (state.C == 0).astype(np.int)
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            // fixme: 可能这里有问题? 2019.3.15
             if (dequals(state.C[i][j], 0)) {
                 C[i][j] = 1;
             }
@@ -312,11 +274,9 @@ void *step4(HungarianState &state) {
         //        >>> np.argmax(a)
         //        1 返回第一个最大值的索引位置!
         // row, col = np.unravel_index(np.argmax(covered_C), (n, m))
-        // 把np.argmax封装一下.
         int arg_max = 0;
         arg_max = np_argmax2d(covered_C, rows, cols);
         // np.unravel_index是把1维的索引映射回二维的位置.
-        // fixme 写错了坐标.(修正)
         int row_coord = arg_max / cols;
         int col_coord = arg_max - (row_coord * cols);
 
@@ -326,7 +286,6 @@ void *step4(HungarianState &state) {
             state.marked[row_coord][col_coord] = 2;
             // Find the first starred element in the row.
             int star_col = 0;
-            // fixme: 错误的改变了state.marked!!! 这里只是判断, 不改变state.marked本身.
             std::vector<int> tmp_restore(cols, 0);
             for (int j = 0; j < cols; j++) {
                 tmp_restore[j] = (int)(state.marked[row_coord][j] == 1);
@@ -347,7 +306,6 @@ void *step4(HungarianState &state) {
                 //                        state.row_uncovered.astype(dtype=np.int, copy=False))
                 // covered_C中第col列的值都*state.row_uncovered的值, 若对应的位置为False, 则covered_C中
                 // 第col列对应的某行的值为0; 若对应位置为True, 不变.
-                // fixed: 大bug!!!
                 for (int i = 0; i < rows; i++) {
                     if (state.row_uncovered[i] != true) {
                         covered_C[i][col_coord] = 0;
@@ -368,7 +326,6 @@ void *step4(HungarianState &state) {
     }
 }
 
-// 如果有bug, 邢子龙eat shit.
 void *step5(HungarianState &state) {
     /*
     Construct a series of alternating primed and starred zeros as follows.
@@ -386,14 +343,9 @@ void *step5(HungarianState &state) {
     unsigned int col_length = state.marked[0].size();
 
     int count = 0;
-    //    path = state.path
-    //    注意, path= state.path是浅拷贝.也就是说, 修改path也就是修改state.path本身.
-    //    path[count, 0] = state.Z0_r
-    //    path[count, 1] = state.Z0_c
     state.path[count][0] = state.Z0_r;
     state.path[count][1] = state.Z0_c;
 
-    // fixme: while里面可能有问题? 2019.3.15
     //    while True:
     //# Find the first starred element in the col defined by
     //# the path.
@@ -424,7 +376,6 @@ void *step5(HungarianState &state) {
 
 
         for (int i = 0; i < row_length; i++) {
-            // fixme: 龙哥修改, 贼NB.
             unsigned int colIndex = 0;
             (state.path[count][1] == -1) ? (colIndex = col_length - 1) : (colIndex = state.path[count][1]);
             tmp_row_count[i] = state.marked[i][colIndex];
@@ -437,9 +388,6 @@ void *step5(HungarianState &state) {
         }
         row = np_argmax1d(tmp_row_count, row_length);
 
-        //modify at 15:40
-        // fixme: 计算逻辑没问题, 问题出在vector不会将-1视为有效的索引. 而Python的numpy
-        //        会将-1视为是提取最后一个元素的索引. 故出现错误!
         unsigned int colIndex = 0;
         (state.path[count][1] == -1) ? (colIndex = col_length - 1) : (colIndex = state.path[count][1]);
 
@@ -485,7 +433,6 @@ void *step5(HungarianState &state) {
     //    state.marked[path[i, 0], path[i, 1]] = 0
     //    else:
     //    state.marked[path[i, 0], path[i, 1]] = 1
-    // fixme: .
     for (int i = 0; i < count + 1; i++) {
         unsigned int colIndex = 0;
         (state.path[i][1] == -1) ? (colIndex = col_length - 1) : (colIndex = state.path[i][1]);
@@ -501,7 +448,6 @@ void *step5(HungarianState &state) {
     // Erase all prime markings
     state._clear_covers();
     //    state.marked[state.marked == 2] = 0
-    // 2019.3.14 星期四
     for (int i = 0; i < row_length; i++) {
         for (int j = 0; j < col_length; j++) {
             if (state.marked[i][j] == 2) {
@@ -514,7 +460,6 @@ void *step5(HungarianState &state) {
 
 }
 
-// 如果有bug, 高岱恒eat shit.
 void *step6(HungarianState &state) {
     /*
     Add the value found in Step 4 to every element of each covered row,
@@ -546,11 +491,9 @@ void *step6(HungarianState &state) {
         //            对于我们这个任务, state.C的值都小于1. 所以minval中的默认值很重要.
         unsigned int rows = state.row_uncovered.size();
         unsigned int cols = state.col_uncovered.size();
-        // fixme: 最初minval的size定位rows了, 应该为cols.
         std::vector<float> minval(cols, MAX_FLOAT_VALUE);
         float minvals = MAX_FLOAT_VALUE;
 
-        // fixed: 2019.3.15 应该先遍历行, 再遍历列.
         for (int i = 0; i < rows; i++) {
             if (state.row_uncovered[i]) {
                 for (int j = 0; j < cols ; j++) {
@@ -618,7 +561,6 @@ std::vector<std::vector<int>> linear_assignment(std::vector<std::vector<float>> 
     const unsigned int rows = state.C.size();
     const unsigned int cols = state.C[0].size();
 
-    // fixme: (void*) 传递函数指针的逻辑?
     STEP_FUNC step = step1;
     // No need to bother with assignments if one of the dimensions
     // of the cost matrix is zero-length.
@@ -648,7 +590,6 @@ std::vector<std::vector<int>> linear_assignment(std::vector<std::vector<float>> 
             }
         }
     }
-    //fixme: 限定result的输出范围. 2019.3.15
     results.resize(count_idx);
     for (int i = 0; i < count_idx; i++) {
         results[i].resize(2);
