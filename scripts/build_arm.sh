@@ -2,10 +2,11 @@
 script_dir=$(dirname $(readlink -f "$0"))
 project_dir=${script_dir}/..
 
-if [ $# -ne 1 ] || ([ "$1" != "Debug" ] && [ "$1" != "Release" ]); then
+if [ $# -ne 2 ] || ([ "$1" != "Debug" ] && [ "$1" != "Release" ]); then
   echo "Usage: $0 <Debug|Release>"
   exit 1
 fi
+SOC_SDK=$2
 echo ${project_dir}
 pushd ${project_dir}
 
@@ -17,9 +18,9 @@ fi
 cd build_soc
  rm -rf *
 if [ "$1" == "Debug" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=~/RC2/soc-sdk ..
+  cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 elif [ "$1" == "Release" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=~/RC2/soc-sdk ..
+  cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 fi
 make -j
 echo "build algorithm completed"
@@ -32,9 +33,9 @@ fi
 cd build_soc
  rm -rf *
 if [ "$1" == "Debug" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=~/RC2/soc-sdk ..
+  cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 elif [ "$1" == "Release" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=~/RC2/soc-sdk ..
+  cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 fi
 make -j
 echo "build multimedia completed"
@@ -50,9 +51,9 @@ fi
 cd build_soc
  rm -rf *
 if [ "$1" == "Debug" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=~/RC2/soc-sdk ..
+  cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 elif [ "$1" == "Release" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=~/RC2/soc-sdk ..
+  cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 fi
 make -j
 echo "build engine completed"
