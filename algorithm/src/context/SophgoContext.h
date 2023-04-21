@@ -14,6 +14,28 @@ namespace context {
 
 float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *pIsAligWidth);
 
+
+#define MAX_YOLO_INPUT_NUM 3
+#define MAX_YOLO_ANCHOR_NUM 3
+typedef struct {
+  unsigned long long bottom_addr[MAX_YOLO_INPUT_NUM];
+  unsigned long long top_addr;
+  unsigned long long detected_num_addr;
+  int input_num;
+  int batch_num;
+  int hw_shape[MAX_YOLO_INPUT_NUM][2];
+  int num_classes;
+  int num_boxes;
+  int keep_top_k;
+  float nms_threshold;
+  float confidence_threshold;
+  float bias[MAX_YOLO_INPUT_NUM * MAX_YOLO_ANCHOR_NUM * 2];
+  float anchor_scale[MAX_YOLO_INPUT_NUM];
+  int clip_box;
+} tpu_kernel_api_yolov5NMS_t;
+
+#define MAX_BATCH 16
+
 struct SophgoContext :public Context {
     std::vector<std::pair<int,std::vector<std::vector<float>>>> boxes; // 输出结果
     /**
@@ -28,10 +50,14 @@ struct SophgoContext :public Context {
     std::vector<bm_image> m_resized_imgs;
     std::vector<bm_image> m_converto_imgs;
 
-    //configuration
-    // float m_confThreshold= 0.5;
-    // float m_nmsThreshold = 0.5;
-    // float m_outThreshold = 0.5; // for unet if n_class = 1
+    // tpu_kernel
+    tpu_kernel_api_yolov5NMS_t api[MAX_BATCH];
+    tpu_kernel_function_t func_id;
+    bm_device_mem_t out_dev_mem[MAX_BATCH];
+    bm_device_mem_t detect_num_mem[MAX_BATCH];
+    float* output_tensor[MAX_BATCH];
+    int32_t detect_num[MAX_BATCH];
+
 
     std::vector<float> m_thresh; // json --> Context --> SophgoContext
 

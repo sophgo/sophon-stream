@@ -10,7 +10,7 @@ namespace pre_process {
 
 common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
     common::ObjectMetadatas& objectMetadatas) {
-        Clocker clocker;
+        // Clocker clocker;
         context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
         std::vector<bm_image> images;
         for(auto& objMetadata:objectMetadatas)
@@ -140,7 +140,7 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
         bm_image_get_contiguous_device_mem(image_n, pSophgoContext->m_converto_imgs.data(), &input_dev_mem);
         input_tensor->set_device_mem(&input_dev_mem);
         input_tensor->set_shape_by_dim(0, image_n);  // set real batch number
-        std::cout<<"yolov5 pre cost: "<<clocker.tell_us()<<std::endl;
+        // std::cout<<"yolov5 pre cost: "<<clocker.tell_us()<<std::endl;
         return common::ErrorCode::SUCCESS;
     }
 
