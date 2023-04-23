@@ -9,6 +9,7 @@
 #include <fstream>
 #include "common/Clocker.h"
 #include <opencv2/opencv.hpp>
+#include <sys/stat.h>
 
 #define DECODE_ID 5000
 #define YOLO_ID 5001
@@ -81,9 +82,25 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 */
 
 #define MAX_GRAPH 1
+#define MAX_CHANNEL 5
 #define DOWNLOAD_IMAGE 0
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 {
+
+#if DOWNLOAD_IMAGE
+  const char * dir_path = "./results";
+  struct stat info;
+    if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
+        std::cout << "Directory already exists." << std::endl;
+    } else {
+        if (mkdir(dir_path, 0777) == 0) {
+            std::cout << "Directory created successfully." << std::endl;
+        } else {
+            std::cerr << "Error creating directory." << std::endl;
+        }
+    }
+#endif
+
   std::string coco_file = "../test/coco.names";
   std::vector<std::string> coco_classnames;
   std::ifstream ifs(coco_file);
@@ -163,7 +180,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                             if (objectMetadata->mFrame->mEndOfStream)
                             {
                               graph_cnt++;
-                              if(graph_cnt==MAX_GRAPH){
+                              if(graph_cnt==MAX_CHANNEL){
                                 cv.notify_one();
                               }
                               return;
@@ -200,7 +217,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
         size_t out_size = 0;
         int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, &imageStorage, &jpeg_data, &out_size);
         if (ret == BM_SUCCESS) {
-          std::string img_file = "a.jpg";
+          std::string img_file = "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) + "_" + std::to_string(frameCount) + ".jpg";
           FILE *fp = fopen(img_file.c_str(), "wb");
           fwrite(jpeg_data, out_size, 1, fp);
           fclose(fp);
@@ -211,25 +228,28 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 #endif
                           });
 
-    nlohmann::json decodeConfigure;
-    decodeConfigure["channel_id"] = 1;
-    decodeConfigure["url"] = "../test/test_car_person_1080P.avi";
-    // decodeConfigure["url"] = "../test/13.mp4";
-    // decodeConfigure["url"] = "../test/18.mp4";
-    decodeConfigure["resize_rate"] = 2.0f;
-    decodeConfigure["timeout"] = 0;
-    decodeConfigure["source_type"] = 0;
-    decodeConfigure["multimedia_name"] = "decode_picture";
-    decodeConfigure["reopen_times"] = -1;
+    nlohmann::json decodeConfigure[MAX_CHANNEL];
+    for(int j=0;j<MAX_CHANNEL;j++){
+      decodeConfigure[j]["channel_id"] = j+1;
+      decodeConfigure[j]["url"] = "../test/test_car_person_1080P.avi";
 
-    auto channelTask = std::make_shared<sophon_stream::element::ChannelTask>();
-    channelTask->request.operation = sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
-    channelTask->request.json = decodeConfigure.dump();
-    sophon_stream::common::ErrorCode errorCode = engine.sendData(i+1,
-                                                                 DECODE_ID,
-                                                                 0,
-                                                                 std::static_pointer_cast<void>(channelTask),
-                                                                 std::chrono::milliseconds(200));
+      decodeConfigure[j]["resize_rate"] = 2.0f;
+      decodeConfigure[j]["timeout"] = 0;
+      decodeConfigure[j]["source_type"] = 0;
+      decodeConfigure[j]["multimedia_name"] = "decode_picture";
+      decodeConfigure[j]["reopen_times"] = -1;
+
+      auto channelTask = std::make_shared<sophon_stream::element::ChannelTask>();
+      channelTask->request.operation = sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
+      channelTask->request.channelId = j+1;
+      channelTask->request.json = decodeConfigure[j].dump();
+      sophon_stream::common::ErrorCode errorCode = engine.sendData(i+1,
+                                                                  DECODE_ID,
+                                                                  0,
+                                                                  std::static_pointer_cast<void>(channelTask),
+                                                                  std::chrono::milliseconds(200));
+    }
+
   }
 
   {

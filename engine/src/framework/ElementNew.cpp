@@ -249,7 +249,7 @@ constexpr const char* Element::JSON_REPEATED_TIMEOUT_FIELD;
 constexpr const char* Element::JSON_CONFIGURE_FIELD;
 
 static constexpr int DEFAULT_MILLISECONDS_TIMEOUT = 200;
-
+#include <iostream>
 /**
  * Thread function.
  */
@@ -282,10 +282,22 @@ void Element::run() {
                         && (0 == mMillisecondsTimeout
                             || (!mRepeatedTimeout 
                                 && !lastNoTimeout)))) {
+            // 上一次timeout: continue, 上一次noTimeout: dowork
+                                    // if(mId==5000){
+                                    //     usleep(40000);
+                                    //     std::cout<<static_cast<int>(mThreadStatus.load())<<"--"
+                                    //     <<currentNoTimeout<<"--"
+                                    //     <<mMillisecondsTimeout
+                                    //     <<"--"<<mRepeatedTimeout<<"--"<<lastNoTimeout<<std::endl;
+                                    // }
                 continue;
             }
 
             if (common::ErrorCode::SUCCESS == doWork()) {
+                                                    if(mId==5000){
+                                                        IVS_INFO("dowork  Element run {0} {1} {2} {3} {4}",static_cast<int>(mThreadStatus.load()),currentNoTimeout,
+                                                        mMillisecondsTimeout,mRepeatedTimeout,lastNoTimeout);
+                                    }
                 if(currentNoTimeout){
                     --mNotifyCount;
                 }

@@ -107,6 +107,16 @@ void Yolov5Post::postProcess(algorithm::Context& context, common::ObjectMetadata
       tx1 = (int)((pSophgoContext->m_net_w - (int)(image.width * ratio)) / 2);
   }
 #endif
+
+    // int out_len_max = 25200 * 7;
+    // int batch_num = 1;
+    // auto ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &pSophgoContext->out_dev_mem[i], out_len_max * sizeof(float));
+    // assert(BM_SUCCESS == ret);
+    // ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &pSophgoContext->detect_num_mem[i], batch_num * sizeof(int32_t));
+    // assert(BM_SUCCESS == ret);
+    // pSophgoContext->api[i].top_addr = bm_mem_get_device_addr(pSophgoContext->out_dev_mem[i]);
+    // pSophgoContext->api[i].detected_num_addr = bm_mem_get_device_addr(pSophgoContext->detect_num_mem[i]);
+
     tpu_kernel_launch(pSophgoContext->m_bmContext->handle(), pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
     bm_thread_sync(pSophgoContext->m_bmContext->handle());
     bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)(pSophgoContext->detect_num + i), pSophgoContext->detect_num_mem[i], pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
@@ -140,6 +150,8 @@ void Yolov5Post::postProcess(algorithm::Context& context, common::ObjectMetadata
       spObjData->mDetectedObjectMetadata->mClassify = temp_bbox.class_id;
       objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
     }
+    // bm_free_device(pSophgoContext->m_bmContext->handle(), pSophgoContext->out_dev_mem[i]);
+    // bm_free_device(pSophgoContext->m_bmContext->handle(), pSophgoContext->detect_num_mem[i]);
   }
 }
 

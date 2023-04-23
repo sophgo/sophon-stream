@@ -1,6 +1,7 @@
 #include "DecoderElement.h"
 
 #include <dlfcn.h>
+#include <sys/prctl.h>
 
 #include <nlohmann/json.hpp>
 
@@ -157,6 +158,7 @@ common::ErrorCode DecoderElement::startTask(std::shared_ptr<ChannelTask>& channe
 
     IVS_INFO("add one channel task");
     std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
+    // if channel exists, return success
     if(mThreadsPool.find(channelTask->request.channelId)!=mThreadsPool.end()) {
         channelTask->response.errorCode = common::ErrorCode::SUCCESS;
         std::string error = "this channel is used! channel id is "+std::to_string(channelTask->request.channelId);
@@ -185,6 +187,8 @@ common::ErrorCode DecoderElement::startTask(std::shared_ptr<ChannelTask>& channe
     channelInfo->mMtx = std::make_shared<std::mutex>();
     channelInfo->mCv = std::make_shared<std::condition_variable>();
     channelInfo->mThreadWrapper->init([this,channelInfo,channelTask]()->common::ErrorCode {
+
+        prctl(PR_SET_NAME, std::to_string(channelTask->request.channelId).c_str());
 
         auto& multimediaApiFactory = multimedia::SingletonMultiMediaApiFactory::getInstance();
         channelInfo->mSpDecoder = multimediaApiFactory.make();
@@ -221,7 +225,6 @@ common::ErrorCode DecoderElement::startTask(std::shared_ptr<ChannelTask>& channe
             channelTask->response.errorCode = common::ErrorCode::SUCCESS;
             channelInfo->mCv->notify_one();
         }
-
         return ret;
 
     }, [this,channelInfo,channelTask, sourceType, reopentimes, capacity]()->common::ErrorCode {
@@ -398,6 +401,7 @@ common::ErrorCode DecoderElement::process(const bool lastFrame,const int sourceT
                      static_cast<void*>(objectMetadata.get()));
             return errorCode;
         }
+        // 尝试降低decoder线程占用率，不起作用
         //usleep(400000);
     } else {
         if(ret==common::ErrorCode::NOT_VIDEO_CHANNEL){

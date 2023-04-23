@@ -45,6 +45,8 @@ struct SophgoContext :public Context {
      */
     common::ErrorCode init(const std::string& json) override;
 
+    ~SophgoContext();
+
     std::shared_ptr<BMNNContext> m_bmContext;
     std::shared_ptr<BMNNNetwork> m_bmNetwork;
     std::vector<bm_image> m_resized_imgs;

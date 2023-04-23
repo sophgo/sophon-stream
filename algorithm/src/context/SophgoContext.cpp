@@ -37,6 +37,17 @@ float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *
   return ratio;
 }
 
+SophgoContext::~SophgoContext()
+{
+        int input_num = m_bmNetwork->outputTensorNum();
+        for(int i = 0;i < input_num; ++i)
+        {
+                bm_free_device(m_bmContext->handle(), out_dev_mem[i]);
+                bm_free_device(m_bmContext->handle(), detect_num_mem[i]);
+        }
+        
+}
+
 /**
  * context初始化
  * @param[in] json: 初始化的json字符串
