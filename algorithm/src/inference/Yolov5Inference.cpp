@@ -146,11 +146,16 @@ namespace sophon_stream
       common::ErrorCode Yolov5Inference::predict(algorithm::Context &context)
       {
         // Clocker clocker;
+        // std::cout << "do inference" << std::endl;
         context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
         int ret = 0;
         if (!pSophgoContext->mEndOfStream)
           ret = pSophgoContext->m_bmNetwork->forward();
         // std::cout<<"yolov5 inference cost: "<<clocker.tell_us()<<std::endl;
+
+      //  std::cout << "end inference" << std::endl;
+
+
         return static_cast<common::ErrorCode>(ret);
       }
 

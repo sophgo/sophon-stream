@@ -81,8 +81,8 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 
 */
 
-#define MAX_GRAPH 1
-#define MAX_CHANNEL 5
+#define MAX_GRAPH 10
+#define MAX_CHANNEL 1
 #define DOWNLOAD_IMAGE 0
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 {
@@ -180,7 +180,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                             if (objectMetadata->mFrame->mEndOfStream)
                             {
                               graph_cnt++;
-                              if(graph_cnt==MAX_CHANNEL){
+                              if(graph_cnt==MAX_GRAPH){
                                 cv.notify_one();
                               }
                               return;
@@ -255,6 +255,9 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
   {
     std::unique_lock<std::mutex> uq(mtx);
     cv.wait(uq);
+  }
+  for(int i=0;i<MAX_GRAPH;i++){
+    engine.stop(i+1);
   }
   long totalCost = clocker.tell_us();
   std::cout << " total time cost " << totalCost << " us." << std::endl;

@@ -83,7 +83,7 @@ private:
     int refcount;
  
     AVFrame *frame;
-    AVPacket pkt;
+    AVPacket *pkt;
     AVFormatContext *ifmt_ctx;
     AVCodec *decoder;
     AVCodecContext *video_dec_ctx;

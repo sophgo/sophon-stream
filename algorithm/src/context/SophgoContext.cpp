@@ -39,6 +39,7 @@ float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *
 
 SophgoContext::~SophgoContext()
 {
+        // std::cout << "sophgo context uninit" << std::endl;
         int input_num = m_bmNetwork->outputTensorNum();
         for(int i = 0;i < input_num; ++i)
         {

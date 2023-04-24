@@ -44,7 +44,7 @@ Element::Element()
  * Destructor of class Element. 
  */
 Element::~Element() {
-    // stop();
+     //stop();
 }
 
 /**
@@ -283,13 +283,10 @@ void Element::run() {
                             || (!mRepeatedTimeout 
                                 && !lastNoTimeout)))) {
             // 上一次timeout: continue, 上一次noTimeout: dowork
-                                    // if(mId==5000){
-                                    //     usleep(40000);
-                                    //     std::cout<<static_cast<int>(mThreadStatus.load())<<"--"
-                                    //     <<currentNoTimeout<<"--"
-                                    //     <<mMillisecondsTimeout
-                                    //     <<"--"<<mRepeatedTimeout<<"--"<<lastNoTimeout<<std::endl;
-                                    // }
+                                        // std::cout<<static_cast<int>(mThreadStatus.load())<<"--"
+                                        // <<currentNoTimeout<<"--"
+                                        // <<mMillisecondsTimeout
+                                        // <<"--"<<mRepeatedTimeout<<"--"<<lastNoTimeout<<std::endl;
                 continue;
             }
 

@@ -92,9 +92,11 @@ void draw_bmcv(bm_handle_t &&handle, int classId, float conf, int left, int top,
 // tpu-kernel
 void Yolov5Post::postProcess(algorithm::Context& context, common::ObjectMetadatas& objectMetadatas)
 {
+  // std::cout << "do postprocess" << std::endl;
     context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
 
     for(int i = 0; i < pSophgoContext->max_batch; i++){
+    // for(int i = 0;i<objectMetadatas.size();++i){
       if(pSophgoContext->mEndOfStream) continue;
       bm_image image = * objectMetadatas[i]->mFrame->mSpData;
     int tx1 = 0, ty1 = 0;
@@ -108,14 +110,23 @@ void Yolov5Post::postProcess(algorithm::Context& context, common::ObjectMetadata
   }
 #endif
 
+    // test
     // int out_len_max = 25200 * 7;
     // int batch_num = 1;
-    // auto ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &pSophgoContext->out_dev_mem[i], out_len_max * sizeof(float));
+    // bm_device_mem_t out_dev_mem;
+    // bm_device_mem_t detect_num_mem;
+    // auto ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &out_dev_mem, out_len_max * sizeof(float));
     // assert(BM_SUCCESS == ret);
-    // ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &pSophgoContext->detect_num_mem[i], batch_num * sizeof(int32_t));
+    // ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &detect_num_mem, batch_num * sizeof(int32_t));
     // assert(BM_SUCCESS == ret);
-    // pSophgoContext->api[i].top_addr = bm_mem_get_device_addr(pSophgoContext->out_dev_mem[i]);
-    // pSophgoContext->api[i].detected_num_addr = bm_mem_get_device_addr(pSophgoContext->detect_num_mem[i]);
+    // pSophgoContext->api[i].top_addr = bm_mem_get_device_addr(out_dev_mem);
+    // pSophgoContext->api[i].detected_num_addr = bm_mem_get_device_addr(detect_num_mem);
+    // tpu_kernel_launch(pSophgoContext->m_bmContext->handle(), pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
+    // bm_thread_sync(pSophgoContext->m_bmContext->handle());
+    // bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)(pSophgoContext->detect_num + i), detect_num_mem, pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
+    // bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)pSophgoContext->output_tensor[i], out_dev_mem, pSophgoContext->detect_num[i] * 7 * sizeof(float), 0);
+    // endtest
+
 
     tpu_kernel_launch(pSophgoContext->m_bmContext->handle(), pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
     bm_thread_sync(pSophgoContext->m_bmContext->handle());
@@ -150,8 +161,11 @@ void Yolov5Post::postProcess(algorithm::Context& context, common::ObjectMetadata
       spObjData->mDetectedObjectMetadata->mClassify = temp_bbox.class_id;
       objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
     }
-    // bm_free_device(pSophgoContext->m_bmContext->handle(), pSophgoContext->out_dev_mem[i]);
-    // bm_free_device(pSophgoContext->m_bmContext->handle(), pSophgoContext->detect_num_mem[i]);
+
+
+    // std::cout << "end postprocess" << std::endl;
+    // bm_free_device(pSophgoContext->m_bmContext->handle(), out_dev_mem);
+    // bm_free_device(pSophgoContext->m_bmContext->handle(), detect_num_mem);
   }
 }
 

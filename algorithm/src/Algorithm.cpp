@@ -18,6 +18,7 @@ Algorithm::Algorithm() {
  * 析构函数
  */
 Algorithm::~Algorithm() {
+    // std::cout << "Algorithm uninit" << std::endl;
 }
 
 #define JSON_ALGORITHM_NAME_FIELD "algorithm_name"

@@ -103,16 +103,18 @@ VideoDecFFM::VideoDecFFM()
 
     video_stream_idx = -1;
     refcount = 1;
-
-    av_init_packet(&pkt);
-    pkt.data = NULL;
-    pkt.size = 0;
+    pkt = new AVPacket;
+    av_init_packet(pkt);
+    pkt->data = NULL;
+    pkt->size = 0;
 
     frame = av_frame_alloc();
 }
 
 VideoDecFFM::~VideoDecFFM()
 {
+    delete pkt;
+    pkt = nullptr;
     closeDec();
     printf("#VideoDecFFM exit \n");
 }
@@ -412,8 +414,8 @@ int VideoDecFFM::openDec(bm_handle_t *dec_handle, const char *input)
            "openDec video_stream_idx = %d, pix_fmt = %d\n",
            video_stream_idx, pix_fmt);
 
-    thread push(&VideoDecFFM::vidPushImage, this);
-    push.detach();
+    // thread push(&VideoDecFFM::vidPushImage, this);
+    // push.detach();
 
     av_dict_free(&dict);
 
@@ -520,8 +522,9 @@ AVFrame *VideoDecFFM::grabFrame(int& eof,double& timestamp)
 
     while (1)
     {
-        av_packet_unref(&pkt);
-        ret = av_read_frame(ifmt_ctx, &pkt);
+        if(pkt->side_data!=nullptr)
+            av_packet_unref(pkt);
+        ret = av_read_frame(ifmt_ctx, pkt);
         if (ret < 0)
         {
             if (ret == AVERROR(EAGAIN))
@@ -536,7 +539,7 @@ AVFrame *VideoDecFFM::grabFrame(int& eof,double& timestamp)
 
                 continue;
             }
-            else if (ret == AVERROR_EOF&&pkt.stream_index == video_stream_idx)
+            else if (ret == AVERROR_EOF&&pkt->stream_index == video_stream_idx)
             {
                 std::cout << " eof!~! " << std::endl;
                 av_log(video_dec_ctx, AV_LOG_ERROR, "av_read_frame ret(%d) maybe eof...\n", ret);
@@ -546,11 +549,11 @@ AVFrame *VideoDecFFM::grabFrame(int& eof,double& timestamp)
             }
         }
 
-        if (pkt.stream_index != video_stream_idx)
+        if (pkt->stream_index != video_stream_idx)
         {
             continue;
         }
-        timestamp = pkt.pts * av_q2d(st->time_base);
+        timestamp = pkt->pts * av_q2d(st->time_base);
 
         if (!frame)
         {
@@ -561,7 +564,7 @@ AVFrame *VideoDecFFM::grabFrame(int& eof,double& timestamp)
         if (refcount)
             av_frame_unref(frame);
         gettimeofday(&tv1, NULL);
-        ret = avcodec_decode_video2(video_dec_ctx, frame, &got_frame, &pkt);
+        ret = avcodec_decode_video2(video_dec_ctx, frame, &got_frame, pkt);
         if (ret < 0)
         {
             av_log(video_dec_ctx, AV_LOG_ERROR, "Error decoding video frame (%d)\n", ret);

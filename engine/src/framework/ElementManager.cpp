@@ -22,7 +22,7 @@ ElementManager::ElementManager()
  * Destructor of class ElementManager.
  */
 ElementManager::~ElementManager() {
-    uninit();
+    // uninit();
 }
 
 constexpr const char* ElementManager::JSON_GRAPH_ID_FIELD;
