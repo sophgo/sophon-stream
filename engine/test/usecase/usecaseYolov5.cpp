@@ -13,6 +13,7 @@
 
 #define DECODE_ID 5000
 #define YOLO_ID 5001
+#define POST_ID 5002
 #define ENCODE_ID 5006
 #define REPORT_ID 5555
 
@@ -81,9 +82,9 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 
 */
 
-#define MAX_GRAPH 10
+#define MAX_GRAPH 1
 #define MAX_CHANNEL 1
-#define DOWNLOAD_IMAGE 0
+#define DOWNLOAD_IMAGE 1
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 {
 
@@ -131,7 +132,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     nlohmann::json ElementsConfigure;
 
     std::ifstream istream;
-    nlohmann::json decoder, action, encoder, reporter;
+    nlohmann::json decoder, action, post, encoder, reporter;
 
     istream.open("../test/usecase/json/yolov5/Decoder.json");
     assert(istream.is_open());
@@ -148,6 +149,13 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     ElementsConfigure.push_back(action);
     istream.close();
 
+    istream.open("../test/usecase/json/yolov5/Post.json");
+    assert(istream.is_open());
+    istream >> post;
+    post.at("id") = POST_ID;
+    ElementsConfigure.push_back(post);
+    istream.close();
+
     istream.open("../test/usecase/json/yolov5/Encoder.json");
     assert(istream.is_open());
     istream >> encoder;
@@ -162,10 +170,10 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     ElementsConfigure.push_back(reporter);
     istream.close();
 
-
     graphConfigure["elements"] = ElementsConfigure;
     graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID, 0, YOLO_ID, 0));
-    graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, ENCODE_ID, 0));
+    graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
+    graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0, ENCODE_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID, 0, REPORT_ID, 0));
 
     engine.addGraph(graphConfigure.dump());
@@ -180,7 +188,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                             if (objectMetadata->mFrame->mEndOfStream)
                             {
                               graph_cnt++;
-                              if(graph_cnt==MAX_GRAPH){
+                              if(graph_cnt==MAX_CHANNEL){
                                 cv.notify_one();
                               }
                               return;

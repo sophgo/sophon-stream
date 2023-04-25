@@ -32,6 +32,9 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             {
                 pSophgoContext->m_frame_w = objMetadata->mFrame->mWidth;
                 pSophgoContext->m_frame_h = objMetadata->mFrame->mHeight;
+                for(int i = 0;i < pSophgoContext->output_num; ++i)
+                    objMetadata->mOutputTensors.push_back(pSophgoContext->m_bmNetwork->outputTensor(i));
+                objMetadata->mAlgorithmHandle = std::make_shared<bm_handle_t>(pSophgoContext->m_bmContext->handle());
             }
             images.push_back(*objMetadata->mFrame->mSpData);
         }

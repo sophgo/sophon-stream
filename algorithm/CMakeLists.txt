@@ -52,6 +52,12 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/post_process/UnetPost.cpp
         src/post_process/YoloXPost.cpp
         src/pre_process/Yolov5Pre.cpp
+        
+        src/pre_process/Yolov5PostPre.cpp
+        src/inference/Yolov5PostInference.cpp
+        src/factory/Yolov5PostFactory.cpp
+        src/post_process/Yolov5PostPost.cpp
+
         src/pre_process/UnetPre.cpp
         src/pre_process/YoloXPre.cpp
         src/pre_process/HostEncodePre.cpp
@@ -95,6 +101,12 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
         src/post_process/YoloXPost.cpp
         src/post_process/UnetPost.cpp
         src/pre_process/Yolov5Pre.cpp
+
+        src/pre_process/Yolov5PostPre.cpp
+        src/inference/Yolov5PostInference.cpp
+        src/factory/Yolov5PostFactory.cpp
+        src/post_process/Yolov5PostPost.cpp
+        
         src/pre_process/UnetPre.cpp
         src/pre_process/YoloXPre.cpp
         src/pre_process/HostEncodePre.cpp

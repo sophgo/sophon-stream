@@ -70,103 +70,78 @@ void Yolov5Post::NMS(YoloV5BoxVec &dets, float nmsConfidence)
 }
 
 
-const std::vector<std::vector<int>> colors = {{255, 0, 0}, {255, 85, 0}, {255, 170, 0}, {255, 255, 0}, {170, 255, 0}, \
-                {85, 255, 0}, {0, 255, 0}, {0, 255, 85}, {0, 255, 170}, {0, 255, 255}, {0, 170, 255}, {0, 85, 255}, \
-                {0, 0, 255}, {85, 0, 255}, {170, 0, 255}, {255, 0, 255}, {255, 0, 170}, {255, 0, 85}, {255, 0, 0},\
-                {255, 0, 255}, {255, 85, 255}, {255, 170, 255}, {255, 255, 255}, {170, 255, 255}, {85, 255, 255}};
-
-void draw_bmcv(bm_handle_t &&handle, int classId, float conf, int left, int top, int width, int height, bm_image& frame)   // Draw the predicted bounding box
-{
-  int colors_num = colors.size();
-  //Draw a rectangle displaying the bounding box
-  bmcv_rect_t rect;
-  rect.start_x = left;
-  rect.start_y = top;
-  rect.crop_w = width;
-  rect.crop_h = height;
-  std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << "," << rect.crop_h << std::endl;
-  bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, colors[classId % colors_num][0], colors[classId % colors_num][1], colors[classId % colors_num][2]);
-  // cv::rectangle(frame, cv::Point(left, top), cv::Point(right, bottom), cv::Scalar(0, 0, 255), 3);
-}
-
 // tpu-kernel
 void Yolov5Post::postProcess(algorithm::Context& context, common::ObjectMetadatas& objectMetadatas)
 {
-  // std::cout << "do postprocess" << std::endl;
-    context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
+//     context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
 
-    for(int i = 0; i < pSophgoContext->max_batch; i++){
-    // for(int i = 0;i<objectMetadatas.size();++i){
-      if(pSophgoContext->mEndOfStream) continue;
-      bm_image image = * objectMetadatas[i]->mFrame->mSpData;
-    int tx1 = 0, ty1 = 0;
-#ifdef USE_ASPECT_RATIO
-    bool isAlignWidth = false;
-    float ratio = context::get_aspect_scaled_ratio(image.width, image.height, pSophgoContext->m_net_w, pSophgoContext->m_net_h, &isAlignWidth);
-    if (isAlignWidth) {
-      ty1 = (int)((pSophgoContext->m_net_h - (int)(image.height * ratio)) / 2);
-    } else {
-      tx1 = (int)((pSophgoContext->m_net_w - (int)(image.width * ratio)) / 2);
-  }
-#endif
+//     for(int i = 0; i < pSophgoContext->max_batch; i++){
+//       if(pSophgoContext->mEndOfStream) continue;
+//       bm_image image = * objectMetadatas[i]->mFrame->mSpData;
+//       int tx1 = 0, ty1 = 0;
+// #ifdef USE_ASPECT_RATIO
+//       bool isAlignWidth = false;
+//       float ratio = context::get_aspect_scaled_ratio(image.width, image.height, pSophgoContext->m_net_w, pSophgoContext->m_net_h, &isAlignWidth);
+//       if (isAlignWidth) {
+//         ty1 = (int)((pSophgoContext->m_net_h - (int)(image.height * ratio)) / 2);
+//       } else {
+//         tx1 = (int)((pSophgoContext->m_net_w - (int)(image.width * ratio)) / 2);
+//       }
+// #endif
 
-    // test
-    // int out_len_max = 25200 * 7;
-    // int batch_num = 1;
-    // bm_device_mem_t out_dev_mem;
-    // bm_device_mem_t detect_num_mem;
-    // auto ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &out_dev_mem, out_len_max * sizeof(float));
-    // assert(BM_SUCCESS == ret);
-    // ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &detect_num_mem, batch_num * sizeof(int32_t));
-    // assert(BM_SUCCESS == ret);
-    // pSophgoContext->api[i].top_addr = bm_mem_get_device_addr(out_dev_mem);
-    // pSophgoContext->api[i].detected_num_addr = bm_mem_get_device_addr(detect_num_mem);
-    // tpu_kernel_launch(pSophgoContext->m_bmContext->handle(), pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
-    // bm_thread_sync(pSophgoContext->m_bmContext->handle());
-    // bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)(pSophgoContext->detect_num + i), detect_num_mem, pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
-    // bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)pSophgoContext->output_tensor[i], out_dev_mem, pSophgoContext->detect_num[i] * 7 * sizeof(float), 0);
-    // endtest
+//     // test
+//     // int out_len_max = 25200 * 7;
+//     // int batch_num = 1;
+//     // bm_device_mem_t out_dev_mem;
+//     // bm_device_mem_t detect_num_mem;
+//     // auto ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &out_dev_mem, out_len_max * sizeof(float));
+//     // assert(BM_SUCCESS == ret);
+//     // ret = bm_malloc_device_byte(pSophgoContext->m_bmContext->handle(), &detect_num_mem, batch_num * sizeof(int32_t));
+//     // assert(BM_SUCCESS == ret);
+//     // pSophgoContext->api[i].top_addr = bm_mem_get_device_addr(out_dev_mem);
+//     // pSophgoContext->api[i].detected_num_addr = bm_mem_get_device_addr(detect_num_mem);
+//     // tpu_kernel_launch(pSophgoContext->m_bmContext->handle(), pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
+//     // bm_thread_sync(pSophgoContext->m_bmContext->handle());
+//     // bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)(pSophgoContext->detect_num + i), detect_num_mem, pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
+//     // bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)pSophgoContext->output_tensor[i], out_dev_mem, pSophgoContext->detect_num[i] * 7 * sizeof(float), 0);
+//     // endtest
 
 
-    tpu_kernel_launch(pSophgoContext->m_bmContext->handle(), pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
-    bm_thread_sync(pSophgoContext->m_bmContext->handle());
-    bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)(pSophgoContext->detect_num + i), pSophgoContext->detect_num_mem[i], pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
-    bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)pSophgoContext->output_tensor[i], pSophgoContext->out_dev_mem[i], pSophgoContext->detect_num[i] * 7 * sizeof(float), 0);  // 25200*7
-    YoloV5BoxVec vec;
-    // detected_boxes.push_back(vec);
-    for (int bid = 0; bid < pSophgoContext->detect_num[i]; bid++) {
-      YoloV5Box temp_bbox;
-      temp_bbox.class_id = *(pSophgoContext->output_tensor[i] + 7 * bid + 1);
-      if (temp_bbox.class_id == -1) {
-        continue;
-      }
-      temp_bbox.score = *(pSophgoContext->output_tensor[i] + 7 * bid + 2);
-      float centerX = (*(pSophgoContext->output_tensor[i] + 7 * bid + 3) + 1 - tx1) / ratio - 1;
-      float centerY = (*(pSophgoContext->output_tensor[i] + 7 * bid + 4) + 1 - ty1) / ratio - 1;
-      temp_bbox.width = (*(pSophgoContext->output_tensor[i] + 7 * bid + 5) + 0.5) / ratio;
-      temp_bbox.height = (*(pSophgoContext->output_tensor[i] + 7 * bid + 6) + 0.5) / ratio;
+//     tpu_kernel_launch(pSophgoContext->m_bmContext->handle(), pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
+//     bm_thread_sync(pSophgoContext->m_bmContext->handle());
+//     bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)(pSophgoContext->detect_num + i), pSophgoContext->detect_num_mem[i], pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
+//     bm_memcpy_d2s_partial_offset(pSophgoContext->m_bmContext->handle(), (void*)pSophgoContext->output_tensor[i], pSophgoContext->out_dev_mem[i], pSophgoContext->detect_num[i] * 7 * sizeof(float), 0);  // 25200*7
+    
+//     for (int bid = 0; bid < pSophgoContext->detect_num[i]; bid++) {
+//       YoloV5Box temp_bbox;
+//       temp_bbox.class_id = *(pSophgoContext->output_tensor[i] + 7 * bid + 1);
+//       if (temp_bbox.class_id == -1) {
+//         continue;
+//       }
+//       temp_bbox.score = *(pSophgoContext->output_tensor[i] + 7 * bid + 2);
+//       float centerX = (*(pSophgoContext->output_tensor[i] + 7 * bid + 3) + 1 - tx1) / ratio - 1;
+//       float centerY = (*(pSophgoContext->output_tensor[i] + 7 * bid + 4) + 1 - ty1) / ratio - 1;
+//       temp_bbox.width = (*(pSophgoContext->output_tensor[i] + 7 * bid + 5) + 0.5) / ratio;
+//       temp_bbox.height = (*(pSophgoContext->output_tensor[i] + 7 * bid + 6) + 0.5) / ratio;
 
-      temp_bbox.x = MAX(int(centerX - temp_bbox.width / 2), 0);
-      temp_bbox.y = MAX(int(centerY - temp_bbox.height / 2), 0);
-      // detected_boxes[i].push_back(temp_bbox);  // 0
-
+//       temp_bbox.x = MAX(int(centerX - temp_bbox.width / 2), 0);
+//       temp_bbox.y = MAX(int(centerY - temp_bbox.height / 2), 0);
       
-      std::shared_ptr<common::ObjectMetadata> spObjData = std::make_shared<common::ObjectMetadata>();
-      spObjData->mDetectedObjectMetadata = std::make_shared<common::DetectedObjectMetadata>();
-      spObjData->mDetectedObjectMetadata->mBox.mX = temp_bbox.x;
-      spObjData->mDetectedObjectMetadata->mBox.mY = temp_bbox.y;
-      spObjData->mDetectedObjectMetadata->mBox.mWidth = temp_bbox.width;
-      spObjData->mDetectedObjectMetadata->mBox.mHeight = temp_bbox.height;
-      spObjData->mDetectedObjectMetadata->mScores.push_back(temp_bbox.score);
-      spObjData->mDetectedObjectMetadata->mClassify = temp_bbox.class_id;
-      objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
-    }
+//       std::shared_ptr<common::ObjectMetadata> spObjData = std::make_shared<common::ObjectMetadata>();
+//       spObjData->mDetectedObjectMetadata = std::make_shared<common::DetectedObjectMetadata>();
+//       spObjData->mDetectedObjectMetadata->mBox.mX = temp_bbox.x;
+//       spObjData->mDetectedObjectMetadata->mBox.mY = temp_bbox.y;
+//       spObjData->mDetectedObjectMetadata->mBox.mWidth = temp_bbox.width;
+//       spObjData->mDetectedObjectMetadata->mBox.mHeight = temp_bbox.height;
+//       spObjData->mDetectedObjectMetadata->mScores.push_back(temp_bbox.score);
+//       spObjData->mDetectedObjectMetadata->mClassify = temp_bbox.class_id;
+//       objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
+//     }
 
 
-    // std::cout << "end postprocess" << std::endl;
     // bm_free_device(pSophgoContext->m_bmContext->handle(), out_dev_mem);
     // bm_free_device(pSophgoContext->m_bmContext->handle(), detect_num_mem);
-  }
+  // }
 }
 
 // void Yolov5Post::postProcess(algorithm::Context& context,

@@ -158,7 +158,8 @@ class BMNNTensor{
 class BMNNNetwork : public NoCopyable {
   const bm_net_info_t *m_netinfo;
   bm_tensor_t* m_inputTensors;
-  bm_tensor_t* m_outputTensors;
+  // bm_tensor_t* m_outputTensors;
+  std::vector<std::shared_ptr<bm_tensor_t>> m_outputTensors;
   bm_handle_t  m_handle;
   void *m_bmrt;
   bool is_soc;
@@ -182,7 +183,9 @@ class BMNNNetwork : public NoCopyable {
     }
     m_batches.insert(batches.begin(), batches.end());
     m_inputTensors = new bm_tensor_t[m_netinfo->input_num];
-    m_outputTensors = new bm_tensor_t[m_netinfo->output_num];
+    // m_outputTensors = new bm_tensor_t[m_netinfo->output_num];
+    for(int i = 0;i<m_netinfo->output_num;++i)
+      m_outputTensors.push_back(std::make_shared<bm_tensor_t>());
     for(int i = 0; i < m_netinfo->input_num; ++i) {
       m_inputTensors[i].dtype = m_netinfo->input_dtypes[i];
       m_inputTensors[i].shape = m_netinfo->stages[0].input_shapes[i];
@@ -192,10 +195,12 @@ class BMNNNetwork : public NoCopyable {
     }
 
     for(int i = 0; i < m_netinfo->output_num; ++i) {
-      m_outputTensors[i].dtype = m_netinfo->output_dtypes[i];
-      m_outputTensors[i].shape = m_netinfo->stages[0].output_shapes[i];
-      m_outputTensors[i].st_mode = BM_STORE_1N;
-      
+      // m_outputTensors[i].dtype = m_netinfo->output_dtypes[i];
+      // m_outputTensors[i].shape = m_netinfo->stages[0].output_shapes[i];
+      // m_outputTensors[i].st_mode = BM_STORE_1N;
+      m_outputTensors[i]->dtype = m_netinfo->output_dtypes[i];
+      m_outputTensors[i]->shape = m_netinfo->stages[0].output_shapes[i];
+      m_outputTensors[i]->st_mode = BM_STORE_1N;
       // alloc as max size to reuse device mem, avoid to alloc and free everytime
       size_t max_size=0;
 			for(int s=0; s<m_netinfo->stage_num; s++){
@@ -205,7 +210,8 @@ class BMNNNetwork : public NoCopyable {
          }
       }
       if(BM_FLOAT32 == m_netinfo->output_dtypes[i]) max_size *= 4;
-      auto ret =  bm_malloc_device_byte(m_handle, &m_outputTensors[i].device_mem, max_size);
+      // auto ret =  bm_malloc_device_byte(m_handle, &m_outputTensors[i].device_mem, max_size);
+      auto ret = bm_malloc_device_byte(m_handle, &m_outputTensors[i]->device_mem, max_size);
 			assert(BM_SUCCESS == ret);
     }
     struct bm_misc_info misc_info;
@@ -223,12 +229,17 @@ class BMNNNetwork : public NoCopyable {
     //Free input tensors
     delete [] m_inputTensors;
     //Free output tensors
+    // for(int i = 0; i < m_netinfo->output_num; ++i) {
+    //   if (m_outputTensors[i].device_mem.size != 0) {
+    //     bm_free_device(m_handle, m_outputTensors[i].device_mem);
+    //   }
+    // }
     for(int i = 0; i < m_netinfo->output_num; ++i) {
-      if (m_outputTensors[i].device_mem.size != 0) {
-        bm_free_device(m_handle, m_outputTensors[i].device_mem);
+      if (m_outputTensors[i]->device_mem.size != 0) {
+        bm_free_device(m_handle, m_outputTensors[i]->device_mem);
       }
     }
-    delete []m_outputTensors;
+    // delete []m_outputTensors;
   }
 
   int maxBatch() const {
@@ -256,20 +267,31 @@ class BMNNNetwork : public NoCopyable {
 
   std::shared_ptr<BMNNTensor> outputTensor(int index){
     assert(index < m_netinfo->output_num);
+    // return std::make_shared<BMNNTensor>(m_handle, m_netinfo->output_names[index],
+    //     m_netinfo->output_scales[index], &m_outputTensors[index], is_soc);
     return std::make_shared<BMNNTensor>(m_handle, m_netinfo->output_names[index],
-        m_netinfo->output_scales[index], &m_outputTensors[index], is_soc);
+        m_netinfo->output_scales[index], m_outputTensors[index].get(), is_soc);
   }
 
   int forward() {
 
+    // bm_tensor_t * temp_outputTensors
     bool user_mem = false; // if false, bmrt will alloc mem every time.
-    if (m_outputTensors->device_mem.size != 0) {
+    // if (m_outputTensors->device_mem.size != 0) {
+    //   // if true, bmrt don't alloc mem again.
+    //   user_mem = true;
+    // }
+    if (m_outputTensors[0]->device_mem.size != 0) {
       // if true, bmrt don't alloc mem again.
       user_mem = true;
     }
 
+    bm_tensor_t temp_outputTensors[m_netinfo->output_num];
+    for(int i = 0;i<m_netinfo->output_num;++i)
+      temp_outputTensors[i] = *m_outputTensors[i];
+
     bool ok=bmrt_launch_tensor_ex(m_bmrt, m_netinfo->name, m_inputTensors, m_netinfo->input_num,
-        m_outputTensors, m_netinfo->output_num, user_mem, false);
+        temp_outputTensors, m_netinfo->output_num, user_mem, false);
     if (!ok) {
       std::cout << "bm_launch_tensor() failed=" << std::endl;
       return -1;

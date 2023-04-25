@@ -53,6 +53,8 @@ struct SophgoContext :public Context {
     std::vector<bm_image> m_converto_imgs;
 
     // tpu_kernel
+    bool use_tpu_kernel = false;
+    bool has_init = false;
     tpu_kernel_api_yolov5NMS_t api[MAX_BATCH];
     tpu_kernel_function_t func_id;
     bm_device_mem_t out_dev_mem[MAX_BATCH];

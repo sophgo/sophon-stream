@@ -4,7 +4,7 @@
         "models":
         [
             {
-                "algorithm_name":"Yolov5",
+                "algorithm_name":"Yolov5Post",
                 "input_node_name":["000_net"],
                 "input_shape":[[3,640,640]],
                 "label_names":[
@@ -12,7 +12,7 @@
                     ],
                 "max_batchsize":1,
                 "model_path":["../models/yolov5s_tpukernel_int8_4b.bmodel"],
-                "name":"cocoDetect",
+                "name":"onlyPost",
                 "num_class":80,
                 "num_inputs":[1],
                 "num_outputs":[3],
@@ -25,7 +25,7 @@
     },
     "device_id":0,
     "id":0,
-    "milliseconds_timeout":0,
+    "milliseconds_timeout":200,
     "name":"action_element",
     "repeated_timeout":false,
     "side":"sophgo",

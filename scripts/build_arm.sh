@@ -3,7 +3,7 @@ script_dir=$(dirname $(readlink -f "$0"))
 project_dir=${script_dir}/..
 
 if [ $# -ne 2 ] || ([ "$1" != "Debug" ] && [ "$1" != "Release" ]); then
-  echo "Usage: $0 <Debug|Release>"
+  echo "Usage: $0 <Debug|Release> <path to soc-sdk>"
   exit 1
 fi
 SOC_SDK=$2

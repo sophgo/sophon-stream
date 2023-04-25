@@ -5,7 +5,7 @@
             {
                 "algorithm_name":"encode_picture",
                 "max_batchsize":1,
-                "name":"",
+                "name":"encode",
                 "shared_object":"../lib/libalgorithmApi.so"
             }
         ]

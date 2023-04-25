@@ -13,6 +13,7 @@
 #include "DetectedObjectMetadata.h"
 #include "RecognizedObjectMetadata.h"
 #include "SegmentedObjectMetadata.h"
+#include "common/bmnn_utils.h"
 
 namespace sophon_stream {
 namespace common {
@@ -87,7 +88,11 @@ struct ObjectMetadata {
     std::shared_ptr<common::Packet> mPacket;
     std::shared_ptr<common::Frame> mFrame;
 
+    std::shared_ptr<bm_handle_t> mAlgorithmHandle;
+
     bool mFilter;
+
+    std::vector<std::shared_ptr<BMNNTensor>> mOutputTensors;
 
     std::shared_ptr<ModelConfigureMap> mModelConfigureMap;
     std::shared_ptr<DataInformation> mSpDataInformation;//包含mTransFromFrame和原detect原recognize
