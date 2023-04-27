@@ -56,6 +56,10 @@ class Algorithm : public algorithm::AlgorithmApi {
     std::shared_ptr<PostProcess> mPostProcess; //后处理对象
     bool mAgency=false; //本地或者远程flag
 
+    bool use_pre = false;
+    bool use_infer = false;
+    bool use_post = false;
+
 };
 
 } // namespace algorithm

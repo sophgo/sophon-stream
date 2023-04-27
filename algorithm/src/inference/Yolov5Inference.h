@@ -19,7 +19,7 @@ class Yolov5Inference : public algorithm::Inference {
      * network predict output
      * @param[in] context: inputData and outputData
      */
-    common::ErrorCode predict(algorithm::Context& context) override;
+    common::ErrorCode predict(algorithm::Context& context, common::ObjectMetadatas &objectMetadatas) override;
 
     void uninit() override;
 

@@ -23,6 +23,7 @@ Algorithm::~Algorithm() {
 
 #define JSON_ALGORITHM_NAME_FIELD "algorithm_name"
 #define AGENCY_NAME "agency"
+#define JSON_STAGE_NAME "stage"
 /**
  * 初始化函数
  * @param[in] side:  设备类型
@@ -59,6 +60,22 @@ common::ErrorCode Algorithm::init(const std::string& side,
                 errorCode = common::ErrorCode::NO_REGISTER_ALGORITHM;
                 break;
             }
+            auto stageNameIt = configure.find(JSON_STAGE_NAME);
+            if(configure.end() == stageNameIt || !stageNameIt->is_array())
+            {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+
+            std::vector<std::string> stages = stageNameIt->get<std::vector<std::string>>();
+            if(std::find(stages.begin(), stages.end(), "pre")!=stages.end())
+                use_pre = true;
+            if(std::find(stages.begin(), stages.end(), "infer")!=stages.end())
+                use_infer = true;
+            if(std::find(stages.begin(), stages.end(), "post")!=stages.end())
+                use_post = true;
+
+
             // 新建context,预处理,推理和后处理对象
             mContext = algorithmFactory.makeContext();
             mPreProcess = algorithmFactory.makePreProcess();
@@ -102,30 +119,31 @@ common::ErrorCode Algorithm::init(const std::string& side,
  */
 void Algorithm::process(common::ObjectMetadatas& objectMetadatas) {
     if(!mAgency) {
-//        if (!mPreProcess
-//                || !mInference
-//                || !mPostProcess) {
-//            //TODO: set error code
-//            return;
-//        }
-        //预处理
-        common::ErrorCode errorCode = mPreProcess->preProcess(*mContext, objectMetadatas);
-        if (common::ErrorCode::SUCCESS != errorCode) {
-            for (unsigned i = 0; i < objectMetadatas.size(); i++) {
-                objectMetadatas[i]->mErrorCode = errorCode;
+        common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+        if(use_pre)
+        {
+            errorCode = mPreProcess->preProcess(*mContext, objectMetadatas);
+            if (common::ErrorCode::SUCCESS != errorCode) {
+                for (unsigned i = 0; i < objectMetadatas.size(); i++) {
+                    objectMetadatas[i]->mErrorCode = errorCode;
+                }
+                return;
             }
-            return;
         }
         //推理
-        errorCode = mInference->predict(*mContext);
-        if (common::ErrorCode::SUCCESS != errorCode) {
-            for (unsigned i = 0; i < objectMetadatas.size(); i++) {
-                objectMetadatas[i]->mErrorCode = errorCode;
+        if(use_infer)
+        {
+            errorCode = mInference->predict(*mContext, objectMetadatas);
+            if (common::ErrorCode::SUCCESS != errorCode) {
+                for (unsigned i = 0; i < objectMetadatas.size(); i++) {
+                    objectMetadatas[i]->mErrorCode = errorCode;
+                }
+                return;
             }
-            return;
         }
         //后处理
-        mPostProcess->postProcess(*mContext, objectMetadatas);
+        if(use_post)
+            mPostProcess->postProcess(*mContext, objectMetadatas);
     } else {
         // 调用python远程的预测
 

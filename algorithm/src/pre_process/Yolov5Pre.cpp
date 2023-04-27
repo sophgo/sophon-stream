@@ -38,7 +38,40 @@ common::ErrorCode Yolov5Pre::preProcess(algorithm::Context& context,
             }
             images.push_back(*objMetadata->mFrame->mSpData);
         }
-               
+        
+        /**
+         * 若要将后处理单独放在一个element上，需要保证后处理和推理使用的tpu memory能对应起来
+         * 在preprocess阶段初始化objectMetadatas[0]的mOutputBMtensor和handle
+         * 推理阶段更新这块memory
+         * 后处理阶段将这块memory取出，解码
+         * objectMetadata使用完之后销毁
+        */
+
+        objectMetadatas[0]->mOutputBMtensors.resize(pSophgoContext->output_num);
+        // auto handle_for_delete = *objectMetadatas[0]->mAlgorithmHandle;
+        for(int i = 0; i < pSophgoContext->output_num; ++i)
+            objectMetadatas[0]->mOutputBMtensors[i].reset(new bm_tensor_t, [&](bm_tensor_t* p){
+                bm_free_device(*objectMetadatas[0]->mAlgorithmHandle, p->device_mem);
+                delete p;
+                p = nullptr;
+                });
+        for(int i = 0; i < pSophgoContext->output_num; ++i) {
+            objectMetadatas[0]->mOutputBMtensors[i]->dtype = pSophgoContext->m_bmNetwork->m_netinfo->output_dtypes[i];
+            objectMetadatas[0]->mOutputBMtensors[i]->shape = pSophgoContext->m_bmNetwork->m_netinfo->stages[0].output_shapes[i];
+            objectMetadatas[0]->mOutputBMtensors[i]->st_mode = BM_STORE_1N;
+            size_t max_size = 0;
+            for(int s=0; s<pSophgoContext->m_bmNetwork->m_netinfo->stage_num; s++){
+                size_t out_size = bmrt_shape_count(&pSophgoContext->m_bmNetwork->m_netinfo->stages[s].output_shapes[i]);
+                if(max_size<out_size){
+                    max_size = out_size;
+                }
+            }
+            if(BM_FLOAT32 == pSophgoContext->m_bmNetwork->m_netinfo->output_dtypes[i]) max_size *= 4;
+            auto ret = bm_malloc_device_byte(*objectMetadatas[0]->mAlgorithmHandle, &objectMetadatas[0]->mOutputBMtensors[i]->device_mem, 
+                max_size);
+            assert(BM_SUCCESS == ret);
+        }
+  
         std::shared_ptr<BMNNTensor> input_tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
         int image_n = images.size();
         

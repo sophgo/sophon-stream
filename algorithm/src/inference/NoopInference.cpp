@@ -19,7 +19,7 @@ common::ErrorCode InferenceNoop::init(algorithm::Context& context) {
  * @param[in/out] context: 输入数据和预测结果
  * @return 错误码
  */
-common::ErrorCode InferenceNoop::predict(algorithm::Context& context) {
+common::ErrorCode InferenceNoop::predict(algorithm::Context& context, common::ObjectMetadatas &objectMetadatas) {
     return common::ErrorCode::SUCCESS;
 }
 

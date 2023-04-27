@@ -23,6 +23,8 @@ class Yolov5Post : public algorithm::PostProcess {
 
     void postProcess(algorithm::Context& context,
                      common::ObjectMetadatas& objectMetadatas) override;
+    void initTpuKernel(algorithm::Context& context);
+    void setTpuKernelMem(algorithm::Context& context, common::ObjectMetadatas& objectMetadatas);
   private:
     float sigmoid(float x);
     int argmax(float* data, int num);

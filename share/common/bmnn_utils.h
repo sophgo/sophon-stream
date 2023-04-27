@@ -156,6 +156,7 @@ class BMNNTensor{
 };
 
 class BMNNNetwork : public NoCopyable {
+  public:
   const bm_net_info_t *m_netinfo;
   bm_tensor_t* m_inputTensors;
   // bm_tensor_t* m_outputTensors;
@@ -165,6 +166,7 @@ class BMNNNetwork : public NoCopyable {
   bool is_soc;
   std::set<int> m_batches;
   int m_max_batch;
+  size_t max_size = 0;
 
   std::unordered_map<std::string, bm_tensor_t*> m_mapInputs;
   std::unordered_map<std::string, bm_tensor_t*> m_mapOutputs;
@@ -202,7 +204,7 @@ class BMNNNetwork : public NoCopyable {
       m_outputTensors[i]->shape = m_netinfo->stages[0].output_shapes[i];
       m_outputTensors[i]->st_mode = BM_STORE_1N;
       // alloc as max size to reuse device mem, avoid to alloc and free everytime
-      size_t max_size=0;
+      max_size=0;
 			for(int s=0; s<m_netinfo->stage_num; s++){
          size_t out_size = bmrt_shape_count(&m_netinfo->stages[s].output_shapes[i]);
          if(max_size<out_size){
@@ -273,22 +275,31 @@ class BMNNNetwork : public NoCopyable {
         m_netinfo->output_scales[index], m_outputTensors[index].get(), is_soc);
   }
 
-  int forward() {
+  int forward(std::vector<std::shared_ptr<bm_tensor_t>> & outputTensors) {
 
-    // bm_tensor_t * temp_outputTensors
     bool user_mem = false; // if false, bmrt will alloc mem every time.
     // if (m_outputTensors->device_mem.size != 0) {
     //   // if true, bmrt don't alloc mem again.
     //   user_mem = true;
     // }
-    if (m_outputTensors[0]->device_mem.size != 0) {
+
+    // 这个for循环应该放在外面做，用reset把bm_free也写进去
+    // for(int i = 0; i < m_netinfo->output_num; ++i) {
+    //   outputTensors[i]->dtype = m_netinfo->output_dtypes[i];
+    //   outputTensors[i]->shape = m_netinfo->stages[0].output_shapes[i];
+    //   outputTensors[i]->st_mode = BM_STORE_1N;
+    //   auto ret = bm_malloc_device_byte(m_handle, &outputTensors[i]->device_mem, max_size);
+		// 	assert(BM_SUCCESS == ret);
+    // }
+
+    if (outputTensors[0]->device_mem.size != 0) {
       // if true, bmrt don't alloc mem again.
       user_mem = true;
     }
-
+  
     bm_tensor_t temp_outputTensors[m_netinfo->output_num];
     for(int i = 0;i<m_netinfo->output_num;++i)
-      temp_outputTensors[i] = *m_outputTensors[i];
+      temp_outputTensors[i] = *outputTensors[i];
 
     bool ok=bmrt_launch_tensor_ex(m_bmrt, m_netinfo->name, m_inputTensors, m_netinfo->input_num,
         temp_outputTensors, m_netinfo->output_num, user_mem, false);

@@ -22,7 +22,7 @@ class InferenceNoop : public algorithm::Inference {
      * @param[in/out] context: 输入数据和预测结果
      * @return 错误码
      */
-    common::ErrorCode predict(algorithm::Context& context) override;
+    common::ErrorCode predict(algorithm::Context& context, common::ObjectMetadatas &objectMetadatas) override;
 
     /**
      * 资源释放

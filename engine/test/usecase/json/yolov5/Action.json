@@ -19,7 +19,8 @@
                 "output_node_name":["082_convolutional","094_convolutional","106_convolutional"],
                 "output_shape":[[18,15,25],[18,30,50],[18,60,100]],
                 "shared_object":"../lib/libalgorithmApi.so",
-                "threthold":[0.5,0.5]
+                "threthold":[0.5,0.5],
+                "stage":["pre", "infer"]
             }
         ]
     },

@@ -24,15 +24,14 @@ namespace sophon_stream
         std::cout << "Using tpu_kernel yolo postprocession, kernel funtion id: " << pSophgoContext->func_id << std::endl;
 
         int out_len_max = 25200 * 7;
-        // int input_num = pSophgoContext->m_bmNetwork->outputTensorNum();
-        int input_num = objectMetadatas[0]->mOutputTensors.size();
+        int input_num = objectMetadatas[0]->mOutputBMtensors.size(); // 3
         int batch_num = 1; // 4b has bug, now only for 1b.
 
+        // 这个handle需要和推理阶段使用的handle对应上，在pre里初始化，在这里取出来
         bm_handle_t handle_ = *objectMetadatas[0]->mAlgorithmHandle;
         bm_device_mem_t in_dev_mem[input_num];
         for (int i = 0; i < input_num; i++)
-          // in_dev_mem[i] = *pSophgoContext->m_bmNetwork->outputTensor(i)->get_device_mem();
-          in_dev_mem[i] = *objectMetadatas[0]->mOutputTensors[i]->get_device_mem();
+          in_dev_mem[i] = objectMetadatas[0]->mOutputBMtensors[i]->device_mem;
 
         for (int i = 0; i < pSophgoContext->max_batch; i++)
         {
@@ -79,6 +78,26 @@ namespace sophon_stream
 
       }
 
+      void Yolov5PostPost::mallocTPUMemory(algorithm::Context &context, common::ObjectMetadatas &objectMetadatas)
+      {
+        context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
+        bm_handle_t handle_ = *objectMetadatas[0]->mAlgorithmHandle;
+        int out_len_max = 25200 * 7;
+        // int input_num = objectMetadatas[0]->mOutputTensors.size();
+        int batch_num = 1; // 4b has bug, now only for 1b.
+        for (int i = 0; i < pSophgoContext->max_batch; i++)
+        {
+          bm_free_device(handle_, pSophgoContext->out_dev_mem[i]);
+          auto ret = bm_malloc_device_byte(handle_, &pSophgoContext->out_dev_mem[i], out_len_max * sizeof(float));
+          assert(BM_SUCCESS == ret);
+          bm_free_device(handle_, pSophgoContext->detect_num_mem[i]);
+          ret = bm_malloc_device_byte(handle_, &pSophgoContext->detect_num_mem[i], batch_num * sizeof(int32_t));
+          assert(BM_SUCCESS == ret);
+          pSophgoContext->api[i].top_addr = bm_mem_get_device_addr(pSophgoContext->out_dev_mem[i]);
+          pSophgoContext->api[i].detected_num_addr = bm_mem_get_device_addr(pSophgoContext->detect_num_mem[i]);
+        }
+      }
+      
       void Yolov5PostPost::init(algorithm::Context &context)
       {
       }
@@ -150,16 +169,20 @@ namespace sophon_stream
         if(objectMetadatas.size() < pSophgoContext->max_batch)
           return;
         // 取出objectMetadata的mOutputTensors
-        if (pSophgoContext->use_tpu_kernel)
+        if (pSophgoContext->use_tpu_kernel && !pSophgoContext->mEndOfStream)
         {
           if(!pSophgoContext->has_init)
           {
-            initTpuKernel(context, objectMetadatas);
+            // initTpuKernel(context, objectMetadatas);
           }
+          // 后处理：需要根据objectMetadatas[0]的mOutputBMtensor来初始化tpukernel相关变量，如申请mem等
+          initTpuKernel(context, objectMetadatas);
+          
           for (int i = 0; i < pSophgoContext->max_batch; i++)
           {
             if (pSophgoContext->mEndOfStream)
               continue;
+            // mallocTPUMemory(context, objectMetadatas);
             bm_image image = *objectMetadatas[i]->mFrame->mSpData;
             int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO
@@ -174,7 +197,7 @@ namespace sophon_stream
               tx1 = (int)((pSophgoContext->m_net_w - (int)(image.width * ratio)) / 2);
             }
 #endif
-            // 需要使用推理阶段的pSophgoContext的handle，这个handle保存在frame上？
+            // 需要使用推理阶段的pSophgoContext的handle，这个handle保存在objectMetadata[0]上
             tpu_kernel_launch(*objectMetadatas[0]->mAlgorithmHandle, pSophgoContext->func_id, &pSophgoContext->api[i], sizeof(pSophgoContext->api[i]));
             bm_thread_sync(pSophgoContext->m_bmContext->handle());
             bm_memcpy_d2s_partial_offset(*objectMetadatas[0]->mAlgorithmHandle, (void *)(pSophgoContext->detect_num + i), pSophgoContext->detect_num_mem[i], pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
@@ -207,16 +230,27 @@ namespace sophon_stream
               spObjData->mDetectedObjectMetadata->mClassify = temp_bbox.class_id;
               objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
             }
+            delete pSophgoContext->output_tensor[i];
           }
+          // 释放tpu-kernel相关内存
+          int input_num = pSophgoContext->m_bmNetwork->outputTensorNum();
+          for(int i = 0;i < input_num;++i)
+          {
+            bm_free_device(*objectMetadatas[0]->mAlgorithmHandle, pSophgoContext->out_dev_mem[i]);
+            bm_free_device(*objectMetadatas[0]->mAlgorithmHandle, pSophgoContext->detect_num_mem[i]);
+          }
+
         }
         else
         {
+          // cpu后处理拎出来之后有很多很多bug
           Yolov5PostBoxVec yolobox_vec;
           std::vector<std::shared_ptr<BMNNTensor>> outputTensors(pSophgoContext->output_num);
           for (int i = 0; i < pSophgoContext->output_num; i++)
           {
             // outputTensors[i] = pSophgoContext->m_bmNetwork->outputTensor(i);
             outputTensors[i] = objectMetadatas[0]->mOutputTensors[i];
+            // outputTensors[i] = objectMetadatas[0]->mOutputBMtensors[i];
           }
 
           for (int batch_idx = 0; batch_idx < pSophgoContext->max_batch; ++batch_idx)

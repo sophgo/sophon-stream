@@ -23,6 +23,8 @@ class Yolov5PostPost : public algorithm::PostProcess {
 
     void initTpuKernel(algorithm::Context &context, common::ObjectMetadatas &objectMetadatas);
 
+    void mallocTPUMemory(algorithm::Context &context, common::ObjectMetadatas &objectMetadatas);
+
     void postProcess(algorithm::Context& context,
                      common::ObjectMetadatas& objectMetadatas) override;
   private:

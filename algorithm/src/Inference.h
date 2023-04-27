@@ -26,7 +26,7 @@ class Inference {
      * @param[in/out] context: 输入数据和预测结果
      * @return 错误码
      */
-    virtual common::ErrorCode predict(algorithm::Context& context) = 0;
+    virtual common::ErrorCode predict(algorithm::Context& context, common::ObjectMetadatas &objectMetadatas) = 0;
 
     virtual void uninit() = 0;
 

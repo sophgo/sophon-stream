@@ -40,12 +40,13 @@ float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *
 SophgoContext::~SophgoContext()
 {
         // std::cout << "sophgo context uninit" << std::endl;
-        int input_num = m_bmNetwork->outputTensorNum();
-        for(int i = 0;i < input_num; ++i)
-        {
-                bm_free_device(m_bmContext->handle(), out_dev_mem[i]);
-                bm_free_device(m_bmContext->handle(), detect_num_mem[i]);
-        }
+        
+        // int input_num = m_bmNetwork->outputTensorNum();
+        // for(int i = 0;i < input_num; ++i)
+        // {
+        //         bm_free_device(m_bmContext->handle(), out_dev_mem[i]);
+        //         bm_free_device(m_bmContext->handle(), detect_num_mem[i]);
+        // }
         
 }
 

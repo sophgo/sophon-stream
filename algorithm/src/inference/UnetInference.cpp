@@ -75,10 +75,10 @@ common::ErrorCode UnetInference::init(algorithm::Context& context)
  * network predict output
  * @param[in] context: inputData and outputData
 */
-common::ErrorCode UnetInference::predict(algorithm::Context& context)
+common::ErrorCode UnetInference::predict(algorithm::Context& context, common::ObjectMetadatas &objectMetadatas)
 {
   context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
-  int ret = pSophgoContext->m_bmNetwork->forward();
+  int ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mOutputBMtensors);
   return static_cast<common::ErrorCode>(ret);
 }
 

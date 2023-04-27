@@ -152,7 +152,7 @@ namespace sophon_stream
              * network predict output
              * @param[in] context: inputData and outputDat
              */
-            common::ErrorCode Yolov5PostInference::predict(algorithm::Context &context)
+            common::ErrorCode Yolov5PostInference::predict(algorithm::Context &context, common::ObjectMetadatas &objectMetadatas)
             {
                 return common::ErrorCode::SUCCESS;
             }
