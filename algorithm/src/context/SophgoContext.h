@@ -67,8 +67,9 @@ struct SophgoContext :public Context {
 
     int m_class_num = 80; // default is coco names
     int m_frame_h, m_frame_w;
-    int m_net_h, m_net_w;
+    int m_net_h, m_net_w, m_net_channel;
     int max_batch;
+    int input_num;
     int output_num;
     int min_dim;
     bmcv_convert_to_attr converto_attr;

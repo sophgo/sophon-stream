@@ -37,6 +37,8 @@ namespace sophon_stream
         // 2. get input
         pSophgoContext->max_batch = pSophgoContext->m_bmNetwork->maxBatch();
         auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
+        pSophgoContext->input_num = pSophgoContext->m_bmNetwork->m_netinfo->input_num;
+        pSophgoContext->m_net_channel = tensor->get_shape()->dims[1];
         pSophgoContext->m_net_h = tensor->get_shape()->dims[2];
         pSophgoContext->m_net_w = tensor->get_shape()->dims[3];
 
@@ -156,7 +158,7 @@ namespace sophon_stream
         context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
         int ret = 0;
         if (!pSophgoContext->mEndOfStream)
-          ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mOutputBMtensors);
+          ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors, objectMetadatas[0]->mOutputBMtensors);
         return static_cast<common::ErrorCode>(ret);
       }
 

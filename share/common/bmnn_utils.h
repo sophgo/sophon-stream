@@ -275,7 +275,7 @@ class BMNNNetwork : public NoCopyable {
         m_netinfo->output_scales[index], m_outputTensors[index].get(), is_soc);
   }
 
-  int forward(std::vector<std::shared_ptr<bm_tensor_t>> & outputTensors) {
+  int forward(std::vector<std::shared_ptr<bm_tensor_t>> & inputTensors, std::vector<std::shared_ptr<bm_tensor_t>> & outputTensors) {
 
     bool user_mem = false; // if false, bmrt will alloc mem every time.
     // if (m_outputTensors->device_mem.size != 0) {
@@ -283,25 +283,20 @@ class BMNNNetwork : public NoCopyable {
     //   user_mem = true;
     // }
 
-    // 这个for循环应该放在外面做，用reset把bm_free也写进去
-    // for(int i = 0; i < m_netinfo->output_num; ++i) {
-    //   outputTensors[i]->dtype = m_netinfo->output_dtypes[i];
-    //   outputTensors[i]->shape = m_netinfo->stages[0].output_shapes[i];
-    //   outputTensors[i]->st_mode = BM_STORE_1N;
-    //   auto ret = bm_malloc_device_byte(m_handle, &outputTensors[i]->device_mem, max_size);
-		// 	assert(BM_SUCCESS == ret);
-    // }
-
     if (outputTensors[0]->device_mem.size != 0) {
       // if true, bmrt don't alloc mem again.
       user_mem = true;
     }
-  
+    bm_tensor_t temp_inputTensors[m_netinfo->input_num];
+    for(int i = 0;i<m_netinfo->input_num;++i)
+      temp_inputTensors[i] = *inputTensors[i];
+
     bm_tensor_t temp_outputTensors[m_netinfo->output_num];
     for(int i = 0;i<m_netinfo->output_num;++i)
       temp_outputTensors[i] = *outputTensors[i];
+    
 
-    bool ok=bmrt_launch_tensor_ex(m_bmrt, m_netinfo->name, m_inputTensors, m_netinfo->input_num,
+    bool ok=bmrt_launch_tensor_ex(m_bmrt, m_netinfo->name, temp_inputTensors, m_netinfo->input_num,
         temp_outputTensors, m_netinfo->output_num, user_mem, false);
     if (!ok) {
       std::cout << "bm_launch_tensor() failed=" << std::endl;

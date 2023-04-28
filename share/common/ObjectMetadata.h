@@ -92,10 +92,12 @@ struct ObjectMetadata {
 
     bool mFilter;
 
+    // 待废弃
     std::vector<std::shared_ptr<BMNNTensor>> mOutputTensors;
     
     // init in pre_process, and update in inference
     std::vector<std::shared_ptr<bm_tensor_t>> mOutputBMtensors;
+    std::vector<std::shared_ptr<bm_tensor_t>> mInputBMtensors;
 
     std::shared_ptr<ModelConfigureMap> mModelConfigureMap;
     std::shared_ptr<DataInformation> mSpDataInformation;//包含mTransFromFrame和原detect原recognize

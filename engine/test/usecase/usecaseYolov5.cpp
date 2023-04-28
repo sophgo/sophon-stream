@@ -14,6 +14,7 @@
 #define DECODE_ID 5000
 #define YOLO_ID 5001
 #define POST_ID 5002
+#define PRE_ID 5003
 #define ENCODE_ID 5006
 #define REPORT_ID 5555
 
@@ -132,7 +133,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     nlohmann::json ElementsConfigure;
 
     std::ifstream istream;
-    nlohmann::json decoder, action, post, encoder, reporter;
+    nlohmann::json decoder, pre, action, post, encoder, reporter;
 
     istream.open("../test/usecase/json/yolov5/Decoder.json");
     assert(istream.is_open());
@@ -141,6 +142,14 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     ElementsConfigure.push_back(decoder);
     istream.close();
     std::cout << decoder << std::endl;
+
+    istream.open("../test/usecase/json/yolov5/Pre.json");
+    assert(istream.is_open());
+    istream >> pre;
+    pre.at("id") = PRE_ID;
+    ElementsConfigure.push_back(pre);
+    istream.close();
+    std::cout << pre << std::endl;
 
     istream.open("../test/usecase/json/yolov5/Action.json");
     assert(istream.is_open());
@@ -171,7 +180,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     istream.close();
 
     graphConfigure["elements"] = ElementsConfigure;
-    graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID, 0, YOLO_ID, 0));
+    graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID, 0, PRE_ID, 0));
+    graphConfigure["connections"].push_back(makeConnectConfig(PRE_ID, 0, YOLO_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0, ENCODE_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID, 0, REPORT_ID, 0));

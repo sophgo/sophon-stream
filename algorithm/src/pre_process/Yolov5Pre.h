@@ -17,6 +17,9 @@ class Yolov5Pre : public algorithm::PreProcess {
     common::ErrorCode preProcess(algorithm::Context& context,
                                  common::ObjectMetadatas& objectMetadatas) override;
 
+    void initTensors(algorithm::Context &context,
+                                        common::ObjectMetadatas &objectMetadatas);
+
   private:
 
 };

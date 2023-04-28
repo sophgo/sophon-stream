@@ -10,3 +10,7 @@ soc交叉编译: 参考SophonSDK指南准备交叉编译环境, 运行scripts目
 ```
 ./build_arm.sh Debug ~/RC2/soc-sdk
 ```
+
+可执行文件位于sophon-stream/engine/build/，json配置文件位于sophon-stream/engine/test/usecase/json/
+
+完成编译后，检查json配置文件的模型路径等参数，确认无误后前往build目录运行usecaseXXX即可。
