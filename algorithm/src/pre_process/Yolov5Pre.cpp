@@ -4,6 +4,9 @@
 #include "common/type_trans.hpp"
 #include "common/Clocker.h"
 
+// #define DUMP_FILE 1
+
+
 namespace sophon_stream
 {
     namespace algorithm
@@ -27,12 +30,23 @@ namespace sophon_stream
                 for (int i = 0; i < pSophgoContext->input_num; ++i)
                     objectMetadatas[0]->mInputBMtensors[i].reset(new bm_tensor_t, [&](bm_tensor_t *p){
                         bm_free_device(*objectMetadatas[0]->mAlgorithmHandle, p->device_mem);
+                        // bm_handle_t h;
+                        // int ret = bm_dev_request(&h, 0);
+                        // // bm_free_device(pSophgoContext->m_bmContext->handle(), p->device_mem);
+                        // bm_free_device(h, p->device_mem);
+
+
                         delete p;
                         p = nullptr; 
                     });
                 for (int i = 0; i < pSophgoContext->output_num; ++i)
                     objectMetadatas[0]->mOutputBMtensors[i].reset(new bm_tensor_t, [&](bm_tensor_t *p){
                         bm_free_device(*objectMetadatas[0]->mAlgorithmHandle, p->device_mem);
+                        // bm_handle_t h;
+                        // int ret = bm_dev_request(&h, 0);
+                        // // bm_free_device(pSophgoContext->m_bmContext->handle(), p->device_mem);
+                        // bm_free_device(h, p->device_mem);
+
                         delete p;
                         p = nullptr;
                     });
@@ -47,6 +61,8 @@ namespace sophon_stream
                         input_bytes *= 4;
                     auto ret = bm_malloc_device_byte(*objectMetadatas[0]->mAlgorithmHandle, &objectMetadatas[0]->mInputBMtensors[i]->device_mem,
                                                      input_bytes);
+
+
                     assert(BM_SUCCESS == ret);
                 }
 
@@ -78,6 +94,9 @@ namespace sophon_stream
             {
                 // std::cout << "do preprocess" << std::endl;
                 // Clocker clocker;
+
+                std::cout << "Pre objectMetadatas.size() = " << objectMetadatas.size() << std::endl;
+
                 context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
                 std::vector<bm_image> images;
                 for (auto &objMetadata : objectMetadatas)
@@ -99,8 +118,12 @@ namespace sophon_stream
                     {
                         pSophgoContext->m_frame_w = objMetadata->mFrame->mWidth;
                         pSophgoContext->m_frame_h = objMetadata->mFrame->mHeight;
+                        
+                        // 待删
                         for (int i = 0; i < pSophgoContext->output_num; ++i)
                             objMetadata->mOutputTensors.push_back(pSophgoContext->m_bmNetwork->outputTensor(i));
+                        // end
+
                         objMetadata->mAlgorithmHandle = std::make_shared<bm_handle_t>(pSophgoContext->m_bmContext->handle());
                     }
                     images.push_back(*objMetadata->mFrame->mSpData);
@@ -194,10 +217,9 @@ namespace sophon_stream
                                                       images[i], &pSophgoContext->m_resized_imgs[i]);
 #endif
                     assert(BM_SUCCESS == ret);
-
 #if DUMP_FILE
                     cv::Mat resized_img;
-                    cv::bmcv::toMAT(&m_resized_imgs[i], resized_img);
+                    cv::bmcv::toMAT(&pSophgoContext->m_resized_imgs[i], resized_img);
                     std::string fname = cv::format("resized_img_%d.jpg", i);
                     cv::imwrite(fname, resized_img);
 #endif
@@ -226,10 +248,6 @@ namespace sophon_stream
                 bm_image_get_contiguous_device_mem(image_n, pSophgoContext->m_converto_imgs.data(), &input_dev_mem);
 
                 // set inputBMtensors with d2d
-                // int input_bytes = image_n * pSophgoContext->m_net_channel * pSophgoContext->m_net_h * pSophgoContext->m_net_w;
-                // if (BM_FLOAT32 == pSophgoContext->m_bmNetwork->m_netinfo->input_dtypes[0]);
-                //         input_bytes *= 4;
-
                 ret = bm_memcpy_d2d_byte(pSophgoContext->m_bmContext->handle(), objectMetadatas[0]->mInputBMtensors[0]->device_mem, 0, 
                     input_dev_mem, 0, input_dev_mem.size);
                 CV_Assert(ret == 0);

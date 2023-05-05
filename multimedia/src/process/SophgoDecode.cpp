@@ -71,6 +71,9 @@ common::ErrorCode SophgoDecode::process(multimedia::Context& context,
     double timestamp = 0.0;
     std::shared_ptr<bm_image> spBmImage = decoder.grab(eof, timestamp);
 
+
+    // sleep(1);
+
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mTimestamp = timestamp*1000000;
     

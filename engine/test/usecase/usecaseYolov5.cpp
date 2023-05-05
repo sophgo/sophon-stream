@@ -204,6 +204,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                               return;
                             }
 #if DOWNLOAD_IMAGE
+
+
         int width = objectMetadata->mFrame->mWidth;
         int height = objectMetadata->mFrame->mHeight;
         // 转格式

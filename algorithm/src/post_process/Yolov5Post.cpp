@@ -148,6 +148,8 @@ namespace sophon_stream
       // tpu-kernel
       void Yolov5Post::postProcess(algorithm::Context &context, common::ObjectMetadatas &objectMetadatas)
       {
+        std::cout << "Post objectMetadatas.size() = " << objectMetadatas.size() << std::endl;
+
         context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
         if(!pSophgoContext->has_init)
           initTpuKernel(context);

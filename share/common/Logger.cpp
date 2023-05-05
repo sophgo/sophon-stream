@@ -1,6 +1,6 @@
 #include "common/Logger.h"
 #include <unistd.h>
-#include "common/Udp.h"
+// #include "common/Udp.h"
 const char *LoggerName = "engine";
 
 Logger::Logger(const std::string &path, const std::string &url) {
@@ -38,21 +38,21 @@ std::shared_ptr<spdlog::logger> &Logger::getInstance() {
     return mLogger;
 }
 
-void Logger::changeServer(const std::string &udpAddress) {
-    std::string address;
-    int port = 0;
-    analyseUrl(udpAddress, address, port);
-    auto logger = Logger::getLogger();
-    for (auto &sinkSptr : logger->sinks()) {
-        spdlog::sinks::udp_sink_mt *udpSinkPtr =
-            dynamic_cast<spdlog::sinks::udp_sink_mt *>(sinkSptr.get());
-        if (nullptr != udpSinkPtr) {
-            std::cout << "std cout info changeUdpAddress address:" << address <<
-                      " port:" << port << std::endl;
-            udpSinkPtr->reconnect(address, port);
-        }
-    }
-}
+// void Logger::changeServer(const std::string &udpAddress) {
+//     std::string address;
+//     int port = 0;
+//     analyseUrl(udpAddress, address, port);
+//     auto logger = Logger::getLogger();
+//     for (auto &sinkSptr : logger->sinks()) {
+//         spdlog::sinks::udp_sink_mt *udpSinkPtr =
+//             dynamic_cast<spdlog::sinks::udp_sink_mt *>(sinkSptr.get());
+//         if (nullptr != udpSinkPtr) {
+//             std::cout << "std cout info changeUdpAddress address:" << address <<
+//                       " port:" << port << std::endl;
+//             udpSinkPtr->reconnect(address, port);
+//         }
+//     }
+// }
 
 std::shared_ptr<spdlog::logger> &Logger::getLogger(const std::string &name, const std::string &path, const std::string &url) {
     static Logger logger(path, url);

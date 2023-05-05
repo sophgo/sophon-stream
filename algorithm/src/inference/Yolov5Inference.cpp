@@ -156,6 +156,11 @@ namespace sophon_stream
       common::ErrorCode Yolov5Inference::predict(algorithm::Context &context, common::ObjectMetadatas &objectMetadatas)
       {
         context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
+        
+        // TODO:delete this line
+        std::cout << "Inference objectMetadatas.size() = " << objectMetadatas.size() << std::endl;
+        if(objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
+
         int ret = 0;
         if (!pSophgoContext->mEndOfStream)
           ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors, objectMetadatas[0]->mOutputBMtensors);

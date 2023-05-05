@@ -26,9 +26,9 @@
     },
     "device_id":0,
     "id":0,
-    "milliseconds_timeout":0,
+    "milliseconds_timeout":200,
     "name":"action_element",
-    "repeated_timeout":false,
+    "repeated_timeout":true,
     "side":"sophgo",
     "thread_number":1
 }

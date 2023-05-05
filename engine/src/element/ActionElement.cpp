@@ -157,6 +157,7 @@ common::ErrorCode ActionElement::doWork() {
     common::ObjectMetadatas objectMetadatas;
     {
         std::lock_guard<std::mutex> lock(mMutex);
+        
         std::size_t currentDataCount = getDataCount(0);
         bool timeout = mLastDataCount == currentDataCount;
         mLastDataCount = currentDataCount;
@@ -176,9 +177,13 @@ common::ErrorCode ActionElement::doWork() {
             return common::ErrorCode::SUCCESS;
         }
 
-        for (int i = 0;
-                mPendingObjectMetadatas.size() < mBatch && 0 != getDataCount(0);
-                ++i) {
+        // for (int i = 0;
+        //         mPendingObjectMetadatas.size() < mBatch && 0 != getDataCount(0);
+        //         ++i) {
+        while(mPendingObjectMetadatas.size() < mBatch)
+        {
+            if(getDataCount(0) == 0)    continue;
+            std::cout << "ElementID = " << getId() << " DataCount = " << getDataCount(0) << std::endl;
             auto data = getData(0);
             if (!data) {
                 popData(0);
@@ -257,18 +262,11 @@ common::ErrorCode ActionElement::doWork() {
         for (auto objectMetadata : objectMetadatas) {
             mProcessedObjectMetadatas.push_back(objectMetadata);
         }
-
         errorCode = sendProcessedData();
         if (common::ErrorCode::SUCCESS != errorCode) {
             return errorCode;
         }
     }
-
-    // if(mProcessedObjectMetadatas.back()->mFrame->mEndOfStream)
-    // {
-    //     uninit();
-    //     return common::ErrorCode::STREAM_END;
-    // }
 
     return common::ErrorCode::SUCCESS;
 }

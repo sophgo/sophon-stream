@@ -5,7 +5,9 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/rotating_file_sink.h"
-#include "udp_sink.h"
+#include <iostream>
+
+// #include "udp_sink.h"
 
 enum LoggerOutput {
     LOG_CONSOLE = 0,//日志在控制台打印

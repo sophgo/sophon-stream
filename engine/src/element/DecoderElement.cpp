@@ -38,6 +38,7 @@ constexpr const char* DecoderElement::JSON_REOPEN_TIMES;
 constexpr const char* DecoderElement::JSON_TIMEOUT;
 constexpr const char* DecoderElement::JSON_SOURCE_TYPE;
 constexpr const char* DecoderElement::JSON_SKIP_COUNT;
+constexpr const char* DecoderElement::JSON_BATCH_SIZE;
 
 common::ErrorCode DecoderElement::initInternal(const std::string& json) {
     common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -53,6 +54,12 @@ common::ErrorCode DecoderElement::initInternal(const std::string& json) {
         if(configure.end()!=skipcountIter&&skipcountIter->is_number_integer()){
             mSkipCount = skipcountIter->get<int>();
             IVS_INFO("skip count is :{0}", mSkipCount);
+        }
+
+        auto batchsizeIter = configure.find(JSON_BATCH_SIZE);
+        if(configure.end()!=batchsizeIter && batchsizeIter->is_number_integer()){
+            mBatchSize = batchsizeIter->get<int>();
+            IVS_INFO("batch size is :{0}", mBatchSize);
         }
 
         auto sharedObjectIt = configure.find(JSON_SHARED_OBJECT_FIELD);
@@ -344,6 +351,7 @@ common::ErrorCode DecoderElement::parseJson(const std::string& json, std::string
 
     return errorCode;
 }
+
 common::ErrorCode DecoderElement::process(const bool lastFrame,const int sourceType,const int reopentimes,const int capacity,
             const std::shared_ptr<ChannelTask>& channelTask, 
             const std::shared_ptr<ChannelInfo>& channelInfo){
@@ -394,6 +402,7 @@ common::ErrorCode DecoderElement::process(const bool lastFrame,const int sourceT
         }
 
         //push data to next element
+        // 是否应该在这里之前把batch组起来
         common::ErrorCode errorCode = sendData(0, std::static_pointer_cast<void>(objectMetadata), std::chrono::milliseconds(200));
         if(common::ErrorCode::SUCCESS!=errorCode) {
 
@@ -401,7 +410,6 @@ common::ErrorCode DecoderElement::process(const bool lastFrame,const int sourceT
                      static_cast<void*>(objectMetadata.get()));
             return errorCode;
         }
-        // 尝试降低decoder线程占用率，不起作用
         //usleep(400000);
     } else {
         if(ret==common::ErrorCode::NOT_VIDEO_CHANNEL){

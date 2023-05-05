@@ -41,7 +41,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     add_library(common
         ../share/common/Logger.cpp
-        ../share/common/Udp.cpp
+        # ../share/common/Udp.cpp
         )
     link_libraries(common)
 
@@ -54,7 +54,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     endforeach(test_src)
 
     # unitcase tests
-    file(GLOB TEST_SOURCES test/unit/unitcaseWorkerNew.cpp)
+    file(GLOB TEST_SOURCES test/unit/unitcaseActionElement.cpp)
     foreach(test_src ${TEST_SOURCES})
         get_filename_component(test_name ${test_src} NAME_WE)
         add_executable(${test_name} ${test_src})

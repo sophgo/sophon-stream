@@ -164,6 +164,7 @@ class DecoderElement : public framework::Element {
     static constexpr const char* JSON_REOPEN_TIMES = "reopen_times";
     static constexpr const char* JSON_SOURCE_TYPE = "source_type";
     static constexpr const char* JSON_SKIP_COUNT = "skip_count";
+    static constexpr const char* JSON_BATCH_SIZE = "batch_size";
 
     static void doSth();
 
@@ -192,6 +193,7 @@ class DecoderElement : public framework::Element {
     common::ErrorCode reopen(const int reopentimes, const std::shared_ptr<ChannelTask>& channelTask, const std::shared_ptr<ChannelInfo>& channelInfo);
   private:
     int mSkipCount = 0;
+    int mBatchSize = 0;
     std::shared_ptr<void> mSharedObjectHandle;
     std::map<int,std::shared_ptr<ChannelInfo>> mThreadsPool;
     std::mutex mThreadsPoolMtx;
