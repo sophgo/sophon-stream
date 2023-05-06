@@ -12,9 +12,9 @@
 #include <sys/stat.h>
 
 #define DECODE_ID 5000
-#define YOLO_ID 5001
-#define POST_ID 5002
-#define PRE_ID 5003
+#define PRE_ID 5001
+#define YOLO_ID 5002
+#define POST_ID 5003
 #define ENCODE_ID 5006
 #define REPORT_ID 5555
 
@@ -277,6 +277,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     cv.wait(uq);
   }
   for(int i=0;i<MAX_GRAPH;i++){
+    std::cout << "graph stop" << std::endl;
     engine.stop(i+1);
   }
   long totalCost = clocker.tell_us();

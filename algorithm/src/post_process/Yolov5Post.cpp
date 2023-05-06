@@ -149,7 +149,8 @@ namespace sophon_stream
       void Yolov5Post::postProcess(algorithm::Context &context, common::ObjectMetadatas &objectMetadatas)
       {
         std::cout << "Post objectMetadatas.size() = " << objectMetadatas.size() << std::endl;
-
+        if(objectMetadatas.size() == 0)
+          return;
         context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
         if(!pSophgoContext->has_init)
           initTpuKernel(context);
@@ -158,11 +159,12 @@ namespace sophon_stream
           IVS_DEBUG("objectMetadatas size too small !!!!!!!!!");
           return;
         }
+        if(objectMetadatas[0]->mFrame->mEndOfStream)
+            return;
         setTpuKernelMem(context, objectMetadatas);
         for (int i = 0; i < pSophgoContext->max_batch; i++)
         {
-          if (pSophgoContext->mEndOfStream)
-            continue;
+          // if (pSophgoContext->mEndOfStream)
           bm_image image = *objectMetadatas[i]->mFrame->mSpData;
           int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO

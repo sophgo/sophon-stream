@@ -171,25 +171,24 @@ common::ErrorCode ActionElement::doWork() {
         int pendingSize = mPendingObjectMetadatas.size();
         int iCurrentdataCount = currentDataCount;
         if (mBatch - pendingSize > iCurrentdataCount
-//        if (mBatch - mPendingObjectMetadatas.size() > currentDataCount
                 && !timeout) {
 
             return common::ErrorCode::SUCCESS;
         }
 
-        // for (int i = 0;
-        //         mPendingObjectMetadatas.size() < mBatch && 0 != getDataCount(0);
-        //         ++i) {
-        while(mPendingObjectMetadatas.size() < mBatch)
+        // ActionElement凑batch
+        while(mPendingObjectMetadatas.size() < mBatch && !hasEof)
         {
-            if(getDataCount(0) == 0)    continue;
-            std::cout << "ElementID = " << getId() << " DataCount = " << getDataCount(0) << std::endl;
+            // 如果队列为空则等待
+            if(getDataCount(0) == 0)
+            {
+                continue;
+            }
             auto data = getData(0);
             if (!data) {
                 popData(0);
                 continue;
             }
-
             auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
             bool skip = false;
 
@@ -219,11 +218,17 @@ common::ErrorCode ActionElement::doWork() {
             } else {
                 mPendingObjectMetadatas.push_back(objectMetadata);
             }
-
             popData(0);
+            
+            // 如果遇到了eof，将eof帧凑到batch里之后截止
+            if(objectMetadata->mFrame->mEndOfStream)
+            {    
+                hasEof = true;
+                break;
+            }
         }
 
-        // 凑batch
+        // 遇到了eof的情况凑batch
         if(mPendingObjectMetadatas.size() != 0 && mPendingObjectMetadatas.back()->mFrame!=nullptr&& mPendingObjectMetadatas.back()->mFrame->mEndOfStream)
         {
             while(mPendingObjectMetadatas.size() < mBatch)

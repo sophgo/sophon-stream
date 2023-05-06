@@ -21,6 +21,8 @@ class ActionElement : public framework::Element {
     static void doSth();
 
   private:
+    bool hasEof = false;
+
     common::ErrorCode initInternal(const std::string& json) override;
     void uninitInternal() override;
 

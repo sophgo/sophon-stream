@@ -164,7 +164,8 @@ namespace sophon_stream
         if(objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
 
         int ret = 0;
-        if (!pSophgoContext->mEndOfStream)
+        // if (!pSophgoContext->mEndOfStream)
+        if(!objectMetadatas[0]->mFrame->mEndOfStream)
           ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors->tensors, objectMetadatas[0]->mOutputBMtensors->tensors);
         return static_cast<common::ErrorCode>(ret);
       }

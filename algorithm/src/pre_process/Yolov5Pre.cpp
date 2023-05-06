@@ -90,18 +90,18 @@ namespace sophon_stream
             common::ErrorCode Yolov5Pre::preProcess(algorithm::Context &context,
                                                     common::ObjectMetadatas &objectMetadatas)
             {
-                // std::cout << "do preprocess" << std::endl;
-                // Clocker clocker;
-
                 std::cout << "Pre objectMetadatas.size() = " << objectMetadatas.size() << std::endl;
-
+                if(objectMetadatas.size() == 0)
+                    return common::ErrorCode::SUCCESS;
                 context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
                 std::vector<bm_image> images;
                 for (auto &objMetadata : objectMetadatas)
                 {
                     if (objMetadata->mFrame->mEndOfStream)
                     {
+                        IVS_CRITICAL("END OF STREAM");
                         pSophgoContext->mEndOfStream = objMetadata->mFrame->mEndOfStream;
+                        objectMetadatas[0]->mFrame->mEndOfStream = true;
                         auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
                         pSophgoContext->m_frame_h = tensor->get_shape()->dims[2];
                         pSophgoContext->m_frame_w = tensor->get_shape()->dims[3];
@@ -251,9 +251,6 @@ namespace sophon_stream
                 CV_Assert(ret == 0);
                 objectMetadatas[0]->mInputBMtensors->tensors[0]->shape.dims[0] = image_n;
 
-
-                // input_tensor->set_device_mem(&input_dev_mem);
-                // input_tensor->set_shape_by_dim(0, image_n); // set real batch number
                 return common::ErrorCode::SUCCESS;
             }
 
