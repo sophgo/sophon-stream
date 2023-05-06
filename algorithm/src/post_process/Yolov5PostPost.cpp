@@ -24,14 +24,14 @@ namespace sophon_stream
         std::cout << "Using tpu_kernel yolo postprocession, kernel funtion id: " << pSophgoContext->func_id << std::endl;
 
         int out_len_max = 25200 * 7;
-        int input_num = objectMetadatas[0]->mOutputBMtensors.size(); // 3
+        int input_num = objectMetadatas[0]->mOutputBMtensors->tensors.size(); // 3
         int batch_num = 1; // 4b has bug, now only for 1b.
 
         // 这个handle需要和推理阶段使用的handle对应上，在pre里初始化，在这里取出来
         bm_handle_t handle_ = *objectMetadatas[0]->mAlgorithmHandle;
         bm_device_mem_t in_dev_mem[input_num];
         for (int i = 0; i < input_num; i++)
-          in_dev_mem[i] = objectMetadatas[0]->mOutputBMtensors[i]->device_mem;
+          in_dev_mem[i] = objectMetadatas[0]->mOutputBMtensors->tensors[i]->device_mem;
 
         for (int i = 0; i < pSophgoContext->max_batch; i++)
         {

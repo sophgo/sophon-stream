@@ -37,6 +37,11 @@ struct DataInformation {
 };
 
 
+struct bmTensors{
+  std::vector<std::shared_ptr<bm_tensor_t>> tensors;
+  bm_handle_t handle;
+};
+
 struct ObjectMetadata {
     ObjectMetadata()
         : mErrorCode(common::ErrorCode::SUCCESS), 
@@ -96,8 +101,11 @@ struct ObjectMetadata {
     std::vector<std::shared_ptr<BMNNTensor>> mOutputTensors;
     
     // init in pre_process, and update in inference
-    std::vector<std::shared_ptr<bm_tensor_t>> mOutputBMtensors;
-    std::vector<std::shared_ptr<bm_tensor_t>> mInputBMtensors;
+    // std::vector<std::shared_ptr<bm_tensor_t>> mOutputBMtensors;
+    // std::vector<std::shared_ptr<bm_tensor_t>> mInputBMtensors;
+
+    std::shared_ptr<bmTensors> mInputBMtensors;
+    std::shared_ptr<bmTensors> mOutputBMtensors;
 
     std::shared_ptr<ModelConfigureMap> mModelConfigureMap;
     std::shared_ptr<DataInformation> mSpDataInformation;//包含mTransFromFrame和原detect原recognize

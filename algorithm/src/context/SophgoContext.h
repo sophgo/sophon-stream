@@ -51,6 +51,7 @@ struct SophgoContext :public Context {
     std::shared_ptr<BMNNNetwork> m_bmNetwork;
     std::vector<bm_image> m_resized_imgs;
     std::vector<bm_image> m_converto_imgs;
+    bm_handle_t handle;
 
     // tpu_kernel
     bool use_tpu_kernel = false;

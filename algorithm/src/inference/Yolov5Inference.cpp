@@ -34,6 +34,8 @@ namespace sophon_stream
         pSophgoContext->m_bmContext = std::make_shared<BMNNContext>(handle, pSophgoContext->modelPath[0].c_str());
         pSophgoContext->m_bmNetwork = pSophgoContext->m_bmContext->network(0);
 
+        pSophgoContext->handle = handle->handle();
+
         // 2. get input
         pSophgoContext->max_batch = pSophgoContext->m_bmNetwork->maxBatch();
         auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
@@ -163,7 +165,7 @@ namespace sophon_stream
 
         int ret = 0;
         if (!pSophgoContext->mEndOfStream)
-          ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors, objectMetadatas[0]->mOutputBMtensors);
+          ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors->tensors, objectMetadatas[0]->mOutputBMtensors->tensors);
         return static_cast<common::ErrorCode>(ret);
       }
 

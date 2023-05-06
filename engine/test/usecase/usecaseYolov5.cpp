@@ -185,6 +185,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0, ENCODE_ID, 0));
     graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID, 0, REPORT_ID, 0));
+    // graphConfigure["connections"].push_back(makeConnectConfig(PRE_ID, 0, REPORT_ID, 0));
+    
 
     engine.addGraph(graphConfigure.dump());
 
@@ -204,8 +206,6 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                               return;
                             }
 #if DOWNLOAD_IMAGE
-
-
         int width = objectMetadata->mFrame->mWidth;
         int height = objectMetadata->mFrame->mHeight;
         // 转格式

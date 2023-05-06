@@ -94,13 +94,13 @@ namespace sophon_stream
       {
         context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
         int out_len_max = 25200 * 7;
-        int input_num = objectMetadatas[0]->mOutputBMtensors.size(); // 3
+        int input_num = objectMetadatas[0]->mOutputBMtensors->tensors.size(); // 3
         int batch_num = 1;                                           // 4b has bug, now only for 1b.
 
         bm_handle_t handle_ = pSophgoContext->m_bmContext->handle();
         bm_device_mem_t in_dev_mem[input_num];
         for (int i = 0; i < input_num; i++)
-          in_dev_mem[i] = objectMetadatas[0]->mOutputBMtensors[i]->device_mem;
+          in_dev_mem[i] = objectMetadatas[0]->mOutputBMtensors->tensors[i]->device_mem;
 
         for (int i = 0; i < pSophgoContext->max_batch; i++)
         {

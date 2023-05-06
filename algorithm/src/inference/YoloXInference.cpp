@@ -81,7 +81,7 @@ common::ErrorCode YoloXInference::predict(algorithm::Context& context, common::O
   context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
   int ret = 0;
   if(!pSophgoContext->mEndOfStream) 
-    ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors,objectMetadatas[0]->mOutputBMtensors);
+    ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors->tensors,objectMetadatas[0]->mOutputBMtensors->tensors);
     std::cout<<"yoloX inference cost: "<<clocker.tell_us()<<std::endl;
   return static_cast<common::ErrorCode>(ret);
 }
