@@ -192,7 +192,6 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 
     engine.setDataHandler(i+1, REPORT_ID, 0, [&](std::shared_ptr<void> data)
                           {
-                            IVS_DEBUG("data output 111111111111111");
                             auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
                             if (objectMetadata == nullptr)
                               return;
@@ -231,7 +230,6 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
           subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
           subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage,true);
       }
-      IVS_DEBUG("data output 666");
         // save image
         void* jpeg_data = NULL;
         size_t out_size = 0;

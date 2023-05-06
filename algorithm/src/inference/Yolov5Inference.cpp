@@ -159,8 +159,6 @@ namespace sophon_stream
       {
         context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
         
-        // TODO:delete this line
-        std::cout << "Inference objectMetadatas.size() = " << objectMetadatas.size() << std::endl;
         if(objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
 
         int ret = 0;

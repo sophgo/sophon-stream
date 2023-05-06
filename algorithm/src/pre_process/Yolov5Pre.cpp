@@ -90,7 +90,6 @@ namespace sophon_stream
             common::ErrorCode Yolov5Pre::preProcess(algorithm::Context &context,
                                                     common::ObjectMetadatas &objectMetadatas)
             {
-                std::cout << "Pre objectMetadatas.size() = " << objectMetadatas.size() << std::endl;
                 if(objectMetadatas.size() == 0)
                     return common::ErrorCode::SUCCESS;
                 context::SophgoContext *pSophgoContext = dynamic_cast<context::SophgoContext *>(&context);
