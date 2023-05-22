@@ -68,9 +68,10 @@ namespace sophon_stream
         {
           img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
         }
-        auto ret = bm_image_create_batch(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_net_h,
-                                         pSophgoContext->m_net_w, FORMAT_RGB_PLANAR, img_dtype, pSophgoContext->m_converto_imgs.data(), pSophgoContext->max_batch);
-        assert(BM_SUCCESS == ret);
+        // malloc m_converto_imgs
+        // auto ret = bm_image_create_batch(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_net_h,
+        //                                  pSophgoContext->m_net_w, FORMAT_RGB_PLANAR, img_dtype, pSophgoContext->m_converto_imgs.data(), pSophgoContext->max_batch);
+        // assert(BM_SUCCESS == ret);
 
         // 5.converto
         float input_scale = tensor->get_scale();
@@ -111,7 +112,7 @@ namespace sophon_stream
             {
               pSophgoContext->api[i].bottom_addr[j] = bm_mem_get_device_addr(in_dev_mem[j]) + i * in_dev_mem[j].size / pSophgoContext->max_batch;
             }
-            ret = bm_malloc_device_byte(handle_, &pSophgoContext->out_dev_mem[i], out_len_max * sizeof(float));
+            auto ret = bm_malloc_device_byte(handle_, &pSophgoContext->out_dev_mem[i], out_len_max * sizeof(float));
             assert(BM_SUCCESS == ret);
             ret = bm_malloc_device_byte(handle_, &pSophgoContext->detect_num_mem[i], batch_num * sizeof(int32_t));
             assert(BM_SUCCESS == ret);
