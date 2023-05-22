@@ -85,7 +85,7 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 
 #define MAX_GRAPH 1
 #define MAX_CHANNEL 1
-#define DOWNLOAD_IMAGE 1
+#define DOWNLOAD_IMAGE 0
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 {
 

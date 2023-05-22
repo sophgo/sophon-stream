@@ -26,8 +26,6 @@ namespace sophon_stream
         std::string coco_names_file;
         pSophgoContext->m_thresh = context.threthold; // thresh[0] confThresh, thresh[1] nmsThresh
         pSophgoContext->m_class_num = context.numClass;
-        // pSophgoContext->m_confThreshold= confThresh;
-        // pSophgoContext->m_nmsThreshold = nmsThresh;
 
         // 1. get network
         BMNNHandlePtr handle = std::make_shared<BMNNHandle>(pSophgoContext->deviceId);
@@ -68,10 +66,6 @@ namespace sophon_stream
         {
           img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
         }
-        // malloc m_converto_imgs
-        // auto ret = bm_image_create_batch(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_net_h,
-        //                                  pSophgoContext->m_net_w, FORMAT_RGB_PLANAR, img_dtype, pSophgoContext->m_converto_imgs.data(), pSophgoContext->max_batch);
-        // assert(BM_SUCCESS == ret);
 
         // 5.converto
         float input_scale = tensor->get_scale();
@@ -84,10 +78,6 @@ namespace sophon_stream
         pSophgoContext->converto_attr.beta_2 = 0;
 
         // 6. tpu_kernel postprocess
-        if (pSophgoContext->modelPath[0].find("tpukernel") != std::string::npos)
-        {
-            pSophgoContext->use_tpu_kernel = true;
-        }
         if(pSophgoContext->use_tpu_kernel)
         {
           tpu_kernel_module_t tpu_module;

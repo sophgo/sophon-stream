@@ -15,6 +15,7 @@
 #define JSON_ALGORITHM_MIN_SIZE_FIELD "min_size"
 #define JSON_ALGORITHM_PYRAMID_FIELD "pyramid"
 #define JSON_ALGORITHM_LABEL_NAMES_FIELD "label_names"
+#define JSON_ALGORITHM_USE_TPU_KERNEL "use_tpu_kernel"
 
 
 namespace sophon_stream {
@@ -70,6 +71,14 @@ common::ErrorCode SophgoContext::init(const std::string& json) {
             errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
             break;
         }
+        
+        auto tpu_kernelIt = configure.find(JSON_ALGORITHM_USE_TPU_KERNEL);
+        if (configure.end() == tpu_kernelIt
+                || !tpu_kernelIt->is_boolean()) {
+            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+            break;
+        }
+        use_tpu_kernel = tpu_kernelIt->get<bool>();
 
         auto maxBatchSizeCon = configure.find(JSON_ALGORITHM_MAX_BATCHSIZE_FIELD);
         if (configure.end() != maxBatchSizeCon

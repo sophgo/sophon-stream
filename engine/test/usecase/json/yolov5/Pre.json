@@ -11,7 +11,7 @@
                     "person","bicycle","car","motorbike","aeroplane","bus","train","truck","boat","traffic light","fire hydrant","stop sign","parking meter","bench","bird","cat","dog","horse","sheep","cow","elephant","bear","zebra","giraffe","backpack","umbrella","handbag","tie","suitcase","frisbee","skis","snowboard","sports ball","kite","baseball bat","baseball glove","skateboard","surfboard","tennis racket","bottle","wine glass","cup","fork","knife","spoon","bowl","banana","apple","sandwich","orange","broccoli","carrot","hot dog","pizza","donut","cake","chair","sofa","pottedplant","bed","diningtable","toilet","tvmonitor","laptop","mouse","remote","keyboard","cell phone","microwave","oven","toaster","sink","refrigerator","book","clock","vase","scissors","teddy bear","hair drier","toothbrus"
                     ],
                 "max_batchsize":1,
-                "model_path":["../models/yolov5s_tpukernel_int8_4b.bmodel"],
+                "model_path":["../models/yolov5s_int8_4b.bmodel"],
                 "name":"cocoDetect",
                 "num_class":80,
                 "num_inputs":[1],
@@ -20,7 +20,8 @@
                 "output_shape":[[18,15,25],[18,30,50],[18,60,100]],
                 "shared_object":"../lib/libalgorithmApi.so",
                 "threthold":[0.5,0.5],
-                "stage":["pre"]
+                "stage":["pre"],
+                "use_tpu_kernel": false
             }
         ]
     },

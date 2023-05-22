@@ -30,14 +30,12 @@ namespace sophon_stream
                 objectMetadatas[0]->mOutputBMtensors = std::make_shared<sophon_stream::common::bmTensors>();
 
                 objectMetadatas[0]->mInputBMtensors.reset(new sophon_stream::common::bmTensors(), [](sophon_stream::common::bmTensors *p){
-                    // bm_free_device(*objectMetadatas[0]->mAlgorithmHandle, p->device_mem);
                     for(int i = 0;i < p->tensors.size();++i)
                         bm_free_device(p->handle, p->tensors[i]->device_mem);
                     delete p;
                     p = nullptr; 
                 });
                 objectMetadatas[0]->mOutputBMtensors.reset(new sophon_stream::common::bmTensors(), [](sophon_stream::common::bmTensors *p){
-                    // bm_free_device(*objectMetadatas[0]->mAlgorithmHandle, p->device_mem);
                     for (int i = 0; i < p->tensors.size(); ++i)
                         bm_free_device(p->handle, p->tensors[i]->device_mem);
                     delete p;
@@ -54,13 +52,10 @@ namespace sophon_stream
                     objectMetadatas[0]->mInputBMtensors->tensors[i]->dtype = pSophgoContext->m_bmNetwork->m_netinfo->input_dtypes[i];
                     objectMetadatas[0]->mInputBMtensors->tensors[i]->shape = pSophgoContext->m_bmNetwork->m_netinfo->stages[0].input_shapes[i];
                     objectMetadatas[0]->mInputBMtensors->tensors[i]->st_mode = BM_STORE_1N;
-                    // 前处理的mInpuptBMtensors需要申请内存，在preprocess中通过d2d拷贝
+                    // 前处理的mInpuptBMtensors不需要申请内存，在preprocess中通过std::move得到
                     int input_bytes = pSophgoContext->max_batch * pSophgoContext->m_net_channel * pSophgoContext->m_net_h * pSophgoContext->m_net_w;
                     if (BM_FLOAT32 == pSophgoContext->m_bmNetwork->m_netinfo->input_dtypes[0]);
                         input_bytes *= 4;
-                    // 如果使用std::move, 那么这里不需要申请内存
-                    // auto ret = bm_malloc_device_byte(objectMetadatas[0]->mInputBMtensors->handle, &objectMetadatas[0]->mInputBMtensors->tensors[i]->device_mem,
-                    //                                  input_bytes);
                     // assert(BM_SUCCESS == ret);
                 }
 
@@ -116,11 +111,6 @@ namespace sophon_stream
                     {
                         pSophgoContext->m_frame_w = objMetadata->mFrame->mWidth;
                         pSophgoContext->m_frame_h = objMetadata->mFrame->mHeight;
-
-                        // 待删
-                        for (int i = 0; i < pSophgoContext->output_num; ++i)
-                            objMetadata->mOutputTensors.push_back(pSophgoContext->m_bmNetwork->outputTensor(i));
-                        // end
 
                         objMetadata->mAlgorithmHandle = std::make_shared<bm_handle_t>(pSophgoContext->m_bmContext->handle());
                     }
@@ -256,16 +246,6 @@ namespace sophon_stream
                     image_n = pSophgoContext->m_bmNetwork->get_nearest_batch(image_n);
                 bm_device_mem_t input_dev_mem;
                 bm_image_get_contiguous_device_mem(image_n, pSophgoContext->m_converto_imgs.data(), &input_dev_mem);
-
-                // 2.4 set inputBMtensors with d2d
-                // bm_memcpy_d2d_byte(handle, dst, dst_offset, src, src_off, len)
-                // ret = bm_memcpy_d2d_byte(pSophgoContext->m_bmContext->handle(), objectMetadatas[0]->mInputBMtensors->tensors[0]->device_mem, 0, 
-                //     input_dev_mem, 0, input_dev_mem.size);
-                // CV_Assert(ret == 0);
-
-                // 2.4 set inputBMtensors with bm_set_device_mem
-                // bm_set_device_mem(&input_dev_mem, input_dev_mem.size, objectMetadatas[0]->mInputBMtensors->tensors[0]->device_mem.u.device.device_addr);
-                // objectMetadatas[0]->mInputBMtensors->tensors[0]->shape.dims[0] = image_n;
                 
                 // 2.4 set inputBMtensors with std::move
                 objectMetadatas[0]->mInputBMtensors->tensors[0]->device_mem = std::move(input_dev_mem);
