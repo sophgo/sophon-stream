@@ -28,6 +28,7 @@ constexpr const char* JSON_BATCH_FIELD = "batch";
 constexpr const char* JSON_MODELS_FIELD = "models";
 constexpr const char* JSON_MODEL_NAME_FIELD = "name";
 constexpr const char* JSON_MODEL_SHARED_OBJECT_FIELD = "shared_object";
+#define JSON_ALGORITHM_NAME_FIELD "algorithm_name"
 
 common::ErrorCode ActionElement::initInternal(const std::string& json) {
     common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -105,8 +106,23 @@ common::ErrorCode ActionElement::initInternal(const std::string& json) {
                 }));
             }
 
+
+            if (!modelConfigure.is_object()) {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+            //找到算法名字
+            auto algotirhmNameIt = modelConfigure.find(JSON_ALGORITHM_NAME_FIELD);
+            if (modelConfigure.end() == algotirhmNameIt
+                    || !algotirhmNameIt->is_string()) {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+            //根据设备类型和算法名字找到对应的工厂
+            std::string algorithmName = algotirhmNameIt->get<std::string>();
+
             auto& algorithmApiFactory = algorithm::SingletonAlgorithmApiFactory::getInstance();
-            auto algorithmApi = algorithmApiFactory.make();
+            auto algorithmApi = algorithmApiFactory.make(algorithmName);
             if (!algorithmApi) {
                 errorCode = common::ErrorCode::MAKE_ALGORITHM_API_FAIL;
                 IVS_ERROR("Make algorithm api fail, element id: {0:d}",

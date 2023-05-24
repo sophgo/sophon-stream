@@ -21,16 +21,23 @@ public:
      * 设置算法API产生器
      * @param[in] algorithmApiMaker:
      */
-    void setAlgorithmApiMaker(AlgorithmApiMaker algorithmApiMaker) {
-        mAlgorithmApiMaker = algorithmApiMaker;
+    void addAlgorithmApiMaker(const std::string& algorithmApiName, AlgorithmApiMaker algorithmApiMaker) {
+        auto algorithmApiMakerIt = mAlgorithmApiMakerMap.find(algorithmApiName);
+        std::cout << "current algorithmApi added:" << algorithmApiName << std::endl;
+        if (mAlgorithmApiMakerMap.end() != algorithmApiMakerIt) {
+        }
+
+        mAlgorithmApiMakerMap[algorithmApiName] = algorithmApiMaker;
     }
 
     /**
      * 获取产生器
      */
-    std::shared_ptr<algorithm::AlgorithmApi> make() {
-        if (mAlgorithmApiMaker) {
-            return mAlgorithmApiMaker();
+    std::shared_ptr<algorithm::AlgorithmApi> make(const std::string& algorithmApiName) {
+        auto algorithmApiMakerIt = mAlgorithmApiMakerMap.find(algorithmApiName);
+        if (mAlgorithmApiMakerMap.end() != algorithmApiMakerIt
+                && algorithmApiMakerIt->second) {
+            return algorithmApiMakerIt->second();
         } else {
             return std::shared_ptr<algorithm::AlgorithmApi>();
         }
@@ -47,18 +54,18 @@ private:
     AlgorithmApiFactory(AlgorithmApiFactory&&) = delete;
     AlgorithmApiFactory& operator =(AlgorithmApiFactory&&) = delete;
 
-    AlgorithmApiMaker mAlgorithmApiMaker;
+    std::map<std::string, AlgorithmApiMaker> mAlgorithmApiMakerMap;
 };
 
 // 算法API的工厂是个单例
 using SingletonAlgorithmApiFactory = common::Singleton<AlgorithmApiFactory>;
 
 // 算法API的注册函数
-#define REGISTER_ALGORITHM_API(AlgorithmApiClass) \
+#define REGISTER_ALGORITHM_API(algorithmApiName, AlgorithmApiClass) \
     struct AlgorithmApiClass##Register { \
         AlgorithmApiClass##Register() { \
             auto& algorithmApiFactory = ::sophon_stream::algorithm::SingletonAlgorithmApiFactory::getInstance(); \
-            algorithmApiFactory.setAlgorithmApiMaker([]() { \
+            algorithmApiFactory.addAlgorithmApiMaker(algorithmApiName, []() { \
                                                          return std::make_shared<AlgorithmApiClass>(); \
                                                      }); \
         } \
