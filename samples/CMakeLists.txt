@@ -22,8 +22,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -rdynamic")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
 
-    include(framework/framework.cmake)
-    include(element/element.cmake)
+    # include(framework/framework.cmake)
+    # include(element/element.cmake)
+
+    link_directories("../engine/build")
+    include_directories("../engine")
 
 
     link_libraries(pthread)
@@ -37,7 +40,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     # gtest includes and libraries for all tests
     include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
 
-    add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gtest/src/gtest_main.cc)
+    # add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gtest/src/gtest_main.cc)
     link_libraries(gtest)
 
     # ffmpeg
@@ -61,23 +64,22 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     # include_directories(src)
 
-    add_library(common
-        ../share/common/Logger.cpp
-        )
-    link_libraries(common)
+    # add_library(common
+    #     ../share/common/Logger.cpp
+    #     )
 
-    add_library(ivslogger
-        ../share/common/Logger.cpp
-        )
+    link_libraries(common)
     link_libraries(ivslogger)
+    link_libraries(framework)
+    link_libraries(derivedelement)
 
     # usecase tests
-    # file(GLOB TEST_SOURCES test/usecase/*.cpp test/usecase/*.c)
-    # foreach(test_src ${TEST_SOURCES})
-    #     get_filename_component(test_name ${test_src} NAME_WE)
-    #     add_executable(${test_name} ${test_src})
-    #     target_link_libraries(${test_name} ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil)
-    # endforeach(test_src)
+    file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
+    foreach(test_src ${TEST_SOURCES})
+        get_filename_component(test_name ${test_src} NAME_WE)
+        add_executable(${test_name} ${test_src})
+        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil)
+    endforeach(test_src)
 
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
@@ -95,9 +97,11 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(.)
     include_directories(../share)
 
-    include(framework/framework.cmake)
-    include(element/element.cmake)
+    # include(framework/framework.cmake)
+    # include(element/element.cmake)
 
+    link_directories("../engine/build")
+    include_directories("../engine")
 
     add_compile_options(-fPIC)
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
@@ -119,30 +123,29 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     # gtest includes and libraries for all tests
     include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
 
-    add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gtest/src/gtest_main.cc)
+    # add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gtest/src/gtest_main.cc)
     link_libraries(gtest)
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
 
     # include_directories(src)
 
-    add_library(common
-        ../share/common/Logger.cpp
-        ../share/common/Udp.cpp
-        )
+    # add_library(common
+    #     ../share/common/Logger.cpp
+    #     ../share/common/Udp.cpp
+    #     )
     link_libraries(common)
-
-    add_library(ivslogger
-        ../share/common/Logger.cpp
-    )
     link_libraries(ivslogger)
 
+    link_libraries(framework)
+    link_libraries(derivedelement)
+
     # usecase tests
-    # file(GLOB TEST_SOURCES test/usecase/*.cpp test/usecase/*.c)
-    # foreach(test_src ${TEST_SOURCES})
-    #     get_filename_component(test_name ${test_src} NAME_WE)
-    #     add_executable(${test_name} ${test_src})
-    #     target_link_libraries(${test_name} ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread -lavcodec -lavformat -lavutil)
-    # endforeach(test_src)
+    file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
+    foreach(test_src ${TEST_SOURCES})
+        get_filename_component(test_name ${test_src} NAME_WE)
+        add_executable(${test_name} ${test_src})
+        target_link_libraries(${test_name} ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil)
+    endforeach(test_src)
 
 endif()

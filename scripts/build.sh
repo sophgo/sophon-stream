@@ -9,43 +9,12 @@ fi
 
 pushd ${project_dir}
 
-echo "build algorithm-----"
-cd ./algorithm
-if [ ! -d "build" ]; then
-  mkdir build
-fi
-cd build
-rm -rf *
-if [ "$1" == "Debug" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Debug ..
-elif [ "$1" == "Release" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Release ..
-fi
-make -j
-echo "build algorithm completed"
 
-echo "build multimedia-----"
-cd ../../multimedia
-if [ ! -d "build" ]; then
-  mkdir build
-fi
-cd build
-rm -rf *
-if [ "$1" == "Debug" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Debug ..
-elif [ "$1" == "Release" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Release ..
-fi
-make -j
-echo "build multimedia completed"
-
+engine_dir=${project_dir}/engine
 echo "build engine-----"
-cd ../../engine
+pushd $engine_dir
 if [ ! -d "build" ]; then
   mkdir build
-fi
-if [ ! -d "lib" ]; then
-  mkdir lib
 fi
 cd build
 rm -rf *
@@ -55,10 +24,25 @@ elif [ "$1" == "Release" ]; then
   cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
 make -j
+popd
 echo "build engine completed"
 
-cp ../../algorithm/build/libalgorithmApi.so ../lib
-cp ../../multimedia/build/libmultiMediaApi.so ../lib
+sample_dir=${project_dir}/samples
+echo "build samples-----"
+pushd $sample_dir
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+cd build
+rm -rf *
+if [ "$1" == "Debug" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+elif [ "$1" == "Release" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+fi
+make -j
+popd
+echo "build samples completed"
 
 popd
 echo "All completed"
