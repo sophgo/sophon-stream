@@ -305,6 +305,12 @@ private:
      */
     std::map<int/* moduleId */, 
              std::shared_ptr<Module> > mModuleMap;
+
+
+    /**
+     * @brief 要加载的so句柄集合 
+     */
+    std::vector<std::shared_ptr<void> > mSharedObjectHandles;
 };
 
 } // namespace framework

@@ -1,9 +1,6 @@
 {
     "configure":{
         "batch":4,
-        "models":
-        [
-            {
                 "algorithm_name":"Yolov5",
                 "input_node_name":["000_net"],
                 "input_shape":[[3,640,640]],
@@ -18,17 +15,15 @@
                 "num_outputs":[3],
                 "output_node_name":["082_convolutional","094_convolutional","106_convolutional"],
                 "output_shape":[[18,15,25],[18,30,50],[18,60,100]],
-                "shared_object":"../../engine/build/libyolov5.so",
                 "threthold":[0.5,0.5],
                 "stage":["post"],
                 "use_tpu_kernel": true
-            }
-        ]
     },
+                "shared_object":"../../engine/build/libyolov5.so",
     "device_id":0,
     "id":0,
     "milliseconds_timeout":200,
-    "name":"action_element",
+    "name":"Yolov5",
     "repeated_timeout":true,
     "side":"sophgo",
     "thread_number":1

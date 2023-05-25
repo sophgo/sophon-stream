@@ -4,9 +4,13 @@
 
 #include "common/Logger.h"
 
+#include <dlfcn.h>
+#include <set>
+
 // #include "PostModuleElement.h"
 // #include "PreModuleElement.h"
 #include "ElementFactory.h"
+
 
 namespace sophon_stream {
 namespace framework {
@@ -30,6 +34,7 @@ constexpr const char* ElementManager::JSON_GRAPH_ID_FIELD;
 static constexpr const char* JSON_WORKERS_FIELD = "elements";
 static constexpr const char* JSON_MODULES_FIELD = "modules";
 static constexpr const char* JSON_CONNECTIONS_FIELD = "connections";
+constexpr const char* JSON_MODEL_SHARED_OBJECT_FIELD = "shared_object";
  
 /**
  * Init ElementManager with configure in json format.
@@ -107,6 +112,8 @@ void ElementManager::uninit() {
 
     mElementMap.clear();
     mId = -1;
+
+    mSharedObjectHandles.clear();
 
     IVS_INFO("Uninit finish, graph id: {0:d}", id);
 }
@@ -294,6 +301,7 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
         }
 
         for (auto elementConfigure : elementsConfigure) {
+            std::cout << elementConfigure.dump() << "\n";
             if (!elementConfigure.is_object()) {
                 IVS_ERROR("Element json configure is not object, graph id: {0:d}, json: {1}",
                           mId,
@@ -301,6 +309,28 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
                 errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
                 break;
             }
+
+            auto sharedObjectIt = elementConfigure.find(JSON_MODEL_SHARED_OBJECT_FIELD);
+            if (elementConfigure.end() != sharedObjectIt
+                    && sharedObjectIt->is_string()
+                    && !sharedObjectIt->empty()) {
+                const auto& sharedObject = sharedObjectIt->get<std::string>();
+                void* sharedObjectHandle = dlopen(sharedObject.c_str(), RTLD_NOW | RTLD_GLOBAL);
+                if (NULL == sharedObjectHandle) {
+                    IVS_ERROR("Load dynamic shared object file fail, element id: {0:d}, "
+                              "shared object: {1}  error info:{2}",
+                              getId(),
+                              sharedObject,dlerror());
+                    errorCode = common::ErrorCode::DLOPEN_FAIL;
+                    break;
+                }
+
+                mSharedObjectHandles.push_back(std::shared_ptr<void>(sharedObjectHandle,
+                [](void* sharedObjectHandle) {
+                    dlclose(sharedObjectHandle);
+                }));
+            }
+
 
             auto nameIt = elementConfigure.find(JSON_WORKER_NAME_FIELD);
             if (elementConfigure.end() == nameIt
@@ -312,6 +342,11 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
                 errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
                 break;
             }
+            
+            // std::string name = nameIt->get<std::string>();
+            // if (name.compare("Yolov5")==0) {
+            //   sophon_stream::algorithm::Yolov5Algorithm::doSth();
+            // }
 
             auto& elementFactory = framework::SingletonElementFactory::getInstance();
             auto element = elementFactory.make(nameIt->get<std::string>());

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ActionElement.h"
+// #include "ActionElement.h"
 #include "DecoderElement.h"
 // #include "TrackerElement.h"
 namespace sophon_stream {
@@ -10,7 +10,7 @@ class MandatoryLink{
 public:
     MandatoryLink(){
         DecoderElement::doSth();
-        ActionElement::doSth();
+        // ActionElement::doSth();
         // TrackerElement::doSth();
     }
 };

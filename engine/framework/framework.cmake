@@ -5,7 +5,7 @@ add_library(framework
         framework/ElementManager.h
         framework/ElementManager.cpp
         framework/ElementFactory.h
-        framework/ElementFactory.cpp
+        # framework/ElementFactory.cpp
         framework/Engine.h
         framework/Engine.cpp
         )
