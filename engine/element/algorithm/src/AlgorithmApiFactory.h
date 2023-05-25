@@ -64,6 +64,7 @@ using SingletonAlgorithmApiFactory = common::Singleton<AlgorithmApiFactory>;
 #define REGISTER_ALGORITHM_API(algorithmApiName, AlgorithmApiClass) \
     struct AlgorithmApiClass##Register { \
         AlgorithmApiClass##Register() { \
+            std::cout<<algorithmApiName<<std::endl; \
             auto& algorithmApiFactory = ::sophon_stream::algorithm::SingletonAlgorithmApiFactory::getInstance(); \
             algorithmApiFactory.addAlgorithmApiMaker(algorithmApiName, []() { \
                                                          return std::make_shared<AlgorithmApiClass>(); \

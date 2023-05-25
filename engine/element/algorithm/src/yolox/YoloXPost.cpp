@@ -14,7 +14,7 @@ void YoloXPost::init(YoloXSophgoContext& context)
 
     if(pSophgoContext->output_num == 3)
     {
-        #define OUTPUTS_3
+        outputs_3 = true;
     }
 
     outlen_dim = 0;
@@ -126,15 +126,26 @@ YoloXPost::~YoloXPost()
 
 void YoloXPost::postProcess(YoloXSophgoContext& context, common::ObjectMetadatas& objectMetadatas)
 {
+    if(objectMetadatas.size() == 0)
+        return;
+    if(objectMetadatas[0]->mFrame->mEndOfStream)
+        return;
     YoloXSophgoContext* pSophgoContext = &context;
     std::vector<std::shared_ptr<BMNNTensor>> outputTensors(pSophgoContext->output_num);
     // 三个输出，[batch,box_num,4],[,,1],[,,class_num]
     // 单输出情况 [batch, box_num, class_num + 5]
+    // for(int i=0; i<pSophgoContext->output_num; i++){
+    //     outputTensors[i] = pSophgoContext->m_bmNetwork->outputTensor(i);
+    // }
     for(int i=0; i<pSophgoContext->output_num; i++){
-        outputTensors[i] = pSophgoContext->m_bmNetwork->outputTensor(i);
+        // outputTensors[i] = objectMetadatas[0]->mOutputBMtensors->tensors[i];
+        outputTensors[i] = std::make_shared<BMNNTensor>(objectMetadatas[0]->mOutputBMtensors->handle, pSophgoContext->m_bmNetwork->m_netinfo->output_names[i],
+        pSophgoContext->m_bmNetwork->m_netinfo->output_scales[i], objectMetadatas[0]->mOutputBMtensors->tensors[i].get(), pSophgoContext->m_bmNetwork->is_soc);
     }
-    int frame_width = pSophgoContext->m_frame_w;
-    int frame_height = pSophgoContext->m_frame_h;
+
+
+    int frame_width = objectMetadatas[0]->mFrame->mWidth;
+    int frame_height = objectMetadatas[0]->mFrame->mHeight;
     int net_w = pSophgoContext->m_net_w;
     int net_h = pSophgoContext->m_net_h;
 
@@ -152,41 +163,60 @@ void YoloXPost::postProcess(YoloXSophgoContext& context, common::ObjectMetadatas
         float scale_y = 1.0 / scale_min;
 
         YoloXBoxVec yolobox_vec;
-
-#ifdef OUTPUTS_3
-        int objectOffset = batch_idx * outlen_dim * 1;
-        int boxOffset = batch_idx * outlen_dim * 4;
-        int classOffset = batch_idx * outlen_dim * pSophgoContext->m_class_num;
-        float* objectTensor = (float*)outputTensors[0]->get_cpu_data();
-        float* boxTensor = (float*)outputTensors[2]->get_cpu_data();
-        float* classTensor = (float*)outputTensors[1]->get_cpu_data();
-#else
-        float* tensor = (float*)outputTensors[0]->get_cpu_data();
-        int numDim3 = pSophgoContext->m_class_num + 5;
-        int batchOffset = batch_idx * outlen_dim * numDim3;
-#endif
+        float* objectTensor = nullptr;
+        float* boxTensor = nullptr;
+        float* classTensor = nullptr;
+        int boxOffset = 0;
+        int classOffset = 0;
+        int objectOffset = 0;
+        float* tensor = nullptr;
+        int numDim3 = 0;
+        int batchOffset = 0;
+        if(outputs_3)
+        {
+            objectOffset = batch_idx * outlen_dim * 1;
+            boxOffset = batch_idx * outlen_dim * 4;
+            classOffset = batch_idx * outlen_dim * pSophgoContext->m_class_num;
+            objectTensor = (float*)outputTensors[0]->get_cpu_data();
+            boxTensor = (float*)outputTensors[2]->get_cpu_data();
+            classTensor = (float*)outputTensors[1]->get_cpu_data();
+        }
+        else
+        {
+            tensor = (float*)outputTensors[0]->get_cpu_data();
+            numDim3 = pSophgoContext->m_class_num + 5;
+            batchOffset = batch_idx * outlen_dim * numDim3;
+        }
         for(size_t i = 0; i < outlen_dim; ++i)
         {
             // 取出物体置信度
-#ifdef OUTPUTS_3
-            float box_objectness = objectTensor[objectOffset + i];
-#else
-            float box_objectness = tensor[batchOffset + i * numDim3 + 4];
-#endif
+            float box_objectness = 0;
+            if(outputs_3)
+                box_objectness = objectTensor[objectOffset + i];
+            else
+                box_objectness = tensor[batchOffset + i * numDim3 + 4];
+
             if(box_objectness < pSophgoContext->m_thresh[0])
                 continue;
             // 进入解码阶段
-#ifdef OUTPUTS_3
-            float center_x = (boxTensor[boxOffset + i * 4 + 0] + grids_x_[i]) * expanded_strides_[i];
-            float center_y = (boxTensor[boxOffset + i * 4 + 1] + grids_y_[i]) * expanded_strides_[i];
-            float w_temp = exp(boxTensor[boxOffset + i * 4 + 2]) * expanded_strides_[i];
-            float h_temp = exp(boxTensor[boxOffset + i * 4 + 3]) * expanded_strides_[i];
-#else
-            float center_x = (tensor[batchOffset + i * numDim3 + 0] + grids_x_[i]) * expanded_strides_[i];
-            float center_y = (tensor[batchOffset + i * numDim3 + 1] + grids_y_[i]) * expanded_strides_[i];
-            float w_temp = exp(tensor[batchOffset + i * numDim3 + 2]) * expanded_strides_[i];
-            float h_temp = exp(tensor[batchOffset + i * numDim3 + 3]) * expanded_strides_[i];
-#endif
+            float center_x = 0;
+            float center_y = 0;
+            float w_temp = 0;
+            float h_temp = 0;
+            if(outputs_3)
+            {
+                center_x = (boxTensor[boxOffset + i * 4 + 0] + grids_x_[i]) * expanded_strides_[i];
+                center_y = (boxTensor[boxOffset + i * 4 + 1] + grids_y_[i]) * expanded_strides_[i];
+                w_temp = exp(boxTensor[boxOffset + i * 4 + 2]) * expanded_strides_[i];
+                h_temp = exp(boxTensor[boxOffset + i * 4 + 3]) * expanded_strides_[i];
+            }
+            else
+            {
+                center_x = (tensor[batchOffset + i * numDim3 + 0] + grids_x_[i]) * expanded_strides_[i];
+                center_y = (tensor[batchOffset + i * numDim3 + 1] + grids_y_[i]) * expanded_strides_[i];
+                w_temp = exp(tensor[batchOffset + i * numDim3 + 2]) * expanded_strides_[i];
+                h_temp = exp(tensor[batchOffset + i * numDim3 + 3]) * expanded_strides_[i];
+            }
             center_x *= scale_x;
             center_y *= scale_y;
             w_temp *= scale_x;
@@ -198,11 +228,11 @@ void YoloXPost::postProcess(YoloXSophgoContext& context, common::ObjectMetadatas
 
             for(int class_idx = 0;class_idx < pSophgoContext->m_class_num;++class_idx)
             {
-#ifdef OUTPUTS_3
-                float box_cls_score = classTensor[classOffset + i * pSophgoContext->m_class_num + class_idx];
-#else
-                float box_cls_score = tensor[batchOffset + i * numDim3 + 5 + class_idx];
-#endif
+                float box_cls_score = 0;
+                if(outputs_3)
+                    box_cls_score = classTensor[classOffset + i * pSophgoContext->m_class_num + class_idx];
+                else
+                    box_cls_score = tensor[batchOffset + i * numDim3 + 5 + class_idx];
                 float box_prob = box_objectness * box_cls_score;
                 if(box_prob > pSophgoContext->m_thresh[0])
                 {

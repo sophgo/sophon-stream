@@ -44,6 +44,8 @@ class YoloXPost {
     int * grids_y_ = nullptr;
     int * expanded_strides_ = nullptr;
     int channel_len;
+
+    bool outputs_3 = false;
     
 };
 

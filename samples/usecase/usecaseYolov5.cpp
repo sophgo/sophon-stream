@@ -210,15 +210,12 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
         int width = objectMetadata->mFrame->mWidth;
         int height = objectMetadata->mFrame->mHeight;
         // 转格式
-        sophon_stream::common::FormatType format_type_stream = objectMetadata->mFrame->mFormatType;
-        sophon_stream::common::DataType data_type_stream = objectMetadata->mFrame->mDataType;
-        bm_image_format_ext format_type_bmcv = sophon_stream::common::format_stream2bmcv(format_type_stream);
-        bm_image_data_format_ext data_type_bmcv = sophon_stream::common::data_stream2bmcv(data_type_stream);
+        // sophon_stream::common::FormatType format_type_stream = objectMetadata->mFrame->mFormatType;
+        // sophon_stream::common::DataType data_type_stream = objectMetadata->mFrame->mDataType;
+        // bm_image_format_ext format_type_bmcv = sophon_stream::common::format_stream2bmcv(format_type_stream);
+        // bm_image_data_format_ext data_type_bmcv = sophon_stream::common::data_stream2bmcv(data_type_stream);
         // 转成bm_image
         bm_image image = * objectMetadata->mFrame->mSpData;
-        // bm_image_create(objectMetadata->mFrame->mSpData->mHandle, height, width, format_type_bmcv, 
-        // data_type_bmcv, &image);
-        // bm_image_attach(image, objectMetadata->mFrame->mSpData->mData.get());
 
         bm_image imageStorage;
         bm_image_create(objectMetadata->mFrame->mHandle, height, width, FORMAT_YUV420P, image.data_type, &imageStorage);

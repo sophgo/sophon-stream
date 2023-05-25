@@ -11,7 +11,9 @@
 #include <opencv2/opencv.hpp>
 
 #define DECODE_ID 5000
-#define YOLO_ID 5001
+#define PRE_ID 5001
+#define YOLO_ID 5002
+#define POST_ID 5003
 #define ENCODE_ID 5006
 #define REPORT_ID 5555
 
@@ -81,6 +83,21 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 #define DOWNLOAD_IMAGE 1
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 {
+#if DOWNLOAD_IMAGE
+  const char * dir_path = "./results";
+  struct stat info;
+    if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
+        std::cout << "Directory already exists." << std::endl;
+    } else {
+        if (mkdir(dir_path, 0777) == 0) {
+            std::cout << "Directory created successfully." << std::endl;
+        } else {
+            std::cerr << "Error creating directory." << std::endl;
+        }
+    }
+#endif
+
+
   ::logInit("debug", "", "");
   auto &engine = sophon_stream::framework::SingletonEngine::getInstance();
 
@@ -97,48 +114,63 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     nlohmann::json ElementsConfigure;
 
     std::ifstream istream;
-    nlohmann::json decoder, action, encoder, reporter;
+    nlohmann::json decoder, pre, action, post, encoder, reporter;
 
-    istream.open("../test/usecase/json/yoloX/Decoder.json");
+    istream.open("../usecase/json/yoloX/Decoder.json");
     assert(istream.is_open());
     istream >> decoder;
     decoder.at("id") = DECODE_ID;
     ElementsConfigure.push_back(decoder);
     istream.close();
-    std::cout << decoder << std::endl;
 
-    // istream.open("../test/usecase/json/yoloX/Action.json");
-    istream.open("../test/usecase/json/yoloX/Action_cls7.json");
+    istream.open("../usecase/json/yoloX/Pre.json");
+    assert(istream.is_open());
+    istream >> pre;
+    pre.at("id") = PRE_ID;
+    ElementsConfigure.push_back(pre);
+    istream.close();
+
+    istream.open("../usecase/json/yoloX/Action.json");
+    // istream.open("../usecase/json/yoloX/Action_cls7.json");
     assert(istream.is_open());
     istream >> action;
     action.at("id") = YOLO_ID;
     ElementsConfigure.push_back(action);
     istream.close();
 
-    istream.open("../test/usecase/json/yoloX/Encoder.json");
+    istream.open("../usecase/json/yoloX/Post.json");
     assert(istream.is_open());
-    istream >> encoder;
-    encoder.at("id") = ENCODE_ID;
-    ElementsConfigure.push_back(encoder);
+    istream >> post;
+    post.at("id") = POST_ID;
+    ElementsConfigure.push_back(post);
     istream.close();
 
-    istream.open("../test/usecase/json/yoloX/Reporter.json");
-    assert(istream.is_open());
-    istream >> reporter;
-    reporter.at("id") = REPORT_ID;
-    ElementsConfigure.push_back(reporter);
-    istream.close();
+    // istream.open("../usecase/json/yoloX/Encoder.json");
+    // assert(istream.is_open());
+    // istream >> encoder;
+    // encoder.at("id") = ENCODE_ID;
+    // ElementsConfigure.push_back(encoder);
+    // istream.close();
+
+    // istream.open("../usecase/json/yoloX/Reporter.json");
+    // assert(istream.is_open());
+    // istream >> reporter;
+    // reporter.at("id") = REPORT_ID;
+    // ElementsConfigure.push_back(reporter);
+    // istream.close();
 
     graphConfigure["elements"] = ElementsConfigure;
-    graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID, 0, YOLO_ID, 0));
-    graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, ENCODE_ID, 0));
-    graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID, 0, REPORT_ID, 0));
+    graphConfigure["connections"].push_back(makeConnectConfig(DECODE_ID, 0, PRE_ID, 0));
+    graphConfigure["connections"].push_back(makeConnectConfig(PRE_ID, 0, YOLO_ID, 0));
+    graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
+    // graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0, REPORT_ID, 0));
+
 
     const std::vector<std::string> class_names = action.at("configure").at("models")[0].at("label_names");
 
     engine.addGraph(graphConfigure.dump());
 
-    engine.setDataHandler(i + 1, REPORT_ID, 0, [&, class_names](std::shared_ptr<void> data)
+    engine.setDataHandler(i + 1, POST_ID, 0, [&, class_names](std::shared_ptr<void> data)
                           {
                             IVS_DEBUG("data output 111111111111111");
                             auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
@@ -173,15 +205,13 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                                         subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
                                         subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage, true);
                             }
-                            IVS_DEBUG("data output 666");
                             // save image
-                            // bm_image_write_to_bmp(imageStorage, "a.bmp");
                             void *jpeg_data = NULL;
                             size_t out_size = 0;
                             int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, &imageStorage, &jpeg_data, &out_size);
                             if (ret == BM_SUCCESS)
                             {
-                              std::string img_file = "a.jpg";
+                              std::string img_file = "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) + "_" + std::to_string(frameCount) + ".jpg";
                               FILE *fp = fopen(img_file.c_str(), "wb");
                               fwrite(jpeg_data, out_size, 1, fp);
                               fclose(fp);
@@ -194,7 +224,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
 
     nlohmann::json decodeConfigure;
     decodeConfigure["channel_id"] = 1;
-    decodeConfigure["url"] = "../test/test_car_person_1080P.avi";
+    decodeConfigure["url"] = "../test_car_person_1080P.avi";
     // decodeConfigure["url"] = "../test/13.mp4";
     // decodeConfigure["url"] = "../test/18.mp4";
     decodeConfigure["resize_rate"] = 2.0f;
@@ -216,6 +246,10 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
   {
     std::unique_lock<std::mutex> uq(mtx);
     cv.wait(uq);
+  }
+  for(int i=0;i<MAX_GRAPH;i++){
+    std::cout << "graph stop" << std::endl;
+    engine.stop(i+1);
   }
   long totalCost = clocker.tell_us();
   std::cout << " total time cost " << totalCost << " us." << std::endl;

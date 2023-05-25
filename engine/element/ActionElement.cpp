@@ -32,6 +32,7 @@ constexpr const char* JSON_MODEL_SHARED_OBJECT_FIELD = "shared_object";
 
 common::ErrorCode ActionElement::initInternal(const std::string& json) {
     common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+    std::cout << "debug action element initInternal\n";
 
     do {
         auto configure = nlohmann::json::parse(json, nullptr, false);
@@ -70,6 +71,7 @@ common::ErrorCode ActionElement::initInternal(const std::string& json) {
         }
 
 
+        std::cout << "debug action element initInternal1\n";
         std::set<std::string> sharedObjectSet;
         mSharedObjectHandles.reserve(modelsIt->size());
         mAlgorithmApis.reserve(modelsIt->size());
@@ -85,10 +87,12 @@ common::ErrorCode ActionElement::initInternal(const std::string& json) {
                 errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
                 break;
             }
+            std::cout << "debug action element initInternal11\n";
 
             if (sharedObjectSet.end() == sharedObjectSet.find(*sharedObjectIt)) {
                 const auto& sharedObject = sharedObjectIt->get<std::string>();
                 sharedObjectSet.insert(sharedObject);
+                std::cout << "debug action element initInternal12\n";
 
                 void* sharedObjectHandle = dlopen(sharedObject.c_str(), RTLD_NOW | RTLD_GLOBAL);
                 if (NULL == sharedObjectHandle) {
@@ -100,6 +104,7 @@ common::ErrorCode ActionElement::initInternal(const std::string& json) {
                     break;
                 }
 
+                std::cout << "debug action element initInternal13\n";
                 mSharedObjectHandles.push_back(std::shared_ptr<void>(sharedObjectHandle,
                 [](void* sharedObjectHandle) {
                     dlclose(sharedObjectHandle);
@@ -107,6 +112,7 @@ common::ErrorCode ActionElement::initInternal(const std::string& json) {
             }
 
 
+            std::cout << "debug action element initInternal2\n";
             if (!modelConfigure.is_object()) {
                 errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
                 break;
@@ -130,6 +136,7 @@ common::ErrorCode ActionElement::initInternal(const std::string& json) {
                 break;
             }
 
+            std::cout << "debug action element initInternal3\n";
             errorCode = algorithmApi->init(getSide(),
                                            getDeviceId(),
                                            modelConfigure.dump());
@@ -140,6 +147,7 @@ common::ErrorCode ActionElement::initInternal(const std::string& json) {
                 break;
             }
 
+            std::cout << "debug action element initInternal4\n";
             std::string name;
             auto nameIt = modelConfigure.find(JSON_MODEL_NAME_FIELD);
             if (modelConfigure.end() != nameIt

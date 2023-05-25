@@ -150,7 +150,7 @@ namespace sophon_stream
         if(objectMetadatas.size() == 0)
           return;
         if(objectMetadatas[0]->mFrame->mEndOfStream)
-              return;
+          return;
         Yolov5SophgoContext* pSophgoContext = &context;
         if(pSophgoContext->use_tpu_kernel)
         {

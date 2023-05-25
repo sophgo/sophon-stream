@@ -8,9 +8,70 @@ namespace yolox {
 
 #define DUMP_FILE 0
 
+void YoloXPre::initTensors(YoloXSophgoContext &context, common::ObjectMetadatas &objectMetadatas)
+{
+    YoloXSophgoContext *pSophgoContext = &context;
+
+    objectMetadatas[0]->mInputBMtensors = std::make_shared<sophon_stream::common::bmTensors>();
+    objectMetadatas[0]->mOutputBMtensors = std::make_shared<sophon_stream::common::bmTensors>();
+
+    objectMetadatas[0]->mInputBMtensors.reset(new sophon_stream::common::bmTensors(), [](sophon_stream::common::bmTensors *p){
+        for(int i = 0;i < p->tensors.size();++i)
+            bm_free_device(p->handle, p->tensors[i]->device_mem);
+        delete p;
+        p = nullptr;
+    });
+    objectMetadatas[0]->mOutputBMtensors.reset(new sophon_stream::common::bmTensors(), [](sophon_stream::common::bmTensors *p){
+        for(int i = 0; i < p->tensors.size(); ++i)
+            bm_free_device(p->handle, p->tensors[i]->device_mem);
+        delete p;
+        p = nullptr;
+    });
+    objectMetadatas[0]->mInputBMtensors->handle = pSophgoContext->handle;
+    objectMetadatas[0]->mOutputBMtensors->handle = pSophgoContext->handle;
+
+    objectMetadatas[0]->mInputBMtensors->tensors.resize(pSophgoContext->input_num);
+    objectMetadatas[0]->mOutputBMtensors->tensors.resize(pSophgoContext->output_num);
+
+    for(int i = 0; i < pSophgoContext->input_num; ++i)
+    {
+        objectMetadatas[0]->mInputBMtensors->tensors[i] = std::make_shared<bm_tensor_t>();
+        objectMetadatas[0]->mInputBMtensors->tensors[i]->dtype = pSophgoContext->m_bmNetwork->m_netinfo->input_dtypes[i];
+        objectMetadatas[0]->mInputBMtensors->tensors[i]->shape = pSophgoContext->m_bmNetwork->m_netinfo->stages[0].input_shapes[i];
+        objectMetadatas[0]->mInputBMtensors->tensors[i]->st_mode = BM_STORE_1N;
+        // 前处理的mInpuptBMtensors不需要申请内存，在preprocess中通过std::move得到
+    }
+    for (int i = 0; i < pSophgoContext->output_num; ++i)
+    {
+        objectMetadatas[0]->mOutputBMtensors->tensors[i] = std::make_shared<bm_tensor_t>();
+        objectMetadatas[0]->mOutputBMtensors->tensors[i]->dtype = pSophgoContext->m_bmNetwork->m_netinfo->output_dtypes[i];
+        objectMetadatas[0]->mOutputBMtensors->tensors[i]->shape = pSophgoContext->m_bmNetwork->m_netinfo->stages[0].output_shapes[i];
+        objectMetadatas[0]->mOutputBMtensors->tensors[i]->st_mode = BM_STORE_1N;
+        size_t max_size = 0;
+        // 后处理的mOutputBMtensor需要申请内存，在forward中更新
+        for (int s = 0; s < pSophgoContext->m_bmNetwork->m_netinfo->stage_num; s++)
+        {
+            size_t out_size = bmrt_shape_count(&pSophgoContext->m_bmNetwork->m_netinfo->stages[s].output_shapes[i]);
+            if (max_size < out_size)
+            {
+                max_size = out_size;
+            }
+        }
+        if (BM_FLOAT32 == pSophgoContext->m_bmNetwork->m_netinfo->output_dtypes[i])
+            max_size *= 4;
+        auto ret = bm_malloc_device_byte(objectMetadatas[0]->mOutputBMtensors->handle, &objectMetadatas[0]->mOutputBMtensors->tensors[i]->device_mem,
+                                            max_size);
+        assert(BM_SUCCESS == ret);
+    }
+}
+
+
+
 common::ErrorCode YoloXPre::preProcess(YoloXSophgoContext& context,
     common::ObjectMetadatas& objectMetadatas)
 {
+    if(objectMetadatas.size() == 0)
+        return common::ErrorCode::SUCCESS;
     YoloXSophgoContext* pSophgoContext = &context;
     std::vector<bm_image> images;
     for(auto& objMetadata:objectMetadatas)
@@ -18,12 +79,15 @@ common::ErrorCode YoloXPre::preProcess(YoloXSophgoContext& context,
         if(objMetadata->mFrame->mEndOfStream)
         {
             // end of file, create a blank bmimg
+            IVS_CRITICAL("END OF STREAM");
             pSophgoContext->mEndOfStream = objMetadata->mFrame->mEndOfStream;
+            objectMetadatas[0]->mFrame->mEndOfStream = true;
             auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
             pSophgoContext->m_frame_h = tensor->get_shape()->dims[2];
             pSophgoContext->m_frame_w = tensor->get_shape()->dims[3];
             objMetadata->mFrame->mSpData.reset(new bm_image,[&](bm_image* p){
-            bm_image_destroy(*p);delete p;p=nullptr;});
+                bm_image_destroy(*p);delete p;p=nullptr;
+            });
             bm_image_create(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_frame_h, pSophgoContext->m_frame_w, 
                 FORMAT_RGB_PLANAR, DATA_TYPE_EXT_1N_BYTE, objMetadata->mFrame->mSpData.get());
             bm_image_alloc_dev_mem(*objMetadata->mFrame->mSpData);
@@ -32,12 +96,17 @@ common::ErrorCode YoloXPre::preProcess(YoloXSophgoContext& context,
         {
             pSophgoContext->m_frame_w = objMetadata->mFrame->mWidth;
             pSophgoContext->m_frame_h = objMetadata->mFrame->mHeight;
+            objMetadata->mAlgorithmHandle = std::make_shared<bm_handle_t>(pSophgoContext->m_bmContext->handle());
+
         }
         images.push_back(*objMetadata->mFrame->mSpData);
     }
+
+    initTensors(context, objectMetadatas);
     std::shared_ptr<BMNNTensor> input_tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
     int image_n = images.size();
 
+    // 1. resize image
     int ret = 0;
     for(int i = 0; i < image_n; ++i) {
         bm_image image0 = images[i];
@@ -116,17 +185,41 @@ common::ErrorCode YoloXPre::preProcess(YoloXSophgoContext& context,
         }
         if(need_copy) bm_image_destroy(image_aligned);
     }
+    // 2.1 malloc m_converto_imgs
+    bm_image_data_format_ext img_dtype = DATA_TYPE_EXT_FLOAT32;
+    auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
+    if (tensor->get_dtype() == BM_INT8)
+    {
+        img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
+    }
+    ret = bm_image_create_batch(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_net_h,
+                                    pSophgoContext->m_net_w, FORMAT_RGB_PLANAR, img_dtype, pSophgoContext->m_converto_imgs.data(), pSophgoContext->max_batch);
+    assert(BM_SUCCESS == ret);
 
+    // 2.2 converto
     ret = bmcv_image_convert_to(pSophgoContext->m_bmContext->handle(), image_n, 
     pSophgoContext->converto_attr, pSophgoContext->m_resized_imgs.data(), pSophgoContext->m_converto_imgs.data());
     CV_Assert(ret == 0);
 
-    //3. attach to tensor
-    if(image_n != pSophgoContext->max_batch) image_n = pSophgoContext->m_bmNetwork->get_nearest_batch(image_n); 
+    // 2.3 get contiguous device_mem of m_converto_imgs
+    if (image_n != pSophgoContext->max_batch)
+        image_n = pSophgoContext->m_bmNetwork->get_nearest_batch(image_n);
     bm_device_mem_t input_dev_mem;
     bm_image_get_contiguous_device_mem(image_n, pSophgoContext->m_converto_imgs.data(), &input_dev_mem);
-    input_tensor->set_device_mem(&input_dev_mem);
-    input_tensor->set_shape_by_dim(0, image_n);  // set real batch number
+    
+    // 2.4 set inputBMtensors with std::move
+    objectMetadatas[0]->mInputBMtensors->tensors[0]->device_mem = std::move(input_dev_mem);
+
+
+
+
+
+    //3. attach to tensor
+    // if(image_n != pSophgoContext->max_batch) image_n = pSophgoContext->m_bmNetwork->get_nearest_batch(image_n); 
+    // bm_device_mem_t input_dev_mem;
+    // bm_image_get_contiguous_device_mem(image_n, pSophgoContext->m_converto_imgs.data(), &input_dev_mem);
+    // input_tensor->set_device_mem(&input_dev_mem);
+    // input_tensor->set_shape_by_dim(0, image_n);  // set real batch number
     
     return common::ErrorCode::SUCCESS;
 }

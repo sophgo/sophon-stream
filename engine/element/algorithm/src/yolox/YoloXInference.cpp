@@ -26,10 +26,14 @@ common::ErrorCode YoloXInference::init(YoloXSophgoContext& context)
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(pSophgoContext->deviceId);
     pSophgoContext->m_bmContext = std::make_shared<BMNNContext>(handle, pSophgoContext->modelPath[0].c_str());
     pSophgoContext->m_bmNetwork = pSophgoContext->m_bmContext->network(0);
+    pSophgoContext->handle = handle->handle();
+
     
     //2. get input
     pSophgoContext->max_batch = pSophgoContext->m_bmNetwork->maxBatch();
     auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
+    pSophgoContext->input_num = pSophgoContext->m_bmNetwork->m_netinfo->input_num;
+    pSophgoContext->m_net_channel = tensor->get_shape()->dims[1];
     pSophgoContext->m_net_h = tensor->get_shape()->dims[2];
     pSophgoContext->m_net_w = tensor->get_shape()->dims[3];
 
@@ -55,14 +59,14 @@ common::ErrorCode YoloXInference::init(YoloXSophgoContext& context)
     if (tensor->get_dtype() == BM_INT8){
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
     }
-    auto ret = bm_image_create_batch(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_net_h, 
-    pSophgoContext->m_net_w, FORMAT_RGB_PLANAR, img_dtype, pSophgoContext->m_converto_imgs.data(), pSophgoContext->max_batch);
-    assert(BM_SUCCESS == ret);
+    // auto ret = bm_image_create_batch(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_net_h, 
+    // pSophgoContext->m_net_w, FORMAT_RGB_PLANAR, img_dtype, pSophgoContext->m_converto_imgs.data(), pSophgoContext->max_batch);
+    // assert(BM_SUCCESS == ret);
 
     // 5.converto
     float input_scale = tensor->get_scale();
     // yolox原始模型输入是0-255,scale=1.0意味着不需要做缩放
-    input_scale /= 255;
+    // input_scale /= 255;
     pSophgoContext->converto_attr.alpha_0 = input_scale;
     pSophgoContext->converto_attr.beta_0 = 0;
     pSophgoContext->converto_attr.alpha_1 = input_scale;
@@ -76,8 +80,9 @@ common::ErrorCode YoloXInference::init(YoloXSophgoContext& context)
 
 common::ErrorCode YoloXInference::predict(YoloXSophgoContext& context, common::ObjectMetadatas &objectMetadatas) {
   YoloXSophgoContext* pSophgoContext = &context;
+  if(objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
   int ret = 0;
-  if(!pSophgoContext->mEndOfStream) 
+  if(!objectMetadatas[0]->mFrame->mEndOfStream)
     ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors->tensors,objectMetadatas[0]->mOutputBMtensors->tensors);
   return static_cast<common::ErrorCode>(ret);
 }

@@ -17,8 +17,10 @@
                 "num_outputs":[1],
                 "output_node_name":["082_convolutional"],
                 "output_shape":[[1,8400,85]],
-                "shared_object":"../lib/libalgorithmApi.so",
-                "threthold":[0.5,0.5]
+                "shared_object":"../../engine/build/libyolox.so",
+                "threthold":[0.5,0.5],
+                "stage":["infer"],
+                "use_tpu_kernel": false
             }
         ]
     },

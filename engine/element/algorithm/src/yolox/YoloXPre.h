@@ -18,6 +18,8 @@ class YoloXPre {
 
     common::ErrorCode preProcess(YoloXSophgoContext & context,
         common::ObjectMetadatas& objectMetadatas);
+
+    void initTensors(YoloXSophgoContext &context, common::ObjectMetadatas &objectMetadatas);
 };
 
 }
