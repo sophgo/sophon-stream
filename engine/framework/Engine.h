@@ -5,195 +5,185 @@
 #include <memory>
 #include <string>
 
+#include "ElementManager.h"
 #include "common/ErrorCode.h"
 #include "common/Logger.h"
 #include "common/Singleton.hpp"
 
-#include "ElementManager.h"
-
 namespace sophon_stream {
 namespace framework {
 
-/** 
+/**
  * A class manages a lot of graphs, each graph is a WorkManager.
  */
 class Engine {
-public:
-    using DataHandler = framework::ElementManager::DataHandler;
+ public:
+  using DataHandler = framework::ElementManager::DataHandler;
 
-    /** 
-     * Start all threads of Elements in a graph, 
-     * @param[in] graphId : Id of ElementManager.
-     * @return If thread status is not ThreadStatus::STOP,  
-     * it will return common::ErrorCode::THREAD_STATUS_ERROR,
-     * otherwise return common::ErrorCode::SUCESS.
-     */
-    common::ErrorCode start(int graphId);
+  /**
+   * Start all threads of Elements in a graph,
+   * @param[in] graphId : Id of ElementManager.
+   * @return If thread status is not ThreadStatus::STOP,
+   * it will return common::ErrorCode::THREAD_STATUS_ERROR,
+   * otherwise return common::ErrorCode::SUCESS.
+   */
+  common::ErrorCode start(int graphId);
 
-    /** 
-     * Stop all threads of Elements in a graph.
-     * @param[in] graphId : Id of ElementManager.
-     * @return If thread status is ThreadStatus::STOP,  
-     * it will return common::ErrorCode::THREAD_STATUS_ERROR,
-     * otherwise return common::ErrorCode::SUCESS.
-     */
-    common::ErrorCode stop(int graphId);
+  /**
+   * Stop all threads of Elements in a graph.
+   * @param[in] graphId : Id of ElementManager.
+   * @return If thread status is ThreadStatus::STOP,
+   * it will return common::ErrorCode::THREAD_STATUS_ERROR,
+   * otherwise return common::ErrorCode::SUCESS.
+   */
+  common::ErrorCode stop(int graphId);
 
-    /** 
-     * Pause all threads of Elements in a graph.
-     * @param[in] graphId : Id of ElementManager.
-     * @return If thread status is not ThreadStatus::RUN, 
-     * it will return common::ErrorCode::THREAD_STATUS_ERROR, 
-     * otherwise return common::ErrorCode::SUCESS.
-     */
-    common::ErrorCode pause(int graphId);
+  /**
+   * Pause all threads of Elements in a graph.
+   * @param[in] graphId : Id of ElementManager.
+   * @return If thread status is not ThreadStatus::RUN,
+   * it will return common::ErrorCode::THREAD_STATUS_ERROR,
+   * otherwise return common::ErrorCode::SUCESS.
+   */
+  common::ErrorCode pause(int graphId);
 
-    /** 
-     * Resume all threads of Elements in a graph.
-     * @param[in] graphId : Id of ElementManager.
-     * @return If thread status is not ThreadStatus::PAUSE, 
-     * it will return common::ErrorCode::THREAD_STATUS_ERROR,
-     * otherwise return common::ErrorCode::SUCESS.
-     */
-    common::ErrorCode resume(int graphId);
+  /**
+   * Resume all threads of Elements in a graph.
+   * @param[in] graphId : Id of ElementManager.
+   * @return If thread status is not ThreadStatus::PAUSE,
+   * it will return common::ErrorCode::THREAD_STATUS_ERROR,
+   * otherwise return common::ErrorCode::SUCESS.
+   */
+  common::ErrorCode resume(int graphId);
 
-    /** 
-     * Add a graph.
-     * @param[in] json : Configure to init ElementManager.
-     * @return If ElementManager init fail or id of ElementManager has been exist, 
-     * it will return error, 
-     * otherwise return common::ErrorCode::SUCESS.
-     */
-    common::ErrorCode addGraph(const std::string& json);
+  /**
+   * Add a graph.
+   * @param[in] json : Configure to init ElementManager.
+   * @return If ElementManager init fail or id of ElementManager has been exist,
+   * it will return error,
+   * otherwise return common::ErrorCode::SUCESS.
+   */
+  common::ErrorCode addGraph(const std::string& json);
 
-    /** 
-     * Remove a graph.
-     * @param[in] graphId : Id of ElementManager.
-     */
-    void removeGraph(int graphId);
+  /**
+   * Remove a graph.
+   * @param[in] graphId : Id of ElementManager.
+   */
+  void removeGraph(int graphId);
 
-    /** 
-     * Judge a graph exists or not.
-     * @param[in] graphId : Id of ElementManager.
-     */ 
-    bool graphExist(int graphId);
-    
-    /** 
-     * Send data to a element in a graph with a input port.
-     * @param[in] graphId : Id of ElementManager which will send data to.
-     * @param[in] elementId : Id of Element which will send data to.
-     * @param[in] inputPort : Input port of Element which will send data to.
-     * @param[in] data : The data that will be send.
-     * @param[in] timeout : The duration that will be wait for.
-     * @return If graph id or element id is not exist or timeout, it will return error, 
-     * otherwise return common::ErrorCode::SUCESS.
-     */
-    template<class Rep, class Period>
-    common::ErrorCode
-    sendData(int graphId, 
-             int elementId, 
-             int inputPort, 
-             std::shared_ptr<void> data, 
-             const std::chrono::duration<Rep, Period>& timeout) {
-        IVS_DEBUG("send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, data: {3:p}",
-                  graphId, 
-                  elementId, 
-                  inputPort, 
-                  data.get());
+  /**
+   * Judge a graph exists or not.
+   * @param[in] graphId : Id of ElementManager.
+   */
+  bool graphExist(int graphId);
 
-        auto graphIt = mElementManagerMap.find(graphId);
-        if (mElementManagerMap.end() == graphIt) {
-            IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
-            return common::ErrorCode::NO_SUCH_GRAPH_ID;
-        }
+  /**
+   * Send data to a element in a graph with a input port.
+   * @param[in] graphId : Id of ElementManager which will send data to.
+   * @param[in] elementId : Id of Element which will send data to.
+   * @param[in] inputPort : Input port of Element which will send data to.
+   * @param[in] data : The data that will be send.
+   * @param[in] timeout : The duration that will be wait for.
+   * @return If graph id or element id is not exist or timeout, it will return
+   * error, otherwise return common::ErrorCode::SUCESS.
+   */
+  template <class Rep, class Period>
+  common::ErrorCode sendData(
+      int graphId, int elementId, int inputPort, std::shared_ptr<void> data,
+      const std::chrono::duration<Rep, Period>& timeout) {
+    IVS_DEBUG(
+        "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
+        "data: {3:p}",
+        graphId, elementId, inputPort, data.get());
 
-        auto graph = graphIt->second;
-        if (!graph) {
-            IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
-            return common::ErrorCode::UNKNOWN;
-        }
-
-        return graph->sendData(elementId, inputPort, data, timeout);
-    }
-    
-    /** 
-     * Set callback to a element in a graph with a output port for receive data.
-     * @param[in] graphId : Id of ElementManager which will receive data.
-     * @param[in] elementId : Id of Element which will receive data.
-     * @param[in] outputPort : Output port of Element which will receive data.
-     * @param[in] dataHandler : The callback that will be call with received data.
-     */
-    void setDataHandler(int graphId, 
-                        int elementId, 
-                        int outputPort, 
-                        DataHandler dataHandler) {
-        IVS_INFO("Set data handler, graph id: {0:d}, element id: {1:d}, output port: {2:d}",
-                 graphId, 
-                 elementId, 
-                 outputPort);
-
-        auto graphIt = mElementManagerMap.find(graphId);
-        if (mElementManagerMap.end() == graphIt) {
-            IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
-            return;
-        }
-
-        auto graph = graphIt->second;
-        if (!graph) {
-            IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
-            return;
-        }
-
-        graph->setDataHandler(elementId, 
-                              outputPort, 
-                              dataHandler);
+    auto graphIt = mElementManagerMap.find(graphId);
+    if (mElementManagerMap.end() == graphIt) {
+      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+      return common::ErrorCode::NO_SUCH_GRAPH_ID;
     }
 
-    std::pair<std::string, int> getSideAndDeviceId(int graphId, 
-                                                   int elementId) {
-        IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}",
-                 graphId, 
-                 elementId);
-
-        auto graphIt = mElementManagerMap.find(graphId);
-        if (mElementManagerMap.end() == graphIt) {
-            IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
-            return std::make_pair("", -1);
-        }
-
-        auto graph = graphIt->second;
-        if (!graph) {
-            IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
-            return std::make_pair("", -1);
-        }
-
-        return graph->getSideAndDeviceId(elementId);
+    auto graph = graphIt->second;
+    if (!graph) {
+      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+      return common::ErrorCode::UNKNOWN;
     }
 
-private:
-    friend class common::Singleton<Engine>;
+    return graph->sendData(elementId, inputPort, data, timeout);
+  }
 
-    /** 
-     * Constructor of class Engine, only be call by common::Singleton<Engine>.
-     */
-    Engine();
+  /**
+   * Set callback to a element in a graph with a output port for receive data.
+   * @param[in] graphId : Id of ElementManager which will receive data.
+   * @param[in] elementId : Id of Element which will receive data.
+   * @param[in] outputPort : Output port of Element which will receive data.
+   * @param[in] dataHandler : The callback that will be call with received data.
+   */
+  void setDataHandler(int graphId, int elementId, int outputPort,
+                      DataHandler dataHandler) {
+    IVS_INFO(
+        "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
+        "{2:d}",
+        graphId, elementId, outputPort);
 
-    /** 
-     * Destructor of class Engine, only be call by common::Singleton<Engine>.
-     */
-    ~Engine();
+    auto graphIt = mElementManagerMap.find(graphId);
+    if (mElementManagerMap.end() == graphIt) {
+      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+      return;
+    }
 
-    Engine(const Engine&) = delete;
-    Engine& operator =(const Engine&) = delete;
-    Engine(Engine&&) = delete;
-    Engine& operator =(Engine&&) = delete;
+    auto graph = graphIt->second;
+    if (!graph) {
+      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+      return;
+    }
 
-    /** 
-     * ElementManager map, key is graph id, value is std::shared_ptr of frameelement::ElementManager.
-     */
-    std::map<int/* graphId */, 
-             std::shared_ptr<framework::ElementManager> > mElementManagerMap;
-    std::mutex mElementManagerMapLock;
+    graph->setDataHandler(elementId, outputPort, dataHandler);
+  }
+
+  std::pair<std::string, int> getSideAndDeviceId(int graphId, int elementId) {
+    IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}",
+             graphId, elementId);
+
+    auto graphIt = mElementManagerMap.find(graphId);
+    if (mElementManagerMap.end() == graphIt) {
+      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+      return std::make_pair("", -1);
+    }
+
+    auto graph = graphIt->second;
+    if (!graph) {
+      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+      return std::make_pair("", -1);
+    }
+
+    return graph->getSideAndDeviceId(elementId);
+  }
+
+ private:
+  friend class common::Singleton<Engine>;
+
+  /**
+   * Constructor of class Engine, only be call by common::Singleton<Engine>.
+   */
+  Engine();
+
+  /**
+   * Destructor of class Engine, only be call by common::Singleton<Engine>.
+   */
+  ~Engine();
+
+  Engine(const Engine&) = delete;
+  Engine& operator=(const Engine&) = delete;
+  Engine(Engine&&) = delete;
+  Engine& operator=(Engine&&) = delete;
+
+  /**
+   * ElementManager map, key is graph id, value is std::shared_ptr of
+   * frameelement::ElementManager.
+   */
+  std::map<int /* graphId */, std::shared_ptr<framework::ElementManager> >
+      mElementManagerMap;
+  std::mutex mElementManagerMapLock;
 };
 
 /**
@@ -201,6 +191,5 @@ private:
  */
 using SingletonEngine = common::Singleton<Engine>;
 
-} // namespace framework
-} // namespace sophon_stream
-
+}  // namespace framework
+}  // namespace sophon_stream

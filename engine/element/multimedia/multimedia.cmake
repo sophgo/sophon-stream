@@ -1,1 +1,1 @@
-include(element/multimedia/src/decode/decode.cmake)
+include(element/multimedia/decode/decode.cmake)

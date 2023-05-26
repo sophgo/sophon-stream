@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(sophon_stream)
 
 set(CMAKE_CXX_STANDARD 14)
-#set(CMAKE_BUILD_TYPE "Debug")
 
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)
@@ -13,7 +12,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(.)
     include_directories(../share)
 
-    #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs")
 
     find_package(PkgConfig REQUIRED)
@@ -59,7 +57,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     link_libraries(dl)
 
-    # include_directories(src)
 
     add_library(common
         ../share/common/Logger.cpp
@@ -71,13 +68,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         )
     link_libraries(ivslogger)
 
-    # usecase tests
-    # file(GLOB TEST_SOURCES test/usecase/*.cpp test/usecase/*.c)
-    # foreach(test_src ${TEST_SOURCES})
-    #     get_filename_component(test_name ${test_src} NAME_WE)
-    #     add_executable(${test_name} ${test_src})
-    #     target_link_libraries(${test_name} ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil)
-    # endforeach(test_src)
 
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
@@ -124,7 +114,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
 
-    # include_directories(src)
 
     add_library(common
         ../share/common/Logger.cpp
@@ -137,12 +126,5 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     )
     link_libraries(ivslogger)
 
-    # usecase tests
-    # file(GLOB TEST_SOURCES test/usecase/*.cpp test/usecase/*.c)
-    # foreach(test_src ${TEST_SOURCES})
-    #     get_filename_component(test_name ${test_src} NAME_WE)
-    #     add_executable(${test_name} ${test_src})
-    #     target_link_libraries(${test_name} ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread -lavcodec -lavformat -lavutil)
-    # endforeach(test_src)
 
 endif()
