@@ -73,8 +73,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     link_libraries(framework)
 
     # usecase tests
-    # file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
-    file(GLOB TEST_SOURCES usecase/usecaseYolov5.cpp)
+    file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
     foreach(test_src ${TEST_SOURCES})
         get_filename_component(test_name ${test_src} NAME_WE)
         add_executable(${test_name} ${test_src})
