@@ -1,10 +1,7 @@
 add_library(framework
-        framework/ElementNew.h
-        framework/ElementNew.cpp
-        framework/DataPipeNew.cpp
-        framework/ElementManager.h
-        framework/ElementManager.cpp
-        framework/ElementFactory.h
-        framework/Engine.h
-        framework/Engine.cpp
+        framework/element.cc
+        framework/datapipe.cc
+        framework/element_manager.cc
+        framework/element_factory.cc
+        framework/engine.cc
         )

@@ -1,11 +1,21 @@
-#pragma once
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-PIPELINE is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_ENGINE_H_
+#define SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_ENGINE_H_
 
 #include <chrono>
 #include <map>
 #include <memory>
 #include <string>
 
-#include "ElementManager.h"
+#include "element_manager.h"
 #include "common/ErrorCode.h"
 #include "common/Logger.h"
 #include "common/Singleton.hpp"
@@ -193,3 +203,5 @@ using SingletonEngine = common::Singleton<Engine>;
 
 }  // namespace framework
 }  // namespace sophon_stream
+
+#endif // SOPHON_STREAM_ENGINE_FRAMEWORK_ENGINE_H_

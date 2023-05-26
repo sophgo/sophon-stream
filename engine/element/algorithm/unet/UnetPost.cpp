@@ -18,7 +18,7 @@ extern "C" {
 }
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace unet {
 
 void UnetPost::init(UnetSophgoContext& context) {}
@@ -132,5 +132,5 @@ void UnetPost::postProcess(UnetSophgoContext& context,
   return;
 }
 }  // namespace unet
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

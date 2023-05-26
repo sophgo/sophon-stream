@@ -4,7 +4,7 @@
 #include "common/type_trans.hpp"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolox {
 
 #define DUMP_FILE 0
@@ -242,5 +242,5 @@ common::ErrorCode YoloXPre::preProcess(
 }
 
 }  // namespace yolox
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

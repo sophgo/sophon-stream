@@ -3,7 +3,7 @@
 #include <fstream>
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolov5 {
 
 Yolov5Inference::~Yolov5Inference() {}
@@ -173,5 +173,5 @@ common::ErrorCode Yolov5Inference::predict(
 void Yolov5Inference::uninit() {}
 
 }  // namespace yolov5
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

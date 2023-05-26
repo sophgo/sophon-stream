@@ -8,7 +8,7 @@
 #define DIVISOR 3
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace tracker_sort {
 
 struct QualityConfig {
@@ -336,5 +336,5 @@ class QualityControl {
   }
 };
 }  // namespace tracker_sort
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

@@ -1,14 +1,14 @@
 #pragma once
 #include <memory>
 
-#include "../../../framework/ElementNew.h"
+#include "../../../framework/element.h"
 #include "YoloXInference.h"
 #include "YoloXPost.h"
 #include "YoloXPre.h"
 #include "YoloXSophgoContext.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 
 /**
  * 算法模块
@@ -91,5 +91,5 @@ class YoloXAlgorithm : public ::sophon_stream::framework::Element {
   std::mutex mMutex2;
 };
 
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

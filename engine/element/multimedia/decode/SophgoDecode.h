@@ -10,7 +10,7 @@
 #include "common/ObjectMetadata.h"
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 namespace decode {
 
 /**
@@ -48,5 +48,5 @@ class SophgoDecode {
 };
 
 }  // namespace decode
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

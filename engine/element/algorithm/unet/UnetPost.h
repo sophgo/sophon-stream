@@ -9,7 +9,7 @@
 #include "common/ObjectMetadata.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace unet {
 
 class UnetPost {
@@ -25,5 +25,5 @@ class UnetPost {
                                                 bm_image& img);
 };
 }  // namespace unet
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

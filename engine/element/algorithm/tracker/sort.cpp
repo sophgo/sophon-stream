@@ -23,7 +23,7 @@
 #define JSON_ALGORITHM_QUALITY_lATERAL_SIDE "quality_ls"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace tracker_sort {
 
 TrackerChannels::TrackerChannels() {}
@@ -239,5 +239,5 @@ void TrackerChannels::removeTracker(const int& taskId) {
 }
 
 }  // namespace tracker_sort
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

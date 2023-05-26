@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 namespace decode {
 
 constexpr const char* SophgoContext::JSON_URL;
@@ -115,5 +115,5 @@ common::ErrorCode SophgoContext::init(const std::string& json) {
   return errorCode;
 }
 }  // namespace decode
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

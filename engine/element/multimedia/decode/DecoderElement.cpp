@@ -5,12 +5,12 @@
 
 #include <nlohmann/json.hpp>
 
-#include "../../../framework/ElementFactory.h"
+#include "../../../framework/element_factory.h"
 #include "common/Logger.h"
 #include "common/ObjectMetadata.h"
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 
 DecoderElement::DecoderElement() {}
 
@@ -466,5 +466,5 @@ common::ErrorCode DecoderElement::reopen(
 
 REGISTER_WORKER(DecoderElement::NAME, DecoderElement)
 
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

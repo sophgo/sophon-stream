@@ -6,7 +6,7 @@
 #include "SophgoDecode.h"
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 
 /**
  * 多媒体模块
@@ -52,5 +52,5 @@ class Decoder {
   std::shared_ptr<decode::SophgoDecode> mProcess;
 };
 
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

@@ -7,7 +7,7 @@
 #include "common/Logger.h"
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 
 /**
  * 构造函数
@@ -100,5 +100,5 @@ void Decoder::uninit() {
 
 // REGISTER_MULTIMEDIA_API("decode", Decoder)
 
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

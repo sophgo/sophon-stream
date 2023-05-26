@@ -9,7 +9,7 @@
 #include "common/ObjectMetadata.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolox {
 
 class YoloXInference {
@@ -32,5 +32,5 @@ class YoloXInference {
 };
 
 }  // namespace yolox
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

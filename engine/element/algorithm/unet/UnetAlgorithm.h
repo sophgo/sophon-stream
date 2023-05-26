@@ -2,14 +2,14 @@
 
 #include <memory>
 
-#include "../../../framework/ElementNew.h"
+#include "../../../framework/element.h"
 #include "UnetInference.h"
 #include "UnetPost.h"
 #include "UnetPre.h"
 #include "UnetSophgoContext.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 class UnetAlgorithm : public ::sophon_stream::framework::Element {
  public:
   UnetAlgorithm();
@@ -82,5 +82,5 @@ class UnetAlgorithm : public ::sophon_stream::framework::Element {
   std::mutex mMutex2;
 };
 
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

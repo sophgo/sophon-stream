@@ -19,7 +19,7 @@
 #define JSON_ALGORITHM_USE_TPU_KERNEL "use_tpu_kernel"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace unet {
 
 float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
@@ -184,5 +184,5 @@ common::ErrorCode UnetSophgoContext::init(const std::string& json) {
   return errorCode;
 }
 }  // namespace unet
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

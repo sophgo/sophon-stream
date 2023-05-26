@@ -6,7 +6,7 @@
 #include "common/type_trans.hpp"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolox {
 
 void YoloXPost::init(YoloXSophgoContext& context) {
@@ -264,5 +264,5 @@ void YoloXPost::postProcess(YoloXSophgoContext& context,
 }
 
 }  // namespace yolox
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

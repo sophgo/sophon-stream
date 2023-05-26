@@ -10,7 +10,7 @@
 #include "common/type_trans.hpp"
 #include "config.h"
 #include "element/multimedia/decode/DecoderElement.h"
-#include "framework/Engine.h"
+#include "framework/engine.h"
 #include "gtest/gtest.h"
 
 // #include "element/algorithm/src/yolov5/Yolov5Algorithm.h"
@@ -277,8 +277,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       decodeConfigure[j]["reopen_times"] = -1;
 
       auto channelTask =
-          std::make_shared<sophon_stream::multimedia::ChannelTask>();
-      channelTask->request.operation = sophon_stream::multimedia::
+          std::make_shared<sophon_stream::element::ChannelTask>();
+      channelTask->request.operation = sophon_stream::element::
           ChannelOperateRequest::ChannelOperate::START;
       channelTask->request.channelId = j + 1;
       channelTask->request.json = decodeConfigure[j].dump();

@@ -10,7 +10,7 @@
 #include "common/type_trans.hpp"
 #include "config.h"
 #include "element/multimedia/decode/DecoderElement.h"
-#include "framework/Engine.h"
+#include "framework/engine.h"
 #include "gtest/gtest.h"
 
 #define DECODE_ID 5000
@@ -244,9 +244,9 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     decodeConfigure["reopen_times"] = -1;
 
     auto channelTask =
-        std::make_shared<sophon_stream::multimedia::ChannelTask>();
+        std::make_shared<sophon_stream::element::ChannelTask>();
     channelTask->request.operation =
-        sophon_stream::multimedia::ChannelOperateRequest::ChannelOperate::START;
+        sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
     channelTask->request.json = decodeConfigure.dump();
     sophon_stream::common::ErrorCode errorCode = engine.sendData(
         i + 1, DECODE_ID, 0, std::static_pointer_cast<void>(channelTask),

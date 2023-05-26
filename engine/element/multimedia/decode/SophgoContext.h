@@ -12,7 +12,7 @@
 #include "common/Logger.h"
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 namespace decode {
 
 struct SophgoContext {
@@ -64,5 +64,5 @@ struct SophgoContext {
   bmcv_convert_to_attr converto_attr;
 };
 }  // namespace decode
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

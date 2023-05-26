@@ -1,3 +1,12 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-PIPELINE is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
 #include "Yolov5Pre.h"
 
 #include "Yolov5SophgoContext.h"
@@ -8,7 +17,7 @@
 // #define DUMP_FILE 1
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolov5 {
 void Yolov5Pre::initTensors(Yolov5SophgoContext& context,
                             common::ObjectMetadatas& objectMetadatas) {
@@ -265,5 +274,5 @@ common::ErrorCode Yolov5Pre::preProcess(
 }
 
 }  // namespace yolov5
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

@@ -3,7 +3,7 @@
 #include "TrackerChannel.hpp"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace tracker_sort {
 
 class TrackerChannels {
@@ -60,5 +60,5 @@ class TrackerChannels {
   std::shared_ptr<QualityControl> pQualityControl = nullptr;
 };
 }  // namespace tracker_sort
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

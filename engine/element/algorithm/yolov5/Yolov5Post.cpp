@@ -5,7 +5,7 @@
 #include "common/type_trans.hpp"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolov5 {
 
 void Yolov5Post::init(Yolov5SophgoContext& context) {}
@@ -414,5 +414,5 @@ void Yolov5Post::postProcess(Yolov5SophgoContext& context,
 }
 
 }  // namespace yolov5
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

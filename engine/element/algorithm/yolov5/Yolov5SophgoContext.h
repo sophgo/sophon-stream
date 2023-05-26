@@ -8,12 +8,11 @@
 #include "../share/common/bmnn_utils.h"
 #include "../share/common/ff_decode.hpp"
 #include "common/ErrorCode.h"
-// #include "aiModelManagerWrapper.h" //neural network related APIs
 
 #define USE_ASPECT_RATIO
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolov5 {
 
 float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
@@ -103,5 +102,5 @@ struct Yolov5SophgoContext {
   bool mEndOfStream = false;
 };
 }  // namespace yolov5
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

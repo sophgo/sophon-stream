@@ -1,4 +1,14 @@
-#pragma once
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-PIPELINE is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_MGR_H_
+#define SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_MGR_H_
 
 #include <atomic>
 #include <chrono>
@@ -6,7 +16,7 @@
 #include <memory>
 #include <string>
 
-#include "ElementNew.h"
+#include "element.h"
 #include "common/ErrorCode.h"
 #include "common/Logger.h"
 
@@ -298,3 +308,5 @@ class ElementManager {
 
 }  // namespace framework
 }  // namespace sophon_stream
+
+#endif // SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_MGR_H_

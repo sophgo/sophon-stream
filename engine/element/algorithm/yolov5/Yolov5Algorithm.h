@@ -1,15 +1,14 @@
 #pragma once
 #include <memory>
 
-// #include "../AlgorithmApi.h"
-#include "../../../framework/ElementNew.h"
+#include "../../../framework/element.h"
 #include "Yolov5Inference.h"
 #include "Yolov5Post.h"
 #include "Yolov5Pre.h"
 #include "Yolov5SophgoContext.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 
 /**
  * 算法模块
@@ -92,5 +91,5 @@ class Yolov5Algorithm : public ::sophon_stream::framework::Element {
   std::mutex mMutex2;
 };
 
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

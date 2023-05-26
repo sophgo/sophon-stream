@@ -1,4 +1,14 @@
-#pragma once
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-PIPELINE is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_H_
+#define SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_H_
 
 #include <atomic>
 #include <chrono>
@@ -12,7 +22,7 @@
 #include <thread>
 #include <vector>
 
-#include "DataPipeNew.h"
+#include "datapipe.h"
 #include "common/ErrorCode.h"
 #include "common/Logger.h"
 
@@ -425,3 +435,5 @@ class Element {
 
 }  // namespace framework
 }  // namespace sophon_stream
+
+#endif // SOPHON_STREAM_ENGINE_FRAMEWORK_ELEMENT_H_

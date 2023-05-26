@@ -2,11 +2,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include "../../../framework/ElementFactory.h"
+#include "../../../framework/element_factory.h"
 #include "common/Logger.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 
 constexpr const char* JSON_BATCH_FIELD = "batch";
 
@@ -30,7 +30,7 @@ common::ErrorCode TrackerAlgorithm::initInternal(const std::string& json) {
     }
 
     mSpTrackerSort =
-        std::make_shared<algorithm::tracker_sort::TrackerChannels>();
+        std::make_shared<element::tracker_sort::TrackerChannels>();
     errorCode = mSpTrackerSort->init(json);
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_ERROR("tracker algorithm init failed, worker id: {0:d}, json: {1}",
@@ -70,5 +70,5 @@ void TrackerAlgorithm::putTask(std::shared_ptr<common::ObjectMetadata>& data) {
 
 REGISTER_WORKER("Tracker", TrackerAlgorithm)
 
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

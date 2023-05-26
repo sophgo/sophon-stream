@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../../../framework/ElementNew.h"
+#include "../../../framework/element.h"
 #include "Decoder.h"
 #include "common/Graphics.hpp"
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 
 struct ChannelOperateRequest {
   enum class ChannelOperate {
@@ -205,5 +205,5 @@ class DecoderElement : public ::sophon_stream::framework::Element {
   std::string mMultiMediaName;
 };
 
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

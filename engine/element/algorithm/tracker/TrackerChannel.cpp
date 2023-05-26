@@ -1,8 +1,8 @@
 #include "TrackerChannel.hpp"
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace tracker_sort {
 unsigned long long Tracker::sTrackId = 0;
 }
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

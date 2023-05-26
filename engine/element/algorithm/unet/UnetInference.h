@@ -9,7 +9,7 @@
 #include "common/ObjectMetadata.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace unet {
 
 class UnetInference {
@@ -32,5 +32,5 @@ class UnetInference {
   void uninit();
 };
 }  // namespace unet
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

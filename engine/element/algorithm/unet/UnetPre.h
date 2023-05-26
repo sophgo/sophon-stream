@@ -9,7 +9,7 @@
 #include "common/ObjectMetadata.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace unet {
 
 class UnetPre {
@@ -29,5 +29,5 @@ class UnetPre {
                    common::ObjectMetadatas& objectMetadatas);
 };
 }  // namespace unet
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

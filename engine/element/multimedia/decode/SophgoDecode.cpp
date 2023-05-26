@@ -19,7 +19,7 @@ extern "C" {
 }
 
 namespace sophon_stream {
-namespace multimedia {
+namespace element {
 namespace decode {
 
 SophgoDecode::SophgoDecode() {}
@@ -98,5 +98,5 @@ void SophgoDecode::uninit() {
 }
 
 }  // namespace decode
-}  // namespace multimedia
+}  // namespace element
 }  // namespace sophon_stream

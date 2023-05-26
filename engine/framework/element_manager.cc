@@ -1,4 +1,13 @@
-#include "ElementManager.h"
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-PIPELINE is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#include "element_manager.h"
 
 #include <dlfcn.h>
 
@@ -7,9 +16,7 @@
 
 #include "common/Logger.h"
 
-// #include "PostModuleElement.h"
-// #include "PreModuleElement.h"
-#include "ElementFactory.h"
+#include "element_factory.h"
 
 namespace sophon_stream {
 namespace framework {

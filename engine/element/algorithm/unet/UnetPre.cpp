@@ -6,7 +6,7 @@
 #include "common/type_trans.hpp"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace unet {
 
 #define DUMP_FILE 0
@@ -245,5 +245,5 @@ float UnetPre::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
   return ratio;
 }
 }  // namespace unet
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

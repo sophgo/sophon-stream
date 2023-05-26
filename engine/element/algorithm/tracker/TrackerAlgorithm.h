@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../../../framework/ElementNew.h"
+#include "../../../framework/element.h"
 #include "sort.hpp"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 
 class TrackerAlgorithm : public ::sophon_stream::framework::Element {
  public:
@@ -23,8 +23,8 @@ class TrackerAlgorithm : public ::sophon_stream::framework::Element {
   void putTask(std::shared_ptr<common::ObjectMetadata>& data);
 
  private:
-  std::shared_ptr<algorithm::tracker_sort::TrackerChannels> mSpTrackerSort;
+  std::shared_ptr<element::tracker_sort::TrackerChannels> mSpTrackerSort;
 };
 
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

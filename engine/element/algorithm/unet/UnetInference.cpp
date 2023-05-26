@@ -3,7 +3,7 @@
 #include <fstream>
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace unet {
 
 UnetInference::~UnetInference() {}
@@ -89,5 +89,5 @@ common::ErrorCode UnetInference::predict(
 void UnetInference::uninit() {}
 
 }  // namespace unet
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

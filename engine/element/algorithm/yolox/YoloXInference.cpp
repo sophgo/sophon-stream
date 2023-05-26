@@ -3,7 +3,7 @@
 #include <fstream>
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace yolox {
 
 YoloXInference::~YoloXInference() {}
@@ -94,5 +94,5 @@ common::ErrorCode YoloXInference::predict(
 void YoloXInference::uninit() {}
 
 }  // namespace yolox
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

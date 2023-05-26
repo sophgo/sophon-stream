@@ -9,7 +9,7 @@
 #include "common/bmnn_utils.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 namespace tracker_sort {
 
 class TransTrack2Output {
@@ -561,5 +561,5 @@ class TrackerChannel {
   }
 };
 }  // namespace tracker_sort
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream

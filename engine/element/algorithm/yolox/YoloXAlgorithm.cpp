@@ -2,11 +2,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include "../../../framework/ElementFactory.h"
+#include "../../../framework/element_factory.h"
 #include "common/Logger.h"
 
 namespace sophon_stream {
-namespace algorithm {
+namespace element {
 
 constexpr const char* JSON_BATCH_FIELD = "batch";
 constexpr const char* JSON_STAGE_NAME = "stage";
@@ -254,5 +254,5 @@ common::ErrorCode YoloXAlgorithm::sendProcessedData() {
 
 REGISTER_WORKER("YoloX", YoloXAlgorithm)
 
-}  // namespace algorithm
+}  // namespace element
 }  // namespace sophon_stream
