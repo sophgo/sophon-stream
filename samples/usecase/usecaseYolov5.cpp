@@ -40,12 +40,6 @@ void draw_bmcv(bm_handle_t &handle, int classId, std::vector<std::string> &class
   {
     // Get the label for the class name and its confidence
     std::string label = class_names[classId] + ":" + cv::format("%.2f", conf);
-    // Display the label at the top of the bounding box
-    // int baseLine;
-    // cv::Size labelSize = getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-    // top = std::max(top, labelSize.height);
-    // //rectangle(frame, Point(left, top - int(1.5 * labelSize.height)), Point(left + int(1.5 * labelSize.width), top + baseLine), Scalar(0, 255, 0), FILLED);
-    // cv::putText(frame, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(0, 255, 0), 1);
     bmcv_point_t org = {left, top};
     bmcv_color_t color = {colors[classId % colors_num][0], colors[classId % colors_num][1], colors[classId % colors_num][2]};
     int thickness = 2;
@@ -105,7 +99,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     }
 #endif
 
-  std::string coco_file = "../test/coco.names";
+  std::string coco_file = "../coco.names";
   std::vector<std::string> coco_classnames;
   std::ifstream ifs(coco_file);
   if (ifs.is_open())

@@ -35,11 +35,8 @@ void draw_bmcv(bm_handle_t &handle, int classId, const std::vector<std::string> 
 
   if (put_text_flag)
   {
-    std::string label;
-
-    /* code */
-    label = class_names[classId] + ":" + cv::format("%.2f", conf);
-
+    // Get the label for the class name and its confidence
+    std::string label = class_names[classId] + ":" + cv::format("%.2f", conf);
     bmcv_point_t org = {left, top};
     bmcv_color_t color = {colors[classId % colors_num][0], colors[classId % colors_num][1], colors[classId % colors_num][2]};
     int thickness = 2;
@@ -96,6 +93,19 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
         }
     }
 #endif
+
+  std::string coco_file = "../coco.names";
+  std::vector<std::string> coco_classnames;
+  std::ifstream ifs(coco_file);
+  if (ifs.is_open())
+  {
+    std::string line;
+    while (std::getline(ifs, line))
+    {
+      line = line.substr(0, line.length() - 1);
+      coco_classnames.push_back(line);
+    }
+  }
 
 
   ::logInit("debug", "", "");
@@ -165,12 +175,9 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
     graphConfigure["connections"].push_back(makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
     // graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0, REPORT_ID, 0));
 
-
-    const std::vector<std::string> class_names = action.at("configure").at("models")[0].at("label_names");
-
     engine.addGraph(graphConfigure.dump());
 
-    engine.setDataHandler(i + 1, POST_ID, 0, [&, class_names](std::shared_ptr<void> data)
+    engine.setDataHandler(i + 1, POST_ID, 0, [&](std::shared_ptr<void> data)
                           {
                             IVS_DEBUG("data output 111111111111111");
                             auto objectMetadata = std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
@@ -200,7 +207,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
                             for (auto subObj : objectMetadata->mSubObjectMetadatas)
                             {
                               // draw image
-                              draw_bmcv(objectMetadata->mFrame->mHandle, subObj->mDetectedObjectMetadata->mClassify, class_names,
+                              draw_bmcv(objectMetadata->mFrame->mHandle, subObj->mDetectedObjectMetadata->mClassify, coco_classnames,
                                         subObj->mDetectedObjectMetadata->mScores[0], subObj->mDetectedObjectMetadata->mBox.mX,
                                         subObj->mDetectedObjectMetadata->mBox.mY, subObj->mDetectedObjectMetadata->mBox.mWidth,
                                         subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage, true);

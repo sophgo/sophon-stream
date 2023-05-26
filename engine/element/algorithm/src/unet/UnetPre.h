@@ -22,6 +22,9 @@ class UnetPre {
         common::ErrorCode preProcess(UnetSophgoContext & context,
                                     common::ObjectMetadatas & objectMetadatas);
         float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h, bool *pIsAligWidth);
+        
+        void initTensors(UnetSophgoContext &context,
+                                        common::ObjectMetadatas &objectMetadatas);
 };
 }
 }

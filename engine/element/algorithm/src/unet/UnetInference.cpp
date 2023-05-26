@@ -24,10 +24,13 @@ common::ErrorCode UnetInference::init(UnetSophgoContext& context)
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(pSophgoContext->deviceId);
     pSophgoContext->m_bmContext = std::make_shared<BMNNContext>(handle, pSophgoContext->modelPath[0].c_str());
     pSophgoContext->m_bmNetwork = pSophgoContext->m_bmContext->network(0);
+    pSophgoContext->handle = handle->handle();
 
     // 2. get input
     pSophgoContext->max_batch = pSophgoContext->m_bmNetwork->maxBatch();
     auto tensor = pSophgoContext->m_bmNetwork->inputTensor(0);
+    pSophgoContext->input_num = pSophgoContext->m_bmNetwork->m_netinfo->input_num;
+    pSophgoContext->m_net_channel = tensor->get_shape()->dims[1];
     pSophgoContext->m_net_h = tensor->get_shape()->dims[2];
     pSophgoContext->m_net_w = tensor->get_shape()->dims[3];
 
@@ -53,10 +56,7 @@ common::ErrorCode UnetInference::init(UnetSophgoContext& context)
     {
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
     }
-    auto ret = bm_image_create_batch(pSophgoContext->m_bmContext->handle(), pSophgoContext->m_net_h,
-    pSophgoContext->m_net_w, FORMAT_RGB_PLANAR, img_dtype, pSophgoContext->m_converto_imgs.data(), pSophgoContext->max_batch);
-    assert(BM_SUCCESS == ret);
-
+    
     // 5. converto
     float input_scale = tensor->get_scale();
     input_scale = input_scale * 1.0 / 255.f;
@@ -77,7 +77,10 @@ common::ErrorCode UnetInference::init(UnetSophgoContext& context)
 common::ErrorCode UnetInference::predict(UnetSophgoContext& context, common::ObjectMetadatas &objectMetadatas)
 {
   UnetSophgoContext* pSophgoContext = &context;
-  int ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors->tensors, objectMetadatas[0]->mOutputBMtensors->tensors);
+  if(objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
+  int ret = 0;
+  if(!objectMetadatas[0]->mFrame->mEndOfStream)
+    ret = pSophgoContext->m_bmNetwork->forward(objectMetadatas[0]->mInputBMtensors->tensors, objectMetadatas[0]->mOutputBMtensors->tensors);
   return static_cast<common::ErrorCode>(ret);
 }
 

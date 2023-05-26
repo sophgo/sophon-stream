@@ -1,0 +1,28 @@
+{
+    "configure":{
+        "batch":1,
+        "algorithm_name":"Unet",
+        "input_node_name":["000_net"],
+        "input_shape":[[3,640,959]],
+        "label_names":["foreground", "background"],
+        "max_batchsize":1,
+        "model_path":["../models/unet1684X.bmodel"],
+        "name":"carvana",
+        "num_class":2,
+        "num_inputs":[1],
+        "num_outputs":[1],
+        "output_node_name":["082_convolutional"],
+        "output_shape":[[1,640,959]],
+        "threthold":[0.5],
+        "stage":["infer"],
+        "use_tpu_kernel": false
+    },
+    "shared_object":"../../engine/build/libunet.so",
+    "device_id":0,
+    "id":0,
+    "milliseconds_timeout":0,
+    "name":"Unet",
+    "repeated_timeout":false,
+    "side":"sophgo",
+    "thread_number":1
+}

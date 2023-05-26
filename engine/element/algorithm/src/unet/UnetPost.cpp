@@ -11,7 +11,7 @@
 #include <opencv2/core.hpp>
 #include "libyuv.h"
 extern "C"
-{
+{ 
 #include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
 #include <libswscale/swscale.h>
@@ -50,8 +50,13 @@ std::shared_ptr<common::Frame> UnetPost::bm_image2Frame(bm_handle_t&& handle,bm_
 void UnetPost::postProcess(UnetSophgoContext& context,
     common::ObjectMetadatas& objectMetadatas)
     {
+        if(objectMetadatas.size() == 0)
+            return;
+        if(objectMetadatas[0]->mFrame->mEndOfStream)
+            return;
         UnetSophgoContext* pSophgoContext = &context;
-        std::shared_ptr<BMNNTensor> outputTensor = pSophgoContext->m_bmNetwork->outputTensor(0);
+        std::shared_ptr<BMNNTensor> outputTensor = std::make_shared<BMNNTensor>(objectMetadatas[0]->mOutputBMtensors->handle, pSophgoContext->m_bmNetwork->m_netinfo->output_names[0],
+                pSophgoContext->m_bmNetwork->m_netinfo->output_scales[0], objectMetadatas[0]->mOutputBMtensors->tensors[0].get(), pSophgoContext->m_bmNetwork->is_soc);
         int image_n = objectMetadatas.size();
         float outThresh = pSophgoContext->m_thresh[0];
 
@@ -117,6 +122,7 @@ void UnetPost::postProcess(UnetSophgoContext& context,
 
             // save result to Metadata
             std::shared_ptr<common::SegmentedObjectMetadata> Segdata = std::make_shared<common::SegmentedObjectMetadata>();
+            Segdata->mFrame = std::make_shared<common::Frame>();
             Segdata->mFrame->mSpData = result_resized;
             objectMetadatas[batch_idx]->mSegmentedObjectMetadatas.emplace_back(Segdata);
             bm_image_destroy(result);
