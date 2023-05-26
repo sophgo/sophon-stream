@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 #include "common/Logger.h"
 #include "framework/Engine.h"
-#include "element/MandatoryLink.h"
+// #include "element/MandatoryLink.h"
+#include "element/multimedia/src/decode/DecoderElement.h"
 #include "common/ErrorCode.h"
 #include "common/ObjectMetadata.h"
 #include "common/type_trans.hpp"
@@ -252,8 +253,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph)
       decodeConfigure[j]["multimedia_name"] = "decode_picture";
       decodeConfigure[j]["reopen_times"] = -1;
 
-      auto channelTask = std::make_shared<sophon_stream::element::ChannelTask>();
-      channelTask->request.operation = sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
+      auto channelTask = std::make_shared<sophon_stream::multimedia::ChannelTask>();
+      channelTask->request.operation = sophon_stream::multimedia::ChannelOperateRequest::ChannelOperate::START;
       channelTask->request.channelId = j+1;
       channelTask->request.json = decodeConfigure[j].dump();
       sophon_stream::common::ErrorCode errorCode = engine.sendData(i+1,

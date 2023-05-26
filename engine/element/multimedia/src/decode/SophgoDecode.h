@@ -1,6 +1,10 @@
 #pragma once
 
-#include "../Process.h"
+#include <memory>
+#include <string>
+#include <vector>
+#include "SophgoContext.h"
+#include "common/ObjectMetadata.h"
 #include "../share/common/ff_decode.hpp"
 #include "bmruntime_interface.h"
 // #include "../process/decode/gpu/FFmpegFormatInput-new.h"
@@ -8,24 +12,24 @@
 
 namespace sophon_stream {
 namespace multimedia {
-namespace process {
+namespace decode {
 
 /**
  * face transformations gpu process class
  */
-class SophgoDecode : public multimedia::Process {
+class SophgoDecode {
   public :
     SophgoDecode();
 
-    common::ErrorCode init(multimedia::Context& context);
+    common::ErrorCode init(SophgoContext& context);
     /**
      * preprocess
      * @param[in] context: input and output config
      * @param[in] objectMetadatas: inputData
      * @return preprocess error code or common::ErrorCode::SUCCESS
      */
-    common::ErrorCode process(multimedia::Context& context,
-                                 std::shared_ptr<common::ObjectMetadata>& objectMetadata) override;
+    common::ErrorCode process(SophgoContext& context,
+                                 std::shared_ptr<common::ObjectMetadata>& objectMetadata);
     void uninit();
 
   private:

@@ -1,6 +1,11 @@
 #pragma once
 
-#include "../Context.h"
+#include <string>
+#include <vector>
+#include <memory>
+#include "common/Logger.h"
+#include "common/ErrorCode.h"
+#include "common/Graphics.hpp"
 #include "../share/common/bmnn_utils.h"
 #include "../share/common/bm_wrapper.hpp"
 #include "../share/common/ff_decode.hpp"
@@ -8,10 +13,20 @@
 
 namespace sophon_stream {
 namespace multimedia {
-namespace context {
+namespace decode {
 
 
-struct SophgoContext :public multimedia::Context {
+struct SophgoContext {
+
+    std::string multimediaName;
+    int deviceId;
+    std::shared_ptr<void> data = nullptr;
+    
+    std::string mUrl;
+    common::Rectangle<int> mRoi;
+    float mResizeRate = 1.0f;
+    int mTimeout = 0;
+    int mSourceType = 0;//0视频文件1是文件夹2是rtsp或rtmp
 
     static constexpr const char* JSON_URL = "url";
     static constexpr const char* JSON_RESIZE_RATE = "resize_rate";
@@ -30,7 +45,7 @@ struct SophgoContext :public multimedia::Context {
      * @param[in] json: 初始化的json字符串
      * @return 错误码
      */
-    common::ErrorCode init(const std::string& json) override;
+    common::ErrorCode init(const std::string& json);
 
     std::shared_ptr<BMNNContext> m_bmContext;
     std::shared_ptr<BMNNNetwork> m_bmNetwork;
@@ -50,7 +65,7 @@ struct SophgoContext :public multimedia::Context {
     bmcv_convert_to_attr converto_attr;
     
 };
-} // namespace context
+} // namespace decode
 } // namespace algorithm
 } // namespace sophon_stream
 

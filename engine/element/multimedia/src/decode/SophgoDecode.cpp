@@ -1,6 +1,6 @@
 #include "SophgoDecode.h"
 #include <opencv2/opencv.hpp>
-#include "../context/SophgoContext.h"
+#include "SophgoContext.h"
 #include "common/Logger.h"
 #include "common/type_trans.hpp"
 
@@ -20,7 +20,7 @@ extern "C"
 
 namespace sophon_stream {
 namespace multimedia {
-namespace process {
+namespace decode {
 
 
 SophgoDecode::SophgoDecode(){}
@@ -30,7 +30,7 @@ SophgoDecode::SophgoDecode(){}
  * @param[in/out] context: 传输给推理模型的数据
  * @return 错误码
  */
-common::ErrorCode SophgoDecode::init(multimedia::Context& context){
+common::ErrorCode SophgoDecode::init(SophgoContext& context){
     mUrl = context.mUrl;
     mSourceType = context.mSourceType;
     mResizeRate = context.mResizeRate;
@@ -59,10 +59,10 @@ void bm_image2Frame(std::shared_ptr<common::Frame> & f,bm_image & img)
  * @param[in] objectMetadatas: inputData
  * @return preprocess error code or common::ErrorCode::SUCCESS
  */
-common::ErrorCode SophgoDecode::process(multimedia::Context& context,
+common::ErrorCode SophgoDecode::process(SophgoContext& context,
         std::shared_ptr<common::ObjectMetadata>& objectMetadata) {
 
-    context::SophgoContext* pSophgoContext = dynamic_cast<context::SophgoContext*>(&context);
+    SophgoContext* pSophgoContext = &context;
     if(pSophgoContext==nullptr) return (common::ErrorCode)(-1);
 
     objectMetadata = std::make_shared<common::ObjectMetadata>();

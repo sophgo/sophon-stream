@@ -2,9 +2,8 @@
 
 #include <memory>
 
-#include "MultiMediaApi.h"
-#include "Context.h"
-#include "Process.h"
+#include "SophgoContext.h"
+#include "SophgoDecode.h"
 
 namespace sophon_stream {
 namespace multimedia {
@@ -12,21 +11,21 @@ namespace multimedia {
 /**
  * 多媒体模块
  */
-class MultiMedia : public multimedia::MultiMediaApi {
+class Decoder {
   public:
     /**
      * 构造函数
      */
-    MultiMedia();
+    Decoder();
     /**
      * 析构函数
      */
-    ~MultiMedia() override;
+    ~Decoder();
 
-    MultiMedia(const MultiMedia&) = delete;
-    MultiMedia& operator =(const MultiMedia&) = delete;
-    MultiMedia(MultiMedia&&) = default;
-    MultiMedia& operator =(MultiMedia&&) = default;
+    Decoder(const Decoder&) = delete;
+    Decoder& operator =(const Decoder&) = delete;
+    Decoder(Decoder&&) = default;
+    Decoder& operator =(Decoder&&) = default;
 
     /**
      * 初始化函数
@@ -37,20 +36,20 @@ class MultiMedia : public multimedia::MultiMediaApi {
      */
     common::ErrorCode init(const std::string& side,
                            int deviceId,
-                           const std::string& json) override;
+                           const std::string& json);
     /**
      * 预测函数
      * @param[in/out] objectMetadatas:  输入数据和预测结果
      */
-    common::ErrorCode process(std::shared_ptr<common::ObjectMetadata>& objectMetadata) override;
+    common::ErrorCode process(std::shared_ptr<common::ObjectMetadata>& objectMetadata);
     /**
      * 资源释放函数
      */
-    void uninit() override;
+    void uninit();
 
   private:
-    std::shared_ptr<Context> mContext;
-    std::shared_ptr<Process> mProcess;
+    std::shared_ptr<decode::SophgoContext> mContext;
+    std::shared_ptr<decode::SophgoDecode> mProcess;
 
 };
 

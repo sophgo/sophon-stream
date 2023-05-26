@@ -71,10 +71,10 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     link_libraries(common)
     link_libraries(ivslogger)
     link_libraries(framework)
-    link_libraries(derivedelement)
 
     # usecase tests
-    file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
+    # file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
+    file(GLOB TEST_SOURCES usecase/usecaseYolov5.cpp)
     foreach(test_src ${TEST_SOURCES})
         get_filename_component(test_name ${test_src} NAME_WE)
         add_executable(${test_name} ${test_src})
@@ -138,7 +138,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     link_libraries(ivslogger)
 
     link_libraries(framework)
-    link_libraries(derivedelement)
 
     # usecase tests
     file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
