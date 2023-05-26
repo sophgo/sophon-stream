@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <iostream>
 #include <vector>
+#include <cstring>
 /* Define this macro in advance to enable following APIs */
 #ifdef USE_OPENCV
 
