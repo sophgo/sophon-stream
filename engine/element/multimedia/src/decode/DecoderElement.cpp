@@ -6,12 +6,12 @@
 #include <nlohmann/json.hpp>
 
 #include "common/Logger.h"
-#include "multimedia/src/MultiMediaApiFactory.h"
+// #include "multimedia/src/MultiMediaApiFactory.h"
 #include "common/ObjectMetadata.h"
-#include "framework/ElementFactory.h"
+#include "../../../../framework/ElementFactory.h"
 
 namespace sophon_stream {
-namespace element {
+namespace multimedia {
 
 
 DecoderElement::DecoderElement() {}
@@ -40,6 +40,9 @@ constexpr const char* DecoderElement::JSON_SOURCE_TYPE;
 constexpr const char* DecoderElement::JSON_SKIP_COUNT;
 constexpr const char* DecoderElement::JSON_BATCH_SIZE;
 
+
+#define JSON_MULTIMEDIA_NAME_FIELD "multimedia_name"
+
 common::ErrorCode DecoderElement::initInternal(const std::string& json) {
     common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
     do {
@@ -62,33 +65,15 @@ common::ErrorCode DecoderElement::initInternal(const std::string& json) {
             IVS_INFO("batch size is :{0}", mBatchSize);
         }
 
-        auto sharedObjectIt = configure.find(JSON_SHARED_OBJECT_FIELD);
-        if (configure.end() == sharedObjectIt
-                || !sharedObjectIt->is_string()
-                || sharedObjectIt->empty()) {
-            IVS_ERROR("Can not find non empty {0} with string type in model json configure, element id: {1}, json: {2}",
-                      JSON_SHARED_OBJECT_FIELD,
-                      getId(),
-                      configure.dump());
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-        }
 
-        const auto& sharedObject = sharedObjectIt->get<std::string>();
-        void* sharedObjectHandle = dlopen(sharedObject.c_str(), RTLD_NOW | RTLD_GLOBAL);
-        if (NULL == sharedObjectHandle) {
-            IVS_ERROR("Load dynamic shared object file fail, element id: {0:d}, "
-                      "shared object: {1}  error info:{2}",
-                      getId(),
-                      sharedObject,dlerror());
-            errorCode = common::ErrorCode::DLOPEN_FAIL;
-            break;
-        }
-
-        mSharedObjectHandle.reset(sharedObjectHandle,
-        [](void* sharedObjectHandle) {
-            dlclose(sharedObjectHandle);
-        });
+        auto multimediaNameIt = configure.find(JSON_MULTIMEDIA_NAME_FIELD);
+            if (configure.end() == multimediaNameIt
+                    || !multimediaNameIt->is_string()) {
+                errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+                break;
+            }
+            //根据设备类型和算法名字找到对应的工厂
+          mMultiMediaName = multimediaNameIt->get<std::string>();
 //        if (sharedObjectSet.end() == sharedObjectSet.find(*sharedObjectIt)) {
 //            const auto& sharedObject = sharedObjectIt->get<std::string>();
 //            sharedObjectSet.insert(sharedObject);
@@ -197,8 +182,10 @@ common::ErrorCode DecoderElement::startTask(std::shared_ptr<ChannelTask>& channe
 
         prctl(PR_SET_NAME, std::to_string(channelTask->request.channelId).c_str());
 
-        auto& multimediaApiFactory = multimedia::SingletonMultiMediaApiFactory::getInstance();
-        channelInfo->mSpDecoder = multimediaApiFactory.make();
+
+
+
+        channelInfo->mSpDecoder = std::make_shared<Decoder>();
         if (!channelInfo->mSpDecoder) {
             channelTask->response.errorCode = common::ErrorCode::MAKE_ALGORITHM_API_FAIL;
             std::string error = "Make multimedia api failed! channel id is "+std::to_string(channelTask->request.channelId);

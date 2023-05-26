@@ -1,9 +1,8 @@
-#include "MultiMedia.h"
+#include "Decoder.h"
 
 #include <nlohmann/json.hpp>
 
-#include "MultiMediaApiFactory.h"
-#include "MultiMediaFactorySelector.h"
+// #include "../MultiMediaApiFactory.h"
 
 #include "common/Logger.h"
 
@@ -13,16 +12,16 @@ namespace multimedia {
 /**
  * 构造函数
  */
-MultiMedia::MultiMedia() {
+Decoder::Decoder() {
 }
 
 /**
  * 析构函数
  */
-MultiMedia::~MultiMedia() {
+Decoder::~Decoder() {
 }
 
-#define JSON_MULTIMEDIA_NAME_FIELD "multimedia_name"
+// #define JSON_MULTIMEDIA_NAME_FIELD "multimedia_name"
 
 /**
  * 初始化函数
@@ -31,7 +30,7 @@ MultiMedia::~MultiMedia() {
  * @param[in] json:  初始化字符串
  * @return 错误码
  */
-common::ErrorCode MultiMedia::init(const std::string& side,
+common::ErrorCode Decoder::init(const std::string& side,
                                   int deviceId,
                                   const std::string& json) {
     common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -43,23 +42,23 @@ common::ErrorCode MultiMedia::init(const std::string& side,
             break;
         }
 
-        auto multimediaNameIt = configure.find(JSON_MULTIMEDIA_NAME_FIELD);
-        if (configure.end() == multimediaNameIt
-                || !multimediaNameIt->is_string()) {
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            IVS_ERROR("can not find {0} with string type, json parse failed! json:{1}",JSON_MULTIMEDIA_NAME_FIELD, json);
-            break;
-        }
-        std::string multimediaName = multimediaNameIt->get<std::string>();
-        auto& multimediaFactorySelector = multimedia::SingletonMultiMediaFactorySelector::getInstance();
-        auto& multimediaFactory = multimediaFactorySelector.fetch(side, multimediaName);
+        // auto multimediaNameIt = configure.find(JSON_MULTIMEDIA_NAME_FIELD);
+        // if (configure.end() == multimediaNameIt
+        //         || !multimediaNameIt->is_string()) {
+        //     errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        //     IVS_ERROR("can not find {0} with string type, json parse failed! json:{1}",JSON_MULTIMEDIA_NAME_FIELD, json);
+        //     break;
+        // }
+        // std::string multimediaName = multimediaNameIt->get<std::string>();
+        // auto& multimediaFactorySelector = multimedia::SingletonMultiMediaFactorySelector::getInstance();
+        // auto& multimediaFactory = multimediaFactorySelector.fetch(side, multimediaName);
 
-        mContext = multimediaFactory.makeContext();
-        mProcess = multimediaFactory.makeProcess();
+        mContext = std::make_shared<decode::SophgoContext>();
+        mProcess = std::make_shared<decode::SophgoDecode>();
         mContext->init(configure.dump());
 
 
-        mContext->multimediaName = multimediaName;
+        mContext->multimediaName = "decode";
         mContext->deviceId = deviceId;
         errorCode = mProcess->init(*mContext);
 
@@ -75,7 +74,7 @@ common::ErrorCode MultiMedia::init(const std::string& side,
  * 预测函数
  * @param[in/out] objectMetadatas:  输入数据和预测结果
  */
-common::ErrorCode MultiMedia::process(std::shared_ptr<common::ObjectMetadata>& objectMetadata) {
+common::ErrorCode Decoder::process(std::shared_ptr<common::ObjectMetadata>& objectMetadata) {
     if (!mProcess) {
         //TODO: set error code
         IVS_ERROR("process handle is null");
@@ -94,14 +93,14 @@ common::ErrorCode MultiMedia::process(std::shared_ptr<common::ObjectMetadata>& o
 /**
  * 资源释放函数
  */
-void MultiMedia::uninit() {
+void Decoder::uninit() {
     if (mProcess != nullptr) {
         mProcess->uninit();
         mProcess = nullptr;
     }
 }
 
-REGISTER_MULTIMEDIA_API(MultiMedia)
+// REGISTER_MULTIMEDIA_API("decode", Decoder)
 
 } // namespace multimedia
 } // namespace sophon_stream

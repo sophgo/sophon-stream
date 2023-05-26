@@ -1,13 +1,13 @@
 #pragma once
 
-#include "framework/ElementNew.h"
+#include "../../../../framework/ElementNew.h"
 //#include "stream/DecoderApi.h"
 // #include "stream/MultiMediaApi.h"
-#include "multimedia/src/MultiMediaApi.h"
 #include "common/Graphics.hpp"
+#include "Decoder.h"
 
 namespace sophon_stream {
-namespace element {
+namespace multimedia {
 
 struct ChannelOperateRequest {
     enum class ChannelOperate {
@@ -136,13 +136,13 @@ class ThreadWrapper {
 
 struct ChannelInfo {
     int mFrameCount = 0;
-    std::shared_ptr<multimedia::MultiMediaApi> mSpDecoder;
+    std::shared_ptr<Decoder> mSpDecoder;
     std::shared_ptr<std::mutex> mMtx;
     std::shared_ptr<std::condition_variable> mCv;
     std::shared_ptr<ThreadWrapper> mThreadWrapper;
 };
 
-class DecoderElement : public framework::Element {
+class DecoderElement : public ::sophon_stream::framework::Element {
   public:
     DecoderElement();
     ~DecoderElement() override;
@@ -198,6 +198,8 @@ class DecoderElement : public framework::Element {
     std::shared_ptr<void> mSharedObjectHandle;
     std::map<int,std::shared_ptr<ChannelInfo>> mThreadsPool;
     std::mutex mThreadsPoolMtx;
+
+    std::string mMultiMediaName;
 };
 
 

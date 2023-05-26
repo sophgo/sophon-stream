@@ -4,7 +4,7 @@
 
 namespace sophon_stream {
 namespace multimedia {
-namespace context {
+namespace decode {
 
 constexpr const char* SophgoContext::JSON_URL;
 constexpr const char* SophgoContext::JSON_RESIZE_RATE;
