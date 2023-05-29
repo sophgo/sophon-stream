@@ -2,7 +2,7 @@
     "configure":{
         "multimedia_name": "decode"
     },
-    "shared_object":"../../engine/build/libdecode.so",
+    "shared_object":"../../element/multimedia/decode/build/libdecode.so",
     "device_id":0,
     "id":0,
     "milliseconds_timeout":200,

@@ -1,0 +1,30 @@
+{
+    "configure":{
+        "batch":1,
+        "algorithm_name":"tracker_sort",
+        "max_batchsize":1,
+        "name":"trackerSort",
+        "quality_h":360.0,
+        "quality_ls":112.0,
+        "quality_maxSc":19.0,
+        "quality_mg":10.0,
+        "quality_ta":400.0,
+        "quality_trl":0.699999988079071,
+        "quality_tru":1.2999999523162842,
+        "quality_w":640.0,
+        "track_BaseTimes":3000000,
+        "track_Iou":0.25,
+        "track_MaxAge":20,
+        "track_MinHins":3,
+        "track_TopN":1,
+        "track_UpdateTimes":4
+        },
+    "shared_object":"../../element/algorithm/tracker/build/libtracker.so",
+    "device_id":0,
+    "id":0,
+    "milliseconds_timeout":200,
+    "name":"Tracker",
+    "repeated_timeout":false,
+    "side":"sophgo",
+    "thread_number":1
+}

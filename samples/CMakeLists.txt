@@ -10,70 +10,53 @@ endif()
 
 if (${TARGET_ARCH} STREQUAL "pcie")
 
-    include_directories(.)
-    include_directories(../share)
-
-    #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs")
-
-    find_package(PkgConfig REQUIRED)
-
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -rdynamic")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -rdynamic")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
 
-    # include(framework/framework.cmake)
-    # include(element/element.cmake)
-
-    link_directories("../engine/build")
-    include_directories("../engine")
-
-
-    link_libraries(pthread)
-
-    # spdlog https://github.com/gabime/spdlog
-    include_directories(../share/3rdparty/spdlog/include)
-
-    # nlohmann/json https://github.com/nlohmann/json
-    include_directories(../share/3rdparty/nlohmann-json/include)
-
-    # gtest includes and libraries for all tests
-    include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
-
-    # add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gtest/src/gtest_main.cc)
-    link_libraries(gtest)
-
-    # ffmpeg
     set(FFMPEG_DIR  /opt/sophon/sophon-ffmpeg-latest/lib/cmake)
     find_package(FFMPEG REQUIRED)
     include_directories(${FFMPEG_INCLUDE_DIRS})
     link_directories(${FFMPEG_LIB_DIRS})
 
-    # opencv
     set(OpenCV_DIR  /opt/sophon/sophon-opencv-latest/lib/cmake/opencv4)
     find_package(OpenCV REQUIRED)
     include_directories(${OpenCV_INCLUDE_DIRS})
     link_directories(${OpenCV_LIB_DIRS})
-
-    find_package(libsophon REQUIRED)
-    include_directories(${LIBSOPHON_INCLUDE_DIRS})
-    link_directories(${LIBSOPHON_LIB_DIRS})
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
 
+    set(LIBSOPHON_DIR  /opt/sophon/libsophon-current/data/libsophon-config.cmake)
+    find_package(LIBSOPHON REQUIRED)
+    include_directories(${LIBSOPHON_INCLUDE_DIRS})
+    link_directories(${LIBSOPHON_LIB_DIRS})
+
+    include_directories(../share/3rdparty/gtest)
+    include_directories(../share/3rdparty/gtest/include)
+    add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gtest/src/gtest_main.cc)
+    link_libraries(gtest)
+
+    link_libraries(pthread)
     link_libraries(dl)
 
-    # include_directories(src)
-
-    # add_library(common
-    #     ../share/common/Logger.cpp
-    #     )
-
-    link_libraries(common)
+    include_directories("../framework/include")
+    link_directories("../framework/build")
     link_libraries(ivslogger)
     link_libraries(framework)
 
+    include_directories("../element/multimedia/decode")
+
+    include_directories(../share)
+    include_directories(../share/3rdparty/spdlog/include)
+    include_directories(../share/3rdparty/nlohmann-json/include)
+
     # usecase tests
-    file(GLOB TEST_SOURCES usecase/*.cpp usecase/*.c)
+    file(GLOB TEST_SOURCES 
+      usecase/usecase_yolov5.cc
+      usecase/usecase_yolox.cc
+      usecase/usecase_unet.cc
+      usecase/usecase_yolox_tracker.cc
+    )
     foreach(test_src ${TEST_SOURCES})
         get_filename_component(test_name ${test_src} NAME_WE)
         add_executable(${test_name} ${test_src})
@@ -122,18 +105,11 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     # gtest includes and libraries for all tests
     include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
 
-    # add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../share/3rdparty/gtest/src/gtest_main.cc)
     link_libraries(gtest)
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
 
-    # include_directories(src)
 
-    # add_library(common
-    #     ../share/common/Logger.cpp
-    #     ../share/common/Udp.cpp
-    #     )
-    link_libraries(common)
     link_libraries(ivslogger)
 
     link_libraries(framework)

@@ -1,0 +1,3 @@
+/home/xuyizhou/projects/sophon-stream-refactory/element/multimedia/decode/build/CMakeFiles/decode.dir
+/home/xuyizhou/projects/sophon-stream-refactory/element/multimedia/decode/build/CMakeFiles/edit_cache.dir
+/home/xuyizhou/projects/sophon-stream-refactory/element/multimedia/decode/build/CMakeFiles/rebuild_cache.dir

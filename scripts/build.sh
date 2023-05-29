@@ -10,9 +10,43 @@ fi
 pushd ${project_dir}
 
 
-engine_dir=${project_dir}/engine
-echo "build engine-----"
-pushd $engine_dir
+# framework_dir=${project_dir}/framework
+# echo "build framework-----"
+# pushd $framework_dir
+# if [ ! -d "build" ]; then
+#   mkdir build
+# fi
+# cd build
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release ..
+# fi
+# make -j
+# popd
+# echo "build framework completed"
+# 
+element_dir=${project_dir}/element
+echo "build element-----"
+# 
+# element_yolov5_dir=$element_dir/algorithm/yolov5
+# pushd $element_yolov5_dir
+# if [ ! -d "build" ]; then
+#   mkdir build
+# fi
+# cd build
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release ..
+# fi
+# make -j
+# popd
+# 
+element_yolox_dir=$element_dir/algorithm/yolox
+pushd $element_yolox_dir
 if [ ! -d "build" ]; then
   mkdir build
 fi
@@ -25,7 +59,54 @@ elif [ "$1" == "Release" ]; then
 fi
 make -j
 popd
-echo "build engine completed"
+
+# element_unet_dir=$element_dir/algorithm/unet
+# pushd $element_unet_dir
+# if [ ! -d "build" ]; then
+#   mkdir build
+# fi
+# cd build
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release ..
+# fi
+# make -j
+# popd
+# 
+# element_tracker_dir=$element_dir/algorithm/tracker
+# pushd $element_tracker_dir
+# if [ ! -d "build" ]; then
+#   mkdir build
+# fi
+# cd build
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release ..
+# fi
+# make -j
+# popd
+# 
+# element_decode_dir=$element_dir/multimedia/decode
+# pushd $element_decode_dir
+# if [ ! -d "build" ]; then
+#   mkdir build
+# fi
+# cd build
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release ..
+# fi
+# make -j
+# popd
+# 
+# echo "build element completed"
+
 
 sample_dir=${project_dir}/samples
 echo "build samples-----"

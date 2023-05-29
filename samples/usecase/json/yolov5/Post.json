@@ -19,7 +19,7 @@
                 "stage":["post"],
                 "use_tpu_kernel": true
     },
-                "shared_object":"../../engine/build/libyolov5.so",
+    "shared_object":"../../element/algorithm/yolov5/build/libyolov5.so",
     "device_id":0,
     "id":0,
     "milliseconds_timeout":200,

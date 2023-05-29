@@ -17,7 +17,7 @@
         "stage":["post"],
         "use_tpu_kernel": false
     },
-    "shared_object":"../../engine/build/libunet.so",
+    "shared_object":"../../element/algorithm/unet/build/libunet.so",
     "device_id":0,
     "id":0,
     "milliseconds_timeout":0,
