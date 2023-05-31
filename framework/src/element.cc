@@ -10,6 +10,15 @@
 namespace sophon_stream {
 namespace framework {
 
+constexpr const char* Element::JSON_ID_FIELD;
+constexpr const char* Element::JSON_SIDE_FIELD;
+constexpr const char* Element::JSON_DEVICE_ID_FIELD;
+constexpr const char* Element::JSON_THREAD_NUMBER_FIELD;
+constexpr const char* Element::JSON_MILLISECONDS_TIMEOUT_FIELD;
+constexpr const char* Element::JSON_REPEATED_TIMEOUT_FIELD;
+constexpr const char* Element::JSON_CONFIGURE_FIELD;
+constexpr const int Element::DEFAULT_MILLISECONDS_TIMEOUT;
+
 void Element::connect(Element& srcElement, int srcElementPort,
                       Element& dstElement, int dstElementPort) {
   auto& inputDataPipe = dstElement.mInputDataPipeMap[dstElementPort];
@@ -292,16 +301,16 @@ common::ErrorCode Element::pushOutputData(
     const std::chrono::milliseconds& timeout) {
   IVS_DEBUG("send data, element id: {0:d}, output port: {1:d}, data:{2:p}", mId,
             outputPort, data.get());
-  if (mLastElementFlag) {
-    auto handlerIt = mStopHandlerMap.find(outputPort);
-    if (mStopHandlerMap.end() != handlerIt) {
-      auto dataHandler = handlerIt->second;
-      if (dataHandler) {
-        dataHandler(data);
-        return common::ErrorCode::SUCCESS;
-      }
+  // if (mLastElementFlag) {
+  auto handlerIt = mStopHandlerMap.find(outputPort);
+  if (mStopHandlerMap.end() != handlerIt) {
+    auto dataHandler = handlerIt->second;
+    if (dataHandler) {
+      dataHandler(data);
+      return common::ErrorCode::SUCCESS;
     }
   }
+  // }
 
   auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
   if (mOutputDataPipeMap.end() != dataPipeIt) {

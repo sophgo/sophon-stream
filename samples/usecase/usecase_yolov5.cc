@@ -14,13 +14,6 @@
 #include "engine.h"
 #include "gtest/gtest.h"
 
-#define DECODE_ID 5000
-#define PRE_ID 5001
-#define YOLO_ID 5002
-#define POST_ID 5003
-#define ENCODE_ID 5006
-#define REPORT_ID 5555
-
 const std::vector<std::vector<int>> colors = {
     {255, 0, 0},    {255, 85, 0},    {255, 170, 0},   {255, 255, 0},
     {170, 255, 0},  {85, 255, 0},    {0, 255, 0},     {0, 255, 85},
@@ -101,6 +94,12 @@ constexpr const char* JSON_CONFIG_ELEMENTS_ID_FILED = "elements_id";
 constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connection";
 constexpr const char* JSON_CONFIG_URL_FILED = "url";
 constexpr const char* JSON_CONFIG_CLASS_NAMES_FILED = "class_names";
+constexpr const char* JSON_CONFIG_SRC_ID_FILED = "src_id";
+constexpr const char* JSON_CONFIG_SRC_PORT_FILED = "src_port";
+constexpr const char* JSON_CONFIG_DST_ID_FILED = "dst_id";
+constexpr const char* JSON_CONFIG_DST_PORT_FILED = "dst_port";
+constexpr const char* JSON_CONFIG_STOP_HANDLER_ID_FILED = "stop_handler_id";
+constexpr const char* JSON_CONFIG_STOP_HANDLER_PORT_FILED = "stop_handler_port";
 
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
   std::ifstream istream;
@@ -117,34 +116,26 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
   auto download_image_it = config.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED);
   auto url_it = config.find(JSON_CONFIG_URL_FILED);
   auto class_names_it = config.find(JSON_CONFIG_CLASS_NAMES_FILED);
+  auto stop_handler_id_it = config.find(JSON_CONFIG_STOP_HANDLER_ID_FILED);
+  auto stop_handler_port_it = config.find(JSON_CONFIG_STOP_HANDLER_PORT_FILED);
 
-  int num_graphs = num_graph_it->get<int>();
+  int num_graphs = num_graphs_it->get<int>();
   int num_channels_per_graph = num_channels_per_graph_it->get<int>();
   int num_channels = num_graphs * num_channels_per_graph;
   bool download_image = download_image_it->get<bool>();
   std::string url = url_it->get<std::string>();
   std::string class_name_file = class_names_it->get<std::string>();
+  int stop_handler_id = stop_handler_id_it->get<int>();
+  int stop_handler_port = stop_handler_port_it->get<int>();
 
   std::unordered_map<std::string, int> elements_id;
-  auto element_it = config.find(JSON_CONFIG_ELEMENTS_FILED);
-  if (element_it == config.end() || !element_it->is_array() ||
-      element_it->empty()) {
+  auto element_it = config.find(JSON_CONFIG_ELEMENTS_ID_FILED);
+  if (element_it == config.end()) {
     IVS_ERROR("Can not find elements in json configure");
     abort();
   }
   for (auto elem : element_it->items()) {
     elements_id.insert({elem.key(), elem.value()});
-  }
-
-  std::unordered_map<std::string, std::string> connections;
-  auto connect_it = config.find(JSON_CONFIG_CONNECTION_FILED);
-  if (connect_it == config.end() || !connect_it->is_array() ||
-      connect_it->empty()) {
-    IVS_ERROR("Can not find elements in json configure");
-    abort();
-  }
-  for (auto elem : connect_it->items()) {
-    connections.insert({elem.key(), elem.value()});
   }
 
   istream.close();
@@ -189,63 +180,38 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     nlohmann::json ElementsConfigure;
 
     nlohmann::json decoder, pre, action, post;
-    std::unordered_map<std::string, nlohmann::json> json_map;
 
-    for (auto& [k, v] : elements_id) {
+    for (const std::pair<std::string, int>& kv : elements_id) {
       nlohmann::json elem;
-      istream.open(k);
+      istream.open("../usecase/json/yolov5/" + kv.first);
       assert(istream.is_open());
       istream >> elem;
-      elem.at("id") = v;
+      elem.at("id") = kv.second;
       ElementsConfigure.push_back(elem);
-      json_map.insert(k, elem);
       istream.close();
     }
-
-    for (auto& [k, v] : connections) {
-    }
-
-    // istream.open("../usecase/json/yolov5/Decoder.json");
-    // assert(istream.is_open());
-    // istream >> decoder;
-    // decoder.at("id") = DECODE_ID;
-    // ElementsConfigure.push_back(decoder);
-    // istream.close();
-    // std::cout << decoder << std::endl;
-
-    // istream.open("../usecase/json/yolov5/Pre.json");
-    // assert(istream.is_open());
-    // istream >> pre;
-    // pre.at("id") = PRE_ID;
-    // ElementsConfigure.push_back(pre);
-    // istream.close();
-    // std::cout << pre << std::endl;
-
-    // istream.open("../usecase/json/yolov5/Action.json");
-    // assert(istream.is_open());
-    // istream >> action;
-    // action.at("id") = YOLO_ID;
-    // ElementsConfigure.push_back(action);
-    // istream.close();
-
-    // istream.open("../usecase/json/yolov5/Post.json");
-    // assert(istream.is_open());
-    // istream >> post;
-    // post.at("id") = POST_ID;
-    // ElementsConfigure.push_back(post);
-    // istream.close();
-
     graphConfigure["elements"] = ElementsConfigure;
-    graphConfigure["connections"].push_back(
-        makeConnectConfig(DECODE_ID, 0, PRE_ID, 0));
-    graphConfigure["connections"].push_back(
-        makeConnectConfig(PRE_ID, 0, YOLO_ID, 0));
-    graphConfigure["connections"].push_back(
-        makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
+
+    auto connect_it = config.find(JSON_CONFIG_CONNECTION_FILED);
+    if (connect_it == config.end() || !connect_it->is_array() ||
+        connect_it->empty()) {
+      IVS_ERROR("Can not find elements in json configure");
+      abort();
+    }
+    for (auto connect_config : *connect_it) {
+      int src_id = connect_config.find(JSON_CONFIG_SRC_ID_FILED)->get<int>();
+      int src_port =
+          connect_config.find(JSON_CONFIG_SRC_PORT_FILED)->get<int>();
+      int dst_id = connect_config.find(JSON_CONFIG_DST_ID_FILED)->get<int>();
+      int dst_port =
+          connect_config.find(JSON_CONFIG_DST_PORT_FILED)->get<int>();
+      graphConfigure["connections"].push_back(
+          makeConnectConfig(src_id, src_port, dst_id, dst_port));
+    }
 
     engine.addGraph(graphConfigure.dump());
 
-    engine.setStopHandler(i, POST_ID, 0, [&](std::shared_ptr<void> data) {
+    engine.setStopHandler(i, stop_handler_id, stop_handler_port, [&](std::shared_ptr<void> data) {
       auto objectMetadata =
           std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
       if (objectMetadata == nullptr) return;
@@ -258,28 +224,15 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         }
         return;
       }
-
       if (download_image) {
         int width = objectMetadata->mFrame->mWidth;
         int height = objectMetadata->mFrame->mHeight;
-        // 转格式
-        // sophon_stream::common::FormatType format_type_stream =
-        // objectMetadata->mFrame->mFormatType; sophon_stream::common::DataType
-        // data_type_stream = objectMetadata->mFrame->mDataType;
-        // bm_image_format_ext format_type_bmcv =
-        // sophon_stream::common::format_stream2bmcv(format_type_stream);
-        // bm_image_data_format_ext data_type_bmcv =
-        // sophon_stream::common::data_stream2bmcv(data_type_stream);
-        // 转成bm_image
         bm_image image = *objectMetadata->mFrame->mSpData;
-
         bm_image imageStorage;
         bm_image_create(objectMetadata->mFrame->mHandle, height, width,
                         FORMAT_YUV420P, image.data_type, &imageStorage);
         bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
                                    &imageStorage);
-        // bm_image_destroy(image);
-
         for (auto subObj : objectMetadata->mSubObjectMetadatas) {
           // draw image
           draw_bmcv(objectMetadata->mFrame->mHandle,
@@ -313,9 +266,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     nlohmann::json decodeConfigure[num_channels_per_graph];
     for (int j = 0; j < num_channels_per_graph; j++) {
       decodeConfigure[j]["channel_id"] = j;
-      // decodeConfigure[j]["url"] = "../test_car_person_1080P.avi";
-      decodeConfigure[j]["url"] = "../carvana_video.mp4";
-
+      decodeConfigure[j]["url"] = url;
       decodeConfigure[j]["resize_rate"] = 2.0f;
       decodeConfigure[j]["timeout"] = 0;
       decodeConfigure[j]["source_type"] = 0;
@@ -329,7 +280,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       channelTask->request.channelId = j;
       channelTask->request.json = decodeConfigure[j].dump();
       sophon_stream::common::ErrorCode errorCode = engine.pushInputData(
-          i, DECODE_ID, 0, std::static_pointer_cast<void>(channelTask),
+          i, elements_id["decoder"], 0, std::static_pointer_cast<void>(channelTask),
           std::chrono::milliseconds(200));
     }
   }

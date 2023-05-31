@@ -1,0 +1,35 @@
+{
+    "num_graphs": 1,
+    "num_channels_per_graph": 1,
+    "elements_id": {
+        "decoder": 5000,
+        "pre": 5001,
+        "infer": 5002,
+        "post": 5003
+    },
+    "connection": [
+        {
+            "src_id": 5000,
+            "src_port": 0,
+            "dst_id": 5001,
+            "dst_port": 0
+        },
+        {
+            "src_id": 5001,
+            "src_port": 0,
+            "dst_id": 5002,
+            "dst_port": 0
+        },
+        {
+            "src_id": 5002,
+            "src_port": 0,
+            "dst_id": 5003,
+            "dst_port": 0
+        }
+    ],
+    "url": "../test_car_person_1080P.avi",
+    "class_names": "../coco.names",
+    "download_image": false,
+    "stop_handler_id": 5003,
+    "stop_handler_port": 0
+}
