@@ -10,13 +10,6 @@
 namespace sophon_stream {
 namespace framework {
 
-/**
- * Make connection between a Element and another Element.
- * @param[in,out] srcElement : Source Element.
- * @param[in] srcElementPort : Output port of source Element.
- * @param[in,out] dstElement : Destination Element.
- * @param[in] dstElementPort : Input port of destination Element.
- */
 void Element::connect(Element& srcElement, int srcElementPort,
                       Element& dstElement, int dstElementPort) {
   auto& inputDataPipe = dstElement.mInputDataPipeMap[dstElementPort];
@@ -30,9 +23,6 @@ void Element::connect(Element& srcElement, int srcElementPort,
   srcElement.mOutputDataPipeMap[srcElementPort] = inputDataPipe;
 }
 
-/**
- * Constructor of class Element.
- */
 Element::Element()
     : mId(-1),
       mDeviceId(-1),
@@ -42,19 +32,10 @@ Element::Element()
       mMillisecondsTimeout(0),
       mRepeatedTimeout(false) {}
 
-/**
- * Destructor of class Element.
- */
 Element::~Element() {
   // stop();
 }
 
-/**
- * Init Element with configure in json format.
- * @param[in] json : Configure in json format.
- * @return If parse configure fail, it will return error,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Element::init(const std::string& json) {
   IVS_INFO("Init start, json: {0}", json);
 
@@ -131,9 +112,6 @@ common::ErrorCode Element::init(const std::string& json) {
   return errorCode;
 }
 
-/**
- * Uninit Element, will stop Work.
- */
 void Element::uninit() {
   int id = mId;
   IVS_INFO("Uninit start, element id: {0:d}", id);
@@ -151,12 +129,6 @@ void Element::uninit() {
   IVS_INFO("Uninit finish, element id: {0:d}", id);
 }
 
-/**
- * Start all threads in this Element.
- * @return If thread status is not ThreadStatus::STOP,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Element::start() {
   IVS_INFO("Start element thread start, element id: {0:d}", mId);
 
@@ -177,12 +149,6 @@ common::ErrorCode Element::start() {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * Stop all threads in this Element.
- * @return If thread status is ThreadStatus::STOP,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Element::stop() {
   IVS_INFO("Stop element thread start, element id: {0:d}", mId);
 
@@ -202,12 +168,6 @@ common::ErrorCode Element::stop() {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * Pause all threads in this Element.
- * @return If thread status is not ThreadStatus::RUN,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Element::pause() {
   IVS_INFO("Pause element thread start, element id: {0:d}", mId);
 
@@ -222,12 +182,6 @@ common::ErrorCode Element::pause() {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * Resume all threads in this Element.
- * @return If thread status is not ThreadStatus::PAUSE,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Element::resume() {
   IVS_INFO("Resume element thread start, element id: {0:d}", mId);
 
@@ -242,18 +196,6 @@ common::ErrorCode Element::resume() {
   return common::ErrorCode::SUCCESS;
 }
 
-constexpr const char* Element::JSON_ID_FIELD;
-constexpr const char* Element::JSON_SIDE_FIELD;
-constexpr const char* Element::JSON_DEVICE_ID_FIELD;
-constexpr const char* Element::JSON_THREAD_NUMBER_FIELD;
-constexpr const char* Element::JSON_MILLISECONDS_TIMEOUT_FIELD;
-constexpr const char* Element::JSON_REPEATED_TIMEOUT_FIELD;
-constexpr const char* Element::JSON_CONFIGURE_FIELD;
-
-static constexpr int DEFAULT_MILLISECONDS_TIMEOUT = 200;
-/**
- * Thread function.
- */
 void Element::run() {
   onStart();
   prctl(PR_SET_NAME, std::to_string(mId).c_str());
@@ -376,10 +318,6 @@ common::ErrorCode Element::pushOutputData(
   return common::ErrorCode::NO_SUCH_WORKER_PORT;
 }
 
-/**
- * When push data to any input DataPipe of this Element, the DataPipe will call
- * this function.
- */
 void Element::onInputNotify() {
   ++mNotifyCount;
   mCond.notify_one();
@@ -405,6 +343,31 @@ std::size_t Element::getInputDataCount(int inputPort) const {
   }
 
   return inputDataPipe->getSize();
+}
+
+common::ErrorCode Element::getOutputDatapipeCapacity(int outputPort,
+                                                     int& capacity) {
+  auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
+  if (mOutputDataPipeMap.end() != dataPipeIt) {
+    auto outputDataPipe = dataPipeIt->second.lock();
+    if (outputDataPipe) {
+      capacity = outputDataPipe->getCapacity();
+      return common::ErrorCode::SUCCESS;
+    }
+  }
+  return common::ErrorCode::NO_SUCH_WORKER_PORT;
+}
+
+common::ErrorCode Element::getOutputDatapipeSize(int outputPort, int& size) {
+  auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
+  if (mOutputDataPipeMap.end() != dataPipeIt) {
+    auto outputDataPipe = dataPipeIt->second.lock();
+    if (outputDataPipe) {
+      size = outputDataPipe->getSize();
+      return common::ErrorCode::SUCCESS;
+    }
+  }
+  return common::ErrorCode::NO_SUCH_WORKER_PORT;
 }
 
 }  // namespace framework

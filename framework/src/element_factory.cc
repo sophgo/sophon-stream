@@ -21,15 +21,6 @@
 namespace sophon_stream {
 namespace framework {
 
-/**
- * Element工厂
- */
-
-/**
- * 添加Element产生器
- * @param[in] elementName:
- * @param[in] elementMaker:
- */
 common::ErrorCode ElementFactory::addElementMaker(
     const std::string& elementName, ElementMaker elementMaker) {
   auto elementMakerIt = mElementMakerMap.find(elementName);
@@ -44,10 +35,6 @@ common::ErrorCode ElementFactory::addElementMaker(
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * 获取产生器
- * @param[in] elementName:
- */
 std::shared_ptr<framework::Element> ElementFactory::make(
     const std::string& elementName) {
   auto elementMakerIt = mElementMakerMap.find(elementName);
@@ -59,14 +46,8 @@ std::shared_ptr<framework::Element> ElementFactory::make(
   }
 }
 
-/**
- * Constructor of class ElementFactory.
- */
 ElementFactory::ElementFactory() {}
 
-/**
- * Destructor of class ElementFactory.
- */
 ElementFactory::~ElementFactory() {
   for (auto it = mElementMakerMap.begin(); it != mElementMakerMap.end();) {
     it = mElementMakerMap.erase(it);

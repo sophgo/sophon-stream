@@ -20,32 +20,14 @@
 namespace sophon_stream {
 namespace framework {
 
-/**
- * Constructor of class ElementManager.
- */
 ElementManager::ElementManager() : mId(-1), mThreadStatus(ThreadStatus::STOP) {}
 
-/**
- * Destructor of class ElementManager.
- */
 ElementManager::~ElementManager() {
   auto& elementFactory = framework::SingletonElementFactory::getInstance();
   elementFactory.~ElementFactory();
   // uninit();
 }
 
-constexpr const char* ElementManager::JSON_GRAPH_ID_FIELD;
-
-static constexpr const char* JSON_WORKERS_FIELD = "elements";
-static constexpr const char* JSON_CONNECTIONS_FIELD = "connections";
-constexpr const char* JSON_MODEL_SHARED_OBJECT_FIELD = "shared_object";
-
-/**
- * Init ElementManager with configure in json format.
- * @param[in] json : Configure in json format.
- * @return If parse configure fail, it will return error,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::init(const std::string& json) {
   IVS_INFO("Init start, json: {0}", json);
 
@@ -97,9 +79,6 @@ common::ErrorCode ElementManager::init(const std::string& json) {
   return errorCode;
 }
 
-/**
- * Uninit ElementManager, will stop WorkManager.
- */
 void ElementManager::uninit() {
   int id = mId;
   IVS_INFO("Uninit start, graph id: {0:d}", id);
@@ -114,12 +93,6 @@ void ElementManager::uninit() {
   IVS_INFO("Uninit finish, graph id: {0:d}", id);
 }
 
-/**
- * Start all threads of Elements in this ElementManager.
- * @return If thread status is not ThreadStatus::STOP,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::start() {
   IVS_INFO("Start graph thread start, graph id: {0:d}", mId);
 
@@ -145,12 +118,6 @@ common::ErrorCode ElementManager::start() {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * Stop all threads of Elements in this ElementManager.
- * @return If thread status is ThreadStatus::STOP,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::stop() {
   IVS_INFO("Stop graph thread start, graph id: {0:d}", mId);
 
@@ -174,12 +141,6 @@ common::ErrorCode ElementManager::stop() {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * Pause all threads of Elements in this ElementManager.
- * @return If thread status is not ThreadStatus::RUN,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::pause() {
   IVS_INFO("Pause graph thread start, graph id: {0:d}", mId);
 
@@ -205,12 +166,6 @@ common::ErrorCode ElementManager::pause() {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * Resume all threads of Elements in this ElementManager.
- * @return If thread status is not ThreadStatus::PAUSE,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::resume() {
   IVS_INFO("Resume graph thread start, graph id: {0:d}", mId);
 
@@ -236,14 +191,6 @@ common::ErrorCode ElementManager::resume() {
   return common::ErrorCode::SUCCESS;
 }
 
-static constexpr const char* JSON_WORKER_NAME_FIELD = "name";
-
-/**
- * Init Elements with configure in json format.
- * @param[in] json : Configure in json format.
- * @return If parse configure fail, it will return error,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::initElements(const std::string& json) {
   IVS_INFO("Init elements start, graph id: {0:d}, json: {1}", mId, json);
 
@@ -338,17 +285,6 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
   return errorCode;
 }
 
-static constexpr const char* JSON_CONNECTION_SRC_ID_FIELD = "src_id";
-static constexpr const char* JSON_CONNECTION_SRC_PORT_FIELD = "src_port";
-static constexpr const char* JSON_CONNECTION_DST_ID_FIELD = "dst_id";
-static constexpr const char* JSON_CONNECTION_DST_PORT_FIELD = "dst_port";
-
-/**
- * Init Connections with configure in json format.
- * @param[in] json : Configure in json format.
- * @return If parse configure fail, it will return error,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::initConnections(const std::string& json) {
   IVS_INFO("Init connections start, graph id: {0:d}, json: {1}", mId, json);
 
@@ -431,19 +367,6 @@ common::ErrorCode ElementManager::initConnections(const std::string& json) {
   return errorCode;
 }
 
-/**
- * Make a connectiton between a Element/Module and another Element/Module.
- * @param[in] srcId : Id of source Element/Module,
- * if it is Module's id, will use last Element of the Module instead.
- * @param[in] srcPort : Output port of source Element or last Element of source
- * Module.
- * @param[in] dstId : Id of destination Element/Module,
- * if it is Module's id, will use first Element of the Module instead.
- * @param[in] dstPort : Input port of destination Element or first Element of
- * destination Module.
- * @return If can not find Element, Module or Element of Module, it will return
- * error, otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
                                           int dstPort) {
   auto srcElementIt = mElementMap.find(srcId);
@@ -463,7 +386,7 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
   auto dstElementIt = mElementMap.find(dstId);
   if (mElementMap.end() == dstElementIt) {
     IVS_ERROR(
-        "Can not find module or element, graph id: {0:d}, module or element "
+        "Can not find element, graph id: {0:d}, element "
         "id: {1:d}",
         mId, dstId);
     return common::ErrorCode::NO_SUCH_WORKER_ID;
@@ -531,5 +454,28 @@ common::ErrorCode ElementManager::pushInputData(
 
   return element->pushInputData(inputPort, data, timeout);
 }
+
+std::pair<std::string, int> ElementManager::getSideAndDeviceId(int elementId) {
+  IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}", mId,
+           elementId);
+
+  auto elementIt = mElementMap.find(elementId);
+  if (mElementMap.end() == elementIt) {
+    IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
+              elementId);
+    return std::make_pair("", -1);
+  }
+
+  auto element = elementIt->second;
+  if (!element) {
+    IVS_ERROR("Element is null, graph id: {0:d}, element id: {1:d}", mId,
+              elementId);
+    return std::make_pair("", -1);
+  }
+
+  return std::make_pair(element->getSide(), element->getId());
+}
+
+int ElementManager::getId() const { return mId; }
 }  // namespace framework
 }  // namespace sophon_stream

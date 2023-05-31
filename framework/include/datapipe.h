@@ -24,21 +24,12 @@
 namespace sophon_stream {
 namespace framework {
 
-/**
- * A class buff data with FIFO.
- */
 class DataPipe {
  public:
   using PushHandler = std::function<void()>;
 
-  /**
-   * Constructor of class DataPipe.
-   */
   DataPipe();
 
-  /**
-   * Destructor of class DataPipe.
-   */
   ~DataPipe();
 
   DataPipe(const DataPipe&) = delete;
@@ -49,30 +40,17 @@ class DataPipe {
   common::ErrorCode pushData(std::shared_ptr<void> data,
                              const std::chrono::milliseconds& timeout);
 
-  /**
-   * Get next data of this DataPipe.
-   * @return Return data.
-   */
   std::shared_ptr<void> getData() const;
 
-  /**
-   * Pop next data of this DataPipe.
-   */
   void popData();
 
-  /**
-   * Set push handler which will be call in pushData().
-   */
-  void setPushHandler(PushHandler pushHandler) { mPushHandler = pushHandler; }
+  void setPushHandler(PushHandler pushHandler);
 
-  void setCapacity(std::size_t capacity) { mCapacity = capacity; }
+  void setCapacity(std::size_t capacity);
 
-  std::size_t getSize() const {
-    std::lock_guard<std::mutex> lock(mDataQueueMutex);
-    return mDataQueue.size();
-  }
+  std::size_t getSize() const;
 
-  std::size_t getCapacity() const { return mCapacity; }
+  std::size_t getCapacity() const;
 
  private:
   std::deque<std::shared_ptr<void> > mDataQueue;

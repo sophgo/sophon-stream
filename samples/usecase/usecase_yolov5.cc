@@ -3,6 +3,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <opencv2/opencv.hpp>
+#include <unordered_map>
 
 #include "DecoderElement.h"
 #include "common/Clocker.h"
@@ -96,12 +97,16 @@ constexpr const char* JSON_CONFIG_NUM_GRAPHS_FILED = "num_graphs";
 constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
     "num_channels_per_graph";
 constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
+constexpr const char* JSON_CONFIG_ELEMENTS_ID_FILED = "elements_id";
+constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connection";
+constexpr const char* JSON_CONFIG_URL_FILED = "url";
+constexpr const char* JSON_CONFIG_CLASS_NAMES_FILED = "class_names";
 
-#define DOWNLOAD_IMAGE 1
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
   std::ifstream istream;
   nlohmann::json config;
 
+  // init
   istream.open("../usecase/json/yolov5/Config.json");
   assert(istream.is_open());
   istream >> config;
@@ -110,42 +115,61 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
   auto num_channels_per_graph_it =
       config.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED);
   auto download_image_it = config.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED);
+  auto url_it = config.find(JSON_CONFIG_URL_FILED);
+  auto class_names_it = config.find(JSON_CONFIG_CLASS_NAMES_FILED);
 
-  int num_graphs = num_graph_it.get<int>();
-  int num_channels_per_graph = num_channels_per_graph_it.get<int>();
+  int num_graphs = num_graph_it->get<int>();
+  int num_channels_per_graph = num_channels_per_graph_it->get<int>();
   int num_channels = num_graphs * num_channels_per_graph;
-  bool download_image = download_image_it.get<bool>();
+  bool download_image = download_image_it->get<bool>();
+  std::string url = url_it->get<std::string>();
+  std::string class_name_file = class_names_it->get<std::string>();
 
+  std::unordered_map<std::string, int> elements_id;
+  auto element_it = config.find(JSON_CONFIG_ELEMENTS_FILED);
+  if (element_it == config.end() || !element_it->is_array() ||
+      element_it->empty()) {
+    IVS_ERROR("Can not find elements in json configure");
+    abort();
+  }
+  for (auto elem : element_it->items()) {
+    elements_id.insert({elem.key(), elem.value()});
+  }
 
-
-
-
-  
+  std::unordered_map<std::string, std::string> connections;
+  auto connect_it = config.find(JSON_CONFIG_CONNECTION_FILED);
+  if (connect_it == config.end() || !connect_it->is_array() ||
+      connect_it->empty()) {
+    IVS_ERROR("Can not find elements in json configure");
+    abort();
+  }
+  for (auto elem : connect_it->items()) {
+    connections.insert({elem.key(), elem.value()});
+  }
 
   istream.close();
 
-#if DOWNLOAD_IMAGE
-  const char* dir_path = "./results";
-  struct stat info;
-  if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
-    std::cout << "Directory already exists." << std::endl;
-  } else {
-    if (mkdir(dir_path, 0777) == 0) {
-      std::cout << "Directory created successfully." << std::endl;
+  if (download_image) {
+    const char* dir_path = "./results";
+    struct stat info;
+    if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
+      std::cout << "Directory already exists." << std::endl;
     } else {
-      std::cerr << "Error creating directory." << std::endl;
+      if (mkdir(dir_path, 0777) == 0) {
+        std::cout << "Directory created successfully." << std::endl;
+      } else {
+        std::cerr << "Error creating directory." << std::endl;
+      }
     }
   }
-#endif
 
-  std::string coco_file = "../coco.names";
-  std::vector<std::string> coco_classnames;
-  std::ifstream ifs(coco_file);
+  std::vector<std::string> classnames;
+  std::ifstream ifs(class_name_file);
   if (ifs.is_open()) {
     std::string line;
     while (std::getline(ifs, line)) {
       line = line.substr(0, line.length() - 1);
-      coco_classnames.push_back(line);
+      classnames.push_back(line);
     }
   }
 
@@ -165,36 +189,51 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     nlohmann::json ElementsConfigure;
 
     nlohmann::json decoder, pre, action, post;
+    std::unordered_map<std::string, nlohmann::json> json_map;
 
-    istream.open("../usecase/json/yolov5/Decoder.json");
-    assert(istream.is_open());
-    istream >> decoder;
-    decoder.at("id") = DECODE_ID;
-    ElementsConfigure.push_back(decoder);
-    istream.close();
-    std::cout << decoder << std::endl;
+    for (auto& [k, v] : elements_id) {
+      nlohmann::json elem;
+      istream.open(k);
+      assert(istream.is_open());
+      istream >> elem;
+      elem.at("id") = v;
+      ElementsConfigure.push_back(elem);
+      json_map.insert(k, elem);
+      istream.close();
+    }
 
-    istream.open("../usecase/json/yolov5/Pre.json");
-    assert(istream.is_open());
-    istream >> pre;
-    pre.at("id") = PRE_ID;
-    ElementsConfigure.push_back(pre);
-    istream.close();
-    std::cout << pre << std::endl;
+    for (auto& [k, v] : connections) {
+    }
 
-    istream.open("../usecase/json/yolov5/Action.json");
-    assert(istream.is_open());
-    istream >> action;
-    action.at("id") = YOLO_ID;
-    ElementsConfigure.push_back(action);
-    istream.close();
+    // istream.open("../usecase/json/yolov5/Decoder.json");
+    // assert(istream.is_open());
+    // istream >> decoder;
+    // decoder.at("id") = DECODE_ID;
+    // ElementsConfigure.push_back(decoder);
+    // istream.close();
+    // std::cout << decoder << std::endl;
 
-    istream.open("../usecase/json/yolov5/Post.json");
-    assert(istream.is_open());
-    istream >> post;
-    post.at("id") = POST_ID;
-    ElementsConfigure.push_back(post);
-    istream.close();
+    // istream.open("../usecase/json/yolov5/Pre.json");
+    // assert(istream.is_open());
+    // istream >> pre;
+    // pre.at("id") = PRE_ID;
+    // ElementsConfigure.push_back(pre);
+    // istream.close();
+    // std::cout << pre << std::endl;
+
+    // istream.open("../usecase/json/yolov5/Action.json");
+    // assert(istream.is_open());
+    // istream >> action;
+    // action.at("id") = YOLO_ID;
+    // ElementsConfigure.push_back(action);
+    // istream.close();
+
+    // istream.open("../usecase/json/yolov5/Post.json");
+    // assert(istream.is_open());
+    // istream >> post;
+    // post.at("id") = POST_ID;
+    // ElementsConfigure.push_back(post);
+    // istream.close();
 
     graphConfigure["elements"] = ElementsConfigure;
     graphConfigure["connections"].push_back(
@@ -244,7 +283,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         for (auto subObj : objectMetadata->mSubObjectMetadatas) {
           // draw image
           draw_bmcv(objectMetadata->mFrame->mHandle,
-                    subObj->mDetectedObjectMetadata->mClassify, coco_classnames,
+                    subObj->mDetectedObjectMetadata->mClassify, classnames,
                     subObj->mDetectedObjectMetadata->mScores[0],
                     subObj->mDetectedObjectMetadata->mBox.mX,
                     subObj->mDetectedObjectMetadata->mBox.mY,

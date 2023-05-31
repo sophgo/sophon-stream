@@ -14,14 +14,8 @@ namespace framework {
 
 #define DEFAULT_DATA_PIPE_CAPACITY 20
 
-/**
- * Constructor of class DataPipe.
- */
 DataPipe::DataPipe() : mCapacity(DEFAULT_DATA_PIPE_CAPACITY) {}
 
-/**
- * Destructor of class DataPipe.
- */
 DataPipe::~DataPipe() {}
 
 common::ErrorCode DataPipe::pushData(std::shared_ptr<void> data,
@@ -46,10 +40,6 @@ common::ErrorCode DataPipe::pushData(std::shared_ptr<void> data,
   }
 }
 
-/**
- * Get next data of this DataPipe.
- * @return Return data.
- */
 std::shared_ptr<void> DataPipe::getData() const {
   std::lock_guard<std::mutex> lock(mDataQueueMutex);
   if (mDataQueue.empty()) {
@@ -59,9 +49,6 @@ std::shared_ptr<void> DataPipe::getData() const {
   }
 }
 
-/**
- * Pop next data of this DataPipe.
- */
 void DataPipe::popData() {
   {
     std::lock_guard<std::mutex> lock(mDataQueueMutex);
@@ -73,6 +60,19 @@ void DataPipe::popData() {
 
   mDataQueueCond.notify_one();
 }
+
+void DataPipe::setPushHandler(PushHandler pushHandler) {
+  mPushHandler = pushHandler;
+}
+
+void DataPipe::setCapacity(std::size_t capacity) { mCapacity = capacity; }
+
+std::size_t DataPipe::getSize() const {
+  std::lock_guard<std::mutex> lock(mDataQueueMutex);
+  return mDataQueue.size();
+}
+
+std::size_t DataPipe::getCapacity() const { return mCapacity; }
 
 }  // namespace framework
 }  // namespace sophon_stream

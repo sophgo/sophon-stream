@@ -22,44 +22,21 @@
 namespace sophon_stream {
 namespace framework {
 
-/**
- * Element工厂
- */
 class ElementFactory {
  public:
   using ElementMaker = std::function<std::shared_ptr<framework::Element>()>;
 
-  /**
-   * 添加Element产生器
-   * @param[in] elementName:
-   * @param[in] elementMaker:
-   */
   common::ErrorCode addElementMaker(const std::string& elementName,
                                     ElementMaker elementMaker);
-  /**
-   * 移除Element产生器
-   * @param[in] elementName:
-   * @param[in] elementMaker:
-   */
-  // void removeElementMaker(const std::string& elementName);
 
-  /**
-   * 获取产生器
-   * @param[in] elementName:
-   */
   std::shared_ptr<framework::Element> make(const std::string& elementName);
 
   friend class common::Singleton<ElementFactory>;
 
-  /**
-   * Constructor of class ElementFactory.
-   */
   ElementFactory();
 
   std::map<std::string, ElementMaker> mElementMakerMap;
-  /**
-   * Destructor of class ElementFactory.
-   */
+
   ~ElementFactory();
 
   ElementFactory(const ElementFactory&) = delete;

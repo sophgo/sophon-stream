@@ -8,23 +8,10 @@ namespace framework {
 
 static constexpr const char* JSON_GRAPH_ID_FIELD = "graph_id";
 
-/**
- * Constructor of class Engine, only be call by common::Singleton<Engine>.
- */
 Engine::Engine() {}
 
-/**
- * Destructor of class Engine, only be call by common::Singleton<Engine>.
- */
 Engine::~Engine() {}
 
-/**
- * Start all threads of Elements in a graph,
- * @param[in] graphId : Id of ElementManager.
- * @return If thread status is not ThreadStatus::STOP,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Engine::start(int graphId) {
   IVS_INFO("Engine start graph thread start, graph id: {0:d}", graphId);
   std::lock_guard<std::mutex> lk(mElementManagerMapLock);
@@ -44,13 +31,6 @@ common::ErrorCode Engine::start(int graphId) {
   return graph->start();
 }
 
-/**
- * Stop all threads of Elements in a graph.
- * @param[in] graphId : Id of ElementManager.
- * @return If thread status is ThreadStatus::STOP,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Engine::stop(int graphId) {
   IVS_INFO("Engine stop graph thread start, graph id: {0:d}", graphId);
 
@@ -71,13 +51,6 @@ common::ErrorCode Engine::stop(int graphId) {
   return graph->stop();
 }
 
-/**
- * Pause all threads of Elements in a graph.
- * @param[in] graphId : Id of ElementManager.
- * @return If thread status is not ThreadStatus::RUN,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Engine::pause(int graphId) {
   IVS_INFO("Engine pause graph thread start, graph id: {0:d}", graphId);
 
@@ -98,13 +71,6 @@ common::ErrorCode Engine::pause(int graphId) {
   return graph->pause();
 }
 
-/**
- * Resume all threads of Elements in a graph.
- * @param[in] graphId : Id of ElementManager.
- * @return If thread status is not ThreadStatus::PAUSE,
- * it will return common::ErrorCode::THREAD_STATUS_ERROR,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Engine::resume(int graphId) {
   IVS_INFO("Engine resume graph thread start, graph id: {0:d}", graphId);
 
@@ -125,13 +91,6 @@ common::ErrorCode Engine::resume(int graphId) {
   return graph->resume();
 }
 
-/**
- * Add a graph.
- * @param[in] json : Configure to init ElementManager.
- * @return If ElementManager init fail or id of ElementManager has been exist,
- * it will return error,
- * otherwise return common::ErrorCode::SUCESS.
- */
 common::ErrorCode Engine::addGraph(const std::string& json) {
   IVS_INFO("Add graph start, json: {0}", json);
 
@@ -162,10 +121,6 @@ common::ErrorCode Engine::addGraph(const std::string& json) {
   return errorCode;
 }
 
-/**
- * Remove a graph.
- * @param[in] graphId : Id of ElementManager.
- */
 void Engine::removeGraph(int graphId) {
   std::lock_guard<std::mutex> lk(mElementManagerMapLock);
   IVS_INFO("Remove graph start, graph id: {0:d}", graphId);
@@ -173,10 +128,6 @@ void Engine::removeGraph(int graphId) {
   IVS_INFO("Remove graph finish, graph id: {0:d}", graphId);
 }
 
-/**
- * Judge a graph exists or not.
- * @param[in] graphId : Id of ElementManager.
- */
 bool Engine::graphExist(int graphId) {
   std::lock_guard<std::mutex> lk(mElementManagerMapLock);
 
@@ -186,51 +137,70 @@ bool Engine::graphExist(int graphId) {
   return false;
 }
 
+void Engine::setStopHandler(int graphId, int elementId, int outputPort,
+                            DataHandler dataHandler) {
+  IVS_INFO(
+      "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
+      "{2:d}",
+      graphId, elementId, outputPort);
 
- void Engine::setStopHandler(int graphId, int elementId, int outputPort,
-                      DataHandler dataHandler) {
-    IVS_INFO(
-        "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
-        "{2:d}",
-        graphId, elementId, outputPort);
-
-    auto graphIt = mElementManagerMap.find(graphId);
-    if (mElementManagerMap.end() == graphIt) {
-      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
-      return;
-    }
-
-    auto graph = graphIt->second;
-    if (!graph) {
-      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
-      return;
-    }
-
-    graph->setStopHandler(elementId, outputPort, dataHandler);
+  auto graphIt = mElementManagerMap.find(graphId);
+  if (mElementManagerMap.end() == graphIt) {
+    IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+    return;
   }
 
- common::ErrorCode Engine::pushInputData(
-      int graphId, int elementId, int inputPort, std::shared_ptr<void> data,
-      const std::chrono::milliseconds& timeout) {
-    IVS_DEBUG(
-        "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
-        "data: {3:p}",
-        graphId, elementId, inputPort, data.get());
-
-    auto graphIt = mElementManagerMap.find(graphId);
-    if (mElementManagerMap.end() == graphIt) {
-      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
-      return common::ErrorCode::NO_SUCH_GRAPH_ID;
-    }
-
-    auto graph = graphIt->second;
-    if (!graph) {
-      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
-      return common::ErrorCode::UNKNOWN;
-    }
-
-    return graph->pushInputData(elementId, inputPort, data, timeout);
+  auto graph = graphIt->second;
+  if (!graph) {
+    IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+    return;
   }
+
+  graph->setStopHandler(elementId, outputPort, dataHandler);
+}
+
+common::ErrorCode Engine::pushInputData(
+    int graphId, int elementId, int inputPort, std::shared_ptr<void> data,
+    const std::chrono::milliseconds& timeout) {
+  IVS_DEBUG(
+      "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
+      "data: {3:p}",
+      graphId, elementId, inputPort, data.get());
+
+  auto graphIt = mElementManagerMap.find(graphId);
+  if (mElementManagerMap.end() == graphIt) {
+    IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+    return common::ErrorCode::NO_SUCH_GRAPH_ID;
+  }
+
+  auto graph = graphIt->second;
+  if (!graph) {
+    IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+    return common::ErrorCode::UNKNOWN;
+  }
+
+  return graph->pushInputData(elementId, inputPort, data, timeout);
+}
+
+std::pair<std::string, int> Engine::getSideAndDeviceId(int graphId,
+                                                       int elementId) {
+  IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}",
+           graphId, elementId);
+
+  auto graphIt = mElementManagerMap.find(graphId);
+  if (mElementManagerMap.end() == graphIt) {
+    IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+    return std::make_pair("", -1);
+  }
+
+  auto graph = graphIt->second;
+  if (!graph) {
+    IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+    return std::make_pair("", -1);
+  }
+
+  return graph->getSideAndDeviceId(elementId);
+}
 
 }  // namespace framework
 }  // namespace sophon_stream
