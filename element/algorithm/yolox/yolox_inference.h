@@ -29,7 +29,7 @@ class YoloxInference {
    * init device and engine
    * @param[in] context: model path,inputs and outputs name...
    */
-  common::ErrorCode init(std::shared_ptr<YoloxContext> context);
+  void init(std::shared_ptr<YoloxContext> context);
 
   /**
    * network predict output
@@ -37,8 +37,6 @@ class YoloxInference {
    */
   common::ErrorCode predict(std::shared_ptr<YoloxContext> context,
                             common::ObjectMetadatas& objectMetadatas);
-
-  void uninit();
 };
 
 }  // namespace yolox

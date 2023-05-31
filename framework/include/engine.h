@@ -97,10 +97,9 @@ class Engine {
    * @return If graph id or element id is not exist or timeout, it will return
    * error, otherwise return common::ErrorCode::SUCESS.
    */
-  template <class Rep, class Period>
   common::ErrorCode sendData(
       int graphId, int elementId, int inputPort, std::shared_ptr<void> data,
-      const std::chrono::duration<Rep, Period>& timeout) {
+      const std::chrono::milliseconds& timeout) {
     IVS_DEBUG(
         "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
         "data: {3:p}",
@@ -121,34 +120,8 @@ class Engine {
     return graph->sendData(elementId, inputPort, data, timeout);
   }
 
-  /**
-   * Set callback to a element in a graph with a output port for receive data.
-   * @param[in] graphId : Id of ElementManager which will receive data.
-   * @param[in] elementId : Id of Element which will receive data.
-   * @param[in] outputPort : Output port of Element which will receive data.
-   * @param[in] dataHandler : The callback that will be call with received data.
-   */
-  void setDataHandler(int graphId, int elementId, int outputPort,
-                      DataHandler dataHandler) {
-    IVS_INFO(
-        "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
-        "{2:d}",
-        graphId, elementId, outputPort);
-
-    auto graphIt = mElementManagerMap.find(graphId);
-    if (mElementManagerMap.end() == graphIt) {
-      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
-      return;
-    }
-
-    auto graph = graphIt->second;
-    if (!graph) {
-      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
-      return;
-    }
-
-    graph->setDataHandler(elementId, outputPort, dataHandler);
-  }
+  void setStopHandler(int graphId, int elementId, int outputPort,
+                      DataHandler dataHandler);
 
   std::pair<std::string, int> getSideAndDeviceId(int graphId, int elementId) {
     IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}",

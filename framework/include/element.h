@@ -22,9 +22,9 @@
 #include <thread>
 #include <vector>
 
-#include "datapipe.h"
 #include "common/ErrorCode.h"
 #include "common/logger.h"
+#include "datapipe.h"
 
 namespace sophon_stream {
 namespace framework {
@@ -116,42 +116,11 @@ class Element {
    */
   common::ErrorCode resume();
 
-  /**
-   * Push data to input port of this Element.
-   * @param[in] inputPort : Input port of Element which will push data to.
-   * @param[in] data : The data that will be push.
-   * @param[in] timeout : The duration that will be wait for.
-   * @return If timeout, it will return error,
-   * otherwise return common::ErrorCode::SUCESS.
-   */
-  template <class Rep, class Period>
-  common::ErrorCode pushData(
-      int inputPort, std::shared_ptr<void> data,
-      const std::chrono::duration<Rep, Period>& timeout) {
-    IVS_DEBUG("push data, element id: {0:d}, input port: {1:d}, data: {2:p}",
-              mId, inputPort, data.get());
+  common::ErrorCode pushData(int inputPort, std::shared_ptr<void> data,
+                             const std::chrono::milliseconds& timeout);
 
-    auto& inputDataPipe = mInputDataPipeMap[inputPort];
-    if (!inputDataPipe) {
-      inputDataPipe = std::make_shared<framework::DataPipe>();
-      inputDataPipe->setPushHandler(std::bind(&Element::onInputNotify, this));
-    }
-
-    return inputDataPipe->pushData(data, timeout);
-  }
-
-  /**
-   * Set callback to output port of this Element.
-   * @param[in] outputPort : Output port of Element which will receive data.
-   * @param[in] dataHandler : The callback that will be call with received data.
-   */
-  void setDataHandler(int outputPort, DataHandler dataHandler) {
-    IVS_INFO("Set data handler, element id: {0:d}, output port: {1:d}", mId,
-             outputPort);
-
-    std::lock_guard<std::mutex> lk(mOutputHandlerMapMtx);
-    mOutputHandlerMap[outputPort] = dataHandler;
-  }
+  void setStopHandler(int outputPort, DataHandler dataHandler);
+  void setLastElementFlag();
 
   /**
    * Get id of Element.
@@ -243,86 +212,12 @@ class Element {
     return inputDataPipe->getSize();
   }
 
-  /**
-   * Get next data of specified input port, call by doWork() in derived class.
-   * @param inputPort : Input port.
-   * @return Return data.
-   */
-  std::shared_ptr<void> getData(int inputPort) const {
-    auto dataPipeIt = mInputDataPipeMap.find(inputPort);
-    if (mInputDataPipeMap.end() == dataPipeIt) {
-      return std::shared_ptr<void>();
-    }
+  std::shared_ptr<void> getData(int inputPort) const;
 
-    auto inputDataPipe = dataPipeIt->second;
-    if (!inputDataPipe) {
-      return std::shared_ptr<void>();
-    }
+  void popData(int inputPort);
 
-    return inputDataPipe->getData();
-  }
-
-  /**
-   * Pop next data of specified input port, call by doWork() in derived class.
-   * @param inputPort : Input port.
-   */
-  void popData(int inputPort) {
-    IVS_DEBUG("pop data, element id: {0:d}, input port: {1:d}", mId, inputPort);
-
-    auto dataPipeIt = mInputDataPipeMap.find(inputPort);
-    if (mInputDataPipeMap.end() == dataPipeIt) {
-      return;
-    }
-
-    auto inputDataPipe = dataPipeIt->second;
-    if (!inputDataPipe) {
-      return;
-    }
-
-    inputDataPipe->popData();
-  }
-
-  /**
-   * Send data to output port of this Element, call by doWork() in derived
-   * class.
-   * @param[in] outputPort : Output port of Element which will send data to.
-   * @param[in] data : The data that will be send.
-   * @param[in] timeout : The duration that will be wait for.
-   * @return If can not find DataHandler or DataPipe on this output port or
-   * timeout, it will return error, otherwise return common::ErrorCode::SUCESS.
-   */
-  template <class Rep, class Period>
-  common::ErrorCode sendData(
-      int outputPort, std::shared_ptr<void> data,
-      const std::chrono::duration<Rep, Period>& timeout) {
-    IVS_DEBUG("send data, element id: {0:d}, output port: {1:d}, data: {2:p}",
-              mId, outputPort, data.get());
-    {
-      std::lock_guard<std::mutex> lk(mOutputHandlerMapMtx);
-      auto handlerIt = mOutputHandlerMap.find(outputPort);
-      if (mOutputHandlerMap.end() != handlerIt) {
-        auto dataHandler = handlerIt->second;
-        if (dataHandler) {
-          dataHandler(data);
-          return common::ErrorCode::SUCCESS;
-        }
-      }
-    }
-
-    auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
-    if (mOutputDataPipeMap.end() != dataPipeIt) {
-      auto outputDataPipe = dataPipeIt->second.lock();
-      if (outputDataPipe) {
-        return outputDataPipe->pushData(data, timeout);
-      }
-    }
-
-    IVS_ERROR(
-        "Can not find data handler or data pipe on output port, output port: "
-        "{0:d}--element id:{1}",
-        outputPort, mId);
-    return common::ErrorCode::NO_SUCH_WORKER_PORT;
-  }
+  common::ErrorCode sendData(int outputPort, std::shared_ptr<void> data,
+                             const std::chrono::milliseconds& timeout);
 
   common::ErrorCode getOutputDatapipeCapacity(int outputPort, int& capacity) {
     auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
@@ -348,6 +243,9 @@ class Element {
     return common::ErrorCode::NO_SUCH_WORKER_PORT;
   }
 
+  std::vector<int> getInputPorts();
+  std::vector<int> getOutputPorts();
+  
  private:
   /**
    * When push data to any input DataPipe of this Element, the DataPipe will
@@ -396,6 +294,12 @@ class Element {
   bool mRepeatedTimeout;
 
   /**
+   * Pending intput notify count, onInputNotify() increase the value and success
+   * doWork() decrease the value.
+   */
+  std::atomic<int> mNotifyCount;
+
+  /**
    * Mutex used by condition.
    */
   std::mutex mMutex;
@@ -406,12 +310,6 @@ class Element {
   std::condition_variable mCond;
 
   /**
-   * Pending intput notify count, onInputNotify() increase the value and success
-   * doWork() decrease the value.
-   */
-  std::atomic<int> mNotifyCount;
-
-  /**
    * Input DataPipe map of Element, key is input port, value is std::shared_ptr
    * of framework::DataPipe.
    */
@@ -419,21 +317,28 @@ class Element {
       mInputDataPipeMap;
 
   /**
-   * Output DataHandler map of Element, key is output port, value is
-   * Element::DataHandler.
-   */
-  std::map<int /* outputPort */, DataHandler> mOutputHandlerMap;
-  std::mutex mOutputHandlerMapMtx;
-
-  /**
    * Output DataPipe map of Element, key is output port, value is
    * std::shared_ptr of framework::DataPipe.
    */
   std::map<int /* outputPort */, std::weak_ptr<framework::DataPipe> >
       mOutputDataPipeMap;
+
+  /**
+   * Output DataHandler map of Element, key is output port, value is
+   * Element::DataHandler.
+   */
+  std::map<int /* outputPort */, DataHandler> mStopHandlerMap;
+
+  std::vector<int> mInputPorts;
+  std::vector<int> mOutputPorts;
+  void addInputPort(int port);
+  void addOutputPort(int port);
+
+  bool mLastElementFlag = false;
+
 };
 
 }  // namespace framework
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_FRAMEWORK_ELEMENT_H_
+#endif  // SOPHON_STREAM_FRAMEWORK_ELEMENT_H_

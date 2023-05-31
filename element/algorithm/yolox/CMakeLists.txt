@@ -38,7 +38,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../share/3rdparty/nlohmann-json/include)
 
     add_library(yolox SHARED
-        yolox_context.cpp
         yolox_pre_process.cpp
         yolox_post_process.cpp
         yolox_inference.cpp

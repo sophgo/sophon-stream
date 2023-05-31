@@ -186,5 +186,28 @@ bool Engine::graphExist(int graphId) {
   return false;
 }
 
+
+ void Engine::setStopHandler(int graphId, int elementId, int outputPort,
+                      DataHandler dataHandler) {
+    IVS_INFO(
+        "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
+        "{2:d}",
+        graphId, elementId, outputPort);
+
+    auto graphIt = mElementManagerMap.find(graphId);
+    if (mElementManagerMap.end() == graphIt) {
+      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+      return;
+    }
+
+    auto graph = graphIt->second;
+    if (!graph) {
+      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+      return;
+    }
+
+    graph->setStopHandler(elementId, outputPort, dataHandler);
+  }
+
 }  // namespace framework
 }  // namespace sophon_stream

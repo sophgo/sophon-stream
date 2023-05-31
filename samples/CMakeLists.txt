@@ -42,7 +42,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories("../framework/include")
     link_directories("../framework/build")
     link_libraries(ivslogger)
-    link_libraries(framework)
+    # link_libraries(framework)
 
     include_directories("../element/multimedia/decode")
 
@@ -53,14 +53,14 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     # usecase tests
     file(GLOB TEST_SOURCES 
       usecase/usecase_yolov5.cc
-      usecase/usecase_yolox.cc
-      usecase/usecase_unet.cc
-      usecase/usecase_yolox_tracker.cc
+      # usecase/usecase_yolox.cc
+      # usecase/usecase_unet.cc
+      # usecase/usecase_yolox_tracker.cc
     )
     foreach(test_src ${TEST_SOURCES})
         get_filename_component(test_name ${test_src} NAME_WE)
         add_executable(${test_name} ${test_src})
-        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil)
+        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -lframework)
     endforeach(test_src)
 
 

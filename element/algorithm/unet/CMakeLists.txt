@@ -38,11 +38,10 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../share/3rdparty/nlohmann-json/include)
 
     add_library(unet SHARED
-        UnetPre.cc
-        UnetPost.cc
-        UnetInference.cc
-        UnetSophgoContext.cc
-        UnetAlgorithm.cc
+        unet_pre_process.cc
+        unet_post_process.cc
+        unet_inference.cc
+        unet.cc
     )
     target_link_libraries(unet ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 
@@ -62,11 +61,10 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
 
     add_library(unet SHARED
-        UnetPre.cc
-        UnetPost.cc
-        UnetInference.cc
-        UnetSophgoContext.cc
-        UnetAlgorithm.cc
+        unet_pre_process.cc
+        unet_post_process.cc
+        unet_inference.cc
+        unet.cc
     )
     target_link_libraries(unet ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 endif()

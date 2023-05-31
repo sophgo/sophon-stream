@@ -1,6 +1,5 @@
 {
     "configure":{
-        "batch":1,
         "algorithm_name":"YoloX",
         "input_node_name":["000_net"],
         "input_shape":[[3,384,640]],

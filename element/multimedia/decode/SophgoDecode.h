@@ -9,6 +9,9 @@
 #include "bmruntime_interface.h"
 #include "common/ObjectMetadata.h"
 
+#include <unordered_map>
+
+
 namespace sophon_stream {
 namespace element {
 namespace decode {
@@ -33,6 +36,8 @@ class SophgoDecode {
   void uninit();
 
  private:
+
+  std::unordered_map<int, int> mChannel_frameId;
   std::string mStrError;
   bm_handle_t m_handle;
   VideoDecFFM decoder;

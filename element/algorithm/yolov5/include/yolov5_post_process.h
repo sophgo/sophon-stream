@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_ELEMENT_YOLOV5_POST_H_
-#define SOPHON_STREAM_ELEMENT_YOLOV5_POST_H_
+#ifndef SOPHON_STREAM_ELEMENT_YOLOV5_POST_PROCESS_H_
+#define SOPHON_STREAM_ELEMENT_YOLOV5_POST_PROCESS_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "Yolov5SophgoContext.h"
 #include "common/ErrorCode.h"
 #include "common/ObjectMetadata.h"
+#include "yolov5_context.h"
 
 namespace sophon_stream {
 namespace element {
@@ -33,26 +33,28 @@ using YoloV5BoxVec = std::vector<YoloV5Box>;
 /**
  * yolov5后处理
  */
-class Yolov5Post {
+class Yolov5PostProcess {
  public:
-  void init(Yolov5SophgoContext& context);
+  void init(std::shared_ptr<Yolov5Context> context);
 
-  void postProcess(Yolov5SophgoContext& context,
+  void postProcess(std::shared_ptr<Yolov5Context> context,
                    common::ObjectMetadatas& objectMetadatas);
-  void initTpuKernel(Yolov5SophgoContext& context);
-  void setTpuKernelMem(Yolov5SophgoContext& context,
+  
+  void initTpuKernel(std::shared_ptr<Yolov5Context> context);
+
+  void setTpuKernelMem(std::shared_ptr<Yolov5Context> context,
                        common::ObjectMetadatas& objectMetadatas);
 
  private:
   float sigmoid(float x);
   int argmax(float* data, int num);
-
- private:
   void NMS(YoloV5BoxVec& dets, float nmsConfidence);
+  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
+                                                int dst_h, bool* pIsAligWidth);
 };
 
 }  // namespace yolov5
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_ELEMENT_YOLOV5_POST_H_
+#endif  // SOPHON_STREAM_ELEMENT_YOLOV5_POST_PROCESS_H_

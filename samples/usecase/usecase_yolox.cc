@@ -92,7 +92,7 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 */
 
 #define MAX_GRAPH 1
-#define DOWNLOAD_IMAGE 1
+#define DOWNLOAD_IMAGE 0
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 #if DOWNLOAD_IMAGE
   const char* dir_path = "./results";
@@ -191,7 +191,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
     engine.addGraph(graphConfigure.dump());
 
-    engine.setDataHandler(i + 1, POST_ID, 0, [&](std::shared_ptr<void> data) {
+    engine.StopHandler(i + 1, POST_ID, 0, [&](std::shared_ptr<void> data) {
       IVS_DEBUG("data output 111111111111111");
       auto objectMetadata =
           std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
@@ -249,7 +249,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
     nlohmann::json decodeConfigure;
     decodeConfigure["channel_id"] = 1;
-    decodeConfigure["url"] = "../test_car_person_1080P.avi";
+    // decodeConfigure["url"] = "../test_car_person_1080P.avi";
+    decodeConfigure["url"] = "../carvana_video.mp4";
     // decodeConfigure["url"] = "../test/13.mp4";
     // decodeConfigure["url"] = "../test/18.mp4";
     decodeConfigure["resize_rate"] = 2.0f;

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_ELEMENT_YOLOV5_SOPHGOCONTEXT_H_
-#define SOPHON_STREAM_ELEMENT_YOLOV5_SOPHGOCONTEXT_H_
+#ifndef SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_
+#define SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_
 
 #include <memory>
 #include <string>
@@ -17,16 +17,16 @@
 #include "common/ErrorCode.h"
 #include "common/bm_wrapper.hpp"
 #include "common/bmnn_utils.h"
-#include "common/ff_decode.hpp"
 
-#define USE_ASPECT_RATIO
+#include <nlohmann/json.hpp>
+
 
 namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
-float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
-                              bool* pIsAligWidth);
+#define USE_ASPECT_RATIO 1
+#define FFALIGN(x, a) (((x)+(a)-1)&~((a)-1))
 
 #define MAX_YOLO_INPUT_NUM 3
 #define MAX_YOLO_ANCHOR_NUM 3
@@ -49,39 +49,10 @@ typedef struct {
 
 #define MAX_BATCH 16
 
-struct nodeDims {
-  int c = 0;
-  int h = 0;
-  int w = 0;
-};
+struct Yolov5Context {
 
-struct Yolov5SophgoContext {
-  std::string algorithmName;                // 算法名字
   int deviceId;                             // 设备ID
-  int maxBatchSize;                         // 最大batch
-  int numBatch;                             // 当前batch
-  int numClass;                             // 类别数目
   std::vector<std::string> modelPath;       // 模型路径
-  std::vector<std::string> inputNodeName;   // 输入节点名字
-  std::vector<nodeDims> inputShape;         // 输入shape
-  std::vector<std::string> outputNodeName;  // 输出节点名字
-  std::vector<nodeDims> outputShape;        // 输出shape
-  std::vector<int> numInputs;               // 输入数量
-  std::vector<int> numOutputs;              // 输出数量
-  std::vector<float> threthold;             // 阈值
-  std::vector<std::string> labelNames;      // lablel名字
-  std::shared_ptr<void> data = nullptr;     // 数据
-                                            //
-  std::vector<std::pair<int, std::vector<std::vector<float>>>>
-      boxes;  // 输出结果
-  /**
-   * context初始化
-   * @param[in] json: 初始化的json字符串
-   * @return 错误码
-   */
-  common::ErrorCode init(const std::string& json);
-
-  ~Yolov5SophgoContext();
 
   std::shared_ptr<BMNNContext> m_bmContext;
   std::shared_ptr<BMNNNetwork> m_bmNetwork;
@@ -99,9 +70,10 @@ struct Yolov5SophgoContext {
   float* output_tensor[MAX_BATCH];
   int32_t detect_num[MAX_BATCH];
 
-  std::vector<float> m_thresh;  // json --> Context --> SophgoContext
+  float thresh_conf;  // 置信度阈值
+  float thresh_nms;   // nms iou阈值
 
-  int m_class_num = 80;  // default is coco names
+  int class_num = 80;  // default is coco names
   int m_frame_h, m_frame_w;
   int m_net_h, m_net_w, m_net_channel;
   int max_batch;
@@ -109,10 +81,9 @@ struct Yolov5SophgoContext {
   int output_num;
   int min_dim;
   bmcv_convert_to_attr converto_attr;
-  bool mEndOfStream = false;
 };
 }  // namespace yolov5
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_ELEMENT_YOLOV5_SOPHGOCONTEXT_H_
+#endif // SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_

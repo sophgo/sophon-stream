@@ -379,6 +379,8 @@ common::ErrorCode DecoderElement::process(
     }
     objectMetadata->mFrame->mChannelId = channelTask->request.channelId;
     if (lastFrame) objectMetadata->mFrame->mEndOfStream = true;
+    
+    // printf("decode process channel_id: %d and frame_id: %d\n", objectMetadata->mFrame->mChannelId, objectMetadata->mFrame->mFrameId);
 
     IVS_DEBUG("decode element channel id:{0}--endofstream:{1}",
               objectMetadata->mFrame->mChannelId,

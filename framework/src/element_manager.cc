@@ -38,7 +38,6 @@ ElementManager::~ElementManager() {
 constexpr const char* ElementManager::JSON_GRAPH_ID_FIELD;
 
 static constexpr const char* JSON_WORKERS_FIELD = "elements";
-static constexpr const char* JSON_MODULES_FIELD = "modules";
 static constexpr const char* JSON_CONNECTIONS_FIELD = "connections";
 constexpr const char* JSON_MODEL_SHARED_OBJECT_FIELD = "shared_object";
 
@@ -76,14 +75,6 @@ common::ErrorCode ElementManager::init(const std::string& json) {
     auto elementsIt = configure.find(JSON_WORKERS_FIELD);
     if (configure.end() != elementsIt) {
       errorCode = initElements(elementsIt->dump());
-      if (common::ErrorCode::SUCCESS != errorCode) {
-        break;
-      }
-    }
-
-    auto modulesIt = configure.find(JSON_MODULES_FIELD);
-    if (configure.end() != modulesIt) {
-      errorCode = initModules(modulesIt->dump());
       if (common::ErrorCode::SUCCESS != errorCode) {
         break;
       }
@@ -246,41 +237,6 @@ common::ErrorCode ElementManager::resume() {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * Constructor of struct Module.
- */
-ElementManager::Module::Module()
-    : mId(-1), mPreModuleElementId(-1), mPostModuleElementId(-1) {}
-
-/**
- * Get first element id of Module.
- * @return Return first element id of Module.
- */
-int ElementManager::Module::getFirstElementId() const {
-  if (!mPreElementIds.empty()) {
-    return mPreElementIds.front();
-  }
-
-  IVS_ERROR("Module has no pre element, module id: {0:d}", mId);
-  return -1;
-}
-
-/**
- * Get last element id of Module.
- * @return Return last element id of Module.
- */
-int ElementManager::Module::getLastElementId() const {
-  if (!mPostElementIds.empty()) {
-    return mPostElementIds.back();
-  }
-
-  if (!mSubModuleIds.empty()) {
-    return mPostModuleElementId;
-  }
-
-  return mPreElementIds.back();
-}
-
 static constexpr const char* JSON_WORKER_NAME_FIELD = "name";
 
 /**
@@ -303,8 +259,10 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
-
-    for (auto elementConfigure : elementsConfigure) {
+    
+    int numElements = elementsConfigure.size();
+    for (int elementIndex=0; elementIndex<numElements; elementIndex++) {
+      auto& elementConfigure = elementsConfigure[elementIndex];
       std::cout << elementConfigure.dump() << "\n";
       if (!elementConfigure.is_object()) {
         IVS_ERROR(
@@ -355,6 +313,7 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
       }
 
       errorCode = element->init(elementConfigure.dump());
+      if (elementIndex==numElements-1) element->setLastElementFlag();
       if (common::ErrorCode::SUCCESS != errorCode) {
         IVS_ERROR("Init element fail, graph id: {0:d}, name: {1}", mId,
                   nameIt->get<std::string>());
@@ -377,314 +336,6 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
   } while (false);
 
   IVS_INFO("Init elements finish, graph id: {0:d}, json: {1}", mId, json);
-  return errorCode;
-}
-
-static constexpr const char* JSON_MODULE_ID_FIELD = "id";
-static constexpr const char* JSON_MODULE_PRE_WORKER_IDS_FIELD =
-    "pre_element_ids";
-static constexpr const char* JSON_MODULE_MODULE_IDS_FIELD = "module_ids";
-static constexpr const char* JSON_MODULE_POST_WORKER_IDS_FIELD =
-    "post_element_ids";
-
-/**
- * Init Modules with configure in json format.
- * @param[in] json : Configure in json format.
- * @return If parse configure fail, it will return error,
- * otherwise return common::ErrorCode::SUCESS.
- */
-common::ErrorCode ElementManager::initModules(const std::string& json) {
-  IVS_INFO("Init modules start, graph id: {0:d}, json: {1}", mId, json);
-
-  common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
-
-  do {
-    auto modulesConfigure = nlohmann::json::parse(json, nullptr, false);
-    if (!modulesConfigure.is_array()) {
-      IVS_ERROR(
-          "Parse json fail or json is not array, graph id: {0:d}, json: {1}",
-          mId, json);
-      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-      break;
-    }
-
-    /* begin init module map */
-    for (auto moduleConfigure : modulesConfigure) {
-      if (!moduleConfigure.is_object()) {
-        IVS_ERROR(
-            "Module json configure is not object, graph id: {0:d}, json: {1}",
-            mId, moduleConfigure.dump());
-        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-        break;
-      }
-
-      auto moduleIdIt = moduleConfigure.find(JSON_MODULE_ID_FIELD);
-      if (moduleConfigure.end() == moduleIdIt ||
-          !moduleIdIt->is_number_integer()) {
-        IVS_ERROR(
-            "Can not find {0} with integer type in module json configure, "
-            "graph id: {1:d}, json: {2}",
-            JSON_MODULE_ID_FIELD, mId, moduleConfigure.dump());
-        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-        break;
-      }
-
-      auto module = std::make_shared<Module>();
-      module->mId = *moduleIdIt;
-
-      auto preElementIdsIt =
-          moduleConfigure.find(JSON_MODULE_PRE_WORKER_IDS_FIELD);
-      if (moduleConfigure.end() == preElementIdsIt ||
-          !preElementIdsIt->is_array() || preElementIdsIt->empty()) {
-        IVS_ERROR(
-            "Can not find a no empty {0} with array type in module json "
-            "configure, graph id: {1:d}, json: {2}",
-            JSON_MODULE_PRE_WORKER_IDS_FIELD, mId, moduleConfigure.dump());
-        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-        break;
-      }
-
-      module->mPreElementIds.reserve(preElementIdsIt->size());
-      for (auto preElementIdConfigure : *preElementIdsIt) {
-        if (!preElementIdConfigure.is_number_integer()) {
-          IVS_ERROR(
-              "Pre element id json configure is not integer, graph id: {0:d}, "
-              "json: {1}",
-              mId, preElementIdConfigure.dump());
-          errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-          break;
-        }
-
-        module->mPreElementIds.push_back(preElementIdConfigure);
-      }
-      if (common::ErrorCode::SUCCESS != errorCode) {
-        break;
-      }
-
-      auto postElementIdsIt =
-          moduleConfigure.find(JSON_MODULE_POST_WORKER_IDS_FIELD);
-      if (moduleConfigure.end() != postElementIdsIt &&
-          postElementIdsIt->is_array() && !postElementIdsIt->empty()) {
-        module->mPostElementIds.reserve(postElementIdsIt->size());
-        for (auto postElementIdConfigure : *postElementIdsIt) {
-          if (!postElementIdConfigure.is_number_integer()) {
-            IVS_ERROR(
-                "Post element id json configure is not integer, graph id: "
-                "{0:d}, json: {0}",
-                mId, postElementIdConfigure.dump());
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-          }
-
-          module->mPostElementIds.push_back(postElementIdConfigure);
-        }
-        if (common::ErrorCode::SUCCESS != errorCode) {
-          break;
-        }
-      }
-
-      auto moduleIdsIt = moduleConfigure.find(JSON_MODULE_MODULE_IDS_FIELD);
-      if (moduleConfigure.end() != moduleIdsIt && moduleIdsIt->is_array() &&
-          !moduleIdsIt->empty()) {
-        auto& elementFactory =
-            framework::SingletonElementFactory::getInstance();
-
-        /* begin make pre process element */
-        // while (mElementMap.end() !=
-        // mElementMap.find(framework::PreModuleElement::gCurrentElementId)
-        //         && mModuleMap.end() !=
-        //         mModuleMap.find(framework::PreModuleElement::gCurrentElementId)
-        //         && module->mId !=
-        //         framework::PreModuleElement::gCurrentElementId) {
-        //     ++framework::PreModuleElement::gCurrentElementId;
-        // }
-
-        // module->mPreModuleElementId =
-        // framework::PreModuleElement::gCurrentElementId++;
-
-        // auto preModuleElement =
-        // elementFactory.make(framework::PreModuleElement::NAME); if
-        // (!preModuleElement) {
-        //     IVS_ERROR("Make element fail, graph id: {0:d}, name: {1}",
-        //               mId,
-        //               framework::PreModuleElement::NAME);
-        //     errorCode = common::ErrorCode::NO_SUCH_WORKER;
-        //     break;
-        // }
-
-        // nlohmann::json preModuleElementConfigure;
-        // preModuleElementConfigure[framework::Element::JSON_ID_FIELD] =
-        // module->mPreModuleElementId;
-        // preModuleElementConfigure[framework::Element::JSON_CONFIGURE_FIELD]
-        // [framework::PreModuleElement::JSON_MODULE_COUNT_FIELD] =
-        // moduleIdsIt->size();
-
-        // errorCode = preModuleElement->init(preModuleElementConfigure.dump());
-        // if (common::ErrorCode::SUCCESS != errorCode) {
-        //     IVS_ERROR("Init element fail, graph id: {0:d}, name: {1}",
-        //               mId,
-        //               framework::PreModuleElement::NAME);
-        //     break;
-        // }
-
-        // mElementMap[preModuleElement->getId()] = preModuleElement;
-        /* end make pre process element */
-
-        /* begin make post process element */
-        // while (mElementMap.end() !=
-        // mElementMap.find(framework::PostModuleElement::gCurrentElementId)
-        //         && mModuleMap.end() !=
-        //         mModuleMap.find(framework::PostModuleElement::gCurrentElementId)
-        //         && module->mId !=
-        //         framework::PostModuleElement::gCurrentElementId) {
-        //     ++framework::PostModuleElement::gCurrentElementId;
-        // }
-
-        // module->mPostModuleElementId =
-        // framework::PostModuleElement::gCurrentElementId++;
-
-        // auto postModuleElement =
-        // elementFactory.make(framework::PostModuleElement::NAME); if
-        // (!postModuleElement) {
-        //     IVS_ERROR("Make element fail, graph id: {0:d}, name: {1}",
-        //               mId,
-        //               framework::PostModuleElement::NAME);
-        //     errorCode = common::ErrorCode::NO_SUCH_WORKER;
-        //     break;
-        // }
-
-        // nlohmann::json postModuleElementConfigure;
-        // postModuleElementConfigure[framework::Element::JSON_ID_FIELD] =
-        // module->mPostModuleElementId;
-        // postModuleElementConfigure[framework::Element::JSON_CONFIGURE_FIELD]
-        // [framework::PostModuleElement::JSON_MODULE_COUNT_FIELD] =
-        // moduleIdsIt->size();
-
-        // errorCode =
-        // postModuleElement->init(postModuleElementConfigure.dump()); if
-        // (common::ErrorCode::SUCCESS != errorCode) {
-        //     IVS_ERROR("Init element fail, graph id: {0:d}, name: {1}",
-        //               mId,
-        //               framework::PostModuleElement::NAME);
-        //     break;
-        // }
-
-        // mElementMap[postModuleElement->getId()] = postModuleElement;
-        /* end make post process element */
-
-        module->mSubModuleIds.reserve(moduleIdsIt->size());
-        for (auto moduleIdConfigure : *moduleIdsIt) {
-          if (!moduleIdConfigure.is_number_integer()) {
-            IVS_ERROR(
-                "Module id json configure is not integer, graph id: {0:d}, "
-                "json: {1}",
-                mId, moduleIdConfigure.dump());
-            errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-            break;
-          }
-
-          module->mSubModuleIds.push_back(moduleIdConfigure);
-        }
-        if (common::ErrorCode::SUCCESS != errorCode) {
-          break;
-        }
-      }
-
-      mModuleMap[module->mId] = module;
-    }
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      break;
-    }
-    /* end init module map */
-
-    /* begin connect */
-    for (auto pair : mModuleMap) {
-      auto module = pair.second;
-      int lastElementId = -1;
-
-      /* begin connect pre elements */
-      bool firstElement = true;
-      for (auto& preElementId : module->mPreElementIds) {
-        if (firstElement) {
-          firstElement = false;
-        } else {
-          errorCode = connect(lastElementId, 0, preElementId, 0);
-          if (common::ErrorCode::SUCCESS != errorCode) {
-            break;
-          }
-        }
-
-        lastElementId = preElementId;
-      }
-      if (common::ErrorCode::SUCCESS != errorCode) {
-        break;
-      }
-      /* end connect pre elements */
-
-      /* begin connect sub modules */
-      if (!module->mSubModuleIds.empty()) {
-        errorCode = connect(lastElementId, 0, module->mPreModuleElementId, 0);
-        if (common::ErrorCode::SUCCESS != errorCode) {
-          break;
-        }
-
-        errorCode = connect(module->mPreModuleElementId, 0,
-                            module->mPostModuleElementId, 0);
-        if (common::ErrorCode::SUCCESS != errorCode) {
-          break;
-        }
-
-        lastElementId = module->mPostModuleElementId;
-
-        for (int i = 0; i < module->mSubModuleIds.size(); ++i) {
-          int subModuleId = module->mSubModuleIds[i];
-          auto subModuleIt = mModuleMap.find(subModuleId);
-          if (mModuleMap.end() == subModuleIt) {
-            errorCode = common::ErrorCode::UNKNOWN;
-            break;
-          }
-
-          auto subModule = subModuleIt->second;
-          errorCode = connect(module->mPreModuleElementId, i + 1,
-                              subModule->getFirstElementId(), 0);
-          if (common::ErrorCode::SUCCESS != errorCode) {
-            break;
-          }
-
-          errorCode = connect(subModule->getLastElementId(), 0,
-                              module->mPostModuleElementId, 1);
-          if (common::ErrorCode::SUCCESS != errorCode) {
-            break;
-          }
-        }
-        if (common::ErrorCode::SUCCESS != errorCode) {
-          break;
-        }
-      }
-      /* end connect sub modules */
-
-      /* begin connect post elements */
-      for (auto& postElementId : module->mPostElementIds) {
-        errorCode = connect(lastElementId, 0, postElementId, 0);
-        if (common::ErrorCode::SUCCESS != errorCode) {
-          break;
-        }
-
-        lastElementId = postElementId;
-      }
-      if (common::ErrorCode::SUCCESS != errorCode) {
-        break;
-      }
-      /* end connect post elements */
-    }
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      break;
-    }
-    /* end connect */
-
-  } while (false);
-
-  IVS_INFO("Init modules finish, graph id: {0:d}, json: {1}", mId, json);
   return errorCode;
 }
 
@@ -798,22 +449,9 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
                                           int dstPort) {
   auto srcElementIt = mElementMap.find(srcId);
   if (mElementMap.end() == srcElementIt) {
-    auto srcModuleIt = mModuleMap.find(srcId);
-    if (mModuleMap.end() == srcModuleIt) {
-      IVS_ERROR(
-          "Can not find module or element, graph id: {0:d}, module or element "
-          "id: {1:d}",
-          mId, srcId);
-      return common::ErrorCode::NO_SUCH_WORKER_ID;
-    }
-
-    srcId = srcModuleIt->second->getLastElementId();
-    srcElementIt = mElementMap.find(srcId);
-    if (mElementMap.end() == srcElementIt) {
       IVS_ERROR("Can not find element, graphd id: {0:d}, element id: {1:d}",
                 mId, srcId);
       return common::ErrorCode::NO_SUCH_WORKER_ID;
-    }
   }
 
   auto srcElement = srcElementIt->second;
@@ -825,22 +463,11 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
 
   auto dstElementIt = mElementMap.find(dstId);
   if (mElementMap.end() == dstElementIt) {
-    auto dstModuleIt = mModuleMap.find(dstId);
-    if (mModuleMap.end() == dstModuleIt) {
       IVS_ERROR(
           "Can not find module or element, graph id: {0:d}, module or element "
           "id: {1:d}",
           mId, dstId);
       return common::ErrorCode::NO_SUCH_WORKER_ID;
-    }
-
-    dstId = dstModuleIt->second->getFirstElementId();
-    dstElementIt = mElementMap.find(dstId);
-    if (mElementMap.end() == dstElementIt) {
-      IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
-                dstId);
-      return common::ErrorCode::NO_SUCH_WORKER_ID;
-    }
   }
 
   auto dstElement = dstElementIt->second;
@@ -856,6 +483,30 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
 
   return common::ErrorCode::SUCCESS;
 }
+
+
+void ElementManager::setStopHandler(int elementId, int outputPort, DataHandler dataHandler) {
+    IVS_INFO(
+        "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
+        "{2:d}",
+        mId, elementId, outputPort);
+
+    auto elementIt = mElementMap.find(elementId);
+    if (mElementMap.end() == elementIt) {
+      IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
+                elementId);
+      return;
+    }
+
+    auto element = elementIt->second;
+    if (!element) {
+      IVS_ERROR("Element is null, graph id: {0:d}, element id: {1:d}", mId,
+                elementId);
+      return;
+    }
+
+    element->setStopHandler(outputPort, dataHandler);
+  }
 
 }  // namespace framework
 }  // namespace sophon_stream

@@ -46,36 +46,8 @@ class DataPipe {
   DataPipe(DataPipe&&) = default;
   DataPipe& operator=(DataPipe&&) = default;
 
-  /**
-   * Push data to this DataPipe.
-   * @param[in] data : The data that will be push.
-   * @param[in] timeout : The duration that will be wait for.
-   * @return If timeout, it will return error,
-   * otherwise return common::ErrorCode::SUCESS.
-   */
-  template <class Rep, class Period>
-  common::ErrorCode pushData(
-      std::shared_ptr<void> data,
-      const std::chrono::duration<Rep, Period>& timeout) {
-    bool noTimeout = true;
-    std::unique_lock<std::mutex> lock(mDataQueueMutex);
-    noTimeout = mDataQueueCond.wait_for(
-        lock, timeout, [this]() { return mDataQueue.size() < mCapacity; });
-    if (noTimeout) {
-      mDataQueue.push_back(data);
-      if (mDataQueue.size() >= mCapacity) {
-        IVS_WARN("data queue size too high, size is :{0}", mDataQueue.size());
-      }
-      if (mPushHandler) {
-        mPushHandler();
-      }
-
-      return common::ErrorCode::SUCCESS;
-    } else {
-      IVS_WARN("Push data timeout");
-      return common::ErrorCode::TIMEOUT;
-    }
-  }
+  common::ErrorCode pushData(std::shared_ptr<void> data,
+                             const std::chrono::milliseconds& timeout);
 
   /**
    * Get next data of this DataPipe.
@@ -113,4 +85,4 @@ class DataPipe {
 }  // namespace framework
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_FRAMEWORK_DATAPIPE_H_
+#endif  // SOPHON_STREAM_FRAMEWORK_DATAPIPE_H_

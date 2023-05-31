@@ -7,19 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Yolov5Post.h"
+#include "yolov5_post_process.h"
 
-#include "Yolov5SophgoContext.h"
 #include "common/logger.h"
-#include "common/type_trans.hpp"
+#include <cmath>
 
 namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
-void Yolov5Post::init(Yolov5SophgoContext& context) {}
+void Yolov5PostProcess::init(std::shared_ptr<Yolov5Context> context) {}
 
-int Yolov5Post::argmax(float* data, int num) {
+int Yolov5PostProcess::argmax(float* data, int num) {
   float max_value = 0.0;
   int max_index = 0;
   for (int i = 0; i < num; ++i) {
@@ -33,9 +32,24 @@ int Yolov5Post::argmax(float* data, int num) {
   return max_index;
 }
 
-float Yolov5Post::sigmoid(float x) { return 1.0 / (1 + expf(-x)); }
+float Yolov5PostProcess::sigmoid(float x) { return 1.0 / (1 + expf(-x)); }
 
-void Yolov5Post::NMS(YoloV5BoxVec& dets, float nmsConfidence) {
+float Yolov5PostProcess::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
+                                                int dst_h, bool* pIsAligWidth) {
+  float ratio;
+  float r_w = (float)dst_w / src_w;
+  float r_h = (float)dst_h / src_h;
+  if (r_h > r_w) {
+    *pIsAligWidth = true;
+    ratio = r_w;
+  } else {
+    *pIsAligWidth = false;
+    ratio = r_h;
+  }
+  return ratio;
+}
+
+void Yolov5PostProcess::NMS(YoloV5BoxVec& dets, float nmsConfidence) {
   int length = dets.size();
   int index = length - 1;
 
@@ -71,157 +85,138 @@ void Yolov5Post::NMS(YoloV5BoxVec& dets, float nmsConfidence) {
   }
 }
 
-void Yolov5Post::initTpuKernel(Yolov5SophgoContext& context) {
-  Yolov5SophgoContext* pSophgoContext = &context;
-  pSophgoContext->has_init = true;
+void Yolov5PostProcess::initTpuKernel(std::shared_ptr<Yolov5Context> context) {
+  context->has_init = true;
 
   tpu_kernel_module_t tpu_module;
   std::string tpu_kernel_module_path =
       "../../share/3rdparty/tpu_kernel_module/libbm1684x_kernel_module.so";
-  tpu_module = tpu_kernel_load_module_file(
-      pSophgoContext->m_bmContext->handle(), tpu_kernel_module_path.c_str());
-  pSophgoContext->func_id =
-      tpu_kernel_get_function(pSophgoContext->m_bmContext->handle(), tpu_module,
+  tpu_module = tpu_kernel_load_module_file(context->m_bmContext->handle(),
+                                           tpu_kernel_module_path.c_str());
+  context->func_id =
+      tpu_kernel_get_function(context->m_bmContext->handle(), tpu_module,
                               "tpu_kernel_api_yolov5_detect_out");
   std::cout << "Using tpu_kernel yolo postprocession, kernel funtion id: "
-            << pSophgoContext->func_id << std::endl;
-
+            << context->func_id << std::endl;
   return;
 }
 
-void Yolov5Post::setTpuKernelMem(Yolov5SophgoContext& context,
-                                 common::ObjectMetadatas& objectMetadatas) {
-  Yolov5SophgoContext* pSophgoContext = &context;
+void Yolov5PostProcess::setTpuKernelMem(
+    std::shared_ptr<Yolov5Context> context,
+    common::ObjectMetadatas& objectMetadatas) {
   int out_len_max = 25200 * 7;
   int input_num = objectMetadatas[0]->mOutputBMtensors->tensors.size();  // 3
   int batch_num = 1;  // 4b has bug, now only for 1b.
 
-  bm_handle_t handle_ = pSophgoContext->m_bmContext->handle();
+  bm_handle_t handle_ = context->m_bmContext->handle();
   bm_device_mem_t in_dev_mem[input_num];
   for (int i = 0; i < input_num; i++)
     in_dev_mem[i] =
         objectMetadatas[0]->mOutputBMtensors->tensors[i]->device_mem;
 
-  for (int i = 0; i < pSophgoContext->max_batch; i++) {
-    pSophgoContext->output_tensor[i] = new float[out_len_max];
+  for (int i = 0; i < context->max_batch; i++) {
+    context->output_tensor[i] = new float[out_len_max];
     for (int j = 0; j < input_num; j++) {
-      pSophgoContext->api[i].bottom_addr[j] =
+      context->api[i].bottom_addr[j] =
           bm_mem_get_device_addr(in_dev_mem[j]) +
-          i * in_dev_mem[j].size / pSophgoContext->max_batch;
+          i * in_dev_mem[j].size / context->max_batch;
     }
-    auto ret = bm_malloc_device_byte(handle_, &pSophgoContext->out_dev_mem[i],
+    auto ret = bm_malloc_device_byte(handle_, &context->out_dev_mem[i],
                                      out_len_max * sizeof(float));
     assert(BM_SUCCESS == ret);
-    ret = bm_malloc_device_byte(handle_, &pSophgoContext->detect_num_mem[i],
+    ret = bm_malloc_device_byte(handle_, &context->detect_num_mem[i],
                                 batch_num * sizeof(int32_t));
     assert(BM_SUCCESS == ret);
-    pSophgoContext->api[i].top_addr =
-        bm_mem_get_device_addr(pSophgoContext->out_dev_mem[i]);
-    pSophgoContext->api[i].detected_num_addr =
-        bm_mem_get_device_addr(pSophgoContext->detect_num_mem[i]);
+    context->api[i].top_addr = bm_mem_get_device_addr(context->out_dev_mem[i]);
+    context->api[i].detected_num_addr =
+        bm_mem_get_device_addr(context->detect_num_mem[i]);
 
     // config
-    pSophgoContext->api[i].input_num = input_num;
-    pSophgoContext->api[i].batch_num = batch_num;
+    context->api[i].input_num = input_num;
+    context->api[i].batch_num = batch_num;
     for (int j = 0; j < input_num; ++j) {
-      pSophgoContext->api[i].hw_shape[j][0] =
-          pSophgoContext->m_bmNetwork->outputTensor(j)->get_shape()->dims[2];
-      pSophgoContext->api[i].hw_shape[j][1] =
-          pSophgoContext->m_bmNetwork->outputTensor(j)->get_shape()->dims[3];
+      context->api[i].hw_shape[j][0] =
+          context->m_bmNetwork->outputTensor(j)->get_shape()->dims[2];
+      context->api[i].hw_shape[j][1] =
+          context->m_bmNetwork->outputTensor(j)->get_shape()->dims[3];
     }
-    pSophgoContext->api[i].num_classes = pSophgoContext->m_class_num;
+    context->api[i].num_classes = context->class_num;
     const std::vector<std::vector<std::vector<int>>> anchors{
         {{10, 13}, {16, 30}, {33, 23}},
         {{30, 61}, {62, 45}, {59, 119}},
         {{116, 90}, {156, 198}, {373, 326}}};
-    pSophgoContext->api[i].num_boxes = anchors[0].size();
-    pSophgoContext->api[i].keep_top_k = 200;
-    pSophgoContext->api[i].nms_threshold =
-        MAX(0.1, pSophgoContext->m_thresh[1]);
-    pSophgoContext->api[i].confidence_threshold =
-        MAX(0.1, pSophgoContext->m_thresh[0]);
-    auto it = pSophgoContext->api[i].bias;
+    context->api[i].num_boxes = anchors[0].size();
+    context->api[i].keep_top_k = 200;
+    context->api[i].nms_threshold = 0.1 > context->thresh_nms ? 0.1 : context->thresh_nms;
+    context->api[i].confidence_threshold = 0.1 > context->thresh_conf ? 0.1 : context->thresh_conf;
+    auto it = context->api[i].bias;
     for (const auto& subvector2 : anchors) {
       for (const auto& subvector1 : subvector2) {
         it = copy(subvector1.begin(), subvector1.end(), it);
       }
     }
     for (int j = 0; j < input_num; j++)
-      pSophgoContext->api[i].anchor_scale[j] =
-          pSophgoContext->m_net_h /
-          pSophgoContext->m_bmNetwork->outputTensor(j)->get_shape()->dims[2];
-    pSophgoContext->api[i].clip_box = 1;
+      context->api[i].anchor_scale[j] =
+          context->m_net_h /
+          context->m_bmNetwork->outputTensor(j)->get_shape()->dims[2];
+    context->api[i].clip_box = 1;
   }
 }
 
 // tpu-kernel
-void Yolov5Post::postProcess(Yolov5SophgoContext& context,
-                             common::ObjectMetadatas& objectMetadatas) {
+void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
+                                    common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return;
   if (objectMetadatas[0]->mFrame->mEndOfStream) return;
-  Yolov5SophgoContext* pSophgoContext = &context;
-  if (pSophgoContext->use_tpu_kernel) {
-    // if(!pSophgoContext->has_init)
-    // initTpuKernel(context);
-    if (objectMetadatas.size() < pSophgoContext->max_batch) {
-      IVS_DEBUG("objectMetadatas size too small !!!!!!!!!");
-      return;
-    }
+  if (context->use_tpu_kernel) {
     setTpuKernelMem(context, objectMetadatas);
-    for (int i = 0; i < pSophgoContext->max_batch; i++) {
-      // if (pSophgoContext->mEndOfStream)
+    for (int i = 0; i < context->max_batch; i++) {
+      if(objectMetadatas[i]->mFrame->mEndOfStream) 
+        break;
       bm_image image = *objectMetadatas[i]->mFrame->mSpData;
       int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO
       bool isAlignWidth = false;
-      float ratio = get_aspect_scaled_ratio(
-          image.width, image.height, pSophgoContext->m_net_w,
-          pSophgoContext->m_net_h, &isAlignWidth);
+      float ratio =
+          get_aspect_scaled_ratio(image.width, image.height, context->m_net_w,
+                                  context->m_net_h, &isAlignWidth);
       if (isAlignWidth) {
-        ty1 =
-            (int)((pSophgoContext->m_net_h - (int)(image.height * ratio)) / 2);
+        ty1 = (int)((context->m_net_h - (int)(image.height * ratio)) / 2);
       } else {
-        tx1 = (int)((pSophgoContext->m_net_w - (int)(image.width * ratio)) / 2);
+        tx1 = (int)((context->m_net_w - (int)(image.width * ratio)) / 2);
       }
 #endif
 
-      tpu_kernel_launch(pSophgoContext->m_bmContext->handle(),
-                        pSophgoContext->func_id, &pSophgoContext->api[i],
-                        sizeof(pSophgoContext->api[i]));
-      bm_thread_sync(pSophgoContext->m_bmContext->handle());
+      tpu_kernel_launch(context->m_bmContext->handle(), context->func_id,
+                        &context->api[i], sizeof(context->api[i]));
+      bm_thread_sync(context->m_bmContext->handle());
       bm_memcpy_d2s_partial_offset(
-          pSophgoContext->m_bmContext->handle(),
-          (void*)(pSophgoContext->detect_num + i),
-          pSophgoContext->detect_num_mem[i],
-          pSophgoContext->api[i].batch_num * sizeof(int32_t), 0);
+          context->m_bmContext->handle(), (void*)(context->detect_num + i),
+          context->detect_num_mem[i],
+          context->api[i].batch_num * sizeof(int32_t), 0);
       bm_memcpy_d2s_partial_offset(
-          pSophgoContext->m_bmContext->handle(),
-          (void*)pSophgoContext->output_tensor[i],
-          pSophgoContext->out_dev_mem[i],
-          pSophgoContext->detect_num[i] * 7 * sizeof(float), 0);  // 25200*7
+          context->m_bmContext->handle(), (void*)context->output_tensor[i],
+          context->out_dev_mem[i], context->detect_num[i] * 7 * sizeof(float),
+          0);  // 25200*7
 
-      for (int bid = 0; bid < pSophgoContext->detect_num[i]; bid++) {
+      for (int bid = 0; bid < context->detect_num[i]; bid++) {
         YoloV5Box temp_bbox;
-        temp_bbox.class_id = *(pSophgoContext->output_tensor[i] + 7 * bid + 1);
+        temp_bbox.class_id = *(context->output_tensor[i] + 7 * bid + 1);
         if (temp_bbox.class_id == -1) {
           continue;
         }
-        temp_bbox.score = *(pSophgoContext->output_tensor[i] + 7 * bid + 2);
+        temp_bbox.score = *(context->output_tensor[i] + 7 * bid + 2);
         float centerX =
-            (*(pSophgoContext->output_tensor[i] + 7 * bid + 3) + 1 - tx1) /
-                ratio -
-            1;
+            (*(context->output_tensor[i] + 7 * bid + 3) + 1 - tx1) / ratio - 1;
         float centerY =
-            (*(pSophgoContext->output_tensor[i] + 7 * bid + 4) + 1 - ty1) /
-                ratio -
-            1;
+            (*(context->output_tensor[i] + 7 * bid + 4) + 1 - ty1) / ratio - 1;
         temp_bbox.width =
-            (*(pSophgoContext->output_tensor[i] + 7 * bid + 5) + 0.5) / ratio;
+            (*(context->output_tensor[i] + 7 * bid + 5) + 0.5) / ratio;
         temp_bbox.height =
-            (*(pSophgoContext->output_tensor[i] + 7 * bid + 6) + 0.5) / ratio;
+            (*(context->output_tensor[i] + 7 * bid + 6) + 0.5) / ratio;
 
-        temp_bbox.x = MAX(int(centerX - temp_bbox.width / 2), 0);
-        temp_bbox.y = MAX(int(centerY - temp_bbox.height / 2), 0);
+        temp_bbox.x = std::max(int(centerX - temp_bbox.width / 2), 0);
+        temp_bbox.y = std::max(int(centerY - temp_bbox.height / 2), 0);
 
         std::shared_ptr<common::ObjectMetadata> spObjData =
             std::make_shared<common::ObjectMetadata>();
@@ -236,53 +231,47 @@ void Yolov5Post::postProcess(Yolov5SophgoContext& context,
         objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
       }
     }
-    int input_num = pSophgoContext->m_bmNetwork->outputTensorNum();
+    int input_num = context->m_bmNetwork->outputTensorNum();
     for (int i = 0; i < input_num; ++i) {
-      bm_free_device(*objectMetadatas[0]->mAlgorithmHandle,
-                     pSophgoContext->out_dev_mem[i]);
-      bm_free_device(*objectMetadatas[0]->mAlgorithmHandle,
-                     pSophgoContext->detect_num_mem[i]);
+      bm_free_device(objectMetadatas[0]->mOutputBMtensors->handle,
+                     context->out_dev_mem[i]);
+      bm_free_device(objectMetadatas[0]->mOutputBMtensors->handle,
+                     context->detect_num_mem[i]);
     }
   } else {
     YoloV5BoxVec yolobox_vec;
-    std::vector<std::shared_ptr<BMNNTensor>> outputTensors(
-        pSophgoContext->output_num);
-    for (int i = 0; i < pSophgoContext->output_num; i++) {
-      // outputTensors[i] = objectMetadatas[0]->mOutputBMtensors->tensors[i];
+    std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
+    for (int i = 0; i < context->output_num; i++) {
       outputTensors[i] = std::make_shared<BMNNTensor>(
           objectMetadatas[0]->mOutputBMtensors->handle,
-          pSophgoContext->m_bmNetwork->m_netinfo->output_names[i],
-          pSophgoContext->m_bmNetwork->m_netinfo->output_scales[i],
+          context->m_bmNetwork->m_netinfo->output_names[i],
+          context->m_bmNetwork->m_netinfo->output_scales[i],
           objectMetadatas[0]->mOutputBMtensors->tensors[i].get(),
-          pSophgoContext->m_bmNetwork->is_soc);
+          context->m_bmNetwork->is_soc);
     }
 
-    for (int batch_idx = 0; batch_idx < pSophgoContext->max_batch;
-         ++batch_idx) {
+    for (int batch_idx = 0; batch_idx < context->max_batch; ++batch_idx) {
       yolobox_vec.clear();
-      if (pSophgoContext->mEndOfStream) continue;
-      int frame_width = pSophgoContext->m_frame_w;
-      int frame_height = pSophgoContext->m_frame_h;
+      int frame_width = context->m_frame_w;
+      int frame_height = context->m_frame_h;
 
       int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO
       bool isAlignWidth = false;
-      float ratio = get_aspect_scaled_ratio(
-          frame_width, frame_height, pSophgoContext->m_net_w,
-          pSophgoContext->m_net_h, &isAlignWidth);
+      float ratio =
+          get_aspect_scaled_ratio(frame_width, frame_height, context->m_net_w,
+                                  context->m_net_h, &isAlignWidth);
       if (isAlignWidth) {
-        ty1 =
-            (int)((pSophgoContext->m_net_h - (int)(frame_height * ratio)) / 2);
+        ty1 = (int)((context->m_net_h - (int)(frame_height * ratio)) / 2);
       } else {
-        tx1 = (int)((pSophgoContext->m_net_w - (int)(frame_width * ratio)) / 2);
+        tx1 = (int)((context->m_net_w - (int)(frame_width * ratio)) / 2);
       }
 #endif
 
       int min_idx = 0;
       int box_num = 0;
-      for (int i = 0; i < pSophgoContext->output_num; i++) {
-        auto output_shape =
-            pSophgoContext->m_bmNetwork->outputTensor(i)->get_shape();
+      for (int i = 0; i < context->output_num; i++) {
+        auto output_shape = context->m_bmNetwork->outputTensor(i)->get_shape();
         auto output_dims = output_shape->num_dims;
         assert(output_dims == 3 || output_dims == 5);
         if (output_dims == 5) {
@@ -290,20 +279,19 @@ void Yolov5Post::postProcess(Yolov5SophgoContext& context,
                      output_shape->dims[3];
         }
 
-        if (pSophgoContext->min_dim > output_dims) {
+        if (context->min_dim > output_dims) {
           min_idx = i;
-          pSophgoContext->min_dim = output_dims;
+          context->min_dim = output_dims;
         }
       }
 
       auto out_tensor = outputTensors[min_idx];
-      int nout = out_tensor->get_shape()->dims[pSophgoContext->min_dim - 1];
-      pSophgoContext->m_class_num = nout - 5;
+      int nout = out_tensor->get_shape()->dims[context->min_dim - 1];
 
       float* output_data = nullptr;
       std::vector<float> decoded_data;
 
-      if (pSophgoContext->min_dim == 3 && pSophgoContext->output_num != 1) {
+      if (context->min_dim == 3 && context->output_num != 1) {
         std::cout << "--> WARNING: the current bmodel has redundant outputs"
                   << std::endl;
         std::cout << "             you can remove the redundant outputs to "
@@ -312,19 +300,19 @@ void Yolov5Post::postProcess(Yolov5SophgoContext& context,
         std::cout << std::endl;
       }
 
-      if (pSophgoContext->min_dim == 5) {
+      if (context->min_dim == 5) {
         const std::vector<std::vector<std::vector<int>>> anchors{
             {{10, 13}, {16, 30}, {33, 23}},
             {{30, 61}, {62, 45}, {59, 119}},
             {{116, 90}, {156, 198}, {373, 326}}};
         const int anchor_num = anchors[0].size();
-        assert(pSophgoContext->output_num == (int)anchors.size());
+        assert(context->output_num == (int)anchors.size());
         assert(box_num > 0);
         if ((int)decoded_data.size() != box_num * nout) {
           decoded_data.resize(box_num * nout);
         }
         float* dst = decoded_data.data();
-        for (int tidx = 0; tidx < pSophgoContext->output_num; ++tidx) {
+        for (int tidx = 0; tidx < context->output_num; ++tidx) {
           auto output_tensor = outputTensors[tidx];
           int feat_c = output_tensor->get_shape()->dims[1];
           int feat_h = output_tensor->get_shape()->dims[2];
@@ -338,16 +326,16 @@ void Yolov5Post::postProcess(Yolov5SophgoContext& context,
             float* ptr = tensor_data + anchor_idx * feature_size;
             for (int i = 0; i < area; i++) {
               dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w *
-                       pSophgoContext->m_net_w;
+                       context->m_net_w;
               dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h *
-                       pSophgoContext->m_net_h;
+                       context->m_net_h;
               dst[2] =
                   pow((sigmoid(ptr[2]) * 2), 2) * anchors[tidx][anchor_idx][0];
               dst[3] =
                   pow((sigmoid(ptr[3]) * 2), 2) * anchors[tidx][anchor_idx][1];
               dst[4] = sigmoid(ptr[4]);
               float score = dst[4];
-              if (score > pSophgoContext->m_thresh[0]) {
+              if (score > context->thresh_conf) {
                 for (int d = 5; d < nout; d++) {
                   dst[d] = sigmoid(ptr[d]);
                 }
@@ -368,9 +356,9 @@ void Yolov5Post::postProcess(Yolov5SophgoContext& context,
       for (int i = 0; i < box_num; i++) {
         float* ptr = output_data + i * nout;
         float score = ptr[4];
-        int class_id = argmax(&ptr[5], pSophgoContext->m_class_num);
+        int class_id = argmax(&ptr[5], context->class_num);
         float confidence = ptr[class_id + 5];
-        if (confidence * score > pSophgoContext->m_thresh[0]) {
+        if (confidence * score > context->thresh_conf) {
           float centerX = (ptr[0] + 1 - tx1) / ratio - 1;
           float centerY = (ptr[1] + 1 - ty1) / ratio - 1;
           float width = (ptr[2] + 0.5) / ratio;
@@ -402,7 +390,7 @@ void Yolov5Post::postProcess(Yolov5SophgoContext& context,
         yolobox_vec.insert(yolobox_vec.end(), cls_box.begin(), cls_box.end());
       }
 #else
-      NMS(yolobox_vec, pSophgoContext->m_thresh[1]);
+      NMS(yolobox_vec, context->thresh_nms);
 #endif
 
       for (auto bbox : yolobox_vec) {

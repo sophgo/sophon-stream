@@ -69,7 +69,7 @@ public:
     /* grab a bm_image from the cache queue*/
     bm_image *grab();
 
-    std::shared_ptr<bm_image> grab(int& eof,double& timestamp);
+    std::shared_ptr<bm_image> grab(int& frameId, int& eof,double& timestamp);
  
 private:
     bool quit_flag = false;
@@ -78,6 +78,8 @@ private:
     int width;
     int height;
     int pix_fmt;
+
+    int frame_id;
  
     int video_stream_idx;
     int refcount;

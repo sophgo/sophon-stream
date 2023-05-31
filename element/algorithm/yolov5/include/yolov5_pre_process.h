@@ -7,40 +7,36 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_ELEMENT_YOLOV5_PRE_H_
-#define SOPHON_STREAM_ELEMENT_YOLOV5_PRE_H_
+#ifndef SOPHON_STREAM_ELEMENT_YOLOV5_PRE_PROCESS_H_
+#define SOPHON_STREAM_ELEMENT_YOLOV5_PRE_PROCESS_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "Yolov5SophgoContext.h"
 #include "common/ErrorCode.h"
 #include "common/ObjectMetadata.h"
+#include "yolov5_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
-class Yolov5Pre {
+class Yolov5PreProcess {
  public:
-  /**
-   * 执行预处理
-   * @param[in] objectMetadatas:  输入数据
-   * @param[out] context: 传输给推理模型的数据
-   * @return 错误码
-   */
-  common::ErrorCode preProcess(Yolov5SophgoContext& context,
+  common::ErrorCode preProcess(std::shared_ptr<Yolov5Context> context,
                                common::ObjectMetadatas& objectMetadatas);
-
-  void initTensors(Yolov5SophgoContext& context,
-                   common::ObjectMetadatas& objectMetadatas);
+  void init(std::shared_ptr<Yolov5Context> context);
 
  private:
+  void initTensors(std::shared_ptr<Yolov5Context> context,
+                   common::ObjectMetadatas& objectMetadatas);
+  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
+                                bool* pIsAligWidth);
 };
 
 }  // namespace yolov5
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_ELEMENT_YOLOV5_PRE_H_
+#endif  // SOPHON_STREAM_ELEMENT_YOLOV5_PRE_PROCESS_H_

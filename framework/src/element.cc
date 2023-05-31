@@ -2,6 +2,7 @@
 
 #include <sys/prctl.h>
 
+#include <iostream>
 #include <nlohmann/json.hpp>
 
 #include "common/logger.h"
@@ -24,7 +25,8 @@ void Element::connect(Element& srcElement, int srcElementPort,
     inputDataPipe->setPushHandler(
         std::bind(&Element::onInputNotify, &dstElement));
   }
-
+  dstElement.addInputPort(dstElementPort);
+  srcElement.addOutputPort(srcElementPort);
   srcElement.mOutputDataPipeMap[srcElementPort] = inputDataPipe;
 }
 
@@ -249,7 +251,6 @@ constexpr const char* Element::JSON_REPEATED_TIMEOUT_FIELD;
 constexpr const char* Element::JSON_CONFIGURE_FIELD;
 
 static constexpr int DEFAULT_MILLISECONDS_TIMEOUT = 200;
-#include <iostream>
 /**
  * Thread function.
  */
@@ -269,6 +270,7 @@ void Element::run() {
       lastNoTimeout = currentNoTimeout;
       {
         std::unique_lock<std::mutex> lock(mMutex);
+
         currentNoTimeout = mCond.wait_for(
             lock, millisecondsTimeout, [this]() { return mNotifyCount > 0; });
       }
@@ -283,21 +285,94 @@ void Element::run() {
         // <<"--"<<mRepeatedTimeout<<"--"<<lastNoTimeout<<std::endl;
         continue;
       }
-
-      if (common::ErrorCode::SUCCESS == doWork()) {
-        if (mId == 5000) {
-          IVS_INFO("dowork  Element run {0} {1} {2} {3} {4}",
-                   static_cast<int>(mThreadStatus.load()), currentNoTimeout,
-                   mMillisecondsTimeout, mRepeatedTimeout, lastNoTimeout);
-        }
-        if (currentNoTimeout) {
-          --mNotifyCount;
-        }
-      }
+      if (currentNoTimeout) doWork();
     }
   }
 
   onStop();
+}
+
+common::ErrorCode Element::pushData(int inputPort, std::shared_ptr<void> data,
+                                    const std::chrono::milliseconds& timeout) {
+  IVS_DEBUG("push data, element id: {0:d}, input port: {1:d}, data: {2:p}", mId,
+            inputPort, data.get());
+
+  auto& inputDataPipe = mInputDataPipeMap[inputPort];
+  if (!inputDataPipe) {
+    inputDataPipe = std::make_shared<framework::DataPipe>();
+    inputDataPipe->setPushHandler(std::bind(&Element::onInputNotify, this));
+  }
+
+  return inputDataPipe->pushData(data, timeout);
+}
+
+std::shared_ptr<void> Element::getData(int inputPort) const {
+  auto dataPipeIt = mInputDataPipeMap.find(inputPort);
+  if (mInputDataPipeMap.end() == dataPipeIt) {
+    return std::shared_ptr<void>();
+  }
+
+  auto inputDataPipe = dataPipeIt->second;
+  if (!inputDataPipe) {
+    return std::shared_ptr<void>();
+  }
+
+  return inputDataPipe->getData();
+}
+
+void Element::popData(int inputPort) {
+  IVS_DEBUG("pop data, element id: {0:d}, input port: {1:d}", mId, inputPort);
+
+  auto dataPipeIt = mInputDataPipeMap.find(inputPort);
+  if (mInputDataPipeMap.end() == dataPipeIt) {
+    return;
+  }
+
+  auto inputDataPipe = dataPipeIt->second;
+  if (!inputDataPipe) {
+    return;
+  }
+
+  inputDataPipe->popData();
+  mNotifyCount--;
+}
+
+void Element::setStopHandler(int outputPort, DataHandler dataHandler) {
+  IVS_INFO("Set data handler, element id: {0:d}, output port: {1:d}", mId,
+           outputPort);
+
+  mStopHandlerMap[outputPort] = dataHandler;
+}
+
+common::ErrorCode Element::sendData(int outputPort, std::shared_ptr<void> data,
+                                    const std::chrono::milliseconds& timeout) {
+  IVS_DEBUG("send data, element id: {0:d}, output port: {1:d}, data:{2:p}", mId,
+            outputPort, data.get());
+  if (mLastElementFlag)
+  {
+    auto handlerIt = mStopHandlerMap.find(outputPort);
+    if (mStopHandlerMap.end() != handlerIt) {
+      auto dataHandler = handlerIt->second;
+      if (dataHandler) {
+        dataHandler(data);
+        return common::ErrorCode::SUCCESS;
+      }
+    }
+  }
+
+  auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
+  if (mOutputDataPipeMap.end() != dataPipeIt) {
+    auto outputDataPipe = dataPipeIt->second.lock();
+    if (outputDataPipe) {
+      return outputDataPipe->pushData(data, timeout);
+    }
+  }
+
+  IVS_ERROR(
+      "Can not find data handler or data pipe on output port, output port: "
+      "{0:d}--element id:{1}",
+      outputPort, mId);
+  return common::ErrorCode::NO_SUCH_WORKER_PORT;
 }
 
 /**
@@ -309,5 +384,15 @@ void Element::onInputNotify() {
   mCond.notify_one();
 }
 
+void Element::addInputPort(int port) { mInputPorts.push_back(port); }
+void Element::addOutputPort(int port) { mOutputPorts.push_back(port); }
+
+std::vector<int> Element::getInputPorts() { return mInputPorts; }
+std::vector<int> Element::getOutputPorts() { return mOutputPorts; };
+
+
+void Element::setLastElementFlag() {
+  mLastElementFlag = true;
+}
 }  // namespace framework
 }  // namespace sophon_stream

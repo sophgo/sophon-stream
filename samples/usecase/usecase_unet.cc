@@ -1,13 +1,12 @@
 #include <fstream>
-#include <opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
-#include "config.h"
+#include <opencv2/opencv.hpp>
 
-#include "common/ErrorCode.h"
-#include "common/logger.h"
-#include "common/ObjectMetadata.h"
-#include "common/type_trans.hpp"
 #include "DecoderElement.h"
+#include "common/ErrorCode.h"
+#include "common/ObjectMetadata.h"
+#include "common/logger.h"
+#include "config.h"
 #include "engine.h"
 #include "gtest/gtest.h"
 
@@ -113,15 +112,11 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       std::string strPath(szpath);
       bm_image_write_to_bmp(image1, strPath.c_str());
       idx++;
-      // bm_image_destroy(image1);
-      // if(objectMetadata->mSegmentedObjectMetadatas[0]->mFrame->mEndOfStream)
-      // cv.notify_one();
     }
   });
 
   nlohmann::json decodeConfigure;
   decodeConfigure["channel_id"] = 1;
-  // decodeConfigure["url"] = "../test/car_white.jpg";
   decodeConfigure["url"] = "../carvana_video.mp4";
   decodeConfigure["resize_rate"] = 2.0f;
   decodeConfigure["timeout"] = 0;

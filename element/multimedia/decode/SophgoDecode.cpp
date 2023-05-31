@@ -35,7 +35,7 @@ common::ErrorCode SophgoDecode::init(SophgoContext& context) {
   mResizeRate = context.mResizeRate;
   int ret = bm_dev_request(&m_handle, context.deviceId);
   assert(BM_SUCCESS == ret);
-  decoder.openDec(&m_handle, mUrl.c_str());
+  decoder.openDec(&m_handle, mUrl.c_str()); // 来一个任务 加一个decoder
   return common::ErrorCode::SUCCESS;
 }
 
@@ -65,12 +65,14 @@ common::ErrorCode SophgoDecode::process(
   // bm_image *img = decoder.grab();
   int eof = 0;
   double timestamp = 0.0;
-  std::shared_ptr<bm_image> spBmImage = decoder.grab(eof, timestamp);
+  int frame_id = 0;
+  std::shared_ptr<bm_image> spBmImage = decoder.grab(frame_id, eof, timestamp);
 
   // sleep(1);
 
   objectMetadata->mFrame = std::make_shared<common::Frame>();
   objectMetadata->mFrame->mTimestamp = timestamp * 1000000;
+  objectMetadata->mFrame->mFrameId = frame_id;
 
   objectMetadata->mFrame->mSpData = spBmImage;
 

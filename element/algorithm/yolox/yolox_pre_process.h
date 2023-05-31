@@ -26,7 +26,9 @@ class YoloxPreProcess {
  public:
   common::ErrorCode preProcess(std::shared_ptr<YoloxContext> context,
                                common::ObjectMetadatas& objectMetadatas);
+  void init(std::shared_ptr<YoloxContext> context);
 
+ private:
   void initTensors(std::shared_ptr<YoloxContext> context,
                    common::ObjectMetadatas& objectMetadatas);
 };

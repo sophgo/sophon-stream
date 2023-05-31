@@ -101,10 +101,9 @@ class ElementManager {
    * @return If element id is not exist or timeout, it will return error,
    * otherwise return common::ErrorCode::SUCESS.
    */
-  template <class Rep, class Period>
   common::ErrorCode sendData(
       int elementId, int inputPort, std::shared_ptr<void> data,
-      const std::chrono::duration<Rep, Period>& timeout) {
+      const std::chrono::milliseconds& timeout) {
     IVS_DEBUG(
         "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
         "data: {3:p}",
@@ -127,35 +126,7 @@ class ElementManager {
     return element->pushData(inputPort, data, timeout);
   }
 
-  /**
-   * Set callback to a Element in this ElementManager with a output port for
-   * receive data.
-   * @param[in] elementId : Id of Element which will receive data.
-   * @param[in] outputPort : Output port of Element which will receive data.
-   * @param[in] dataHandler : The callback that will be call with received data.
-   */
-  void setDataHandler(int elementId, int outputPort, DataHandler dataHandler) {
-    IVS_INFO(
-        "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
-        "{2:d}",
-        mId, elementId, outputPort);
-
-    auto elementIt = mElementMap.find(elementId);
-    if (mElementMap.end() == elementIt) {
-      IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
-                elementId);
-      return;
-    }
-
-    auto element = elementIt->second;
-    if (!element) {
-      IVS_ERROR("Element is null, graph id: {0:d}, element id: {1:d}", mId,
-                elementId);
-      return;
-    }
-
-    element->setDataHandler(outputPort, dataHandler);
-  }
+  void setStopHandler(int elementId, int outputPort, DataHandler dataHandler);
 
   std::pair<std::string, int> getSideAndDeviceId(int elementId) {
     IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}", mId,
@@ -299,11 +270,6 @@ class ElementManager {
   std::map<int /* elementId */, std::shared_ptr<framework::Element> >
       mElementMap;
 
-  /**
-   * Module map of ElementManager, key is id of module, value is std::shared_ptr
-   * of framework::ElementManager::Module.
-   */
-  std::map<int /* moduleId */, std::shared_ptr<Module> > mModuleMap;
 };
 
 }  // namespace framework

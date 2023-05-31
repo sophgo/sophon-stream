@@ -23,7 +23,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     )
 
     include_directories(include)
-    add_library(framework
+    add_library(framework SHARED
         src/element.cc
         src/datapipe.cc
         src/element_manager.cc

@@ -184,7 +184,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         makeConnectConfig(POST_ID, 0, TRACK_ID, 0));
 
     engine.addGraph(graphConfigure.dump());
-    engine.setDataHandler(i + 1, TRACK_ID, 0, [&](std::shared_ptr<void> data) {
+    engine.setStopHandler(i + 1, TRACK_ID, 0, [&](std::shared_ptr<void> data) {
       auto objectMetadata =
           std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
       if (objectMetadata == nullptr || objectMetadata->mFrame == nullptr)

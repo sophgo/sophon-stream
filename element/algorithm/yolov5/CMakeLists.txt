@@ -30,22 +30,22 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     include_directories(../../../framework/include)
     link_directories(../../../framework/build)
-    link_libraries(framework)
+    # link_libraries(framework)
     link_libraries(ivslogger)
 
     include_directories(../../../share)
     include_directories(../../../share/3rdparty/spdlog/include)
     include_directories(../../../share/3rdparty/nlohmann-json/include)
 
+    include_directories(include)
     add_library(yolov5 SHARED
-        Yolov5Pre.cc
-        Yolov5Post.cc
-        Yolov5Inference.cc
-        Yolov5SophgoContext.cc
-        Yolov5Algorithm.cc
+        src/yolov5_pre_process.cc
+        src/yolov5_post_process.cc
+        src/yolov5_inference.cc
+        src/yolov5.cc
     )
 
-    target_link_libraries(yolov5 ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
+    target_link_libraries(yolov5 ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread -lframework)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
@@ -63,11 +63,11 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
 
     add_library(yolov5 SHARED
-        Yolov5Pre.cc
-        Yolov5Post.cc
-        Yolov5Inference.cc
-        Yolov5SophgoContext.cc
-        Yolov5Algorithm.cc
+        yolov5_pre_process.cc
+        yolov5_post_process.cc
+        yolov5_inference.cc
+        # yolov5_context.cc
+        yolov5.cc
     )
     target_link_libraries(yolov5 ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 endif()

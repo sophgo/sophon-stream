@@ -18,27 +18,80 @@ namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-constexpr const char* JSON_BATCH_FIELD = "batch";
-constexpr const char* JSON_STAGE_NAME = "stage";
+constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
+constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
+constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD = "threshold_conf";
+constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD = "threshold_nms";
 
-/**
- * 构造函数
- */
 Yolox::Yolox() {}
 
-/**
- * 析构函数
- */
-Yolox::~Yolox() {
+Yolox::~Yolox() {}
+
+common::ErrorCode Yolox::initContext(const std::string& json) {
+  common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+  do {
+    auto configure = nlohmann::json::parse(json, nullptr, false);
+    if (!configure.is_object()) {
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+
+    auto modelPathIt = configure.find(CONFIG_INTERNAL_MODEL_PATH_FIELD);
+
+    auto threshConfIt = configure.find(CONFIG_INTERNAL_THRESHOLD_CONF_FIELD);
+    mContext->thresh_conf = threshConfIt->get<float>();
+
+    auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
+    mContext->thresh_nms = threshNmsIt->get<float>();
+
+    // 1. get network
+    BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
+    mContext->bmContext = std::make_shared<BMNNContext>(
+        handle, modelPathIt->get<std::string>().c_str());
+    mContext->bmNetwork = mContext->bmContext->network(0);
+    mContext->handle = handle->handle();
+
+    // 2. get input
+    mContext->input_num = mContext->bmNetwork->m_netinfo->input_num;
+    auto inputTensor = mContext->bmNetwork->inputTensor(0);
+    mContext->net_h = inputTensor->get_shape()->dims[2];
+    mContext->net_w = inputTensor->get_shape()->dims[3];
+    mContext->max_batch = inputTensor->get_shape()->dims[0];
+
+    // 3. get output
+    mContext->output_num = mContext->bmNetwork->outputTensorNum();
+    mContext->class_num =
+        mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2] - 4 - 1;  //
+
+    // 4. initialize m_resized_imgs
+    mContext->resized_imgs.resize(mContext->max_batch);
+    mContext->converto_imgs.resize(mContext->max_batch);
+    // some API only accept bm_image whose stride is aligned to 64
+    int aligned_net_w = FFALIGN(mContext->net_w, 64);
+    int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
+    for (int i = 0; i < mContext->max_batch; i++) {
+      bm_image_create(mContext->bmContext->handle(), mContext->net_h,
+                      mContext->net_w, FORMAT_RGB_PLANAR, DATA_TYPE_EXT_1N_BYTE,
+                      &mContext->resized_imgs[i], strides);
+    }
+    bm_image_alloc_contiguous_mem(mContext->max_batch,
+                                  mContext->resized_imgs.data());
+
+    // 5.converto
+    float input_scale = inputTensor->get_scale();
+    // yolox原始模型输入是0-255,scale=1.0意味着不需要做缩放
+    // input_scale /= 255;
+    mContext->converto_attr.alpha_0 = input_scale;
+    mContext->converto_attr.beta_0 = 0;
+    mContext->converto_attr.alpha_1 = input_scale;
+    mContext->converto_attr.beta_1 = 0;
+    mContext->converto_attr.alpha_2 = input_scale;
+    mContext->converto_attr.beta_2 = 0;
+  } while (false);
+
+  return common::ErrorCode::SUCCESS;
 }
 
-/**
- * 初始化函数
- * @param[in] side:  设备类型
- * @param[in] deviceId:  设备ID
- * @param[in] json:  初始化字符串
- * @return 错误码
- */
 common::ErrorCode Yolox::initInternal(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
@@ -49,20 +102,7 @@ common::ErrorCode Yolox::initInternal(const std::string& json) {
       break;
     }
 
-    auto batchIt = configure.find(JSON_BATCH_FIELD);
-    if (configure.end() == batchIt || !batchIt->is_number_integer()) {
-      IVS_ERROR(
-          "Can not find {0} with integer type in action element json "
-          "configure, element id: {1:d}, json: {2}",
-          JSON_BATCH_FIELD, getId(), json);
-      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-      break;
-    }
-
-    mBatch = batchIt->get<int>();
-    mPendingObjectMetadatas.reserve(mBatch);
-
-    auto stageNameIt = configure.find(JSON_STAGE_NAME);
+    auto stageNameIt = configure.find(CONFIG_INTERNAL_STAGE_NAME_FIELD);
     if (configure.end() == stageNameIt || !stageNameIt->is_array()) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
@@ -88,15 +128,17 @@ common::ErrorCode Yolox::initInternal(const std::string& json) {
       break;
     }
 
-    // context初始化
-    mContext->init(configure.dump());
-
-    mContext->algorithmName = "yolox";
     mContext->deviceId = getDeviceId();
+    initContext(configure.dump());
+
+    // 前处理初始化
+    mPreProcess->init(mContext);
     // 推理初始化
-    errorCode = mInference->init(mContext);
+    mInference->init(mContext);
     // 后处理初始化
     mPostProcess->init(mContext);
+
+    mBatch = mContext->max_batch;
 
   } while (false);
   return errorCode;
@@ -134,61 +176,26 @@ void Yolox::process(common::ObjectMetadatas& objectMetadatas) {
 /**
  * 资源释放函数
  */
-void Yolox::uninitInternal() {
-  if (mInference != nullptr) {
-    mInference->uninit();
-    mInference = nullptr;
-  }
-}
+void Yolox::uninitInternal() {}
 
 common::ErrorCode Yolox::doWork() {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
   common::ObjectMetadatas objectMetadatas;
   {
-    std::lock_guard<std::mutex> lock(mMutex2);
-
-    std::size_t currentDataCount = getDataCount(0);
-    bool timeout = mLastDataCount == currentDataCount;
-    mLastDataCount = currentDataCount;
-
-    // IVS_INFO("element id:{2}, timeout:{0}, current data count:{1}",timeout,
-    // currentDataCount, getId());
-    errorCode = sendProcessedData();
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      return errorCode;
-    }
-
-    int pendingSize = mPendingObjectMetadatas.size();
-    int iCurrentdataCount = currentDataCount;
-    if (mBatch - pendingSize > iCurrentdataCount && !timeout) {
-      return common::ErrorCode::SUCCESS;
-    }
 
     // ActionElement凑batch
-    while (mPendingObjectMetadatas.size() < mBatch && !hasEof) {
+    while (objectMetadatas.size() < mBatch && !hasEof) {
       // 如果队列为空则等待
-      if (getDataCount(0) == 0) {
-        continue;
-      }
       auto data = getData(0);
       if (!data) {
-        popData(0);
         continue;
       }
+
       auto objectMetadata =
           std::static_pointer_cast<common::ObjectMetadata>(data);
-      bool skip = false;
 
-      if (objectMetadata->mFilter) {
-        skip = true;
-      }
-
-      if (skip) {
-        mProcessedObjectMetadatas.push_back(objectMetadata);
-      } else {
-        mPendingObjectMetadatas.push_back(objectMetadata);
-      }
+      objectMetadatas.push_back(objectMetadata);
       popData(0);
 
       // 如果遇到了eof，将eof帧凑到batch里之后截止
@@ -198,64 +205,27 @@ common::ErrorCode Yolox::doWork() {
       }
     }
 
-    // 遇到了eof的情况凑batch
-    if (mPendingObjectMetadatas.size() != 0 &&
-        mPendingObjectMetadatas.back()->mFrame != nullptr &&
-        mPendingObjectMetadatas.back()->mFrame->mEndOfStream) {
-      while (mPendingObjectMetadatas.size() < mBatch) {
-        auto ObjectMetadata = std::make_shared<common::ObjectMetadata>();
-        ObjectMetadata->mFrame = std::make_shared<common::Frame>();
-        ObjectMetadata->mFrame->mEndOfStream = true;
-        mPendingObjectMetadatas.push_back(ObjectMetadata);
-      }
-    }
-
-    mLastDataCount = getDataCount(0);
-
-    errorCode = sendProcessedData();
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      return errorCode;
-    }
-
-    if (mPendingObjectMetadatas.size() < mBatch && !timeout) {
-      return common::ErrorCode::SUCCESS;
-    }
-
-    objectMetadatas.swap(mPendingObjectMetadatas);
   }
 
   process(objectMetadatas);
 
   {
-    std::lock_guard<std::mutex> lock(mMutex2);
-
-    for (auto objectMetadata : objectMetadatas) {
-      mProcessedObjectMetadatas.push_back(objectMetadata);
+    for(auto& objectMetadata : objectMetadatas) {
+      common::ErrorCode errorCode =
+          sendData(0, std::static_pointer_cast<void>(objectMetadata),
+                   std::chrono::milliseconds(200)); // why port 0
+      if (common::ErrorCode::SUCCESS != errorCode) {
+        IVS_WARN(
+            "Send data fail, element id: {0:d}, output port: {1:d}, data: {2:p}, "
+            "element id:{3:d}",
+            getId(), 0, static_cast<void*>(objectMetadata.get()), getId());
+        return errorCode;
+      }
     }
-    errorCode = sendProcessedData();
+
     if (common::ErrorCode::SUCCESS != errorCode) {
       return errorCode;
     }
-  }
-
-  return common::ErrorCode::SUCCESS;
-}
-
-common::ErrorCode Yolox::sendProcessedData() {
-  while (!mProcessedObjectMetadatas.empty()) {
-    auto objectMetadata = mProcessedObjectMetadatas.front();
-    common::ErrorCode errorCode =
-        sendData(0, std::static_pointer_cast<void>(objectMetadata),
-                 std::chrono::milliseconds(200));
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      IVS_WARN(
-          "Send data fail, element id: {0:d}, output port: {1:d}, data: {2:p}, "
-          "element id:{3:d}",
-          getId(), 0, static_cast<void*>(objectMetadata.get()), getId());
-      return errorCode;
-    }
-
-    mProcessedObjectMetadatas.pop_front();
   }
 
   return common::ErrorCode::SUCCESS;

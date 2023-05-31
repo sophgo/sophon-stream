@@ -1,19 +1,17 @@
 #include <sys/stat.h>
 
 #include <fstream>
-#include <opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
+#include <opencv2/opencv.hpp>
 
+#include "DecoderElement.h"
 #include "common/Clocker.h"
 #include "common/ErrorCode.h"
-#include "common/logger.h"
 #include "common/ObjectMetadata.h"
-#include "common/type_trans.hpp"
-#include "DecoderElement.h"
+#include "common/logger.h"
+#include "config.h"
 #include "engine.h"
 #include "gtest/gtest.h"
-
-#include "config.h"
 
 #define DECODE_ID 5000
 #define PRE_ID 5001
@@ -95,9 +93,10 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 
 */
 
-#define MAX_GRAPH 1
-#define MAX_CHANNEL 1
-#define DOWNLOAD_IMAGE 0
+int num_graphs = 2;
+int num_channels_per_graph = 8;
+int num_channels = num_graphs * num_channels_per_graph;
+#define DOWNLOAD_IMAGE 1
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 #if DOWNLOAD_IMAGE
   const char* dir_path = "./results";
@@ -128,19 +127,19 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
   auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
 
-  std::atomic_int32_t graph_cnt(0);
+  std::atomic_int32_t finishedChannelCount(0);
   std::mutex mtx;
   std::condition_variable cv;
   sophon_stream::Clocker clocker;
   std::atomic_uint32_t frameCount(0);
 
-  for (int i = 0; i < MAX_GRAPH; i++) {
+  for (int i = 0; i < num_graphs; i++) {
     nlohmann::json graphConfigure;
-    graphConfigure["graph_id"] = i + 1;
+    graphConfigure["graph_id"] = i;
     nlohmann::json ElementsConfigure;
 
     std::ifstream istream;
-    nlohmann::json decoder, pre, action, post, encoder, reporter;
+    nlohmann::json decoder, pre, action, post, config;
 
     istream.open("../usecase/json/yolov5/Decoder.json");
     assert(istream.is_open());
@@ -172,20 +171,6 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     ElementsConfigure.push_back(post);
     istream.close();
 
-    // istream.open("../usecase/json/yolov5/Encoder.json");
-    // assert(istream.is_open());
-    // istream >> encoder;
-    // encoder.at("id") = ENCODE_ID;
-    // // ElementsConfigure.push_back(encoder);
-    // istream.close();
-
-    // istream.open("../usecase/json/yolov5/Reporter.json");
-    // assert(istream.is_open());
-    // istream >> reporter;
-    // reporter.at("id") = REPORT_ID;
-    // // ElementsConfigure.push_back(reporter);
-    // istream.close();
-
     graphConfigure["elements"] = ElementsConfigure;
     graphConfigure["connections"].push_back(
         makeConnectConfig(DECODE_ID, 0, PRE_ID, 0));
@@ -193,24 +178,18 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         makeConnectConfig(PRE_ID, 0, YOLO_ID, 0));
     graphConfigure["connections"].push_back(
         makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
-    // graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0,
-    // ENCODE_ID, 0));
-    // graphConfigure["connections"].push_back(makeConnectConfig(ENCODE_ID, 0,
-    // REPORT_ID, 0));
-    // graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0,
-    // REPORT_ID, 0));
 
     engine.addGraph(graphConfigure.dump());
 
-    // engine.setDataHandler(i+1, REPORT_ID, 0, [&](std::shared_ptr<void> data)
-    engine.setDataHandler(i + 1, POST_ID, 0, [&](std::shared_ptr<void> data) {
+    engine.setStopHandler(i, POST_ID, 0, [&](std::shared_ptr<void> data) {
       auto objectMetadata =
           std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
       if (objectMetadata == nullptr) return;
       frameCount++;
       if (objectMetadata->mFrame->mEndOfStream) {
-        graph_cnt++;
-        if (graph_cnt == MAX_CHANNEL) {
+        printf("meet a eof\n");
+        finishedChannelCount++;
+        if (finishedChannelCount == num_channels) {
           cv.notify_one();
         }
         return;
@@ -254,7 +233,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       if (ret == BM_SUCCESS) {
         std::string img_file =
             "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-            "_" + std::to_string(frameCount) + ".jpg";
+            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
         FILE* fp = fopen(img_file.c_str(), "wb");
         fwrite(jpeg_data, out_size, 1, fp);
         fclose(fp);
@@ -265,10 +244,12 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 #endif
     });
 
-    nlohmann::json decodeConfigure[MAX_CHANNEL];
-    for (int j = 0; j < MAX_CHANNEL; j++) {
-      decodeConfigure[j]["channel_id"] = j + 1;
-      decodeConfigure[j]["url"] = "../test_car_person_1080P.avi";
+    nlohmann::json decodeConfigure[num_channels_per_graph];
+    for (int j = 0; j < num_channels_per_graph; j++) {
+      decodeConfigure[j]["channel_id"] = j;
+      // decodeConfigure[j]["url"] = "../test_car_person_1080P.avi";
+      decodeConfigure[j]["url"] = "../carvana_video.mp4";
+
 
       decodeConfigure[j]["resize_rate"] = 2.0f;
       decodeConfigure[j]["timeout"] = 0;
@@ -278,12 +259,12 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
       auto channelTask =
           std::make_shared<sophon_stream::element::ChannelTask>();
-      channelTask->request.operation = sophon_stream::element::
-          ChannelOperateRequest::ChannelOperate::START;
-      channelTask->request.channelId = j + 1;
+      channelTask->request.operation =
+          sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
+      channelTask->request.channelId = j;
       channelTask->request.json = decodeConfigure[j].dump();
       sophon_stream::common::ErrorCode errorCode = engine.sendData(
-          i + 1, DECODE_ID, 0, std::static_pointer_cast<void>(channelTask),
+          i, DECODE_ID, 0, std::static_pointer_cast<void>(channelTask),
           std::chrono::milliseconds(200));
     }
   }
@@ -292,9 +273,9 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     std::unique_lock<std::mutex> uq(mtx);
     cv.wait(uq);
   }
-  for (int i = 0; i < MAX_GRAPH; i++) {
+  for (int i = 0; i < num_graphs; i++) {
     std::cout << "graph stop" << std::endl;
-    engine.stop(i + 1);
+    engine.stop(i);
   }
   long totalCost = clocker.tell_us();
   std::cout << " total time cost " << totalCost << " us." << std::endl;

@@ -24,6 +24,28 @@ DataPipe::DataPipe() : mCapacity(DEFAULT_DATA_PIPE_CAPACITY) {}
  */
 DataPipe::~DataPipe() {}
 
+common::ErrorCode DataPipe::pushData(std::shared_ptr<void> data,
+                                     const std::chrono::milliseconds& timeout) {
+  bool noTimeout = true;
+  std::unique_lock<std::mutex> lock(mDataQueueMutex);
+  noTimeout = mDataQueueCond.wait_for(
+      lock, timeout, [this]() { return mDataQueue.size() < mCapacity; });
+  if (noTimeout) {
+    mDataQueue.push_back(data);
+    if (mDataQueue.size() >= mCapacity) {
+      IVS_WARN("data queue size too high, size is :{0}", mDataQueue.size());
+    }
+    if (mPushHandler) {
+      mPushHandler();
+    }
+
+    return common::ErrorCode::SUCCESS;
+  } else {
+    IVS_WARN("Push data timeout");
+    return common::ErrorCode::TIMEOUT;
+  }
+}
+
 /**
  * Get next data of this DataPipe.
  * @return Return data.
