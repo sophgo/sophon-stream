@@ -92,12 +92,38 @@ TestMultiAlgorithmGraph, MultiAlgorithmGraph
 播放视频，在每一帧都会进行检测并将对应的box绘制在相应位置，播放结束程序可以正常退出
 
 */
+constexpr const char* JSON_CONFIG_NUM_GRAPHS_FILED = "num_graphs";
+constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
+    "num_channels_per_graph";
+constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
 
-int num_graphs = 2;
-int num_channels_per_graph = 8;
-int num_channels = num_graphs * num_channels_per_graph;
 #define DOWNLOAD_IMAGE 1
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
+  std::ifstream istream;
+  nlohmann::json config;
+
+  istream.open("../usecase/json/yolov5/Config.json");
+  assert(istream.is_open());
+  istream >> config;
+
+  auto num_graphs_it = config.find(JSON_CONFIG_NUM_GRAPHS_FILED);
+  auto num_channels_per_graph_it =
+      config.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED);
+  auto download_image_it = config.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED);
+
+  int num_graphs = num_graph_it.get<int>();
+  int num_channels_per_graph = num_channels_per_graph_it.get<int>();
+  int num_channels = num_graphs * num_channels_per_graph;
+  bool download_image = download_image_it.get<bool>();
+
+
+
+
+
+  
+
+  istream.close();
+
 #if DOWNLOAD_IMAGE
   const char* dir_path = "./results";
   struct stat info;
@@ -138,8 +164,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     graphConfigure["graph_id"] = i;
     nlohmann::json ElementsConfigure;
 
-    std::ifstream istream;
-    nlohmann::json decoder, pre, action, post, config;
+    nlohmann::json decoder, pre, action, post;
 
     istream.open("../usecase/json/yolov5/Decoder.json");
     assert(istream.is_open());
@@ -194,54 +219,56 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         }
         return;
       }
-#if DOWNLOAD_IMAGE
-      int width = objectMetadata->mFrame->mWidth;
-      int height = objectMetadata->mFrame->mHeight;
-      // 转格式
-      // sophon_stream::common::FormatType format_type_stream =
-      // objectMetadata->mFrame->mFormatType; sophon_stream::common::DataType
-      // data_type_stream = objectMetadata->mFrame->mDataType;
-      // bm_image_format_ext format_type_bmcv =
-      // sophon_stream::common::format_stream2bmcv(format_type_stream);
-      // bm_image_data_format_ext data_type_bmcv =
-      // sophon_stream::common::data_stream2bmcv(data_type_stream); 转成bm_image
-      bm_image image = *objectMetadata->mFrame->mSpData;
 
-      bm_image imageStorage;
-      bm_image_create(objectMetadata->mFrame->mHandle, height, width,
-                      FORMAT_YUV420P, image.data_type, &imageStorage);
-      bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
-                                 &imageStorage);
-      // bm_image_destroy(image);
+      if (download_image) {
+        int width = objectMetadata->mFrame->mWidth;
+        int height = objectMetadata->mFrame->mHeight;
+        // 转格式
+        // sophon_stream::common::FormatType format_type_stream =
+        // objectMetadata->mFrame->mFormatType; sophon_stream::common::DataType
+        // data_type_stream = objectMetadata->mFrame->mDataType;
+        // bm_image_format_ext format_type_bmcv =
+        // sophon_stream::common::format_stream2bmcv(format_type_stream);
+        // bm_image_data_format_ext data_type_bmcv =
+        // sophon_stream::common::data_stream2bmcv(data_type_stream);
+        // 转成bm_image
+        bm_image image = *objectMetadata->mFrame->mSpData;
 
-      for (auto subObj : objectMetadata->mSubObjectMetadatas) {
-        // draw image
-        draw_bmcv(objectMetadata->mFrame->mHandle,
-                  subObj->mDetectedObjectMetadata->mClassify, coco_classnames,
-                  subObj->mDetectedObjectMetadata->mScores[0],
-                  subObj->mDetectedObjectMetadata->mBox.mX,
-                  subObj->mDetectedObjectMetadata->mBox.mY,
-                  subObj->mDetectedObjectMetadata->mBox.mWidth,
-                  subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage,
-                  true);
+        bm_image imageStorage;
+        bm_image_create(objectMetadata->mFrame->mHandle, height, width,
+                        FORMAT_YUV420P, image.data_type, &imageStorage);
+        bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
+                                   &imageStorage);
+        // bm_image_destroy(image);
+
+        for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+          // draw image
+          draw_bmcv(objectMetadata->mFrame->mHandle,
+                    subObj->mDetectedObjectMetadata->mClassify, coco_classnames,
+                    subObj->mDetectedObjectMetadata->mScores[0],
+                    subObj->mDetectedObjectMetadata->mBox.mX,
+                    subObj->mDetectedObjectMetadata->mBox.mY,
+                    subObj->mDetectedObjectMetadata->mBox.mWidth,
+                    subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage,
+                    true);
+        }
+        // save image
+        void* jpeg_data = NULL;
+        size_t out_size = 0;
+        int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
+                                      &imageStorage, &jpeg_data, &out_size);
+        if (ret == BM_SUCCESS) {
+          std::string img_file =
+              "./results/" +
+              std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+              std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+          FILE* fp = fopen(img_file.c_str(), "wb");
+          fwrite(jpeg_data, out_size, 1, fp);
+          fclose(fp);
+        }
+        free(jpeg_data);
+        bm_image_destroy(imageStorage);
       }
-      // save image
-      void* jpeg_data = NULL;
-      size_t out_size = 0;
-      int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
-                                    &imageStorage, &jpeg_data, &out_size);
-      if (ret == BM_SUCCESS) {
-        std::string img_file =
-            "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
-        FILE* fp = fopen(img_file.c_str(), "wb");
-        fwrite(jpeg_data, out_size, 1, fp);
-        fclose(fp);
-      }
-      free(jpeg_data);
-      bm_image_destroy(imageStorage);
-
-#endif
     });
 
     nlohmann::json decodeConfigure[num_channels_per_graph];
@@ -249,7 +276,6 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       decodeConfigure[j]["channel_id"] = j;
       // decodeConfigure[j]["url"] = "../test_car_person_1080P.avi";
       decodeConfigure[j]["url"] = "../carvana_video.mp4";
-
 
       decodeConfigure[j]["resize_rate"] = 2.0f;
       decodeConfigure[j]["timeout"] = 0;
@@ -263,7 +289,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
           sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
       channelTask->request.channelId = j;
       channelTask->request.json = decodeConfigure[j].dump();
-      sophon_stream::common::ErrorCode errorCode = engine.sendData(
+      sophon_stream::common::ErrorCode errorCode = engine.pushInputData(
           i, DECODE_ID, 0, std::static_pointer_cast<void>(channelTask),
           std::chrono::milliseconds(200));
     }

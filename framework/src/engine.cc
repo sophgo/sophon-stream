@@ -209,5 +209,28 @@ bool Engine::graphExist(int graphId) {
     graph->setStopHandler(elementId, outputPort, dataHandler);
   }
 
+ common::ErrorCode Engine::pushInputData(
+      int graphId, int elementId, int inputPort, std::shared_ptr<void> data,
+      const std::chrono::milliseconds& timeout) {
+    IVS_DEBUG(
+        "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
+        "data: {3:p}",
+        graphId, elementId, inputPort, data.get());
+
+    auto graphIt = mElementManagerMap.find(graphId);
+    if (mElementManagerMap.end() == graphIt) {
+      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
+      return common::ErrorCode::NO_SUCH_GRAPH_ID;
+    }
+
+    auto graph = graphIt->second;
+    if (!graph) {
+      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
+      return common::ErrorCode::UNKNOWN;
+    }
+
+    return graph->pushInputData(elementId, inputPort, data, timeout);
+  }
+
 }  // namespace framework
 }  // namespace sophon_stream

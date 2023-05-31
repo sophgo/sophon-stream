@@ -111,12 +111,12 @@ void DecoderElement::onStop() {
 }
 
 common::ErrorCode DecoderElement::doWork() {
-  auto data = getData(0);
+  auto data = getInputData(0);
   if (!data) {
-    popData(0);
+    popInputData(0);
     return common::ErrorCode::SUCCESS;
   }
-  popData(0);
+  popInputData(0);
 
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
@@ -136,7 +136,7 @@ common::ErrorCode DecoderElement::doWork() {
     errorCode = resumeTask(channelOperate);
   }
 
-  // sendData(1, channelOperate, std::chrono::milliseconds(200));
+  // pushOutputData(1, channelOperate, std::chrono::milliseconds(200));
   return errorCode;
 }
 
@@ -408,7 +408,7 @@ common::ErrorCode DecoderElement::process(
     // push data to next element
     //  是否应该在这里之前把batch组起来
     common::ErrorCode errorCode =
-        sendData(0, std::static_pointer_cast<void>(objectMetadata),
+        pushOutputData(0, std::static_pointer_cast<void>(objectMetadata),
                  std::chrono::milliseconds(200));
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_WARN("Send data fail, element id: {0}, output port: {1}, data: {2:p}",
@@ -423,7 +423,7 @@ common::ErrorCode DecoderElement::process(
     IVS_ERROR("getFrame failed,error code is : {0}----channel id:{1}", (int)ret,
               channelTask->request.channelId);
     channelTask->response.errorCode = ret;
-    sendData(2, channelTask, std::chrono::milliseconds(200));
+    pushOutputData(2, channelTask, std::chrono::milliseconds(200));
     // 和master协定, 报错即退出
     std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
     channelInfo->mThreadWrapper->stop(false);
@@ -461,7 +461,7 @@ common::ErrorCode DecoderElement::reopen(
     if (reopentimes >= 0) times++;
   }
   if (ret != common::ErrorCode::SUCCESS) {
-    sendData(2, channelTask, std::chrono::milliseconds(200));
+    pushOutputData(2, channelTask, std::chrono::milliseconds(200));
   }
   return ret;
 }

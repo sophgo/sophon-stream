@@ -293,11 +293,11 @@ common::ErrorCode Yolov5::doWork() {
 
   while (objectMetadatas.size() < mBatch) {
     // 如果队列为空则等待
-    auto data = getData(inputPort);
+    auto data = getInputData(inputPort);
     if (!data) {
       continue;
     }
-    popData(inputPort);
+    popInputData(inputPort);
 
     auto objectMetadata =
         std::static_pointer_cast<common::ObjectMetadata>(data);
@@ -325,7 +325,7 @@ common::ErrorCode Yolov5::doWork() {
 
   for (auto& objectMetadata : objectMetadatas) {
     errorCode =
-        sendData(outputPort, std::static_pointer_cast<void>(objectMetadata),
+        pushOutputData(outputPort, std::static_pointer_cast<void>(objectMetadata),
                  std::chrono::milliseconds(200));
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_WARN(

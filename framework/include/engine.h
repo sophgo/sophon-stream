@@ -97,28 +97,9 @@ class Engine {
    * @return If graph id or element id is not exist or timeout, it will return
    * error, otherwise return common::ErrorCode::SUCESS.
    */
-  common::ErrorCode sendData(
+  common::ErrorCode pushInputData(
       int graphId, int elementId, int inputPort, std::shared_ptr<void> data,
-      const std::chrono::milliseconds& timeout) {
-    IVS_DEBUG(
-        "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
-        "data: {3:p}",
-        graphId, elementId, inputPort, data.get());
-
-    auto graphIt = mElementManagerMap.find(graphId);
-    if (mElementManagerMap.end() == graphIt) {
-      IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
-      return common::ErrorCode::NO_SUCH_GRAPH_ID;
-    }
-
-    auto graph = graphIt->second;
-    if (!graph) {
-      IVS_ERROR("Graph is null, graph id: {0:d}", graphId);
-      return common::ErrorCode::UNKNOWN;
-    }
-
-    return graph->sendData(elementId, inputPort, data, timeout);
-  }
+      const std::chrono::milliseconds& timeout);
 
   void setStopHandler(int graphId, int elementId, int outputPort,
                       DataHandler dataHandler);

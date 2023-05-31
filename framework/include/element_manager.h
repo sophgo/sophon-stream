@@ -101,30 +101,9 @@ class ElementManager {
    * @return If element id is not exist or timeout, it will return error,
    * otherwise return common::ErrorCode::SUCESS.
    */
-  common::ErrorCode sendData(
+  common::ErrorCode pushInputData(
       int elementId, int inputPort, std::shared_ptr<void> data,
-      const std::chrono::milliseconds& timeout) {
-    IVS_DEBUG(
-        "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
-        "data: {3:p}",
-        mId, elementId, inputPort, data.get());
-
-    auto elementIt = mElementMap.find(elementId);
-    if (mElementMap.end() == elementIt) {
-      IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
-                elementId);
-      return common::ErrorCode::NO_SUCH_WORKER_ID;
-    }
-
-    auto element = elementIt->second;
-    if (!element) {
-      IVS_ERROR("Element is null, graph id: {0:d}, element id: {1:d}", mId,
-                elementId);
-      return common::ErrorCode::UNKNOWN;
-    }
-
-    return element->pushData(inputPort, data, timeout);
-  }
+      const std::chrono::milliseconds& timeout);
 
   void setStopHandler(int elementId, int outputPort, DataHandler dataHandler);
 

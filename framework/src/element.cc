@@ -292,8 +292,9 @@ void Element::run() {
   onStop();
 }
 
-common::ErrorCode Element::pushData(int inputPort, std::shared_ptr<void> data,
-                                    const std::chrono::milliseconds& timeout) {
+common::ErrorCode Element::pushInputData(
+    int inputPort, std::shared_ptr<void> data,
+    const std::chrono::milliseconds& timeout) {
   IVS_DEBUG("push data, element id: {0:d}, input port: {1:d}, data: {2:p}", mId,
             inputPort, data.get());
 
@@ -306,7 +307,7 @@ common::ErrorCode Element::pushData(int inputPort, std::shared_ptr<void> data,
   return inputDataPipe->pushData(data, timeout);
 }
 
-std::shared_ptr<void> Element::getData(int inputPort) const {
+std::shared_ptr<void> Element::getInputData(int inputPort) const {
   auto dataPipeIt = mInputDataPipeMap.find(inputPort);
   if (mInputDataPipeMap.end() == dataPipeIt) {
     return std::shared_ptr<void>();
@@ -320,7 +321,7 @@ std::shared_ptr<void> Element::getData(int inputPort) const {
   return inputDataPipe->getData();
 }
 
-void Element::popData(int inputPort) {
+void Element::popInputData(int inputPort) {
   IVS_DEBUG("pop data, element id: {0:d}, input port: {1:d}", mId, inputPort);
 
   auto dataPipeIt = mInputDataPipeMap.find(inputPort);
@@ -344,12 +345,12 @@ void Element::setStopHandler(int outputPort, DataHandler dataHandler) {
   mStopHandlerMap[outputPort] = dataHandler;
 }
 
-common::ErrorCode Element::sendData(int outputPort, std::shared_ptr<void> data,
-                                    const std::chrono::milliseconds& timeout) {
+common::ErrorCode Element::pushOutputData(
+    int outputPort, std::shared_ptr<void> data,
+    const std::chrono::milliseconds& timeout) {
   IVS_DEBUG("send data, element id: {0:d}, output port: {1:d}, data:{2:p}", mId,
             outputPort, data.get());
-  if (mLastElementFlag)
-  {
+  if (mLastElementFlag) {
     auto handlerIt = mStopHandlerMap.find(outputPort);
     if (mStopHandlerMap.end() != handlerIt) {
       auto dataHandler = handlerIt->second;
@@ -390,9 +391,21 @@ void Element::addOutputPort(int port) { mOutputPorts.push_back(port); }
 std::vector<int> Element::getInputPorts() { return mInputPorts; }
 std::vector<int> Element::getOutputPorts() { return mOutputPorts; };
 
+void Element::setLastElementFlag() { mLastElementFlag = true; }
 
-void Element::setLastElementFlag() {
-  mLastElementFlag = true;
+std::size_t Element::getInputDataCount(int inputPort) const {
+  auto dataPipeIt = mInputDataPipeMap.find(inputPort);
+  if (mInputDataPipeMap.end() == dataPipeIt) {
+    return 0;
+  }
+
+  auto inputDataPipe = dataPipeIt->second;
+  if (!inputDataPipe) {
+    return 0;
+  }
+
+  return inputDataPipe->getSize();
 }
+
 }  // namespace framework
 }  // namespace sophon_stream

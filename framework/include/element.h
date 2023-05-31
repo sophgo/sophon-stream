@@ -116,7 +116,7 @@ class Element {
    */
   common::ErrorCode resume();
 
-  common::ErrorCode pushData(int inputPort, std::shared_ptr<void> data,
+  common::ErrorCode pushInputData(int inputPort, std::shared_ptr<void> data,
                              const std::chrono::milliseconds& timeout);
 
   void setStopHandler(int outputPort, DataHandler dataHandler);
@@ -198,25 +198,13 @@ class Element {
    * @param inputPort : Input port.
    * @return Return data count.
    */
-  std::size_t getDataCount(int inputPort) const {
-    auto dataPipeIt = mInputDataPipeMap.find(inputPort);
-    if (mInputDataPipeMap.end() == dataPipeIt) {
-      return 0;
-    }
+  std::size_t getInputDataCount(int inputPort) const;
 
-    auto inputDataPipe = dataPipeIt->second;
-    if (!inputDataPipe) {
-      return 0;
-    }
+  std::shared_ptr<void> getInputData(int inputPort) const;
 
-    return inputDataPipe->getSize();
-  }
+  void popInputData(int inputPort);
 
-  std::shared_ptr<void> getData(int inputPort) const;
-
-  void popData(int inputPort);
-
-  common::ErrorCode sendData(int outputPort, std::shared_ptr<void> data,
+  common::ErrorCode pushOutputData(int outputPort, std::shared_ptr<void> data,
                              const std::chrono::milliseconds& timeout);
 
   common::ErrorCode getOutputDatapipeCapacity(int outputPort, int& capacity) {

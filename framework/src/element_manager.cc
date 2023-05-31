@@ -15,7 +15,6 @@
 #include <set>
 
 #include "common/logger.h"
-
 #include "element_factory.h"
 
 namespace sophon_stream {
@@ -259,9 +258,9 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
-    
+
     int numElements = elementsConfigure.size();
-    for (int elementIndex=0; elementIndex<numElements; elementIndex++) {
+    for (int elementIndex = 0; elementIndex < numElements; elementIndex++) {
       auto& elementConfigure = elementsConfigure[elementIndex];
       std::cout << elementConfigure.dump() << "\n";
       if (!elementConfigure.is_object()) {
@@ -313,7 +312,7 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
       }
 
       errorCode = element->init(elementConfigure.dump());
-      if (elementIndex==numElements-1) element->setLastElementFlag();
+      if (elementIndex == numElements - 1) element->setLastElementFlag();
       if (common::ErrorCode::SUCCESS != errorCode) {
         IVS_ERROR("Init element fail, graph id: {0:d}, name: {1}", mId,
                   nameIt->get<std::string>());
@@ -449,9 +448,9 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
                                           int dstPort) {
   auto srcElementIt = mElementMap.find(srcId);
   if (mElementMap.end() == srcElementIt) {
-      IVS_ERROR("Can not find element, graphd id: {0:d}, element id: {1:d}",
-                mId, srcId);
-      return common::ErrorCode::NO_SUCH_WORKER_ID;
+    IVS_ERROR("Can not find element, graphd id: {0:d}, element id: {1:d}", mId,
+              srcId);
+    return common::ErrorCode::NO_SUCH_WORKER_ID;
   }
 
   auto srcElement = srcElementIt->second;
@@ -463,11 +462,11 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
 
   auto dstElementIt = mElementMap.find(dstId);
   if (mElementMap.end() == dstElementIt) {
-      IVS_ERROR(
-          "Can not find module or element, graph id: {0:d}, module or element "
-          "id: {1:d}",
-          mId, dstId);
-      return common::ErrorCode::NO_SUCH_WORKER_ID;
+    IVS_ERROR(
+        "Can not find module or element, graph id: {0:d}, module or element "
+        "id: {1:d}",
+        mId, dstId);
+    return common::ErrorCode::NO_SUCH_WORKER_ID;
   }
 
   auto dstElement = dstElementIt->second;
@@ -484,29 +483,53 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
   return common::ErrorCode::SUCCESS;
 }
 
+void ElementManager::setStopHandler(int elementId, int outputPort,
+                                    DataHandler dataHandler) {
+  IVS_INFO(
+      "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
+      "{2:d}",
+      mId, elementId, outputPort);
 
-void ElementManager::setStopHandler(int elementId, int outputPort, DataHandler dataHandler) {
-    IVS_INFO(
-        "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
-        "{2:d}",
-        mId, elementId, outputPort);
-
-    auto elementIt = mElementMap.find(elementId);
-    if (mElementMap.end() == elementIt) {
-      IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
-                elementId);
-      return;
-    }
-
-    auto element = elementIt->second;
-    if (!element) {
-      IVS_ERROR("Element is null, graph id: {0:d}, element id: {1:d}", mId,
-                elementId);
-      return;
-    }
-
-    element->setStopHandler(outputPort, dataHandler);
+  auto elementIt = mElementMap.find(elementId);
+  if (mElementMap.end() == elementIt) {
+    IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
+              elementId);
+    return;
   }
 
+  auto element = elementIt->second;
+  if (!element) {
+    IVS_ERROR("Element is null, graph id: {0:d}, element id: {1:d}", mId,
+              elementId);
+    return;
+  }
+
+  element->setStopHandler(outputPort, dataHandler);
+}
+
+common::ErrorCode ElementManager::pushInputData(
+    int elementId, int inputPort, std::shared_ptr<void> data,
+    const std::chrono::milliseconds& timeout) {
+  IVS_DEBUG(
+      "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
+      "data: {3:p}",
+      mId, elementId, inputPort, data.get());
+
+  auto elementIt = mElementMap.find(elementId);
+  if (mElementMap.end() == elementIt) {
+    IVS_ERROR("Can not find element, graph id: {0:d}, element id: {1:d}", mId,
+              elementId);
+    return common::ErrorCode::NO_SUCH_WORKER_ID;
+  }
+
+  auto element = elementIt->second;
+  if (!element) {
+    IVS_ERROR("Element is null, graph id: {0:d}, element id: {1:d}", mId,
+              elementId);
+    return common::ErrorCode::UNKNOWN;
+  }
+
+  return element->pushInputData(inputPort, data, timeout);
+}
 }  // namespace framework
 }  // namespace sophon_stream
