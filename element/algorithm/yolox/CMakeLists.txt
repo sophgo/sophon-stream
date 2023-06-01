@@ -37,11 +37,12 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../share/3rdparty/spdlog/include)
     include_directories(../../../share/3rdparty/nlohmann-json/include)
 
+    include_directories(include)
     add_library(yolox SHARED
-        yolox_pre_process.cpp
-        yolox_post_process.cpp
-        yolox_inference.cpp
-        yolox.cpp
+        src/yolox_pre_process.cc
+        src/yolox_post_process.cc
+        src/yolox_inference.cc
+        src/yolox.cc
     )
 
     target_link_libraries(yolox ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
@@ -61,12 +62,12 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../share/3rdparty/nlohmann-json/include)
     include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
 
-    add_library(yolov5 SHARED
-        element/algorithm/yolov5/Yolov5Pre.cpp
-        element/algorithm/yolov5/Yolov5Post.cpp
-        element/algorithm/yolov5/Yolov5Inference.cpp
-        element/algorithm/yolov5/Yolov5SophgoContext.cpp
-        element/algorithm/yolov5/Yolov5Algorithm.cpp
-        )
-    target_link_libraries(yolov5 ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
+    include_directories(include)
+    add_library(yolox SHARED
+        src/yolox_pre_process.cc
+        src/yolox_post_process.cc
+        src/yolox_inference.cc
+        src/yolox.cc
+    )
+    target_link_libraries(yolox ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 endif()

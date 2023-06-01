@@ -72,8 +72,6 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   bool use_infer = false;
   bool use_post = false;
 
-  bool hasEof = false;
-
   common::ErrorCode initContext(const std::string& json);
 
   /**

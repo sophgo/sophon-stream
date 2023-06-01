@@ -269,7 +269,6 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
       }
 
       errorCode = element->init(elementConfigure.dump());
-      if (elementIndex == numElements - 1) element->setLastElementFlag();
       if (common::ErrorCode::SUCCESS != errorCode) {
         IVS_ERROR("Init element fail, graph id: {0:d}, name: {1}", mId,
                   nameIt->get<std::string>());

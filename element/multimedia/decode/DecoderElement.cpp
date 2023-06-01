@@ -382,9 +382,9 @@ common::ErrorCode DecoderElement::process(
     
     // printf("decode process channel_id: %d and frame_id: %d\n", objectMetadata->mFrame->mChannelId, objectMetadata->mFrame->mFrameId);
 
-    IVS_DEBUG("decode element channel id:{0}--endofstream:{1}",
-              objectMetadata->mFrame->mChannelId,
-              objectMetadata->mFrame->mEndOfStream);
+    // IVS_DEBUG("decode element channel id:{0}--endofstream:{1}",
+    //           objectMetadata->mFrame->mChannelId,
+    //           objectMetadata->mFrame->mEndOfStream);
 
     if (sourceType == 2) {
       channelInfo->mFrameCount++;

@@ -17,6 +17,7 @@ constexpr const char* Element::JSON_THREAD_NUMBER_FIELD;
 constexpr const char* Element::JSON_MILLISECONDS_TIMEOUT_FIELD;
 constexpr const char* Element::JSON_REPEATED_TIMEOUT_FIELD;
 constexpr const char* Element::JSON_CONFIGURE_FIELD;
+constexpr const char* Element::JSON_IS_SINK_FILED;
 constexpr const int Element::DEFAULT_MILLISECONDS_TIMEOUT;
 
 void Element::connect(Element& srcElement, int srcElementPort,
@@ -73,6 +74,11 @@ common::ErrorCode Element::init(const std::string& json) {
     auto sideIt = configure.find(JSON_SIDE_FIELD);
     if (configure.end() != sideIt && sideIt->is_string()) {
       mSide = sideIt->get<std::string>();
+    }
+
+    auto sinkIt = configure.find(JSON_IS_SINK_FILED);
+    if(configure.end() != sinkIt && sinkIt->is_boolean()) {
+        mLastElementFlag = sinkIt->get<bool>();
     }
 
     auto deviceIdIt = configure.find(JSON_DEVICE_ID_FIELD);
@@ -337,8 +343,6 @@ void Element::addOutputPort(int port) { mOutputPorts.push_back(port); }
 
 std::vector<int> Element::getInputPorts() { return mInputPorts; }
 std::vector<int> Element::getOutputPorts() { return mOutputPorts; };
-
-void Element::setLastElementFlag() { mLastElementFlag = true; }
 
 std::size_t Element::getInputDataCount(int inputPort) const {
   auto dataPipeIt = mInputDataPipeMap.find(inputPort);

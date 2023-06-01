@@ -52,8 +52,10 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     # usecase tests
     file(GLOB TEST_SOURCES 
-      usecase/usecase_yolov5.cc
-      # usecase/usecase_yolox.cc
+    #   usecase/usecase_yolov5.cc
+      usecase/usecase_yolov5_config_new.cc
+      usecase/usecase_yolox_config_new.cc
+    #   usecase/usecase_yolox.cc
       # usecase/usecase_unet.cc
       # usecase/usecase_yolox_tracker.cc
     )

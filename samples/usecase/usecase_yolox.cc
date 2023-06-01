@@ -165,20 +165,6 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     ElementsConfigure.push_back(post);
     istream.close();
 
-    // istream.open("../usecase/json/yolox/Encoder.json");
-    // assert(istream.is_open());
-    // istream >> encoder;
-    // encoder.at("id") = ENCODE_ID;
-    // ElementsConfigure.push_back(encoder);
-    // istream.close();
-
-    // istream.open("../usecase/json/yolox/Reporter.json");
-    // assert(istream.is_open());
-    // istream >> reporter;
-    // reporter.at("id") = REPORT_ID;
-    // ElementsConfigure.push_back(reporter);
-    // istream.close();
-
     graphConfigure["elements"] = ElementsConfigure;
     graphConfigure["connections"].push_back(
         makeConnectConfig(DECODE_ID, 0, PRE_ID, 0));
@@ -186,12 +172,10 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
         makeConnectConfig(PRE_ID, 0, YOLO_ID, 0));
     graphConfigure["connections"].push_back(
         makeConnectConfig(YOLO_ID, 0, POST_ID, 0));
-    // graphConfigure["connections"].push_back(makeConnectConfig(POST_ID, 0,
-    // REPORT_ID, 0));
 
     engine.addGraph(graphConfigure.dump());
 
-    engine.StopHandler(i + 1, POST_ID, 0, [&](std::shared_ptr<void> data) {
+    engine.setStopHandler(i + 1, POST_ID, 0, [&](std::shared_ptr<void> data) {
       IVS_DEBUG("data output 111111111111111");
       auto objectMetadata =
           std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
@@ -236,7 +220,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       if (ret == BM_SUCCESS) {
         std::string img_file =
             "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-            "_" + std::to_string(frameCount) + ".jpg";
+            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
         FILE* fp = fopen(img_file.c_str(), "wb");
         fwrite(jpeg_data, out_size, 1, fp);
         fclose(fp);
@@ -249,10 +233,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
     nlohmann::json decodeConfigure;
     decodeConfigure["channel_id"] = 1;
-    // decodeConfigure["url"] = "../test_car_person_1080P.avi";
-    decodeConfigure["url"] = "../carvana_video.mp4";
-    // decodeConfigure["url"] = "../test/13.mp4";
-    // decodeConfigure["url"] = "../test/18.mp4";
+    decodeConfigure["url"] = "../test_car_person_1080P.avi";
+    // decodeConfigure["url"] = "../carvana_video.mp4";
     decodeConfigure["resize_rate"] = 2.0f;
     decodeConfigure["timeout"] = 0;
     decodeConfigure["source_type"] = 0;
@@ -264,7 +246,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     channelTask->request.operation =
         sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
     channelTask->request.json = decodeConfigure.dump();
-    sophon_stream::common::ErrorCode errorCode = engine.sendData(
+    sophon_stream::common::ErrorCode errorCode = engine.pushInputData(
         i + 1, DECODE_ID, 0, std::static_pointer_cast<void>(channelTask),
         std::chrono::milliseconds(200));
   }

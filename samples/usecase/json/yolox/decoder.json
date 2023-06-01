@@ -6,7 +6,7 @@
     "device_id":0,
     "id":0,
     "milliseconds_timeout":200,
-    "batch_size": 1,
+    "batch_size": 4,
     "name":"decoder_element",
     "repeated_timeout":false,
     "side":"sophgo",

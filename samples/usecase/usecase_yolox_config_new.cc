@@ -55,85 +55,64 @@ void draw_bmcv(bm_handle_t& handle, int classId,
   }
 }
 
-/**
-@brief SophonYolov5集成测试函数入口
-
-@param [in] TestMultiAlgorithmGraph 测试用例命名
-@param [in] MultiAlgorithmGraph     测试命名
-@return void 无返回值
-
-@UnitCase_Name
-usecaseYolov5
-
-@UnitCase_Description
-依次经过解码、yolov5检测、编码、输出Element，检测结果存储在输入objectMetadata的mSubObjectMetadatas字段下的mSpDataInformation中。
-具体先给各个Element赋值，定义pipeline中各个Element的先后连接顺序，然后添加graph并发送数据，接受数据并实时显示结果
-
-@UnitCase_Version
-V0.1
-
-@UnitCase_Precondition
-models文件为本地文件，没有随工程一起上传，需要在对应目录放置models文件夹，包括models文件夹中应该按照目录放置对应显卡的模型文件
-
-@UnitCase_Input
-TestMultiAlgorithmGraph, MultiAlgorithmGraph
-
-@UnitCase_ExpectedResult
-播放视频，在每一帧都会进行检测并将对应的box绘制在相应位置，播放结束程序可以正常退出
-
-*/
+constexpr const char* JSON_CONFIG_GRAPH_ID_FILED = "graph_id";
 constexpr const char* JSON_CONFIG_NUM_GRAPHS_FILED = "num_graphs";
 constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
     "num_channels_per_graph";
 constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
-constexpr const char* JSON_CONFIG_ELEMENTS_ID_FILED = "elements_id";
-constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connection";
-constexpr const char* JSON_CONFIG_URL_FILED = "url";
-constexpr const char* JSON_CONFIG_CLASS_NAMES_FILED = "class_names";
+constexpr const char* JSON_CONFIG_GRAPH_NAME_FILED = "graph_name";
+constexpr const char* JSON_CONFIG_ELEMENTS_FILED = "elements";
+constexpr const char* JSON_CONFIG_ELEMENT_ID_FILED = "element_id";
+constexpr const char* JSON_CONFIG_ELEMENT_CONFIG_FILED = "element_config";
+constexpr const char* JSON_CONFIG_PORTS_CONFIG_FILED = "ports";
+constexpr const char* JSON_CONFIG_INPUT_CONFIG_FILED = "input";
+constexpr const char* JSON_CONFIG_OUTPUT_CONFIG_FILED = "output";
+constexpr const char* JSON_CONFIG_ELEMENT_IS_SINK_FILED = "is_sink";
+constexpr const char* JSON_CONFIG_ELEMENT_IS_SRC_FILED = "is_src";
+constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connections";
+constexpr const char* JSON_CONFIG_URLS_FILED = "urls";
+constexpr const char* JSON_CONFIG_PORT_ID_FILED = "port_id";
 constexpr const char* JSON_CONFIG_SRC_ID_FILED = "src_id";
 constexpr const char* JSON_CONFIG_SRC_PORT_FILED = "src_port";
 constexpr const char* JSON_CONFIG_DST_ID_FILED = "dst_id";
 constexpr const char* JSON_CONFIG_DST_PORT_FILED = "dst_port";
-constexpr const char* JSON_CONFIG_STOP_HANDLER_ID_FILED = "stop_handler_id";
-constexpr const char* JSON_CONFIG_STOP_HANDLER_PORT_FILED = "stop_handler_port";
 
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
-  std::ifstream istream;
-  nlohmann::json config;
+  ::logInit("debug", "");
 
-  // init
-  istream.open("../usecase/json/yolov5/config.json");
+  std::mutex mtx;
+  std::condition_variable cv;
+
+  sophon_stream::Clocker clocker;
+  std::atomic_uint32_t frameCount(0);
+  std::atomic_int32_t finishedChannelCount(0);
+
+  auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
+  std::ifstream istream, elem_stream;
+  nlohmann::json engine_json, config;
+  std::string engine_config_file = "../usecase/json/yolox/engine_config.json";
+  std::string config_file = "../usecase/json/yolox/config_new.json";
+
+  // 初始化engine参数，包括num_graphs, num_channels_per_graph, urls
+  istream.open(engine_config_file);
+  assert(istream.is_open());
+  istream >> engine_json;
+  istream.close();
+  int num_graphs = engine_json.find(JSON_CONFIG_NUM_GRAPHS_FILED)->get<int>();
+  int num_channels_per_graph =
+      engine_json.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED)->get<int>();
+  int num_channels = num_graphs * num_channels_per_graph;
+  std::vector<std::string> urls;
+  auto urls_it = engine_json.find(JSON_CONFIG_URLS_FILED);
+  assert(urls_it->size() == num_graphs);
+  for (auto& url_it : *urls_it) urls.push_back(url_it.get<std::string>());
+  int graph_url_idx = 0;
+  bool download_image =
+      engine_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
+  // 启动每个graph, graph之间没有联系，可以是完全不同的配置
+  istream.open(config_file);
   assert(istream.is_open());
   istream >> config;
-
-  auto num_graphs_it = config.find(JSON_CONFIG_NUM_GRAPHS_FILED);
-  auto num_channels_per_graph_it =
-      config.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED);
-  auto download_image_it = config.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED);
-  auto url_it = config.find(JSON_CONFIG_URL_FILED);
-  auto class_names_it = config.find(JSON_CONFIG_CLASS_NAMES_FILED);
-  auto stop_handler_id_it = config.find(JSON_CONFIG_STOP_HANDLER_ID_FILED);
-  auto stop_handler_port_it = config.find(JSON_CONFIG_STOP_HANDLER_PORT_FILED);
-
-  int num_graphs = num_graphs_it->get<int>();
-  int num_channels_per_graph = num_channels_per_graph_it->get<int>();
-  int num_channels = num_graphs * num_channels_per_graph;
-  bool download_image = download_image_it->get<bool>();
-  std::string url = url_it->get<std::string>();
-  std::string class_name_file = class_names_it->get<std::string>();
-  int stop_handler_id = stop_handler_id_it->get<int>();
-  int stop_handler_port = stop_handler_port_it->get<int>();
-
-  std::unordered_map<std::string, int> elements_id;
-  auto element_it = config.find(JSON_CONFIG_ELEMENTS_ID_FILED);
-  if (element_it == config.end()) {
-    IVS_ERROR("Can not find elements in json configure");
-    abort();
-  }
-  for (auto elem : element_it->items()) {
-    elements_id.insert({elem.key(), elem.value()});
-  }
-
   istream.close();
 
   if (download_image) {
@@ -151,7 +130,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
   }
 
   std::vector<std::string> classnames;
-  std::ifstream ifs(class_name_file);
+  std::ifstream ifs("../coco.names");
   if (ifs.is_open()) {
     std::string line;
     while (std::getline(ifs, line)) {
@@ -160,40 +139,60 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     }
   }
 
-  ::logInit("debug", "");
-
-  auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
-
-  std::atomic_int32_t finishedChannelCount(0);
-  std::mutex mtx;
-  std::condition_variable cv;
-  sophon_stream::Clocker clocker;
-  std::atomic_uint32_t frameCount(0);
-
-  for (int i = 0; i < num_graphs; i++) {
+  for (auto& graph_it : config) {
+    if (graph_url_idx == num_graphs) break;
     nlohmann::json graphConfigure;
-    graphConfigure["graph_id"] = i;
-    nlohmann::json ElementsConfigure;
+    nlohmann::json elementsConfigure;
+    std::pair<int, int> decode_id_port = {-1, -1};  // src_port
+    std::pair<int, int> stop_id_port = {-1, -1};    // sink_port
 
-    nlohmann::json decoder, pre, action, post;
+    int graph_id = graph_it.find(JSON_CONFIG_GRAPH_ID_FILED)->get<int>();
+    graphConfigure["graph_id"] = graph_id;
+    std::string graph_name =
+        graph_it.find(JSON_CONFIG_GRAPH_NAME_FILED)->get<std::string>();
+    auto elements_it = graph_it.find(JSON_CONFIG_ELEMENTS_FILED);
 
-    for (const std::pair<std::string, int>& kv : elements_id) {
-      nlohmann::json elem;
-      istream.open("../usecase/json/yolov5/" + kv.first);
-      assert(istream.is_open());
-      istream >> elem;
-      elem.at("id") = kv.second;
-      ElementsConfigure.push_back(elem);
-      istream.close();
+    for (auto& element_it : *elements_it) {
+      nlohmann::json element;
+      std::string elem_config =
+          element_it.find(JSON_CONFIG_ELEMENT_CONFIG_FILED)->get<std::string>();
+      elem_stream.open(elem_config);
+      assert(elem_stream.is_open());
+      elem_stream >> element;
+      element["id"] = element_it.find(JSON_CONFIG_ELEMENT_ID_FILED)->get<int>();
+
+      auto ports_it = element_it.find(JSON_CONFIG_PORTS_CONFIG_FILED);
+      auto input_it = ports_it->find(JSON_CONFIG_INPUT_CONFIG_FILED);
+      auto output_it = ports_it->find(JSON_CONFIG_OUTPUT_CONFIG_FILED);
+
+      for (auto& input : *input_it) {
+        if (input.find(JSON_CONFIG_ELEMENT_IS_SRC_FILED)->get<bool>()) {
+          if (decode_id_port.first != -1) {
+            IVS_ERROR("Too many src element");
+            abort();
+          }
+          decode_id_port = {element["id"],
+                            input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
+        }
+      }
+      for (auto& output : *output_it) {
+        if (output.find(JSON_CONFIG_ELEMENT_IS_SINK_FILED)->get<bool>()) {
+          if (stop_id_port.first != -1) {
+            IVS_ERROR("Too many sink element");
+            abort();
+          }
+          stop_id_port = {element["id"],
+                          output.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
+          element["is_sink"] = true;
+        }
+      }
+
+      elementsConfigure.push_back(element);
+      elem_stream.close();
     }
-    graphConfigure["elements"] = ElementsConfigure;
+    graphConfigure["elements"] = elementsConfigure;
 
-    auto connect_it = config.find(JSON_CONFIG_CONNECTION_FILED);
-    if (connect_it == config.end() || !connect_it->is_array() ||
-        connect_it->empty()) {
-      IVS_ERROR("Can not find elements in json configure");
-      abort();
-    }
+    auto connect_it = graph_it.find(JSON_CONFIG_CONNECTION_FILED);
     for (auto connect_config : *connect_it) {
       int src_id = connect_config.find(JSON_CONFIG_SRC_ID_FILED)->get<int>();
       int src_port =
@@ -208,7 +207,9 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     engine.addGraph(graphConfigure.dump());
 
     engine.setStopHandler(
-        i, stop_handler_id, stop_handler_port, [&](std::shared_ptr<void> data) {
+        graph_id, stop_id_port.first, stop_id_port.second,
+        [&](std::shared_ptr<void> data) {
+          // write stop data handler here
           auto objectMetadata =
               std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(
                   data);
@@ -261,29 +262,31 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
           }
         });
 
-    nlohmann::json decodeConfigure[num_channels_per_graph];
-    for (int j = 0; j < num_channels_per_graph; j++) {
-      decodeConfigure[j]["channel_id"] = j;
-      decodeConfigure[j]["url"] = url;
-      decodeConfigure[j]["resize_rate"] = 2.0f;
-      decodeConfigure[j]["timeout"] = 0;
-      decodeConfigure[j]["source_type"] = 0;
-      decodeConfigure[j]["multimedia_name"] = "decode_picture";
-      decodeConfigure[j]["reopen_times"] = -1;
+    for (int channel_id = 0; channel_id < num_channels_per_graph;
+         ++channel_id) {
+      std::string url = urls[graph_url_idx];
+      nlohmann::json decodeConfigure;
+      decodeConfigure["channel_id"] = channel_id;
+      decodeConfigure["url"] = url;
+      decodeConfigure["resize_rate"] = 2.0f;
+      decodeConfigure["timeout"] = 0;
+      decodeConfigure["source_type"] = 0;
+      decodeConfigure["multimedia_name"] = "decode_picture";
+      decodeConfigure["reopen_times"] = -1;
 
       auto channelTask =
           std::make_shared<sophon_stream::element::ChannelTask>();
       channelTask->request.operation =
           sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
-      channelTask->request.channelId = j;
-      channelTask->request.json = decodeConfigure[j].dump();
-      sophon_stream::common::ErrorCode errorCode =
-          engine.pushInputData(i, elements_id["decoder"], 0,
-                               std::static_pointer_cast<void>(channelTask),
-                               std::chrono::milliseconds(200));
+      channelTask->request.channelId = channel_id;
+      channelTask->request.json = decodeConfigure.dump();
+      sophon_stream::common::ErrorCode errorCode = engine.pushInputData(
+          graph_id, decode_id_port.first, decode_id_port.second,
+          std::static_pointer_cast<void>(channelTask),
+          std::chrono::milliseconds(200));
     }
+    ++graph_url_idx;
   }
-
   {
     std::unique_lock<std::mutex> uq(mtx);
     cv.wait(uq);

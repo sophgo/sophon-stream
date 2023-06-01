@@ -67,7 +67,6 @@ class Element {
                                   const std::chrono::milliseconds& timeout);
 
   void setStopHandler(int outputPort, DataHandler dataHandler);
-  void setLastElementFlag();
 
   int getId() const { return mId; }
 
@@ -91,6 +90,7 @@ class Element {
       "milliseconds_timeout";
   static constexpr const char* JSON_REPEATED_TIMEOUT_FIELD = "repeated_timeout";
   static constexpr const char* JSON_CONFIGURE_FIELD = "configure";
+  static constexpr const char* JSON_IS_SINK_FILED = "is_sink";
   static constexpr const int DEFAULT_MILLISECONDS_TIMEOUT = 200;
 
  protected:

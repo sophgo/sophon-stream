@@ -52,7 +52,6 @@ typedef struct {
 struct Yolov5Context {
 
   int deviceId;                             // 设备ID
-  std::vector<std::string> modelPath;       // 模型路径
 
   std::shared_ptr<BMNNContext> m_bmContext;
   std::shared_ptr<BMNNNetwork> m_bmNetwork;
