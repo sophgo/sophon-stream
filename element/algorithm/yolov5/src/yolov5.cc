@@ -117,7 +117,7 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
     if (mContext->use_tpu_kernel) {
       tpu_kernel_module_t tpu_module;
       std::string tpu_kernel_module_path =
-          "../../share/3rdparty/tpu_kernel_module/libbm1684x_kernel_module.so";
+          "../../../share/3rdparty/tpu_kernel_module/libbm1684x_kernel_module.so";
       tpu_module = tpu_kernel_load_module_file(mContext->m_bmContext->handle(),
                                                tpu_kernel_module_path.c_str());
       mContext->func_id =

@@ -1,0 +1,17 @@
+{
+  "configure":{
+      "model_path":"../data/models/yolov5s_tpukernel_int8_4b.bmodel",
+      "threshold_conf":0.5,
+      "threshold_nms":0.5,
+      "stage":["infer"],
+      "use_tpu_kernel": true
+  },
+  "shared_object":"../../../element/algorithm/yolov5/build/libyolov5.so",
+  "device_id":0,
+  "id":0,
+  "milliseconds_timeout":200,
+  "name":"Yolov5",
+  "repeated_timeout":true,
+  "side":"sophgo",
+  "thread_number":1
+}

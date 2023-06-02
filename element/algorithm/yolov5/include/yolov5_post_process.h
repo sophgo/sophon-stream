@@ -39,18 +39,17 @@ class Yolov5PostProcess {
 
   void postProcess(std::shared_ptr<Yolov5Context> context,
                    common::ObjectMetadatas& objectMetadatas);
-  
+
+ private:
   void initTpuKernel(std::shared_ptr<Yolov5Context> context);
 
   void setTpuKernelMem(std::shared_ptr<Yolov5Context> context,
                        common::ObjectMetadatas& objectMetadatas);
-
- private:
   float sigmoid(float x);
   int argmax(float* data, int num);
   void NMS(YoloV5BoxVec& dets, float nmsConfidence);
-  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
-                                                int dst_h, bool* pIsAligWidth);
+  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
+                                bool* pIsAligWidth);
 };
 
 }  // namespace yolov5

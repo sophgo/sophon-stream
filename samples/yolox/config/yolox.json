@@ -1,0 +1,26 @@
+{
+    "num_graphs": 2,
+    "num_channels_per_graph": 1,
+
+    "decodeConfigure": [
+        {
+            "url": "../data/videos/test_car_person_1080P.avi",
+            "resize_rate": 2.0,
+            "timeout": 0,
+            "source_type": 0,
+            "multimedia_name": "decode_picture",
+            "reopen_times": -1
+        },
+        {
+            "url": "../data/videos/test_car_person_1080P.avi",
+            "resize_rate": 2.0,
+            "timeout": 0,
+            "source_type": 0,
+            "multimedia_name": "decode_picture",
+            "reopen_times": -1
+        }
+    ],
+    "class_names": "../data/coco.names",
+    "download_image": false,
+    "engine_config_path": "../config/engine.json"
+}
