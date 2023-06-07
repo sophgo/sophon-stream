@@ -88,9 +88,9 @@ common::ErrorCode Bytetrack::initInternal(const std::string& json) {
 
     initContext(configure.dump());
 
-    BYTETracker bytetrackr(mContext->frameRate, mContext->trackBuffer,
-                           mContext->trackThresh, mContext->highThresh,
-                           mContext->matchThresh);
+    BYTETracker bytetracker(mContext->frameRate, mContext->trackBuffer,
+                            mContext->trackThresh, mContext->highThresh,
+                            mContext->matchThresh);
 
   } while (false);
 
@@ -103,7 +103,7 @@ common::ErrorCode Bytetrack::initInternal(const std::string& json) {
  */
 void Bytetrack::process(
     std::shared_ptr<common::ObjectMetadata>& objectMetadata) {
-  bytetrackr.update(objectMetadata);
+  bytetracker.update(objectMetadata);
 }
 
 /**

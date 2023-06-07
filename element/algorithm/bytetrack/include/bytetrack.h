@@ -50,7 +50,7 @@ class Bytetrack : public ::sophon_stream::framework::Element {
 
   common::ErrorCode initContext(const std::string& json);
 
-  BYTETracker bytetrackr;
+  BYTETracker bytetracker;
 };
 
 }  // namespace bytetrack
