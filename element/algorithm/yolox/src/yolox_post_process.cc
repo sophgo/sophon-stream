@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cmath>
+
 #include "common/logger.h"
 
 namespace sophon_stream {
@@ -18,7 +19,6 @@ namespace element {
 namespace yolox {
 
 void YoloxPostProcess::init(std::shared_ptr<YoloxContext> context) {
-
   m_box_num = 0;
   int net_w = context->net_w;
   int net_h = context->net_h;
@@ -73,7 +73,8 @@ float YoloxPostProcess::box_iou(const YoloxBox& a, const YoloxBox& b) {
 }
 
 void YoloxPostProcess::nms_sorted_bboxes(const std::vector<YoloxBox>& objects,
-                              std::vector<int>& picked, float nms_threshold) {
+                                         std::vector<int>& picked,
+                                         float nms_threshold) {
   picked.clear();
   const int n = objects.size();
 
@@ -96,8 +97,9 @@ YoloxPostProcess::~YoloxPostProcess() {
   delete[] m_expanded_strides;
 }
 
-void YoloxPostProcess::postProcess3output(std::shared_ptr<YoloxContext> context,
-                                   common::ObjectMetadatas& objectMetadatas) {
+void YoloxPostProcess::postProcess3output(
+    std::shared_ptr<YoloxContext> context,
+    common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return;
   if (objectMetadatas[0]->mFrame->mEndOfStream) return;
   std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
@@ -135,7 +137,7 @@ void YoloxPostProcess::postProcess3output(std::shared_ptr<YoloxContext> context,
     float* tensor = nullptr;
     int numDim3 = 0;
     int batchOffset = 0;
-    if (context->output_num==3) {
+    if (context->output_num == 3) {
       objectOffset = batch_idx * m_box_num * 1;
       boxOffset = batch_idx * m_box_num * 4;
       classOffset = batch_idx * m_box_num * context->class_num;
@@ -152,7 +154,7 @@ void YoloxPostProcess::postProcess3output(std::shared_ptr<YoloxContext> context,
     for (size_t i = 0; i < m_box_num; ++i) {
       // 取出物体置信度
       float box_objectness = 0;
-      if (context->output_num==3)
+      if (context->output_num == 3)
         box_objectness = objectTensor[objectOffset + i];
       else
         box_objectness = tensor[batchOffset + i * numDim3 + 4];
@@ -163,7 +165,7 @@ void YoloxPostProcess::postProcess3output(std::shared_ptr<YoloxContext> context,
       float center_y = 0;
       float w_temp = 0;
       float h_temp = 0;
-      if (context->output_num==3) {
+      if (context->output_num == 3) {
         center_x = (boxTensor[boxOffset + i * 4 + 0] + m_grids_x[i]) *
                    m_expanded_strides[i];
         center_y = (boxTensor[boxOffset + i * 4 + 1] + m_grids_y[i]) *
@@ -192,7 +194,7 @@ void YoloxPostProcess::postProcess3output(std::shared_ptr<YoloxContext> context,
 
       for (int class_idx = 0; class_idx < context->class_num; ++class_idx) {
         float box_cls_score = 0;
-        if (context->output_num==3)
+        if (context->output_num == 3)
           box_cls_score =
               classTensor[classOffset + i * context->class_num + class_idx];
         else
@@ -202,10 +204,10 @@ void YoloxPostProcess::postProcess3output(std::shared_ptr<YoloxContext> context,
           YoloxBox box;
           box.width = w_temp;
           box.height = h_temp;
-          box.left = left;
-          box.top = top;
-          box.right = right;
-          box.bottom = bottom;
+          box.left = left < 0 ? 0 : left;
+          box.top = top < 0 ? 0 : top;
+          box.right = right > frame_width ? frame_width : right;
+          box.bottom = bottom > frame_height ? frame_height : bottom;
           box.score = box_prob;
           box.class_id = class_idx;
           yolobox_vec.push_back(box);
@@ -235,10 +237,11 @@ void YoloxPostProcess::postProcess3output(std::shared_ptr<YoloxContext> context,
       objectMetadatas[batch_idx]->mSubObjectMetadatas.push_back(spObjData);
     }
   }
-                                   }
+}
 
-void YoloxPostProcess::postProcess1output(std::shared_ptr<YoloxContext> context,
-                                   common::ObjectMetadatas& objectMetadatas) {
+void YoloxPostProcess::postProcess1output(
+    std::shared_ptr<YoloxContext> context,
+    common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return;
   if (objectMetadatas[0]->mFrame->mEndOfStream) return;
   std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
@@ -262,8 +265,6 @@ void YoloxPostProcess::postProcess1output(std::shared_ptr<YoloxContext> context,
 
   float* tensor = (float*)outputTensors[0]->get_cpu_data();
   for (int batch_idx = 0; batch_idx < context->max_batch; ++batch_idx) {
-
-
     YoloxBoxVec yolobox_vec;
 
     int numDim3 = context->class_num + 5;
@@ -273,37 +274,41 @@ void YoloxPostProcess::postProcess1output(std::shared_ptr<YoloxContext> context,
       // 取出物体置信度
       float box_objectness = tensor[batchOffset + i * numDim3 + 4];
       if (box_objectness < context->thresh_conf) continue;
-      int max_class_idx = argmax(&tensor[batchOffset + i * numDim3 + 5], context->class_num);
-      float box_prob = box_objectness * tensor[batchOffset+i*numDim3+5+max_class_idx];
-      if(box_prob > context->thresh_conf) {
-        float center_x = (tensor[batchOffset + i * numDim3 + 0] + m_grids_x[i]) *
-                     m_expanded_strides[i];
-          float center_y = (tensor[batchOffset + i * numDim3 + 1] + m_grids_y[i]) *
-                     m_expanded_strides[i];
-          float w_temp =
-              exp(tensor[batchOffset + i * numDim3 + 2]) * m_expanded_strides[i];
-          float h_temp =
-              exp(tensor[batchOffset + i * numDim3 + 3]) * m_expanded_strides[i];
+      int max_class_idx =
+          argmax(&tensor[batchOffset + i * numDim3 + 5], context->class_num);
+      float box_prob = box_objectness *
+                       tensor[batchOffset + i * numDim3 + 5 + max_class_idx];
+      if (box_prob > context->thresh_conf) {
+        float center_x =
+            (tensor[batchOffset + i * numDim3 + 0] + m_grids_x[i]) *
+            m_expanded_strides[i];
+        float center_y =
+            (tensor[batchOffset + i * numDim3 + 1] + m_grids_y[i]) *
+            m_expanded_strides[i];
+        float w_temp =
+            exp(tensor[batchOffset + i * numDim3 + 2]) * m_expanded_strides[i];
+        float h_temp =
+            exp(tensor[batchOffset + i * numDim3 + 3]) * m_expanded_strides[i];
 
-          center_x *= scale;
-          center_y *= scale;
-          w_temp *= scale;
-          h_temp *= scale;
-          float left = center_x - w_temp / 2;
-          float top = center_y - h_temp / 2;
-          float right = center_x + w_temp / 2;
-          float bottom = center_y + h_temp / 2;
+        center_x *= scale;
+        center_y *= scale;
+        w_temp *= scale;
+        h_temp *= scale;
+        float left = center_x - w_temp / 2;
+        float top = center_y - h_temp / 2;
+        float right = center_x + w_temp / 2;
+        float bottom = center_y + h_temp / 2;
 
-          YoloxBox box;
-          box.width = w_temp;
-          box.height = h_temp;
-          box.left = left;
-          box.top = top;
-          box.right = right;
-          box.bottom = bottom;
-          box.score = box_prob;
-          box.class_id = max_class_idx;
-          yolobox_vec.push_back(box);
+        YoloxBox box;
+        box.width = w_temp;
+        box.height = h_temp;
+        box.left = left < 0 ? 0 : left;
+        box.top = top < 0 ? 0 : top;
+        box.right = right > frame_width ? frame_width : right;
+        box.bottom = bottom > frame_height ? frame_height : bottom;
+        box.score = box_prob;
+        box.class_id = max_class_idx;
+        yolobox_vec.push_back(box);
       }
     }
 
@@ -329,12 +334,14 @@ void YoloxPostProcess::postProcess1output(std::shared_ptr<YoloxContext> context,
       objectMetadatas[batch_idx]->mSubObjectMetadatas.push_back(spObjData);
     }
   }
-                                   }
+}
 
 void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
                                    common::ObjectMetadatas& objectMetadatas) {
-    if (context->output_num==3) postProcess3output(context, objectMetadatas);
-    else postProcess1output(context, objectMetadatas);
+  if (context->output_num == 3)
+    postProcess3output(context, objectMetadatas);
+  else
+    postProcess1output(context, objectMetadatas);
 }
 
 }  // namespace yolox

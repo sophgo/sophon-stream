@@ -1,0 +1,17 @@
+{
+    "configure": {
+        "track_thresh": 0.6,
+        "high_thresh": 0.7,
+        "match_thresh": 0.8,
+        "frame_rate": 30,
+        "track_buffer": 30
+    },
+    "shared_object": "../../../element/algorithm/bytetrack/build/libbytetrack.so",
+    "device_id": 0,
+    "id": 0,
+    "milliseconds_timeout": 200,
+    "name": "bytetrack",
+    "repeated_timeout": true,
+    "side": "sophgo",
+    "thread_number": 1
+}

@@ -1,3 +1,9 @@
 framework/build/*
 element/*/*/build/*
 samples/build/*
+
+*/*/build/*
+*.avi
+*.mp4
+*.bmodel
+*.names

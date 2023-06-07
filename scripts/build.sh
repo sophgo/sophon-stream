@@ -74,36 +74,36 @@ popd
 # fi
 # make -j
 # popd
-# 
-# element_tracker_dir=$element_dir/algorithm/tracker
-# pushd $element_tracker_dir
-# if [ ! -d "build" ]; then
-#   mkdir build
-# fi
-# cd build
-# rm -rf *
-# if [ "$1" == "Debug" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Debug ..
-# elif [ "$1" == "Release" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Release ..
-# fi
-# make -j
-# popd
-# 
-# element_decode_dir=$element_dir/multimedia/decode
-# pushd $element_decode_dir
-# if [ ! -d "build" ]; then
-#   mkdir build
-# fi
-# cd build
-# rm -rf *
-# if [ "$1" == "Debug" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Debug ..
-# elif [ "$1" == "Release" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Release ..
-# fi
-# make -j
-# popd
+#
+element_tracker_dir=$element_dir/algorithm/bytetrack
+pushd $element_tracker_dir
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+cd build
+rm -rf *
+if [ "$1" == "Debug" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+elif [ "$1" == "Release" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+fi
+make -j
+popd
+
+element_decode_dir=$element_dir/multimedia/decode
+pushd $element_decode_dir
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+cd build
+rm -rf *
+if [ "$1" == "Debug" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+elif [ "$1" == "Release" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+fi
+make -j
+popd
 
 sample_dir=${project_dir}/samples/yolox
 echo "build yolox-----"
@@ -136,6 +136,23 @@ popd
 # fi
 # make -j
 # popd
+
+
+sample_dir=${project_dir}/samples/bytetrack
+echo "build bytetrack-----"
+pushd $sample_dir
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+cd build
+rm -rf *
+if [ "$1" == "Debug" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+elif [ "$1" == "Release" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+fi
+make -j
+popd
 
 
 echo "build samples completed"
