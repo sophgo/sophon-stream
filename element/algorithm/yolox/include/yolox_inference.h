@@ -25,16 +25,9 @@ namespace yolox {
 class YoloxInference {
  public:
   ~YoloxInference();
-  /**
-   * init device and engine
-   * @param[in] context: model path,inputs and outputs name...
-   */
+
   void init(std::shared_ptr<YoloxContext> context);
 
-  /**
-   * network predict output
-   * @param[in] context: inputData and outputData
-   */
   common::ErrorCode predict(std::shared_ptr<YoloxContext> context,
                             common::ObjectMetadatas& objectMetadatas);
 

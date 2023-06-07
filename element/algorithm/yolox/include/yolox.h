@@ -53,9 +53,6 @@ class Yolox : public ::sophon_stream::framework::Element {
 
   common::ErrorCode initContext(const std::string& json);
 
-  /**
-   * @brief 需要推理的batch数
-   */
   int mBatch;
 
 

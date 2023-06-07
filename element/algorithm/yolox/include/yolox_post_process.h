@@ -35,9 +35,6 @@ struct YoloxBox {
 
 using YoloxBoxVec = std::vector<YoloxBox>;
 
-/**
- * yoloX后处理
- */
 class YoloxPostProcess {
  public:
   void init(std::shared_ptr<YoloxContext> context);
