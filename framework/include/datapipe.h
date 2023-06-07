@@ -37,12 +37,9 @@ class DataPipe {
   DataPipe(DataPipe&&) = default;
   DataPipe& operator=(DataPipe&&) = default;
 
-  common::ErrorCode pushData(std::shared_ptr<void> data,
-                             const std::chrono::milliseconds& timeout);
+  common::ErrorCode pushData(std::shared_ptr<void> data);
 
   std::shared_ptr<void> getData() const;
-
-  void popData();
 
   void setPushHandler(PushHandler pushHandler);
 
@@ -52,12 +49,16 @@ class DataPipe {
 
   std::size_t getCapacity() const;
 
+  std::shared_ptr<void> popData();
+
  private:
   std::deque<std::shared_ptr<void> > mDataQueue;
   mutable std::mutex mDataQueueMutex;
   std::condition_variable mDataQueueCond;
   PushHandler mPushHandler;
   std::size_t mCapacity;
+
+  const std::chrono::milliseconds timeout {200};
 };
 
 }  // namespace framework

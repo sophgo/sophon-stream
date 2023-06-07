@@ -5,9 +5,9 @@
 
 #include <nlohmann/json.hpp>
 
-#include "element_factory.h"
-#include "common/logger.h"
 #include "common/ObjectMetadata.h"
+#include "common/logger.h"
+#include "element_factory.h"
 
 namespace sophon_stream {
 namespace element {
@@ -110,15 +110,15 @@ void DecoderElement::onStop() {
   mThreadsPool.clear();
 }
 
-common::ErrorCode DecoderElement::doWork() {
-  auto data = getInputData(0);
+common::ErrorCode DecoderElement::doWork(int DataPipeId) {
+  common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+  auto data = getInputData(0, DataPipeId);
   if (!data) {
-    popInputData(0);
+    // popInputData(0);
     return common::ErrorCode::SUCCESS;
   }
-  popInputData(0);
+  // popInputData(0);
 
-  common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
   std::shared_ptr<ChannelTask> channelOperate =
       std::static_pointer_cast<ChannelTask>(data);
@@ -136,7 +136,6 @@ common::ErrorCode DecoderElement::doWork() {
     errorCode = resumeTask(channelOperate);
   }
 
-  // pushOutputData(1, channelOperate, std::chrono::milliseconds(200));
   return errorCode;
 }
 
@@ -379,12 +378,6 @@ common::ErrorCode DecoderElement::process(
     }
     objectMetadata->mFrame->mChannelId = channelTask->request.channelId;
     if (lastFrame) objectMetadata->mFrame->mEndOfStream = true;
-    
-    // printf("decode process channel_id: %d and frame_id: %d\n", objectMetadata->mFrame->mChannelId, objectMetadata->mFrame->mFrameId);
-
-    // IVS_DEBUG("decode element channel id:{0}--endofstream:{1}",
-    //           objectMetadata->mFrame->mChannelId,
-    //           objectMetadata->mFrame->mEndOfStream);
 
     if (sourceType == 2) {
       channelInfo->mFrameCount++;
@@ -395,27 +388,23 @@ common::ErrorCode DecoderElement::process(
     }
 
     int outputDatapipeSize = -1;
-    getOutputDatapipeSize(0, outputDatapipeSize);
-    // IVS_WARN("decode process output datapipe size is :{0}",
-    // outputDatapipeSize);
+    getOutputDatapipeSize(0, objectMetadata->mFrame->mChannelId,
+                          outputDatapipeSize);
     if (sourceType == 2 && outputDatapipeSize >= capacity) {
       IVS_WARN(
           "output datapipe0 size is too high, size is:{0}, capacity is:{1}",
           outputDatapipeSize, capacity);
       return common::ErrorCode::SUCCESS;
     }
-
+    int dataPipeId = objectMetadata->mFrame->mChannelId % getOutputConnector(0)->getDataPipeCount();
     // push data to next element
-    //  是否应该在这里之前把batch组起来
     common::ErrorCode errorCode =
-        pushOutputData(0, std::static_pointer_cast<void>(objectMetadata),
-                 std::chrono::milliseconds(200));
+        pushOutputData(0, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_WARN("Send data fail, element id: {0}, output port: {1}, data: {2:p}",
                getId(), 0, static_cast<void*>(objectMetadata.get()));
       return errorCode;
     }
-    // usleep(400000);
   } else {
     if (ret == common::ErrorCode::NOT_VIDEO_CHANNEL) {
       return ret;
@@ -423,7 +412,7 @@ common::ErrorCode DecoderElement::process(
     IVS_ERROR("getFrame failed,error code is : {0}----channel id:{1}", (int)ret,
               channelTask->request.channelId);
     channelTask->response.errorCode = ret;
-    pushOutputData(2, channelTask, std::chrono::milliseconds(200));
+    pushOutputData(2, 0, channelTask);
     // 和master协定, 报错即退出
     std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
     channelInfo->mThreadWrapper->stop(false);
@@ -461,7 +450,7 @@ common::ErrorCode DecoderElement::reopen(
     if (reopentimes >= 0) times++;
   }
   if (ret != common::ErrorCode::SUCCESS) {
-    pushOutputData(2, channelTask, std::chrono::milliseconds(200));
+    pushOutputData(2, 0, channelTask);
   }
   return ret;
 }

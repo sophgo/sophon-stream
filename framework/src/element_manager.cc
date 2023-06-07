@@ -440,8 +440,7 @@ void ElementManager::setStopHandler(int elementId, int outputPort,
 }
 
 common::ErrorCode ElementManager::pushInputData(
-    int elementId, int inputPort, std::shared_ptr<void> data,
-    const std::chrono::milliseconds& timeout) {
+    int elementId, int inputPort, std::shared_ptr<void> data) {
   IVS_DEBUG(
       "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
       "data: {3:p}",
@@ -461,7 +460,7 @@ common::ErrorCode ElementManager::pushInputData(
     return common::ErrorCode::UNKNOWN;
   }
 
-  return element->pushInputData(inputPort, data, timeout);
+  return element->pushInputData(inputPort, 0, data);
 }
 
 std::pair<std::string, int> ElementManager::getSideAndDeviceId(int elementId) {

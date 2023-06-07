@@ -42,8 +42,7 @@ class Engine {
   bool graphExist(int graphId);
 
   common::ErrorCode pushInputData(int graphId, int elementId, int inputPort,
-                                  std::shared_ptr<void> data,
-                                  const std::chrono::milliseconds& timeout);
+                                  std::shared_ptr<void> data);
 
   void setStopHandler(int graphId, int elementId, int outputPort,
                       DataHandler dataHandler);

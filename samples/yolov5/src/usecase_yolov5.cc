@@ -168,8 +168,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       channelTask->request.json = decodeConfigure.dump();
       sophon_stream::common::ErrorCode errorCode = engine.pushInputData(
           graph_id, src_id_port.first, src_id_port.second,
-          std::static_pointer_cast<void>(channelTask),
-          std::chrono::milliseconds(200));
+          std::static_pointer_cast<void>(channelTask));
     }
     ++graph_url_idx;
   }

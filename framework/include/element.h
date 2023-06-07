@@ -24,6 +24,7 @@
 
 #include "common/ErrorCode.h"
 #include "common/logger.h"
+#include "connector.h"
 #include "datapipe.h"
 
 namespace sophon_stream {
@@ -63,8 +64,8 @@ class Element {
 
   common::ErrorCode resume();
 
-  common::ErrorCode pushInputData(int inputPort, std::shared_ptr<void> data,
-                                  const std::chrono::milliseconds& timeout);
+  common::ErrorCode pushInputData(int inputPort, int dataPipeId,
+                                  std::shared_ptr<void> data);
 
   void setStopHandler(int outputPort, DataHandler dataHandler);
 
@@ -78,20 +79,14 @@ class Element {
 
   ThreadStatus getThreadStatus() const { return mThreadStatus; }
 
-  bool getMillisecondsTimeout() const { return mMillisecondsTimeout; }
-
-  bool getRepeatedTimeout() const { return mRepeatedTimeout; }
+  bool getLastElementFlag() const { return mLastElementFlag; }
 
   static constexpr const char* JSON_ID_FIELD = "id";
   static constexpr const char* JSON_SIDE_FIELD = "side";
   static constexpr const char* JSON_DEVICE_ID_FIELD = "device_id";
   static constexpr const char* JSON_THREAD_NUMBER_FIELD = "thread_number";
-  static constexpr const char* JSON_MILLISECONDS_TIMEOUT_FIELD =
-      "milliseconds_timeout";
-  static constexpr const char* JSON_REPEATED_TIMEOUT_FIELD = "repeated_timeout";
   static constexpr const char* JSON_CONFIGURE_FIELD = "configure";
   static constexpr const char* JSON_IS_SINK_FILED = "is_sink";
-  static constexpr const int DEFAULT_MILLISECONDS_TIMEOUT = 200;
 
  protected:
   virtual common::ErrorCode initInternal(const std::string& json) = 0;
@@ -100,29 +95,28 @@ class Element {
   virtual void onStart() {}
   virtual void onStop() {}
 
-  void run();
+  void run(int dataPipeId);
 
-  virtual common::ErrorCode doWork() = 0;
+  virtual common::ErrorCode doWork(int dataPipeId) = 0;
 
-  std::size_t getInputDataCount(int inputPort) const;
+  std::size_t getInputDataCount(int inputPort, int dataPipeId);
 
-  std::shared_ptr<void> getInputData(int inputPort) const;
+  std::shared_ptr<void> getInputData(int inputPort, int dataPipeId);
 
-  void popInputData(int inputPort);
-
-  common::ErrorCode pushOutputData(int outputPort, std::shared_ptr<void> data,
-                                   const std::chrono::milliseconds& timeout);
+  common::ErrorCode pushOutputData(int outputPort, int dataPipeId,
+                                   std::shared_ptr<void> data);
 
   common::ErrorCode getOutputDatapipeCapacity(int outputPort, int& capacity);
 
-  common::ErrorCode getOutputDatapipeSize(int outputPort, int& size);
+  common::ErrorCode getOutputDatapipeSize(int outputPort, int channelId,
+                                          int& size);
 
   std::vector<int> getInputPorts();
   std::vector<int> getOutputPorts();
 
- private:
-  void onInputNotify();
+  std::shared_ptr<Connector> getOutputConnector(int portId);
 
+ private:
   int mId;
 
   std::string mSide;
@@ -131,25 +125,13 @@ class Element {
 
   int mThreadNumber;
 
-  std::vector<std::shared_ptr<std::thread> > mThreads;
+  std::vector<std::shared_ptr<std::thread>> mThreads;
 
   std::atomic<ThreadStatus> mThreadStatus;
 
-  int mMillisecondsTimeout;
-
-  bool mRepeatedTimeout;
-
-  std::atomic<int> mNotifyCount;
-
-  std::mutex mMutex;
-
-  std::condition_variable mCond;
-
-  std::map<int /* inputPort */, std::shared_ptr<framework::DataPipe> >
-      mInputDataPipeMap;
-
-  std::map<int /* outputPort */, std::weak_ptr<framework::DataPipe> >
-      mOutputDataPipeMap;
+  // port_id -> shared_ptr::connector
+  std::map<int, std::shared_ptr<framework::Connector>> mInputConnectorMap;
+  std::map<int, std::shared_ptr<framework::Connector>> mOutputConnectorMap;
 
   std::map<int /* outputPort */, DataHandler> mStopHandlerMap;
 

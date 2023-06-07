@@ -8,9 +8,7 @@
     "shared_object":"../../../element/algorithm/yolox/build/libyolox.so",
     "device_id":0,
     "id":0,
-    "milliseconds_timeout":200,
     "name":"yolox",
-    "repeated_timeout":true,
     "side":"sophgo",
     "thread_number":1
 }

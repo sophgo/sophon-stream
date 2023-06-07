@@ -399,7 +399,7 @@ class BMNNContext : public NoCopyable {
   BMNNContext(BMNNHandlePtr handle, const char* bmodel_file):m_handlePtr(handle){
     bm_handle_t hdev = m_handlePtr->handle();
     m_bmrt = bmrt_create(hdev);
-    if (NULL == m_bmrt) {
+    if (nullptr == m_bmrt) {
       std::cout << "bmrt_create() failed!" << std::endl;
       exit(-1);
     }
@@ -414,7 +414,7 @@ class BMNNContext : public NoCopyable {
   }
 
   ~BMNNContext() {
-    if (m_bmrt!=NULL) {
+    if (m_bmrt!=nullptr) {
       bmrt_destroy(m_bmrt);
       m_bmrt = NULL;
     }

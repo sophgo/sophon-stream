@@ -37,6 +37,19 @@ class YoloxInference {
    */
   common::ErrorCode predict(std::shared_ptr<YoloxContext> context,
                             common::ObjectMetadatas& objectMetadatas);
+
+ private:
+  std::shared_ptr<sophon_stream::common::bmTensors> mergeInputDeviceMem(
+      std::shared_ptr<YoloxContext> context,
+      common::ObjectMetadatas& objectMetadatas);
+
+  std::shared_ptr<sophon_stream::common::bmTensors> getOutputDeviceMem(
+      std::shared_ptr<YoloxContext> context);
+
+  void splitOutputMemIntoObjectMetadatas(
+      std::shared_ptr<YoloxContext> context,
+      common::ObjectMetadatas& objectMetadatas,
+      std::shared_ptr<sophon_stream::common::bmTensors> outputTensors);
 };
 
 }  // namespace yolox

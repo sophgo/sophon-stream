@@ -50,19 +50,18 @@ class YoloxPostProcess {
   float sigmoid(float x);
   int argmax(float* data, int num);
   float box_iou(const YoloxBox& a, const YoloxBox& b);
-  void postProcess1output(std::shared_ptr<YoloxContext> context,
-                          common::ObjectMetadatas& objectMetadatas);
-  void postProcess3output(std::shared_ptr<YoloxContext> context,
-                          common::ObjectMetadatas& objectMetadatas);
+
   void nms_sorted_bboxes(const std::vector<YoloxBox>& objects,
-                                           std::vector<int>& picked,
-                                           float nms_threshold);
-   private:
-    int m_box_num;
-    int* m_grids_x = nullptr;
-    int* m_grids_y = nullptr;
-    int* m_expanded_strides = nullptr;
-  };
+                         std::vector<int>& picked, float nms_threshold);
+
+ private:
+  int m_box_num;
+  int* m_grids_x = nullptr;
+  int* m_grids_y = nullptr;
+  int* m_expanded_strides = nullptr;
+
+  int m_min_box_area = 100;
+};
 
 }  // namespace yolox
 }  // namespace element

@@ -37,10 +37,10 @@ struct DataInformation {
 };
 
 
-struct bmTensors{
+typedef struct bmTensors_{
   std::vector<std::shared_ptr<bm_tensor_t>> tensors;
   bm_handle_t handle;
-};
+} bmTensors;
 
 struct ObjectMetadata {
     ObjectMetadata()

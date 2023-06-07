@@ -14,37 +14,32 @@ constexpr const char* Element::JSON_ID_FIELD;
 constexpr const char* Element::JSON_SIDE_FIELD;
 constexpr const char* Element::JSON_DEVICE_ID_FIELD;
 constexpr const char* Element::JSON_THREAD_NUMBER_FIELD;
-constexpr const char* Element::JSON_MILLISECONDS_TIMEOUT_FIELD;
-constexpr const char* Element::JSON_REPEATED_TIMEOUT_FIELD;
 constexpr const char* Element::JSON_CONFIGURE_FIELD;
 constexpr const char* Element::JSON_IS_SINK_FILED;
-constexpr const int Element::DEFAULT_MILLISECONDS_TIMEOUT;
 
 void Element::connect(Element& srcElement, int srcElementPort,
                       Element& dstElement, int dstElementPort) {
-  auto& inputDataPipe = dstElement.mInputDataPipeMap[dstElementPort];
-  if (!inputDataPipe) {
-    inputDataPipe = std::make_shared<framework::DataPipe>();
-    inputDataPipe->setPushHandler(
-        std::bind(&Element::onInputNotify, &dstElement));
+  auto& inputConnector = dstElement.mInputConnectorMap[dstElementPort];
+  if (!inputConnector) {
+    inputConnector =
+        std::make_shared<framework::Connector>(dstElement.getThreadNumber());
+    IVS_DEBUG(
+        "InputConnector initialized, mId = {0}, inputPort = {1}, dataPipeNum = "
+        "{2}",
+        dstElement.getId(), dstElementPort, dstElement.getThreadNumber());
   }
   dstElement.addInputPort(dstElementPort);
   srcElement.addOutputPort(srcElementPort);
-  srcElement.mOutputDataPipeMap[srcElementPort] = inputDataPipe;
+  srcElement.mOutputConnectorMap[srcElementPort] = inputConnector;
 }
 
 Element::Element()
     : mId(-1),
       mDeviceId(-1),
       mThreadNumber(1),
-      mThreadStatus(ThreadStatus::STOP),
-      mNotifyCount(0),
-      mMillisecondsTimeout(0),
-      mRepeatedTimeout(false) {}
+      mThreadStatus(ThreadStatus::STOP) {}
 
-Element::~Element() {
-  // stop();
-}
+Element::~Element() {}
 
 common::ErrorCode Element::init(const std::string& json) {
   IVS_INFO("Init start, json: {0}", json);
@@ -92,19 +87,6 @@ common::ErrorCode Element::init(const std::string& json) {
       mThreadNumber = threadNumberIt->get<int>();
     }
 
-    auto millisecondsTimeoutIt =
-        configure.find(JSON_MILLISECONDS_TIMEOUT_FIELD);
-    if (configure.end() != millisecondsTimeoutIt &&
-        millisecondsTimeoutIt->is_number_integer()) {
-      mMillisecondsTimeout = millisecondsTimeoutIt->get<int>();
-    }
-
-    auto repeatedTimeoutIt = configure.find(JSON_REPEATED_TIMEOUT_FIELD);
-    if (configure.end() != repeatedTimeoutIt &&
-        repeatedTimeoutIt->is_boolean()) {
-      mRepeatedTimeout = repeatedTimeoutIt->get<bool>();
-    }
-
     std::string internalConfigure;
     auto internalConfigureIt = configure.find(JSON_CONFIGURE_FIELD);
     if (configure.end() != internalConfigureIt) {
@@ -131,16 +113,11 @@ void Element::uninit() {
   int id = mId;
   IVS_INFO("Uninit start, element id: {0:d}", id);
 
-  // stop();
-
   uninitInternal();
 
   mId = -1;
   mDeviceId = -1;
   mThreadNumber = 1;
-  mMillisecondsTimeout = 0;
-  mRepeatedTimeout = false;
-
   IVS_INFO("Uninit finish, element id: {0:d}", id);
 }
 
@@ -157,7 +134,7 @@ common::ErrorCode Element::start() {
   mThreads.reserve(mThreadNumber);
   for (int i = 0; i < mThreadNumber; ++i) {
     mThreads.push_back(
-        std::make_shared<std::thread>(std::bind(&Element::run, this)));
+        std::make_shared<std::thread>(std::bind(&Element::run, this, i)));
   }
 
   IVS_INFO("Start element thread finish, element id: {0:d}", mId);
@@ -211,88 +188,37 @@ common::ErrorCode Element::resume() {
   return common::ErrorCode::SUCCESS;
 }
 
-void Element::run() {
+void Element::run(int dataPipeId) {
   onStart();
   prctl(PR_SET_NAME, std::to_string(mId).c_str());
-  {
-    bool currentNoTimeout = true;
-    bool lastNoTimeout = true;
-    while (ThreadStatus::STOP != mThreadStatus) {
-      std::chrono::milliseconds millisecondsTimeout(
-          DEFAULT_MILLISECONDS_TIMEOUT);
-      if (ThreadStatus::PAUSE != mThreadStatus && 0 != mMillisecondsTimeout) {
-        millisecondsTimeout = std::chrono::milliseconds(mMillisecondsTimeout);
-      }
-
-      lastNoTimeout = currentNoTimeout;
-      {
-        std::unique_lock<std::mutex> lock(mMutex);
-
-        currentNoTimeout = mCond.wait_for(
-            lock, millisecondsTimeout, [this]() { return mNotifyCount > 0; });
-      }
-
-      if (ThreadStatus::PAUSE == mThreadStatus ||
-          (!currentNoTimeout && (0 == mMillisecondsTimeout ||
-                                 (!mRepeatedTimeout && !lastNoTimeout)))) {
-        // 上一次timeout: continue, 上一次noTimeout: dowork
-        // std::cout<<static_cast<int>(mThreadStatus.load())<<"--"
-        // <<currentNoTimeout<<"--"
-        // <<mMillisecondsTimeout
-        // <<"--"<<mRepeatedTimeout<<"--"<<lastNoTimeout<<std::endl;
-        continue;
-      }
-      if (currentNoTimeout) doWork();
-    }
+  while (ThreadStatus::RUN == mThreadStatus) {
+    doWork(dataPipeId);
+    std::this_thread::yield();
   }
-
   onStop();
 }
 
-common::ErrorCode Element::pushInputData(
-    int inputPort, std::shared_ptr<void> data,
-    const std::chrono::milliseconds& timeout) {
+common::ErrorCode Element::pushInputData(int inputPort, int dataPipeId,
+                                         std::shared_ptr<void> data) {
   IVS_DEBUG("push data, element id: {0:d}, input port: {1:d}, data: {2:p}", mId,
             inputPort, data.get());
 
-  auto& inputDataPipe = mInputDataPipeMap[inputPort];
-  if (!inputDataPipe) {
-    inputDataPipe = std::make_shared<framework::DataPipe>();
-    inputDataPipe->setPushHandler(std::bind(&Element::onInputNotify, this));
+  auto& inputConnector = mInputConnectorMap[inputPort];
+  if (!inputConnector) {
+    inputConnector = std::make_shared<framework::Connector>(mThreadNumber);
+    IVS_DEBUG(
+        "InputConnector initialized, mId = {0}, inputPort = {1}, dataPipeNum = "
+        "{2}",
+        mId, inputPort, mThreadNumber);
   }
-
-  return inputDataPipe->pushData(data, timeout);
+  return mInputConnectorMap[inputPort]->pushDataWithId(dataPipeId, data);
 }
 
-std::shared_ptr<void> Element::getInputData(int inputPort) const {
-  auto dataPipeIt = mInputDataPipeMap.find(inputPort);
-  if (mInputDataPipeMap.end() == dataPipeIt) {
-    return std::shared_ptr<void>();
-  }
-
-  auto inputDataPipe = dataPipeIt->second;
-  if (!inputDataPipe) {
-    return std::shared_ptr<void>();
-  }
-
-  return inputDataPipe->getData();
-}
-
-void Element::popInputData(int inputPort) {
-  IVS_DEBUG("pop data, element id: {0:d}, input port: {1:d}", mId, inputPort);
-
-  auto dataPipeIt = mInputDataPipeMap.find(inputPort);
-  if (mInputDataPipeMap.end() == dataPipeIt) {
-    return;
-  }
-
-  auto inputDataPipe = dataPipeIt->second;
-  if (!inputDataPipe) {
-    return;
-  }
-
-  inputDataPipe->popData();
-  mNotifyCount--;
+std::shared_ptr<void> Element::getInputData(int inputPort, int dataPipeId) {
+  if (mInputConnectorMap[inputPort] == nullptr)
+    mInputConnectorMap[inputPort] =
+        std::make_shared<framework::Connector>(mThreadNumber);
+  return mInputConnectorMap[inputPort]->popDataWithId(dataPipeId);
 }
 
 void Element::setStopHandler(int outputPort, DataHandler dataHandler) {
@@ -302,8 +228,7 @@ void Element::setStopHandler(int outputPort, DataHandler dataHandler) {
 }
 
 common::ErrorCode Element::pushOutputData(
-    int outputPort, std::shared_ptr<void> data,
-    const std::chrono::milliseconds& timeout) {
+    int outputPort, int dataPipeId, std::shared_ptr<void> data) {
   IVS_DEBUG("send data, element id: {0:d}, output port: {1:d}, data:{2:p}", mId,
             outputPort, data.get());
   if (mLastElementFlag) {
@@ -316,14 +241,7 @@ common::ErrorCode Element::pushOutputData(
       }
     }
   }
-
-  auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
-  if (mOutputDataPipeMap.end() != dataPipeIt) {
-    auto outputDataPipe = dataPipeIt->second.lock();
-    if (outputDataPipe) {
-      return outputDataPipe->pushData(data, timeout);
-    }
-  }
+  return mOutputConnectorMap[outputPort]->pushDataWithId(dataPipeId, data);
 
   IVS_ERROR(
       "Can not find data handler or data pipe on output port, output port: "
@@ -332,9 +250,8 @@ common::ErrorCode Element::pushOutputData(
   return common::ErrorCode::NO_SUCH_WORKER_PORT;
 }
 
-void Element::onInputNotify() {
-  ++mNotifyCount;
-  mCond.notify_one();
+std::shared_ptr<Connector> Element::getOutputConnector(int portId) {
+  return mOutputConnectorMap[portId];
 }
 
 void Element::addInputPort(int port) { mInputPorts.push_back(port); }
@@ -343,43 +260,22 @@ void Element::addOutputPort(int port) { mOutputPorts.push_back(port); }
 std::vector<int> Element::getInputPorts() { return mInputPorts; }
 std::vector<int> Element::getOutputPorts() { return mOutputPorts; };
 
-std::size_t Element::getInputDataCount(int inputPort) const {
-  auto dataPipeIt = mInputDataPipeMap.find(inputPort);
-  if (mInputDataPipeMap.end() == dataPipeIt) {
-    return 0;
-  }
-
-  auto inputDataPipe = dataPipeIt->second;
-  if (!inputDataPipe) {
-    return 0;
-  }
-
-  return inputDataPipe->getSize();
+std::size_t Element::getInputDataCount(int inputPort, int dataPipeId) {
+  return mInputConnectorMap[inputPort]->getDataCount(dataPipeId);
 }
 
 common::ErrorCode Element::getOutputDatapipeCapacity(int outputPort,
                                                      int& capacity) {
-  auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
-  if (mOutputDataPipeMap.end() != dataPipeIt) {
-    auto outputDataPipe = dataPipeIt->second.lock();
-    if (outputDataPipe) {
-      capacity = outputDataPipe->getCapacity();
-      return common::ErrorCode::SUCCESS;
-    }
-  }
-  return common::ErrorCode::NO_SUCH_WORKER_PORT;
+  capacity = mOutputConnectorMap[outputPort]->getCapacity();
+  return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode Element::getOutputDatapipeSize(int outputPort, int& size) {
-  auto dataPipeIt = mOutputDataPipeMap.find(outputPort);
-  if (mOutputDataPipeMap.end() != dataPipeIt) {
-    auto outputDataPipe = dataPipeIt->second.lock();
-    if (outputDataPipe) {
-      size = outputDataPipe->getSize();
-      return common::ErrorCode::SUCCESS;
-    }
-  }
-  return common::ErrorCode::NO_SUCH_WORKER_PORT;
+common::ErrorCode Element::getOutputDatapipeSize(int outputPort, int channelId,
+                                                 int& size) {
+  int dataPipeId =
+      channelId % mOutputConnectorMap[outputPort]->getDataPipeCount();
+  size = mOutputConnectorMap[outputPort]->getDataPipeSize(dataPipeId);
+  return common::ErrorCode::SUCCESS;
 }
 
 }  // namespace framework

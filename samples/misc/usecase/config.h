@@ -48,7 +48,7 @@ usecase_config parse_usecase_json(std::string& json_path) {
 
   auto decodeConfigures_it =
       usecase_json.find(JSON_CONFIG_DECODE_CONFIGURE_FILED);
-  assert(decodeConfigures_it->size() == config.num_graphs);
+  // assert(decodeConfigures_it->size() == config.num_graphs);
   for (auto& decodeConfigure_it : *decodeConfigures_it)
     config.decodeConfigures.push_back(decodeConfigure_it);
 

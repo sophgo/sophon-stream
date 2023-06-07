@@ -29,6 +29,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/element_manager.cc
         src/element_factory.cc
         src/engine.cc
+        src/connector.cc
     )
 
 elseif(${TARGET_ARCH} STREQUAL "soc")

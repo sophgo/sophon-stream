@@ -1,5 +1,5 @@
 {
-    "num_graphs": 2,
+    "num_graphs": 1,
     "num_channels_per_graph": 1,
 
     "decodeConfigure": [
@@ -12,7 +12,7 @@
             "reopen_times": -1
         },
         {
-            "url": "../data/videos/test_car_person_1080P.avi",
+            "url": "../data/videos/carvana_video.mp4",
             "resize_rate": 2.0,
             "timeout": 0,
             "source_type": 0,
@@ -21,6 +21,6 @@
         }
     ],
     "class_names": "../data/coco.names",
-    "download_image": false,
+    "download_image": true,
     "engine_config_path": "../config/engine.json"
 }

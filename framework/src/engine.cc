@@ -160,8 +160,7 @@ void Engine::setStopHandler(int graphId, int elementId, int outputPort,
 }
 
 common::ErrorCode Engine::pushInputData(
-    int graphId, int elementId, int inputPort, std::shared_ptr<void> data,
-    const std::chrono::milliseconds& timeout) {
+    int graphId, int elementId, int inputPort, std::shared_ptr<void> data) {
   IVS_DEBUG(
       "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
       "data: {3:p}",
@@ -179,7 +178,7 @@ common::ErrorCode Engine::pushInputData(
     return common::ErrorCode::UNKNOWN;
   }
 
-  return graph->pushInputData(elementId, inputPort, data, timeout);
+  return graph->pushInputData(elementId, inputPort, data);
 }
 
 std::pair<std::string, int> Engine::getSideAndDeviceId(int graphId,

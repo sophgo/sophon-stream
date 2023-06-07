@@ -173,7 +173,7 @@ class DecoderElement : public ::sophon_stream::framework::Element {
   void uninitInternal() override;
   void onStart() override;
   void onStop() override;
-  common::ErrorCode doWork() override;
+  common::ErrorCode doWork(int dataPipe) override;
 
   common::ErrorCode startTask(std::shared_ptr<ChannelTask>& channelTask);
 

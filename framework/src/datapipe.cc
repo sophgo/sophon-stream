@@ -18,8 +18,7 @@ DataPipe::DataPipe() : mCapacity(DEFAULT_DATA_PIPE_CAPACITY) {}
 
 DataPipe::~DataPipe() {}
 
-common::ErrorCode DataPipe::pushData(std::shared_ptr<void> data,
-                                     const std::chrono::milliseconds& timeout) {
+common::ErrorCode DataPipe::pushData(std::shared_ptr<void> data) {
   bool noTimeout = true;
   std::unique_lock<std::mutex> lock(mDataQueueMutex);
   noTimeout = mDataQueueCond.wait_for(
@@ -49,16 +48,16 @@ std::shared_ptr<void> DataPipe::getData() const {
   }
 }
 
-void DataPipe::popData() {
+std::shared_ptr<void> DataPipe::popData()
+{
+  std::lock_guard<std::mutex> lock(mDataQueueMutex);
+  std::shared_ptr<void> data = nullptr;
+  if(!mDataQueue.empty())
   {
-    std::lock_guard<std::mutex> lock(mDataQueueMutex);
-    if (mDataQueue.empty()) {
-      return;
-    }
-    mDataQueue.pop_front();
+   data = mDataQueue.front();
+   mDataQueue.pop_front(); 
   }
-
-  mDataQueueCond.notify_one();
+  return data;
 }
 
 void DataPipe::setPushHandler(PushHandler pushHandler) {

@@ -50,8 +50,7 @@ class ElementManager {
   common::ErrorCode resume();
 
   common::ErrorCode pushInputData(int elementId, int inputPort,
-                                  std::shared_ptr<void> data,
-                                  const std::chrono::milliseconds& timeout);
+                                  std::shared_ptr<void> data);
 
   void setStopHandler(int elementId, int outputPort, DataHandler dataHandler);
 

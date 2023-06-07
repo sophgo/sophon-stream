@@ -158,7 +158,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
     for (int channel_id = 0; channel_id < yolox_json.num_channels_per_graph;
          ++channel_id) {
-      nlohmann::json decodeConfigure = yolox_json.decodeConfigures[channel_id];
+      // nlohmann::json decodeConfigure = yolox_json.decodeConfigures[channel_id];
+      nlohmann::json decodeConfigure = yolox_json.decodeConfigures[0];
       decodeConfigure["channel_id"] = channel_id;
       auto channelTask =
           std::make_shared<sophon_stream::element::ChannelTask>();
@@ -168,8 +169,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       channelTask->request.json = decodeConfigure.dump();
       sophon_stream::common::ErrorCode errorCode = engine.pushInputData(
           graph_id, src_id_port.first, src_id_port.second,
-          std::static_pointer_cast<void>(channelTask),
-          std::chrono::milliseconds(200));
+          std::static_pointer_cast<void>(channelTask));
     }
     ++graph_url_idx;
   }
