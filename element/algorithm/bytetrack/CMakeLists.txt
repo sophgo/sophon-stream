@@ -13,11 +13,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fPIC")
 
-    set(FFMPEG_DIR  /opt/sophon/sophon-ffmpeg-latest/lib/cmake)
-    find_package(FFMPEG REQUIRED)
-    include_directories(${FFMPEG_INCLUDE_DIRS})
-    link_directories(${FFMPEG_LIB_DIRS})
-
     set(OpenCV_DIR  /opt/sophon/sophon-opencv-latest/lib/cmake/opencv4)
     find_package(OpenCV REQUIRED)
     include_directories(${OpenCV_INCLUDE_DIRS})
@@ -28,6 +23,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(${LIBSOPHON_INCLUDE_DIRS})
     link_directories(${LIBSOPHON_LIB_DIRS})
 
+    # use Eigen
+    find_package(Eigen3 REQUIRED)
+    include_directories(${EIGEN3_INCLUDE_DIRS})
+    link_directories(${EIGEN3_LIB_DIRS})
+
     include_directories(../../../framework/include)
     link_directories(../../../framework/build)
     link_libraries(framework)
@@ -37,13 +37,15 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../share/3rdparty/spdlog/include)
     include_directories(../../../share/3rdparty/nlohmann-json/include)
 
-    add_library(tracker SHARED
-        HungarianState.cc
-        sort.cc
-        TrackerChannel.cc
-        TrackerAlgorithm.cc
+    include_directories(include)
+    add_library(bytetrack SHARED
+        src/bytetrack.cc
+        src/bytetrack_kalmanfilter.cc
+        src/bytetrack_lapjv.cc
+        src/bytetrack_strack.cc
+        src/bytetrack_bytetracker.cc
         )
-    target_link_libraries(tracker ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
+    target_link_libraries(bytetrack ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
@@ -55,16 +57,23 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories("${SDK}/include/")
     include_directories("${SDK}/include/opencv4")
     link_directories("${SDK}/lib/")
-    include_directories(../share)
-    include_directories(../share/3rdparty/spdlog/include)
-    include_directories(../share/3rdparty/nlohmann-json/include)
-    include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
+    include_directories(../../../share)
+    include_directories(../../../share/3rdparty/spdlog/include)
+    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../share/3rdparty/gtest/ ../../../share/3rdparty/gtest/include src)
 
-    add_library(tracker SHARED
-        HungarianState.cc
-        sort.cc
-        TrackerChannel.cc
-        TrackerAlgorithm.cc
+    # use Eigen
+    find_package(Eigen3 REQUIRED)
+    include_directories(${EIGEN3_INCLUDE_DIRS})
+    link_directories(${EIGEN3_LIB_DIRS})
+
+    include_directories(include)
+    add_library(bytetrack SHARED
+        src/bytetrack.cc
+        src/bytetrack_kalmanfilter.cc
+        src/bytetrack_lapjv.cc
+        src/bytetrack_strack.cc
+        src/bytetrack_tracker.cc
         )
-    target_link_libraries(tracker ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
+    target_link_libraries(bytetrack ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 endif()

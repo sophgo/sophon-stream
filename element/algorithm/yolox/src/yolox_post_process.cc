@@ -184,6 +184,17 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
       obj->mSubObjectMetadatas.push_back(spObjData);
     }
   }
+<<<<<<< HEAD
+=======
+}
+
+void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
+                                   common::ObjectMetadatas& objectMetadatas) {
+  if (context->output_num == 3)
+    postProcess3output(context, objectMetadatas);
+  else
+    postProcess1output(context, objectMetadatas);
+>>>>>>> a40f11917e3049b6fdcfabb1dec279e3209cc2d0
 }
 
 }  // namespace yolox
