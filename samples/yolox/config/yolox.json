@@ -1,6 +1,6 @@
 {
-    "num_graphs": 1,
-    "num_channels_per_graph": 1,
+    "num_graphs": 2,
+    "num_channels_per_graph": 6,
 
     "decodeConfigure": [
         {
@@ -21,6 +21,6 @@
         }
     ],
     "class_names": "../data/coco.names",
-    "download_image": true,
+    "download_image": false,
     "engine_config_path": "../config/engine.json"
 }

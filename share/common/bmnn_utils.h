@@ -415,7 +415,7 @@ class BMNNContext : public NoCopyable {
 
   ~BMNNContext() {
     if (m_bmrt!=nullptr) {
-      bmrt_destroy(m_bmrt);
+      // bmrt_destroy(m_bmrt);
       m_bmrt = NULL;
     }
   }
