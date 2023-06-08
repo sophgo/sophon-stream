@@ -11,81 +11,11 @@
 #include <nlohmann/json.hpp>
 
 #include "common/logger.h"
+#include "engine.h"
 
-typedef struct usecase_config_ {
-  int num_graphs;
-  int num_channels_per_graph;
-  std::vector<nlohmann::json> decodeConfigures;
-  bool download_image;
-  std::string engine_config_file;
-  std::vector<std::string> class_names;
-} usecase_config;
-
-constexpr const char* JSON_CONFIG_NUM_GRAPHS_FILED = "num_graphs";
-constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
-    "num_channels_per_graph";
-constexpr const char* JSON_CONFIG_URLS_FILED = "urls";
-constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
-constexpr const char* JSON_CONFIG_ENGINE_CONFIG_PATH_FILED =
-    "engine_config_path";
-constexpr const char* JSON_CONFIG_CLASS_NAMES_FILED = "class_names";
-constexpr const char* JSON_CONFIG_DECODE_CONFIGURE_FILED = "decodeConfigure";
-
-usecase_config parse_usecase_json(std::string& json_path) {
-  std::ifstream istream;
-  istream.open(json_path);
-  assert(istream.is_open());
-  nlohmann::json usecase_json;
-  istream >> usecase_json;
-  istream.close();
-
-  usecase_config config;
-
-  config.num_graphs =
-      usecase_json.find(JSON_CONFIG_NUM_GRAPHS_FILED)->get<int>();
-  config.num_channels_per_graph =
-      usecase_json.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED)->get<int>();
-
-  auto decodeConfigures_it =
-      usecase_json.find(JSON_CONFIG_DECODE_CONFIGURE_FILED);
-  // assert(decodeConfigures_it->size() == config.num_graphs);
-  for (auto& decodeConfigure_it : *decodeConfigures_it)
-    config.decodeConfigures.push_back(decodeConfigure_it);
-
-  config.download_image =
-      usecase_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
-  config.engine_config_file =
-      usecase_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
-          ->get<std::string>();
-  std::string class_names_file =
-      usecase_json.find(JSON_CONFIG_CLASS_NAMES_FILED)->get<std::string>();
-
-  istream.open(class_names_file);
-  if (istream.is_open()) {
-    std::string line;
-    while (std::getline(istream, line)) {
-      line = line.substr(0, line.length() - 1);
-      config.class_names.push_back(line);
-    }
-  }
-  istream.close();
-  if (config.download_image) {
-    const char* dir_path = "./results";
-    struct stat info;
-    if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
-      std::cout << "Directory already exists." << std::endl;
-    } else {
-      if (mkdir(dir_path, 0777) == 0) {
-        std::cout << "Directory created successfully." << std::endl;
-      } else {
-        std::cerr << "Error creating directory." << std::endl;
-      }
-    }
-  }
-
-  return std::move(config);
-}
-
+constexpr const char* JSON_CONFIG_GRAPH_ID_FILED = "graph_id";
+constexpr const char* JSON_CONFIG_ELEMENTS_FILED = "elements";
+constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connections";
 constexpr const char* JSON_CONFIG_ELEMENT_CONFIG_FILED = "element_config";
 constexpr const char* JSON_CONFIG_ELEMENT_ID_FILED = "element_id";
 constexpr const char* JSON_CONFIG_PORTS_CONFIG_FILED = "ports";
@@ -162,5 +92,30 @@ void parse_connection_json(
     connectConf["dst_id"] = dst_element_id;
     connectConf["dst_port"] = dst_port;
     graphConfigure["connections"].push_back(connectConf);
+  }
+}
+
+void init_engine(
+    sophon_stream::framework::Engine& engine, nlohmann::json& engine_json,
+    const sophon_stream::framework::Engine::DataHandler& stopHandler,
+    std::map<int, std::pair<int, int>>& graph_src_id_port_map) {
+  for (auto& graph_it : engine_json) {
+    nlohmann::json graphConfigure, elementsConfigure;
+    std::pair<int, int> src_id_port = {-1, -1};   // src_port
+    std::pair<int, int> sink_id_port = {-1, -1};  // sink_port
+
+    int graph_id = graph_it.find(JSON_CONFIG_GRAPH_ID_FILED)->get<int>();
+    graphConfigure["graph_id"] = graph_id;
+    auto elements_it = graph_it.find(JSON_CONFIG_ELEMENTS_FILED);
+    parse_element_json(elements_it, elementsConfigure, src_id_port,
+                       sink_id_port);
+    graphConfigure["elements"] = elementsConfigure;
+    auto connect_it = graph_it.find(JSON_CONFIG_CONNECTION_FILED);
+    parse_connection_json(connect_it, graphConfigure);
+
+    engine.addGraph(graphConfigure.dump());
+    engine.setStopHandler(graph_id, sink_id_port.first, sink_id_port.second,
+                          stopHandler);
+    graph_src_id_port_map[graph_id] = src_id_port;
   }
 }

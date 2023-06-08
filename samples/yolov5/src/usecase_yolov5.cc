@@ -162,9 +162,9 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
       nlohmann::json decodeConfigure = yolov5_json.decodeConfigures[0];
       decodeConfigure["channel_id"] = channel_id;
       auto channelTask =
-          std::make_shared<sophon_stream::element::ChannelTask>();
+          std::make_shared<sophon_stream::element::decode::ChannelTask>();
       channelTask->request.operation =
-          sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
+          sophon_stream::element::decode::ChannelOperateRequest::ChannelOperate::START;
       channelTask->request.channelId = channel_id;
       channelTask->request.json = decodeConfigure.dump();
       sophon_stream::common::ErrorCode errorCode = engine.pushInputData(

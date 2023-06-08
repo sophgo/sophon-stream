@@ -75,21 +75,6 @@ popd
 # make -j
 # popd
 # 
-# element_tracker_dir=$element_dir/algorithm/tracker
-# pushd $element_tracker_dir
-# if [ ! -d "build" ]; then
-#   mkdir build
-# fi
-# cd build
-# rm -rf *
-# if [ "$1" == "Debug" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Debug ..
-# elif [ "$1" == "Release" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Release ..
-# fi
-# make -j
-# popd
-# 
 element_decode_dir=$element_dir/multimedia/decode
 pushd $element_decode_dir
 if [ ! -d "build" ]; then
@@ -105,24 +90,8 @@ fi
 make -j
 popd
 
-# sample_dir=${project_dir}/samples/yolox
-# echo "build yolox-----"
-# pushd $sample_dir
-# if [ ! -d "build" ]; then
-#   mkdir build
-# fi
-# cd build
-# rm -rf *
-# if [ "$1" == "Debug" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Debug ..
-# elif [ "$1" == "Release" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Release ..
-# fi
-# make -j
-# popd
-
-sample_dir=${project_dir}/samples/yolov5
-echo "build yolov5-----"
+sample_dir=${project_dir}/samples/yolox
+echo "build yolox-----"
 pushd $sample_dir
 if [ ! -d "build" ]; then
   mkdir build
@@ -136,6 +105,22 @@ elif [ "$1" == "Release" ]; then
 fi
 make -j
 popd
+
+# sample_dir=${project_dir}/samples/yolov5
+# echo "build yolov5-----"
+# pushd $sample_dir
+# if [ ! -d "build" ]; then
+#   mkdir build
+# fi
+# cd build
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release ..
+# fi
+# make -j
+# popd
 
 
 # sample_dir=${project_dir}/samples/bytetrack

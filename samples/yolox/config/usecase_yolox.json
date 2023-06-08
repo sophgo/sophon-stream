@@ -1,0 +1,10 @@
+{
+  "num_channels_per_graph": 2,
+  "channel": {
+    "url": "../data/videos/test_car_person_1080P.avi",
+    "source_type": 0
+  },
+  "class_names": "../data/coco.names",
+  "download_image": true,
+  "engine_config_path": "../config/engine.json"
+}

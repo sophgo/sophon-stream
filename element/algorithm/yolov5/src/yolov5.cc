@@ -210,7 +210,7 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
 
   common::ObjectMetadatas objectMetadatas;
   std::vector<int> inputPorts = getInputPorts();
-  std::vector<int> outputPorts = getInputPorts();
+  std::vector<int> outputPorts = getOutputPorts();
   int inputPort = inputPorts[0];
   int outputPort = outputPorts[0];
 

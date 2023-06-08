@@ -45,19 +45,17 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../share)
     include_directories(../../share/3rdparty/spdlog/include)
     include_directories(../../share/3rdparty/nlohmann-json/include)
-    include_directories(../../element/multimedia/decode)
+    include_directories(../../element/multimedia/decode/include)
     include_directories(../../framework/include)
     include_directories(../misc/usecase)
 
-    # usecase tests
-    file(GLOB TEST_SOURCES 
+    include_directories(../include)
+    set(test_src
         src/usecase_yolox.cc
     )
-    foreach(test_src ${TEST_SOURCES})
-        get_filename_component(test_name ${test_src} NAME_WE)
-        add_executable(${test_name} ${test_src})
-        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -lframework)
-    endforeach(test_src)
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src})
+    target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -lframework)
 
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
@@ -99,7 +97,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../share)
     include_directories(../../share/3rdparty/spdlog/include)
     include_directories(../../share/3rdparty/nlohmann-json/include)
-    include_directories(../../element/multimedia/decode)
+    include_directories(../../element/multimedia/decode/include)
     include_directories(../../framework/include)
     include_directories(../misc/usecase)
 
