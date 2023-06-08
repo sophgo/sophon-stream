@@ -49,6 +49,8 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -g -rdynamic")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -fprofile-arcs -ftest-coverage -g -rdynamic")
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
@@ -72,5 +74,5 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
         src/yolox_inference.cc
         src/yolox.cc
     )
-    target_link_libraries(yolox ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
+    target_link_libraries(yolox ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -fprofile-arcs -lgcov -lpthread)
 endif()
