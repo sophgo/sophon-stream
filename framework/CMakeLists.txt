@@ -33,8 +33,8 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     )
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -g -rdynamic")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -fprofile-arcs -g -rdynamic")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -g -rdynamic")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -fprofile-arcs -ftest-coverage -g -rdynamic")
     add_compile_options(-fPIC)
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
@@ -89,5 +89,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
         src/engine.cc
         src/connector.cc
     )
+    target_link_libraries(framework -fprofile-arcs -lgcov)
 
 endif()
