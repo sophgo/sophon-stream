@@ -1,0 +1,9 @@
+{
+  "configure": {},
+  "shared_object": "../../../element/multimedia/decode/build/libdecode.so",
+  "device_id": 0,
+  "id": 0,
+  "name": "decode",
+  "side": "sophgo",
+  "thread_number": 1
+}

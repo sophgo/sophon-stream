@@ -49,6 +49,8 @@ class Engine {
 
   std::pair<std::string, int> getSideAndDeviceId(int graphId, int elementId);
 
+  std::vector<int> getGraphIds();
+
  private:
   friend class common::Singleton<Engine>;
 
@@ -64,6 +66,8 @@ class Engine {
   std::map<int /* graphId */, std::shared_ptr<framework::ElementManager> >
       mElementManagerMap;
   std::mutex mElementManagerMapLock;
+
+  std::vector<int> mGraphIds;
 };
 
 using SingletonEngine = common::Singleton<Engine>;

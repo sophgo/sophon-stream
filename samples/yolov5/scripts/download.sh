@@ -12,17 +12,13 @@ python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/9rx7IaGeM
 mv test_car_person_1080P.avi ../data/videos
 
 mkdir -p ../data/models
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/1oARRrhko
-unzip BM1684X.zip
-rm -rf BM1684X.zip
-mv ./BM1684X ../data/models
-
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/bfIf7SKRo
-unzip BM1684.zip
-rm -rf BM1684.zip
-mv ./BM1684 ../data/models
+python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/EEI2Vssro
+mv ./yolov5s_tpukernel_int8_4b.bmodel ../data/models
 
 python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/9JzgcqIYv
 mv ./coco.names ../data/
+
+python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/tsVSE1KqJ
+mv ./tpu_kernel_module ../../../share/3rdparty/
 
 popd

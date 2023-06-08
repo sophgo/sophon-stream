@@ -119,7 +119,6 @@ common::ErrorCode DecoderElement::doWork(int DataPipeId) {
   }
   // popInputData(0);
 
-
   std::shared_ptr<ChannelTask> channelOperate =
       std::static_pointer_cast<ChannelTask>(data);
   if (channelOperate->request.operation ==
@@ -164,10 +163,10 @@ common::ErrorCode DecoderElement::startTask(
   }
 
   int capacity = -1;
-  common::ErrorCode errorCode = getOutputDatapipeCapacity(0, capacity);
-  if (errorCode == common::ErrorCode::SUCCESS && capacity != -1) {
-    IVS_INFO("decoder element output 0 capacity is: {0}", capacity);
-  }
+  // common::ErrorCode errorCode = getOutputDatapipeCapacity(0, capacity);
+  // if (errorCode == common::ErrorCode::SUCCESS && capacity != -1) {
+  //   IVS_INFO("decoder element output 0 capacity is: {0}", capacity);
+  // }
   std::shared_ptr<ChannelInfo> channelInfo = std::make_shared<ChannelInfo>();
 
   channelInfo->mThreadWrapper = std::make_shared<ThreadWrapper>();
@@ -388,18 +387,20 @@ common::ErrorCode DecoderElement::process(
     }
 
     int outputDatapipeSize = -1;
-    getOutputDatapipeSize(0, objectMetadata->mFrame->mChannelId,
-                          outputDatapipeSize);
+    // getOutputDatapipeSize(0, objectMetadata->mFrame->mChannelId,
+    //                       outputDatapipeSize);
     if (sourceType == 2 && outputDatapipeSize >= capacity) {
       IVS_WARN(
           "output datapipe0 size is too high, size is:{0}, capacity is:{1}",
           outputDatapipeSize, capacity);
       return common::ErrorCode::SUCCESS;
     }
-    int dataPipeId = objectMetadata->mFrame->mChannelId % getOutputConnector(0)->getDataPipeCount();
+    if (getLastElementFlag()) return common::ErrorCode::SUCCESS;
+    int dataPipeId = objectMetadata->mFrame->mChannelId %
+                     getOutputConnector(0)->getDataPipeCount();
     // push data to next element
-    common::ErrorCode errorCode =
-        pushOutputData(0, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
+    common::ErrorCode errorCode = pushOutputData(
+        0, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_WARN("Send data fail, element id: {0}, output port: {1}, data: {2:p}",
                getId(), 0, static_cast<void*>(objectMetadata.get()));

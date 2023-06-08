@@ -115,6 +115,7 @@ common::ErrorCode Engine::addGraph(const std::string& json) {
 
     mElementManagerMap[graph->getId()] = graph;
     IVS_INFO("Add graph finish, json: {0}", json);
+    mGraphIds.push_back(graph->getId());
 
   } while (false);
 
@@ -199,6 +200,11 @@ std::pair<std::string, int> Engine::getSideAndDeviceId(int graphId,
   }
 
   return graph->getSideAndDeviceId(elementId);
+}
+
+
+std::vector<int> Engine::getGraphIds() {
+  return mGraphIds;
 }
 
 }  // namespace framework

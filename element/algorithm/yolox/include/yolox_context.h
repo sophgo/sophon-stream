@@ -32,8 +32,6 @@ struct YoloxContext {
 
   std::shared_ptr<BMNNContext> bmContext;
   std::shared_ptr<BMNNNetwork> bmNetwork;
-  std::vector<bm_image> resized_imgs;
-  std::vector<bm_image> converto_imgs;
   bm_handle_t handle;
 
   float thresh_conf;  // 置信度阈值

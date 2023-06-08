@@ -9,8 +9,9 @@
 
 #include "yolov5_post_process.h"
 
-#include "common/logger.h"
 #include <cmath>
+
+#include "common/logger.h"
 
 namespace sophon_stream {
 namespace element {
@@ -34,8 +35,9 @@ int Yolov5PostProcess::argmax(float* data, int num) {
 
 float Yolov5PostProcess::sigmoid(float x) { return 1.0 / (1 + expf(-x)); }
 
-float Yolov5PostProcess::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
-                                                int dst_h, bool* pIsAligWidth) {
+float Yolov5PostProcess::get_aspect_scaled_ratio(int src_w, int src_h,
+                                                 int dst_w, int dst_h,
+                                                 bool* pIsAligWidth) {
   float ratio;
   float r_w = (float)dst_w / src_w;
   float r_h = (float)dst_h / src_h;
@@ -85,81 +87,71 @@ void Yolov5PostProcess::NMS(YoloV5BoxVec& dets, float nmsConfidence) {
   }
 }
 
-void Yolov5PostProcess::initTpuKernel(std::shared_ptr<Yolov5Context> context) {
-  context->has_init = true;
-
-  tpu_kernel_module_t tpu_module;
-  std::string tpu_kernel_module_path =
-      "../../share/3rdparty/tpu_kernel_module/libbm1684x_kernel_module.so";
-  tpu_module = tpu_kernel_load_module_file(context->m_bmContext->handle(),
-                                           tpu_kernel_module_path.c_str());
-  context->func_id =
-      tpu_kernel_get_function(context->m_bmContext->handle(), tpu_module,
-                              "tpu_kernel_api_yolov5_detect_out");
-  std::cout << "Using tpu_kernel yolo postprocession, kernel funtion id: "
-            << context->func_id << std::endl;
-  return;
-}
-
 void Yolov5PostProcess::setTpuKernelMem(
     std::shared_ptr<Yolov5Context> context,
-    common::ObjectMetadatas& objectMetadatas) {
+    common::ObjectMetadatas& objectMetadatas, tpu_kernel& tpu_k) {
   int out_len_max = 25200 * 7;
   int input_num = objectMetadatas[0]->mOutputBMtensors->tensors.size();  // 3
   int batch_num = 1;  // 4b has bug, now only for 1b.
+  tpu_k.func_id = context->func_id;
+  const std::vector<std::vector<std::vector<int>>> anchors{
+      {{10, 13}, {16, 30}, {33, 23}},
+      {{30, 61}, {62, 45}, {59, 119}},
+      {{116, 90}, {156, 198}, {373, 326}}};
+  bm_handle_t handle_ = context->bmContext->handle();
 
-  bm_handle_t handle_ = context->m_bmContext->handle();
-  bm_device_mem_t in_dev_mem[input_num];
-  for (int i = 0; i < input_num; i++)
-    in_dev_mem[i] =
-        objectMetadatas[0]->mOutputBMtensors->tensors[i]->device_mem;
-
-  for (int i = 0; i < context->max_batch; i++) {
-    context->output_tensor[i] = new float[out_len_max];
-    for (int j = 0; j < input_num; j++) {
-      context->api[i].bottom_addr[j] =
-          bm_mem_get_device_addr(in_dev_mem[j]) +
-          i * in_dev_mem[j].size / context->max_batch;
+  std::vector<std::vector<std::shared_ptr<bm_device_mem_t>>> in_dev_mems(
+      context->max_batch,
+      std::vector<std::shared_ptr<bm_device_mem_t>>(input_num));
+  for (int batch_idx = 0; batch_idx < context->max_batch; ++batch_idx) {
+    if (objectMetadatas[batch_idx]->mFrame->mEndOfStream) break;
+    for (int i = 0; i < input_num; i++)
+      in_dev_mems[batch_idx][i] = std::make_shared<bm_device_mem_t>(
+          objectMetadatas[batch_idx]->mOutputBMtensors->tensors[i]->device_mem);
+    tpu_k.output_tensor[batch_idx] = new float[out_len_max];
+    for (int j = 0; j < input_num; ++j) {
+      tpu_k.api[batch_idx].bottom_addr[j] =
+          bm_mem_get_device_addr(*in_dev_mems[batch_idx][j]);
     }
-    auto ret = bm_malloc_device_byte(handle_, &context->out_dev_mem[i],
+    auto ret = bm_malloc_device_byte(handle_, &tpu_k.out_dev_mem[batch_idx],
                                      out_len_max * sizeof(float));
     assert(BM_SUCCESS == ret);
-    ret = bm_malloc_device_byte(handle_, &context->detect_num_mem[i],
+    ret = bm_malloc_device_byte(handle_, &tpu_k.detect_num_mem[batch_idx],
                                 batch_num * sizeof(int32_t));
     assert(BM_SUCCESS == ret);
-    context->api[i].top_addr = bm_mem_get_device_addr(context->out_dev_mem[i]);
-    context->api[i].detected_num_addr =
-        bm_mem_get_device_addr(context->detect_num_mem[i]);
+    tpu_k.api[batch_idx].top_addr =
+        bm_mem_get_device_addr(tpu_k.out_dev_mem[batch_idx]);
+    tpu_k.api[batch_idx].detected_num_addr =
+        bm_mem_get_device_addr(tpu_k.detect_num_mem[batch_idx]);
 
     // config
-    context->api[i].input_num = input_num;
-    context->api[i].batch_num = batch_num;
+    tpu_k.api[batch_idx].input_num = input_num;
+    tpu_k.api[batch_idx].batch_num = batch_num;
     for (int j = 0; j < input_num; ++j) {
-      context->api[i].hw_shape[j][0] =
-          context->m_bmNetwork->outputTensor(j)->get_shape()->dims[2];
-      context->api[i].hw_shape[j][1] =
-          context->m_bmNetwork->outputTensor(j)->get_shape()->dims[3];
+      tpu_k.api[batch_idx].hw_shape[j][0] =
+          context->bmNetwork->outputTensor(j)->get_shape()->dims[2];
+      tpu_k.api[batch_idx].hw_shape[j][1] =
+          context->bmNetwork->outputTensor(j)->get_shape()->dims[3];
     }
-    context->api[i].num_classes = context->class_num;
-    const std::vector<std::vector<std::vector<int>>> anchors{
-        {{10, 13}, {16, 30}, {33, 23}},
-        {{30, 61}, {62, 45}, {59, 119}},
-        {{116, 90}, {156, 198}, {373, 326}}};
-    context->api[i].num_boxes = anchors[0].size();
-    context->api[i].keep_top_k = 200;
-    context->api[i].nms_threshold = 0.1 > context->thresh_nms ? 0.1 : context->thresh_nms;
-    context->api[i].confidence_threshold = 0.1 > context->thresh_conf ? 0.1 : context->thresh_conf;
-    auto it = context->api[i].bias;
+    tpu_k.api[batch_idx].num_classes = context->class_num;
+    tpu_k.api[batch_idx].num_boxes = anchors[0].size();
+    tpu_k.api[batch_idx].keep_top_k = 200;
+    tpu_k.api[batch_idx].nms_threshold =
+        0.1 > context->thresh_nms ? 0.1 : context->thresh_nms;
+    tpu_k.api[batch_idx].confidence_threshold =
+        0.1 > context->thresh_conf ? 0.1 : context->thresh_conf;
+    auto it = tpu_k.api[batch_idx].bias;
     for (const auto& subvector2 : anchors) {
       for (const auto& subvector1 : subvector2) {
         it = copy(subvector1.begin(), subvector1.end(), it);
       }
     }
-    for (int j = 0; j < input_num; j++)
-      context->api[i].anchor_scale[j] =
-          context->m_net_h /
-          context->m_bmNetwork->outputTensor(j)->get_shape()->dims[2];
-    context->api[i].clip_box = 1;
+    for (int j = 0; j < input_num; ++j) {
+      tpu_k.api[batch_idx].anchor_scale[j] =
+          context->net_h /
+          context->bmNetwork->outputTensor(j)->get_shape()->dims[2];
+    }
+    tpu_k.api[batch_idx].clip_box = 1;
   }
 }
 
@@ -169,51 +161,51 @@ void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
   if (objectMetadatas.size() == 0) return;
   if (objectMetadatas[0]->mFrame->mEndOfStream) return;
   if (context->use_tpu_kernel) {
-    setTpuKernelMem(context, objectMetadatas);
+    tpu_kernel tpu_k;
+    setTpuKernelMem(context, objectMetadatas, tpu_k);
     for (int i = 0; i < context->max_batch; i++) {
-      if(objectMetadatas[i]->mFrame->mEndOfStream) 
-        break;
+      if (objectMetadatas[i]->mFrame->mEndOfStream) break;
       bm_image image = *objectMetadatas[i]->mFrame->mSpData;
       int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO
       bool isAlignWidth = false;
       float ratio =
-          get_aspect_scaled_ratio(image.width, image.height, context->m_net_w,
-                                  context->m_net_h, &isAlignWidth);
+          get_aspect_scaled_ratio(image.width, image.height, context->net_w,
+                                  context->net_h, &isAlignWidth);
       if (isAlignWidth) {
-        ty1 = (int)((context->m_net_h - (int)(image.height * ratio)) / 2);
+        ty1 = (int)((context->net_h - (int)(image.height * ratio)) / 2);
       } else {
-        tx1 = (int)((context->m_net_w - (int)(image.width * ratio)) / 2);
+        tx1 = (int)((context->net_w - (int)(image.width * ratio)) / 2);
       }
 #endif
 
-      tpu_kernel_launch(context->m_bmContext->handle(), context->func_id,
-                        &context->api[i], sizeof(context->api[i]));
-      bm_thread_sync(context->m_bmContext->handle());
+      tpu_kernel_launch(context->bmContext->handle(), tpu_k.func_id,
+                        &tpu_k.api[i], sizeof(tpu_k.api[i]));
+      bm_thread_sync(context->bmContext->handle());
       bm_memcpy_d2s_partial_offset(
-          context->m_bmContext->handle(), (void*)(context->detect_num + i),
-          context->detect_num_mem[i],
-          context->api[i].batch_num * sizeof(int32_t), 0);
+          context->bmContext->handle(), (void*)(tpu_k.detect_num + i),
+          tpu_k.detect_num_mem[i],
+          tpu_k.api[i].batch_num * sizeof(int32_t), 0);
       bm_memcpy_d2s_partial_offset(
-          context->m_bmContext->handle(), (void*)context->output_tensor[i],
-          context->out_dev_mem[i], context->detect_num[i] * 7 * sizeof(float),
+          context->bmContext->handle(), (void*)tpu_k.output_tensor[i],
+          tpu_k.out_dev_mem[i], tpu_k.detect_num[i] * 7 * sizeof(float),
           0);  // 25200*7
 
-      for (int bid = 0; bid < context->detect_num[i]; bid++) {
+      for (int bid = 0; bid < tpu_k.detect_num[i]; bid++) {
         YoloV5Box temp_bbox;
-        temp_bbox.class_id = *(context->output_tensor[i] + 7 * bid + 1);
+        temp_bbox.class_id = *(tpu_k.output_tensor[i] + 7 * bid + 1);
         if (temp_bbox.class_id == -1) {
           continue;
         }
-        temp_bbox.score = *(context->output_tensor[i] + 7 * bid + 2);
+        temp_bbox.score = *(tpu_k.output_tensor[i] + 7 * bid + 2);
         float centerX =
-            (*(context->output_tensor[i] + 7 * bid + 3) + 1 - tx1) / ratio - 1;
+            (*(tpu_k.output_tensor[i] + 7 * bid + 3) + 1 - tx1) / ratio - 1;
         float centerY =
-            (*(context->output_tensor[i] + 7 * bid + 4) + 1 - ty1) / ratio - 1;
+            (*(tpu_k.output_tensor[i] + 7 * bid + 4) + 1 - ty1) / ratio - 1;
         temp_bbox.width =
-            (*(context->output_tensor[i] + 7 * bid + 5) + 0.5) / ratio;
+            (*(tpu_k.output_tensor[i] + 7 * bid + 5) + 0.5) / ratio;
         temp_bbox.height =
-            (*(context->output_tensor[i] + 7 * bid + 6) + 0.5) / ratio;
+            (*(tpu_k.output_tensor[i] + 7 * bid + 6) + 0.5) / ratio;
 
         temp_bbox.x = std::max(int(centerX - temp_bbox.width / 2), 0);
         temp_bbox.y = std::max(int(centerY - temp_bbox.height / 2), 0);
@@ -230,13 +222,11 @@ void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
         spObjData->mDetectedObjectMetadata->mClassify = temp_bbox.class_id;
         objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
       }
-    }
-    int input_num = context->m_bmNetwork->outputTensorNum();
-    for (int i = 0; i < input_num; ++i) {
-      bm_free_device(objectMetadatas[0]->mOutputBMtensors->handle,
-                     context->out_dev_mem[i]);
-      bm_free_device(objectMetadatas[0]->mOutputBMtensors->handle,
-                     context->detect_num_mem[i]);
+      delete []tpu_k.output_tensor[i];
+      bm_free_device(context->bmContext->handle(),
+                     tpu_k.out_dev_mem[i]);
+      bm_free_device(context->bmContext->handle(),
+                     tpu_k.detect_num_mem[i]);
     }
   } else {
     YoloV5BoxVec yolobox_vec;
@@ -244,10 +234,10 @@ void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
     for (int i = 0; i < context->output_num; i++) {
       outputTensors[i] = std::make_shared<BMNNTensor>(
           objectMetadatas[0]->mOutputBMtensors->handle,
-          context->m_bmNetwork->m_netinfo->output_names[i],
-          context->m_bmNetwork->m_netinfo->output_scales[i],
+          context->bmNetwork->m_netinfo->output_names[i],
+          context->bmNetwork->m_netinfo->output_scales[i],
           objectMetadatas[0]->mOutputBMtensors->tensors[i].get(),
-          context->m_bmNetwork->is_soc);
+          context->bmNetwork->is_soc);
     }
 
     for (int batch_idx = 0; batch_idx < context->max_batch; ++batch_idx) {
@@ -259,19 +249,19 @@ void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
 #ifdef USE_ASPECT_RATIO
       bool isAlignWidth = false;
       float ratio =
-          get_aspect_scaled_ratio(frame_width, frame_height, context->m_net_w,
-                                  context->m_net_h, &isAlignWidth);
+          get_aspect_scaled_ratio(frame_width, frame_height, context->net_w,
+                                  context->net_h, &isAlignWidth);
       if (isAlignWidth) {
-        ty1 = (int)((context->m_net_h - (int)(frame_height * ratio)) / 2);
+        ty1 = (int)((context->net_h - (int)(frame_height * ratio)) / 2);
       } else {
-        tx1 = (int)((context->m_net_w - (int)(frame_width * ratio)) / 2);
+        tx1 = (int)((context->net_w - (int)(frame_width * ratio)) / 2);
       }
 #endif
 
       int min_idx = 0;
       int box_num = 0;
       for (int i = 0; i < context->output_num; i++) {
-        auto output_shape = context->m_bmNetwork->outputTensor(i)->get_shape();
+        auto output_shape = context->bmNetwork->outputTensor(i)->get_shape();
         auto output_dims = output_shape->num_dims;
         assert(output_dims == 3 || output_dims == 5);
         if (output_dims == 5) {
@@ -326,9 +316,9 @@ void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
             float* ptr = tensor_data + anchor_idx * feature_size;
             for (int i = 0; i < area; i++) {
               dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w *
-                       context->m_net_w;
+                       context->net_w;
               dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h *
-                       context->m_net_h;
+                       context->net_h;
               dst[2] =
                   pow((sigmoid(ptr[2]) * 2), 2) * anchors[tidx][anchor_idx][0];
               dst[3] =

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "element.h"
-#include "Decoder.h"
 #include "common/Graphics.hpp"
+#include "decoder.h"
+#include "element.h"
 
 namespace sophon_stream {
 namespace element {
+namespace decode {
 
 struct ChannelOperateRequest {
   enum class ChannelOperate {
@@ -30,7 +31,7 @@ struct ChannelTask {
 };
 
 class ThreadWrapper {
-  friend class DecoderElement;
+  friend class Decoder;
 
   using InitHandler = std::function<common::ErrorCode(void)>;
   using DataHandler = std::function<common::ErrorCode(void)>;
@@ -143,30 +144,15 @@ struct ChannelInfo {
   std::shared_ptr<ThreadWrapper> mThreadWrapper;
 };
 
-class DecoderElement : public ::sophon_stream::framework::Element {
+class Decode : public ::sophon_stream::framework::Element {
  public:
-  DecoderElement();
-  ~DecoderElement() override;
+  Decode();
+  ~Decode() override;
 
-  DecoderElement(const DecoderElement&) = delete;
-  DecoderElement& operator=(const DecoderElement&) = delete;
-  DecoderElement(DecoderElement&&) = default;
-  DecoderElement& operator=(DecoderElement&&) = default;
-
-  static constexpr const char* X = "x";
-  static constexpr const char* Y = "y";
-  static constexpr const char* W = "w";
-  static constexpr const char* H = "h";
-  static constexpr const char* NAME = "decoder_element";
-  static constexpr const char* ROI = "roi";
-  static constexpr const char* JSON_SHARED_OBJECT_FIELD = "shared_object";
-
-  static constexpr const char* JSON_URL = "url";
-  static constexpr const char* JSON_TIMEOUT = "timeout";
-  static constexpr const char* JSON_REOPEN_TIMES = "reopen_times";
-  static constexpr const char* JSON_SOURCE_TYPE = "source_type";
-  static constexpr const char* JSON_SKIP_COUNT = "skip_count";
-  static constexpr const char* JSON_BATCH_SIZE = "batch_size";
+  Decode(const Decode&) = delete;
+  Decode& operator=(const Decode&) = delete;
+  Decode(Decode&&) = default;
+  Decode& operator=(Decode&&) = default;
 
  private:
   common::ErrorCode initInternal(const std::string& json) override;
@@ -183,27 +169,14 @@ class DecoderElement : public ::sophon_stream::framework::Element {
 
   common::ErrorCode resumeTask(std::shared_ptr<ChannelTask>& channelTask);
 
-  common::ErrorCode parseJson(const std::string& json, std::string& url,
-                              int& sourceType, int& reopentimes);
-
-  common::ErrorCode process(const bool lastFrame, const int sourceType,
-                            const int reopentimes, const int capacity,
-                            const std::shared_ptr<ChannelTask>& channelTask,
+  common::ErrorCode process(const std::shared_ptr<ChannelTask>& channelTask,
                             const std::shared_ptr<ChannelInfo>& channelInfo);
 
-  common::ErrorCode reopen(const int reopentimes,
-                           const std::shared_ptr<ChannelTask>& channelTask,
-                           const std::shared_ptr<ChannelInfo>& channelInfo);
-
  private:
-  int mSkipCount = 0;
-  int mBatchSize = 0;
-  std::shared_ptr<void> mSharedObjectHandle;
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
   std::mutex mThreadsPoolMtx;
-
-  std::string mMultiMediaName;
 };
 
+}  // namespace decode
 }  // namespace element
 }  // namespace sophon_stream

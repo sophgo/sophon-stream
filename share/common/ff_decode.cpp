@@ -1,11 +1,24 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-DEMO is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+/*
+ * This is a wrapper header of BMruntime & BMCV, aiming to simplify user's
+ * program.
+ */
 #include "ff_decode.hpp"
 
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <cstring>
+#include <fstream>
 #include <iostream>
 #include <thread>
-
 using namespace std;
 
 bool hardware_decode = true;
@@ -94,6 +107,7 @@ VideoDecFFM::VideoDecFFM() {
 
   video_stream_idx = -1;
   refcount = 1;
+
   pkt = new AVPacket;
   av_init_packet(pkt);
   pkt->data = NULL;
@@ -103,8 +117,6 @@ VideoDecFFM::VideoDecFFM() {
 }
 
 VideoDecFFM::~VideoDecFFM() {
-  delete pkt;
-  pkt = nullptr;
   closeDec();
   printf("#VideoDecFFM exit \n");
 }
@@ -324,7 +336,7 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
       bmcv_rect_t crop_rect = {0, 0, in->width, in->height};
       bmcv_image_vpp_convert(handle, 1, tmp, out, &crop_rect);
     }
-    bm_image_detach(tmp);
+    bm_image_destroy(tmp);
 
     if (!data_on_device_mem) {
       bm_free_device(handle, input_addr[0]);
@@ -366,8 +378,8 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
          "openDec video_stream_idx = %d, pix_fmt = %d\n", video_stream_idx,
          pix_fmt);
 
-  // thread push(&VideoDecFFM::vidPushImage, this);
-  // push.detach();
+  thread push(&VideoDecFFM::vidPushImage, this);
+  push.detach();
 
   av_dict_free(&dict);
 
@@ -394,6 +406,7 @@ int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
                                   AVFormatContext* fmt_ctx,
                                   enum AVMediaType type, int sophon_idx) {
   int ret, stream_index;
+  AVStream* st;
   AVCodec* dec = NULL;
   AVDictionary* opts = NULL;
 
@@ -459,14 +472,15 @@ int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
   return 0;
 }
 
-AVFrame* VideoDecFFM::grabFrame(int& eof, double& timestamp) {
+AVFrame* VideoDecFFM::grabFrame(int& eof) {
   int ret = 0;
   int got_frame = 0;
   struct timeval tv1, tv2;
   gettimeofday(&tv1, NULL);
 
   while (1) {
-    if (pkt->side_data != nullptr) av_packet_unref(pkt);
+    // 這裡不能有if(pkt->side_data != nullptr)
+    av_packet_unref(pkt);
     ret = av_read_frame(ifmt_ctx, pkt);
     if (ret < 0) {
       if (ret == AVERROR(EAGAIN)) {
@@ -493,7 +507,6 @@ AVFrame* VideoDecFFM::grabFrame(int& eof, double& timestamp) {
     if (pkt->stream_index != video_stream_idx) {
       continue;
     }
-    timestamp = pkt->pts * av_q2d(st->time_base);
 
     if (!frame) {
       av_log(video_dec_ctx, AV_LOG_ERROR, "Could not allocate frame\n");
@@ -529,11 +542,83 @@ AVFrame* VideoDecFFM::grabFrame(int& eof, double& timestamp) {
              av_get_pix_fmt_name((AVPixelFormat)frame->format));
       continue;
     }
-    timestamp = frame->pts * av_q2d(st->time_base);
 
     break;
   }
+  return frame;
+}
 
+AVFrame* VideoDecFFM::grabFrame() {
+  int ret = 0;
+  int got_frame = 0;
+  struct timeval tv1, tv2;
+  gettimeofday(&tv1, NULL);
+
+  while (1) {
+    av_packet_unref(pkt);
+    ret = av_read_frame(ifmt_ctx, pkt);
+    if (ret < 0) {
+      if (ret == AVERROR(EAGAIN)) {
+        gettimeofday(&tv2, NULL);
+        if (((tv2.tv_sec - tv1.tv_sec) * 1000 +
+             (tv2.tv_usec - tv1.tv_usec) / 1000) > 1000 * 60) {
+          av_log(video_dec_ctx, AV_LOG_WARNING,
+                 "av_read_frame failed ret(%d) retry time >60s.\n", ret);
+          break;
+        }
+        // usleep(10 * 1000);
+
+        continue;
+      } else if (ret == AVERROR_EOF && pkt->stream_index == video_stream_idx) {
+        std::cout << " eof!~! " << std::endl;
+        av_log(video_dec_ctx, AV_LOG_ERROR,
+               "av_read_frame ret(%d) maybe eof...\n", ret);
+        quit_flag = true;
+        return NULL;
+      }
+    }
+
+    if (pkt->stream_index != video_stream_idx) {
+      continue;
+    }
+
+    if (!frame) {
+      av_log(video_dec_ctx, AV_LOG_ERROR, "Could not allocate frame\n");
+      return NULL;
+    }
+
+    if (refcount) av_frame_unref(frame);
+    gettimeofday(&tv1, NULL);
+    ret = avcodec_decode_video2(video_dec_ctx, frame, &got_frame, pkt);
+    if (ret < 0) {
+      av_log(video_dec_ctx, AV_LOG_ERROR, "Error decoding video frame (%d)\n",
+             ret);
+      continue;
+    }
+
+    if (!got_frame) {
+      continue;
+    }
+
+    width = video_dec_ctx->width;
+    height = video_dec_ctx->height;
+    pix_fmt = video_dec_ctx->pix_fmt;
+    if (frame->width != width || frame->height != height ||
+        frame->format != pix_fmt) {
+      av_log(video_dec_ctx, AV_LOG_ERROR,
+             "Error: Width, height and pixel format have to be "
+             "constant in a rawvideo file, but the width, height or "
+             "pixel format of the input video changed:\n"
+             "old: width = %d, height = %d, format = %s\n"
+             "new: width = %d, height = %d, format = %s\n",
+             width, height, av_get_pix_fmt_name((AVPixelFormat)pix_fmt),
+             frame->width, frame->height,
+             av_get_pix_fmt_name((AVPixelFormat)frame->format));
+      continue;
+    }
+
+    break;
+  }
   return frame;
 }
 
@@ -547,19 +632,13 @@ void* VideoDecFFM::vidPushImage() {
         queue.pop();
         cout << "rtsp pop, queue size " << queue.size() << endl;
       } else {
-        // usleep(2000);
+        usleep(2000);
       }
     }
 
     bm_image* img = new bm_image;
-    int eof = 0;
-    double timestamp = 0.0;
-    AVFrame* avframe = grabFrame(eof, timestamp);
-    if (quit_flag) {
-      delete img;
-      img = nullptr;
-      break;
-    }
+    AVFrame* avframe = grabFrame();
+    if (quit_flag) break;
     avframe_to_bm_image(*(this->handle), avframe, img, false);
 
     std::lock_guard<std::mutex> my_lock_guard(lock);
@@ -568,34 +647,24 @@ void* VideoDecFFM::vidPushImage() {
   return NULL;
 }
 
-
-std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof,
-                                            double& timestamp) {
+std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
   std::shared_ptr<bm_image> spBmImage = nullptr;
-  AVFrame* avframe = grabFrame(eof, timestamp);
+  AVFrame* avframe = grabFrame(eof);
   frameId = frame_id++;
-  // if(frameId == 30)
-  //     eof = 1;
-  // printf("ff_decode grab frame_id: %d, eof: %d\n", frameId, eof);
   if (1 == eof) return spBmImage;
-  spBmImage.reset(new bm_image, [&](bm_image* p) {
+  spBmImage.reset(new bm_image, [](bm_image* p) {
     bm_image_destroy(*p);
     delete p;
     p = nullptr;
   });
-
   avframe_to_bm_image(*(this->handle), avframe, spBmImage.get(), false);
-
   return spBmImage;
 }
 
 bm_image* VideoDecFFM::grab() {
   while (queue.empty()) {
-    if (quit_flag) {
-      std::cout << " quit flag is true! " << std::endl;
-      return nullptr;
-    }
-    // usleep(500);
+    if (quit_flag) return nullptr;
+    usleep(500);
   }
   bm_image* bm_img;
   {
@@ -607,22 +676,34 @@ bm_image* VideoDecFFM::grab() {
   return bm_img;
 }
 
+bool is_jpg(const char* filename) {
+  std::ifstream file(filename, std::ios::binary);
+  char header[3];
+  file.read(header, sizeof(header));
+  return (file.good() && header[0] == (char)0xFF && header[1] == (char)0xD8 &&
+          header[2] == (char)0xFF);
+}
+
+bool is_png(const char* filename) {
+  std::ifstream file(filename, std::ios::binary);
+  char header[8];
+  file.read(header, sizeof(header));
+  return (
+      file.good() &&
+      !std::memcmp(header, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", sizeof(header)));
+}
+
 bm_status_t picDec(bm_handle_t& handle, const char* path, bm_image& img) {
   string input_name = path;
-  auto pos1 = input_name.find(".jpg");
-  auto pos2 = input_name.find(".jpeg");
-  auto pos3 = input_name.find(".png");
-  if (pos1 == string::npos && pos2 == string::npos && pos3 == string::npos) {
-    fprintf(stderr, "not support pic format, only support jpg and png\n");
-    exit(1);
-  }
-
-  if (pos1 == string::npos && pos2 == string::npos) {
+  if (is_jpg(path)) {
+    bm_status_t ret = jpgDec(handle, input_name, img);
+    return ret;
+  } else if (is_png(path)) {
     bm_status_t ret = pngDec(handle, input_name, img);
     return ret;
   } else {
-    bm_status_t ret = jpgDec(handle, input_name, img);
-    return ret;
+    fprintf(stderr, "not support pic format, only support jpg and png\n");
+    exit(1);
   }
 }
 
@@ -885,13 +966,10 @@ bm_status_t jpgDec(bm_handle_t& handle, string input_name, bm_image& img) {
       }
     }
 
-    bm_device_mem_t mem;
-    bm_malloc_device_byte(handle, &mem, height * width * 3);
-    bm_memcpy_s2d_partial(handle, mem, bgr_buffer, height * width * 3);
-
     bm_image_create(handle, height, width, FORMAT_BGR_PACKED,
                     DATA_TYPE_EXT_1N_BYTE, &img);
-    bm_image_attach(img, &mem);
+    void* buffers[1] = {bgr_buffer};
+    bm_image_copy_host_to_device(img, buffers);
     goto Func_Exit;
   }
   // vpp_convert do not support YUV422P, use libyuv to filter
@@ -949,7 +1027,7 @@ Func_Exit:
   }
 
   if (dec_ctx) {
-    avcodec_close(dec_ctx);
+    avcodec_free_context(&dec_ctx);
   }
   if (bs_buffer) {
     av_free(bs_buffer);

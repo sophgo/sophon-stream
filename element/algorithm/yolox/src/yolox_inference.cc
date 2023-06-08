@@ -55,7 +55,7 @@ YoloxInference::mergeInputDeviceMem(std::shared_ptr<YoloxContext> context,
           inputTensors->handle, inputTensors->tensors[i]->device_mem,
           j * input_bytes / context->max_batch,
           objectMetadatas[j]->mInputBMtensors->tensors[i]->device_mem, 0,
-          input_bytes / 4);
+          input_bytes / context->max_batch);
     }
   }
   return inputTensors;

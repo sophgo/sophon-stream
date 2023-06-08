@@ -168,9 +168,12 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
 
   common::ObjectMetadatas objectMetadatas;
   std::vector<int> inputPorts = getInputPorts();
-  std::vector<int> outputPorts = getInputPorts();
   int inputPort = inputPorts[0];
-  int outputPort = outputPorts[0];
+  int outputPort = 0;
+  if (!getLastElementFlag()) {
+    std::vector<int> outputPorts = getOutputPorts();
+    int outputPort = outputPorts[0];
+  }
 
   while (objectMetadatas.size() < mBatch &&
          (getThreadStatus() == ThreadStatus::RUN)) {
@@ -198,8 +201,8 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
         getLastElementFlag()
             ? 0
             : (channel_id % getOutputConnector(outputPort)->getDataPipeCount());
-    errorCode = pushOutputData(
-        outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
+    errorCode = pushOutputData(outputPort, dataPipeId,
+                               std::static_pointer_cast<void>(objectMetadata));
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_WARN(
           "Send data fail, element id: {0:d}, output port: {1:d}, data: "

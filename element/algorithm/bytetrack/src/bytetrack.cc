@@ -117,7 +117,7 @@ void Bytetrack::uninitInternal() {}
 common::ErrorCode Bytetrack::doWork() {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   std::vector<int> inputPorts = getInputPorts();
-  std::vector<int> outputPorts = getInputPorts();
+  std::vector<int> outputPorts = getOutputPorts();
   int inputPort = inputPorts[0];
   int outputPort = outputPorts[0];
 

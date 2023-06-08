@@ -53,10 +53,8 @@ struct Yolov5Context {
 
   int deviceId;                             // 设备ID
 
-  std::shared_ptr<BMNNContext> m_bmContext;
-  std::shared_ptr<BMNNNetwork> m_bmNetwork;
-  std::vector<bm_image> m_resized_imgs;
-  std::vector<bm_image> m_converto_imgs;
+  std::shared_ptr<BMNNContext> bmContext;
+  std::shared_ptr<BMNNNetwork> bmNetwork;
   bm_handle_t handle;
 
   // tpu_kernel
@@ -74,7 +72,7 @@ struct Yolov5Context {
 
   int class_num = 80;  // default is coco names
   int m_frame_h, m_frame_w;
-  int m_net_h, m_net_w, m_net_channel;
+  int net_h, net_w, m_net_channel;
   int max_batch;
   int input_num;
   int output_num;

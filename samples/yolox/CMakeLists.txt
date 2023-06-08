@@ -45,24 +45,21 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../share)
     include_directories(../../share/3rdparty/spdlog/include)
     include_directories(../../share/3rdparty/nlohmann-json/include)
-    include_directories(../../element/multimedia/decode)
+    include_directories(../../element/multimedia/decode/include)
     include_directories(../../framework/include)
-    include_directories(../misc/usecase)
 
-    # usecase tests
-    file(GLOB TEST_SOURCES 
+    include_directories(../include)
+    set(test_src
         src/usecase_yolox.cc
     )
-    foreach(test_src ${TEST_SOURCES})
-        get_filename_component(test_name ${test_src} NAME_WE)
-        add_executable(${test_name} ${test_src})
-        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -lframework)
-    endforeach(test_src)
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src})
+    target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -lframework)
 
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -g -rdynamic")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -fprofile-arcs -g -rdynamic")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -g -rdynamic")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -fprofile-arcs -ftest-coverage -g -rdynamic")
     add_compile_options(-fPIC)
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
@@ -84,10 +81,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories("${SDK}/include/")
     include_directories("${SDK}/include/opencv4")
     link_directories("${SDK}/lib/")
-    link_libraries(pthread)
-
-    # spdlog https://github.com/gabime/spdlog
-    # include_directories(../share/3rdparty/spdlog/include)
 
     include_directories(../../share/3rdparty/gtest)
     include_directories(../../share/3rdparty/gtest/include)
@@ -103,9 +96,8 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../share)
     include_directories(../../share/3rdparty/spdlog/include)
     include_directories(../../share/3rdparty/nlohmann-json/include)
-    include_directories(../../element/multimedia/decode)
+    include_directories(../../element/multimedia/decode/include)
     include_directories(../../framework/include)
-    include_directories(../misc/usecase)
 
     # usecase tests
     file(GLOB TEST_SOURCES 
@@ -114,7 +106,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     foreach(test_src ${TEST_SOURCES})
         get_filename_component(test_name ${test_src} NAME_WE)
         add_executable(${test_name} ${test_src})
-        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${the_libbmcv.so} -lpthread -lavcodec -lavformat -lavutil -lframework)
+        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${the_libbmcv.so} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -lframework)
     endforeach(test_src)
 
 endif()

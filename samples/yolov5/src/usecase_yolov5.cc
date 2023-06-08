@@ -59,7 +59,68 @@ constexpr const char* JSON_CONFIG_GRAPH_ID_FILED = "graph_id";
 constexpr const char* JSON_CONFIG_ELEMENTS_FILED = "elements";
 constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connections";
 
+<<<<<<< HEAD
 TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
+=======
+constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
+    "num_channels_per_graph";
+constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
+constexpr const char* JSON_CONFIG_ENGINE_CONFIG_PATH_FILED =
+    "engine_config_path";
+constexpr const char* JSON_CONFIG_CLASS_NAMES_FILED = "class_names";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FILED = "channel";
+
+usecase_config parse_usecase_json(std::string& json_path) {
+  std::ifstream istream;
+  istream.open(json_path);
+  assert(istream.is_open());
+  nlohmann::json usecase_json;
+  istream >> usecase_json;
+  istream.close();
+
+  usecase_config config;
+
+  config.num_channels_per_graph =
+      usecase_json.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED)->get<int>();
+
+  auto channel_config_it = usecase_json.find(JSON_CONFIG_CHANNEL_CONFIG_FILED);
+  config.channel_config = *channel_config_it;
+
+  config.download_image =
+      usecase_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
+  config.engine_config_file =
+      usecase_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
+          ->get<std::string>();
+  std::string class_names_file =
+      usecase_json.find(JSON_CONFIG_CLASS_NAMES_FILED)->get<std::string>();
+
+  if (config.download_image) {
+    const char* dir_path = "./results";
+    struct stat info;
+    if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
+      std::cout << "Directory already exists." << std::endl;
+    } else {
+      if (mkdir(dir_path, 0777) == 0) {
+        std::cout << "Directory created successfully." << std::endl;
+      } else {
+        std::cerr << "Error creating directory." << std::endl;
+      }
+    }
+    istream.open(class_names_file);
+    assert(istream.is_open());
+    std::string line;
+    while (std::getline(istream, line)) {
+      line = line.substr(0, line.length() - 1);
+      config.class_names.push_back(line);
+    }
+    istream.close();
+  }
+
+  return config;
+}
+
+TEST(TestYolov5, TestYolov5) {
+>>>>>>> 3f3dee4 (123)
   ::logInit("debug", "");
 
   std::mutex mtx;
@@ -97,7 +158,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     parse_element_json(elements_it, elementsConfigure, src_id_port, sink_id_port);
     graphConfigure["elements"] = elementsConfigure;
     auto connect_it = graph_it.find(JSON_CONFIG_CONNECTION_FILED);
-    parse_connection_json(connect_it, graphConfigure);
+    if(connect_it != graph_it.end())
+      parse_connection_json(connect_it, graphConfigure);
 
     engine.addGraph(graphConfigure.dump());
     engine.setStopHandler(
@@ -158,12 +220,12 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
     for (int channel_id = 0; channel_id < yolov5_json.num_channels_per_graph;
          ++channel_id) {
-      nlohmann::json decodeConfigure = yolov5_json.decodeConfigures[channel_id];
+      nlohmann::json decodeConfigure = yolov5_json.decodeConfigures[0];
       decodeConfigure["channel_id"] = channel_id;
       auto channelTask =
-          std::make_shared<sophon_stream::element::ChannelTask>();
+          std::make_shared<sophon_stream::element::decode::ChannelTask>();
       channelTask->request.operation =
-          sophon_stream::element::ChannelOperateRequest::ChannelOperate::START;
+          sophon_stream::element::decode::ChannelOperateRequest::ChannelOperate::START;
       channelTask->request.channelId = channel_id;
       channelTask->request.json = decodeConfigure.dump();
       sophon_stream::common::ErrorCode errorCode = engine.pushInputData(

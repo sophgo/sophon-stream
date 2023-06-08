@@ -1,8 +1,6 @@
-framework/build/*
-element/*/*/build/*
-samples/build/*
+**build/*
+**build_soc/*
 
-*/*/build/*
 *.avi
 *.mp4
 *.bmodel
