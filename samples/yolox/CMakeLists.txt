@@ -39,7 +39,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     link_libraries(pthread)
     link_libraries(dl)
 
-    link_directories("../../framework/build")
+    link_directories(../../framework/build)
     link_libraries(ivslogger)
 
     include_directories(../../share)
@@ -75,12 +75,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(.)
     include_directories(../share)
 
-    # include(framework/framework.cmake)
-    # include(element/element.cmake)
-
-    link_directories("../engine/build")
-    include_directories("../engine")
-
     add_compile_options(-fPIC)
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
@@ -93,20 +87,17 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     link_libraries(pthread)
 
     # spdlog https://github.com/gabime/spdlog
-    include_directories(../share/3rdparty/spdlog/include)
+    # include_directories(../share/3rdparty/spdlog/include)
 
-    # nlohmann/json https://github.com/nlohmann/json
-    include_directories(../share/3rdparty/nlohmann-json/include)
-
-    # gtest includes and libraries for all tests
-    include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
-
+    include_directories(../../share/3rdparty/gtest)
+    include_directories(../../share/3rdparty/gtest/include)
+    add_library(gtest ../../share/3rdparty/gtest/src/gtest-all.cc ../../share/3rdparty/gtest/src/gtest_main.cc)
     link_libraries(gtest)
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
+    link_libraries(pthread)
     link_libraries(dl)
 
-
-    link_directories("../../framework/build")
+    link_directories(../../framework/build_soc)
     link_libraries(ivslogger)
 
     include_directories(../../share)
@@ -123,7 +114,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     foreach(test_src ${TEST_SOURCES})
         get_filename_component(test_name ${test_src} NAME_WE)
         add_executable(${test_name} ${test_src})
-        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -lframework)
+        target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${the_libbmcv.so} -lpthread -lavcodec -lavformat -lavutil -lframework)
     endforeach(test_src)
 
 endif()
