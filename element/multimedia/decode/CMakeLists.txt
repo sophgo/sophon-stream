@@ -66,16 +66,20 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories("${SDK}/include/")
     include_directories("${SDK}/include/opencv4")
     link_directories("${SDK}/lib/")
-    include_directories(../share/3rdparty/nlohmann-json/include)
-    include_directories(../share)
-    include_directories(../share/3rdparty/spdlog/include)
-    include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
+    include_directories(../../../framework/include)
+    link_directories(../../../framework/build_soc)
+    link_libraries(framework)
+    link_libraries(ivslogger)
+    include_directories(../../../share)
+    include_directories(../../../share/3rdparty/spdlog/include)
+    include_directories(../../../share/3rdparty/nlohmann-json/include)
 
     add_library(decode SHARED
-        element/multimedia/decode/Decoder.cpp
-        element/multimedia/decode/SophgoContext.cpp
-        element/multimedia/decode/SophgoDecode.cpp
-        ../share/common/ff_decode.cpp
+        Decoder.cpp
+        SophgoContext.cpp
+        SophgoDecode.cpp
+        DecoderElement.cpp
+        ../../../share/common/ff_decode.cpp
         )
     target_link_libraries(decode ${FFMPEG_LIBS} 
         ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)

@@ -57,17 +57,20 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories("${SDK}/include/")
     include_directories("${SDK}/include/opencv4")
     link_directories("${SDK}/lib/")
-    include_directories(../share)
-    include_directories(../share/3rdparty/spdlog/include)
-    include_directories(../share/3rdparty/nlohmann-json/include)
-    include_directories(../share/3rdparty/gtest/ ../share/3rdparty/gtest/include src)
+    include_directories(../../../framework/include)
+    link_directories(../../../framework/build)
+    # link_libraries(framework)
+    link_libraries(ivslogger)
+    include_directories(../../../share)
+    include_directories(../../../share/3rdparty/spdlog/include)
+    include_directories(../../../share/3rdparty/nlohmann-json/include)
 
     include_directories(include)
     add_library(yolov5 SHARED
-        srcyolov5_pre_process.cc
-        srcyolov5_post_process.cc
-        srcyolov5_inference.cc
-        srcyolov5.cc
+        src/yolov5_pre_process.cc
+        src/yolov5_post_process.cc
+        src/yolov5_inference.cc
+        src/yolov5.cc
     )
     target_link_libraries(yolov5 ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
 endif()

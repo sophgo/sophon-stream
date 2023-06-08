@@ -73,13 +73,21 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
 
+    include_directories(../share)
+    include_directories(../share/3rdparty/spdlog/include)
+    include_directories(../share/3rdparty/nlohmann-json/include)
 
-    add_library(framework
-        framework/element.cc
-        framework/datapipe.cc
-        framework/element_manager.cc
-        framework/element_factory.cc
-        framework/engine.cc
+    add_library(ivslogger
+      ../share/common/logger.cpp
+    )
+    include_directories(include)
+    add_library(framework SHARED
+        src/element.cc
+        src/datapipe.cc
+        src/element_manager.cc
+        src/element_factory.cc
+        src/engine.cc
+        src/connector.cc
     )
 
 endif()

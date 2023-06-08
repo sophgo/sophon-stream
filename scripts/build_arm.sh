@@ -7,11 +7,13 @@ if [ $# -ne 2 ] || ([ "$1" != "Debug" ] && [ "$1" != "Release" ]); then
   exit 1
 fi
 SOC_SDK=$2
+
 echo ${project_dir}
 pushd ${project_dir}
 
-echo "build algorithm-----"
-cd ./algorithm
+framework_dir=${project_dir}/framework
+echo "build framework-----"
+pushd $framework_dir
 if [ ! -d "build_soc" ]; then
   mkdir build_soc
 fi
@@ -23,10 +25,62 @@ elif [ "$1" == "Release" ]; then
   cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 fi
 make -j
-echo "build algorithm completed"
+popd
+echo "build framework completed"
 
-echo "build multimedia-----"
-cd ../../multimedia
+
+element_dir=${project_dir}/element
+echo "build element-----"
+
+# element_yolov5_dir=$element_dir/algorithm/yolov5
+# pushd $element_yolov5_dir
+# if [ ! -d "build_soc" ]; then
+#   mkdir build_soc
+# fi
+# cd build_soc
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
+# fi
+# make -j
+# popd
+
+element_yolox_dir=$element_dir/algorithm/yolox
+pushd $element_yolox_dir
+if [ ! -d "build_soc" ]; then
+  mkdir build_soc
+fi
+cd build_soc
+rm -rf *
+if [ "$1" == "Debug" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
+elif [ "$1" == "Release" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
+fi
+make -j
+popd
+echo "build yolox completed"
+
+# element_tracker_dir=$element_dir/algorithm/tracker
+# pushd $element_tracker_dir
+# if [ ! -d "build_soc" ]; then
+#   mkdir build_soc
+# fi
+# cd build_soc
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
+# fi
+# make -j
+# popd
+
+
+element_decode_dir=$element_dir/multimedia/decode
+pushd $element_decode_dir
 if [ ! -d "build_soc" ]; then
   mkdir build_soc
 fi
@@ -38,28 +92,26 @@ elif [ "$1" == "Release" ]; then
   cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 fi
 make -j
-echo "build multimedia completed"
+popd
+echo "build decoder completed"
 
-echo "build engine-----"
-cd ../../engine
+sample_dir=${project_dir}/samples/yolox
+echo "build yolox-----"
+pushd $sample_dir
 if [ ! -d "build_soc" ]; then
   mkdir build_soc
 fi
-if [ ! -d "lib_soc" ]; then
-  mkdir lib_soc
-fi
 cd build_soc
- rm -rf *
+rm -rf *
 if [ "$1" == "Debug" ]; then
   cmake -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 elif [ "$1" == "Release" ]; then
   cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH=soc -DSDK=${SOC_SDK} ..
 fi
 make -j
-echo "build engine completed"
-
-cp ../../algorithm/build_soc/libalgorithmApi.so ../lib_soc
-cp ../../multimedia/build_soc/libmultiMediaApi.so ../lib_soc
+popd
+echo "build usecase yolox completed"
 
 popd
+
 echo "All completed"
