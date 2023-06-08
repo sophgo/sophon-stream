@@ -36,21 +36,19 @@ class Bytetrack : public ::sophon_stream::framework::Element {
 
   common::ErrorCode initInternal(const std::string& json) override;
 
-  void process(std::shared_ptr<common::ObjectMetadata>& objectMetadata);
-
-  void copyTracks(std::shared_ptr<common::ObjectMetadata>& objectMetadata,
-                  std::vector<STrack> outputTracks);
+  void process(int dataPipeId,
+               std::shared_ptr<common::ObjectMetadata>& objectMetadata);
 
   void uninitInternal() override;
 
-  common::ErrorCode doWork() override;
+  common::ErrorCode doWork(int dataPipeId) override;
 
  private:
   std::shared_ptr<BytetrackContext> mContext;  // context对象
 
   common::ErrorCode initContext(const std::string& json);
 
-  BYTETracker bytetracker;
+  std::map<int, std::shared_ptr<BYTETracker>> mByteTrackerMap;
 };
 
 }  // namespace bytetrack

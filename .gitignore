@@ -1,7 +1,6 @@
-**build/*
-**build_soc/*
+**/build
+**/build_soc
+**/data
 
-*.avi
-*.mp4
-*.bmodel
-*.names
+.DS_Store
+
