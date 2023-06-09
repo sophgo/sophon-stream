@@ -1,6 +1,25 @@
+# Distribution / packaging
 **/build
 **/build_soc
 **/data
 
+*.zip
+*.tar
+*.tar.gz
+
+# model file
+*.mlir
+*.onnx
+*.pt
+*.pth
+*.prototxt
+*.profile
+*.bmodel.json
+*.bmodel
+
+# VSCode settings
+.vscode
+
+# OSX dir files
 .DS_Store
 
