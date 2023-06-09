@@ -133,9 +133,9 @@ TEST(TestYolox, TestYolox) {
 
   auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
 
-  std::ifstream istream, elem_stream;
+  std::ifstream istream;
   nlohmann::json engine_json;
-  std::string yolox_config_file = "../config/usecase_yolox.json";
+  std::string yolox_config_file = "../config/yolox.json";
   usecase_config yolox_json = parse_usecase_json(yolox_config_file);
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置

@@ -5,7 +5,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decoder.json",
+                "element_config": "../config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -25,7 +25,7 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/pre.json",
+                "element_config": "../config/yolov5_pre.json",
                 "ports": {
                     "input": [
                         {
@@ -45,7 +45,7 @@
             },
             {
                 "element_id": 5002,
-                "element_config": "../config/infer.json",
+                "element_config": "../config/yolov5_infer.json",
                 "ports": {
                     "input": [
                         {
@@ -65,7 +65,7 @@
             },
             {
                 "element_id": 5003,
-                "element_config": "../config/post.json",
+                "element_config": "../config/yolov5_post.json",
                 "ports": {
                     "input": [
                         {
@@ -111,7 +111,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decoder.json",
+                "element_config": "../config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -131,7 +131,7 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/pre.json",
+                "element_config": "../config/yolov5_pre.json",
                 "ports": {
                     "input": [
                         {
@@ -151,7 +151,7 @@
             },
             {
                 "element_id": 5002,
-                "element_config": "../config/infer.json",
+                "element_config": "../config/yolov5_infer.json",
                 "ports": {
                     "input": [
                         {
@@ -171,7 +171,7 @@
             },
             {
                 "element_id": 5003,
-                "element_config": "../config/post.json",
+                "element_config": "../config/yolov5_post.json",
                 "ports": {
                     "input": [
                         {

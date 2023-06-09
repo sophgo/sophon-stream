@@ -75,11 +75,10 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../../share/3rdparty/spdlog/include)
     include_directories(../../../share/3rdparty/nlohmann-json/include)
 
+    include_directories(include)
     add_library(decode SHARED
-        Decoder.cpp
-        SophgoContext.cpp
-        SophgoDecode.cpp
-        DecoderElement.cpp
+        src/decoder.cc
+        src/decode.cc
         ../../../share/common/ff_decode.cpp
         )
     target_link_libraries(decode ${FFMPEG_LIBS} 

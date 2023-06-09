@@ -214,8 +214,11 @@ common::ErrorCode Decode::process(
 
   // push data to next element
   int channel_id = objectMetadata->mFrame->mChannelId;
-  std::vector<int> outputPorts = getOutputPorts();
-  int outputPort = outputPorts[0];
+  int outputPort = 0;
+  if (!getLastElementFlag()) {
+    std::vector<int> outputPorts = getOutputPorts();
+    outputPort = outputPorts[0];
+  }
   int dataPipeId =
       getLastElementFlag()
           ? 0

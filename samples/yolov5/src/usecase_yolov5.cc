@@ -5,14 +5,14 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 
-#include "DecoderElement.h"
 #include "common/Clocker.h"
 #include "common/ErrorCode.h"
 #include "common/ObjectMetadata.h"
 #include "common/logger.h"
-#include "config.h"
+#include "decode.h"
 #include "engine.h"
 #include "gtest/gtest.h"
+#include "init_engine.h"
 
 const std::vector<std::vector<int>> colors = {
     {255, 0, 0},    {255, 85, 0},    {255, 170, 0},   {255, 255, 0},
@@ -55,9 +55,14 @@ void draw_bmcv(bm_handle_t& handle, int classId,
   }
 }
 
-constexpr const char* JSON_CONFIG_GRAPH_ID_FILED = "graph_id";
-constexpr const char* JSON_CONFIG_ELEMENTS_FILED = "elements";
-constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connections";
+typedef struct usecase_config_ {
+  int num_graphs;
+  int num_channels_per_graph;
+  nlohmann::json channel_config;
+  bool download_image;
+  std::string engine_config_file;
+  std::vector<std::string> class_names;
+} usecase_config;
 
 constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
     "num_channels_per_graph";
@@ -127,13 +132,11 @@ TEST(TestYolov5, TestYolov5) {
   std::atomic_int32_t finishedChannelCount(0);
 
   auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
-  std::ifstream istream, elem_stream;
+
+  std::ifstream istream;
   nlohmann::json engine_json;
   std::string yolov5_config_file = "../config/yolov5.json";
-
-  // 初始化engine参数，包括num_graphs, num_channels_per_graph, urls
   usecase_config yolov5_json = parse_usecase_json(yolov5_config_file);
-  int num_channels = yolov5_json.num_channels_per_graph * yolov5_json.num_graphs;
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
   istream.open(yolov5_json.engine_config_file);
@@ -141,95 +144,82 @@ TEST(TestYolov5, TestYolov5) {
   istream >> engine_json;
   istream.close();
 
-  int graph_url_idx = 0;
-  for (auto& graph_it : engine_json) {
-    if (graph_url_idx == yolov5_json.num_graphs) break;
-    nlohmann::json graphConfigure, elementsConfigure;
-    std::pair<int, int> src_id_port = {-1, -1};  // src_port
-    std::pair<int, int> sink_id_port = {-1, -1};    // sink_port
+  yolov5_json.num_graphs = engine_json.size();
+  int num_channels =
+      yolov5_json.num_channels_per_graph * yolov5_json.num_graphs;
+  auto stopHandler = [&](std::shared_ptr<void> data) {
+    // write stop data handler here
+    auto objectMetadata =
+        std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
+    if (objectMetadata == nullptr) return;
+    frameCount++;
+    if (objectMetadata->mFrame->mEndOfStream) {
+      printf("meet a eof\n");
+      finishedChannelCount++;
+      if (finishedChannelCount == num_channels) {
+        cv.notify_one();
+      }
+      return;
+    }
+    if (yolov5_json.download_image) {
+      int width = objectMetadata->mFrame->mWidth;
+      int height = objectMetadata->mFrame->mHeight;
+      bm_image image = *objectMetadata->mFrame->mSpData;
+      bm_image imageStorage;
+      bm_image_create(objectMetadata->mFrame->mHandle, height, width,
+                      FORMAT_YUV420P, image.data_type, &imageStorage);
+      bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
+                                 &imageStorage);
+      for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+        // draw image
+        draw_bmcv(
+            objectMetadata->mFrame->mHandle,
+            subObj->mDetectedObjectMetadata->mClassify, yolov5_json.class_names,
+            subObj->mDetectedObjectMetadata->mScores[0],
+            subObj->mDetectedObjectMetadata->mBox.mX,
+            subObj->mDetectedObjectMetadata->mBox.mY,
+            subObj->mDetectedObjectMetadata->mBox.mWidth,
+            subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage, true);
+      }
+      // save image
+      void* jpeg_data = NULL;
+      size_t out_size = 0;
+      int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
+                                    &imageStorage, &jpeg_data, &out_size);
+      if (ret == BM_SUCCESS) {
+        std::string img_file =
+            "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
+            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        FILE* fp = fopen(img_file.c_str(), "wb");
+        fwrite(jpeg_data, out_size, 1, fp);
+        fclose(fp);
+      }
+      free(jpeg_data);
+      bm_image_destroy(imageStorage);
+    }
+  };
 
-    int graph_id = graph_it.find(JSON_CONFIG_GRAPH_ID_FILED)->get<int>();
-    graphConfigure["graph_id"] = graph_id;
-    auto elements_it = graph_it.find(JSON_CONFIG_ELEMENTS_FILED);
-    parse_element_json(elements_it, elementsConfigure, src_id_port, sink_id_port);
-    graphConfigure["elements"] = elementsConfigure;
-    auto connect_it = graph_it.find(JSON_CONFIG_CONNECTION_FILED);
-    if(connect_it != graph_it.end())
-      parse_connection_json(connect_it, graphConfigure);
+  std::map<int, std::pair<int, int>> graph_src_id_port_map;
+  init_engine(engine, engine_json, stopHandler, graph_src_id_port_map);
 
-    engine.addGraph(graphConfigure.dump());
-    engine.setStopHandler(
-        graph_id, sink_id_port.first, sink_id_port.second,
-        [&](std::shared_ptr<void> data) {
-          // write stop data handler here
-          auto objectMetadata =
-              std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(
-                  data);
-          if (objectMetadata == nullptr) return;
-          frameCount++;
-          if (objectMetadata->mFrame->mEndOfStream) {
-            printf("meet a eof\n");
-            finishedChannelCount++;
-            if (finishedChannelCount == num_channels) {
-              cv.notify_one();
-            }
-            return;
-          }
-          if (yolov5_json.download_image) {
-            int width = objectMetadata->mFrame->mWidth;
-            int height = objectMetadata->mFrame->mHeight;
-            bm_image image = *objectMetadata->mFrame->mSpData;
-            bm_image imageStorage;
-            bm_image_create(objectMetadata->mFrame->mHandle, height, width,
-                            FORMAT_YUV420P, image.data_type, &imageStorage);
-            bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1,
-                                       &image, &imageStorage);
-            for (auto subObj : objectMetadata->mSubObjectMetadatas) {
-              // draw image
-              draw_bmcv(objectMetadata->mFrame->mHandle,
-                        subObj->mDetectedObjectMetadata->mClassify, yolov5_json.class_names,
-                        subObj->mDetectedObjectMetadata->mScores[0],
-                        subObj->mDetectedObjectMetadata->mBox.mX,
-                        subObj->mDetectedObjectMetadata->mBox.mY,
-                        subObj->mDetectedObjectMetadata->mBox.mWidth,
-                        subObj->mDetectedObjectMetadata->mBox.mHeight,
-                        imageStorage, true);
-            }
-            // save image
-            void* jpeg_data = NULL;
-            size_t out_size = 0;
-            int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
-                                          &imageStorage, &jpeg_data, &out_size);
-            if (ret == BM_SUCCESS) {
-              std::string img_file =
-                  "./results/" +
-                  std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
-                  std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
-              FILE* fp = fopen(img_file.c_str(), "wb");
-              fwrite(jpeg_data, out_size, 1, fp);
-              fclose(fp);
-            }
-            free(jpeg_data);
-            bm_image_destroy(imageStorage);
-          }
-        });
-
+  for (auto graph_id : engine.getGraphIds()) {
     for (int channel_id = 0; channel_id < yolov5_json.num_channels_per_graph;
          ++channel_id) {
-      nlohmann::json decodeConfigure = yolov5_json.decodeConfigures[0];
-      decodeConfigure["channel_id"] = channel_id;
+      nlohmann::json channel_config = yolov5_json.channel_config;
+      channel_config["channel_id"] = channel_id;
       auto channelTask =
           std::make_shared<sophon_stream::element::decode::ChannelTask>();
-      channelTask->request.operation =
-          sophon_stream::element::decode::ChannelOperateRequest::ChannelOperate::START;
+      channelTask->request.operation = sophon_stream::element::decode::
+          ChannelOperateRequest::ChannelOperate::START;
       channelTask->request.channelId = channel_id;
-      channelTask->request.json = decodeConfigure.dump();
-      sophon_stream::common::ErrorCode errorCode = engine.pushInputData(
-          graph_id, src_id_port.first, src_id_port.second,
-          std::static_pointer_cast<void>(channelTask));
+      channelTask->request.json = channel_config.dump();
+      std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
+      sophon_stream::common::ErrorCode errorCode =
+          engine.pushInputData(graph_id, src_id_port.first, src_id_port.second,
+                               std::static_pointer_cast<void>(channelTask));
     }
-    ++graph_url_idx;
   }
+
   {
     std::unique_lock<std::mutex> uq(mtx);
     cv.wait(uq);

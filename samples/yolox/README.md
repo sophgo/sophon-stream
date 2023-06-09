@@ -47,7 +47,7 @@ connection是所有element之间的连接方式, 通过element_id和port_id确�
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decoder.json",
+                "element_config": "../config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -67,7 +67,7 @@ connection是所有element之间的连接方式, 通过element_id和port_id确�
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/pre.json",
+                "element_config": "../config/yolox_pre.json",
                 "ports": {
                     "input": [
                         {
