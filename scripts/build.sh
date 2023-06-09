@@ -30,23 +30,8 @@ echo "build framework completed"
 element_dir=${project_dir}/element
 echo "build element-----"
 
-# element_yolov5_dir=$element_dir/algorithm/yolov5
-# pushd $element_yolov5_dir
-# if [ ! -d "build" ]; then
-#   mkdir build
-# fi
-# cd build
-# rm -rf *
-# if [ "$1" == "Debug" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Debug ..
-# elif [ "$1" == "Release" ]; then
-#   cmake -DCMAKE_BUILD_TYPE=Release ..
-# fi
-# make -j
-# popd
-
-element_yolox_dir=$element_dir/algorithm/yolox
-pushd $element_yolox_dir
+element_yolov5_dir=$element_dir/algorithm/yolov5
+pushd $element_yolov5_dir
 if [ ! -d "build" ]; then
   mkdir build
 fi
@@ -59,6 +44,21 @@ elif [ "$1" == "Release" ]; then
 fi
 make -j
 popd
+
+# element_yolox_dir=$element_dir/algorithm/yolox
+# pushd $element_yolox_dir
+# if [ ! -d "build" ]; then
+#   mkdir build
+# fi
+# cd build
+# rm -rf *
+# if [ "$1" == "Debug" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..
+# elif [ "$1" == "Release" ]; then
+#   cmake -DCMAKE_BUILD_TYPE=Release ..
+# fi
+# make -j
+# popd
 
 # element_unet_dir=$element_dir/algorithm/unet
 # pushd $element_unet_dir
@@ -105,24 +105,8 @@ fi
 make -j
 popd
 
-sample_dir=${project_dir}/samples/yolox
-echo "build yolox-----"
-pushd $sample_dir
-if [ ! -d "build" ]; then
-  mkdir build
-fi
-cd build
-rm -rf *
-if [ "$1" == "Debug" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Debug ..
-elif [ "$1" == "Release" ]; then
-  cmake -DCMAKE_BUILD_TYPE=Release ..
-fi
-make -j
-popd
-
-# sample_dir=${project_dir}/samples/yolov5
-# echo "build yolov5-----"
+# sample_dir=${project_dir}/samples/yolox
+# echo "build yolox-----"
 # pushd $sample_dir
 # if [ ! -d "build" ]; then
 #   mkdir build
@@ -136,6 +120,22 @@ popd
 # fi
 # make -j
 # popd
+
+sample_dir=${project_dir}/samples/yolov5
+echo "build yolov5-----"
+pushd $sample_dir
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+cd build
+rm -rf *
+if [ "$1" == "Debug" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+elif [ "$1" == "Release" ]; then
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+fi
+make -j
+popd
 
 
 # sample_dir=${project_dir}/samples/bytetrack

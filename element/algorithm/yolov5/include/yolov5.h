@@ -60,7 +60,7 @@ class Yolov5 : public ::sophon_stream::framework::Element {
    */
   void uninitInternal() override;
 
-  common::ErrorCode doWork() override;
+  common::ErrorCode doWork(int dataPipeId) override;
 
  private:
   std::shared_ptr<Yolov5Context> mContext;  // context对象

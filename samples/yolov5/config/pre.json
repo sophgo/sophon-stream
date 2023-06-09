@@ -9,9 +9,7 @@
     "shared_object":"../../../element/algorithm/yolov5/build/libyolov5.so",
     "device_id":0,
     "id":0,
-    "milliseconds_timeout":200,
     "name":"Yolov5",
-    "repeated_timeout":true,
     "side":"sophgo",
     "thread_number":1
 }

@@ -97,7 +97,8 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
     parse_element_json(elements_it, elementsConfigure, src_id_port, sink_id_port);
     graphConfigure["elements"] = elementsConfigure;
     auto connect_it = graph_it.find(JSON_CONFIG_CONNECTION_FILED);
-    parse_connection_json(connect_it, graphConfigure);
+    if(connect_it != graph_it.end())
+      parse_connection_json(connect_it, graphConfigure);
 
     engine.addGraph(graphConfigure.dump());
     engine.setStopHandler(
@@ -158,7 +159,7 @@ TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
 
     for (int channel_id = 0; channel_id < yolov5_json.num_channels_per_graph;
          ++channel_id) {
-      nlohmann::json decodeConfigure = yolov5_json.decodeConfigures[channel_id];
+      nlohmann::json decodeConfigure = yolov5_json.decodeConfigures[0];
       decodeConfigure["channel_id"] = channel_id;
       auto channelTask =
           std::make_shared<sophon_stream::element::ChannelTask>();

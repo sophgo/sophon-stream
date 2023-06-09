@@ -65,12 +65,10 @@ common::ErrorCode YoloxPreProcess::preProcess(
       bm_image image1;
       // convert to RGB_PLANAR
       if (image0.image_format != FORMAT_BGR_PLANAR) {
-        bm_image_create(context->handle, image0.height,
-                        image0.width, FORMAT_BGR_PLANAR, image0.data_type,
-                        &image1);
+        bm_image_create(context->handle, image0.height, image0.width,
+                        FORMAT_BGR_PLANAR, image0.data_type, &image1);
         bm_image_alloc_dev_mem(image1, BMCV_IMAGE_FOR_IN);
-        bmcv_image_storage_convert(context->handle, 1, &image0,
-                                   &image1);
+        bmcv_image_storage_convert(context->handle, 1, &image0, &image1);
       } else {
         image1 = image0;
       }
@@ -83,9 +81,9 @@ common::ErrorCode YoloxPreProcess::preProcess(
         stride2[0] = FFALIGN(stride1[0], 64);
         stride2[1] = FFALIGN(stride1[1], 64);
         stride2[2] = FFALIGN(stride1[2], 64);
-        bm_image_create(context->handle, image1.height,
-                        image1.width, image1.image_format, image1.data_type,
-                        &image_aligned, stride2);
+        bm_image_create(context->handle, image1.height, image1.width,
+                        image1.image_format, image1.data_type, &image_aligned,
+                        stride2);
 
         bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
         bmcv_copy_to_atrr_t copyToAttr;
@@ -93,8 +91,7 @@ common::ErrorCode YoloxPreProcess::preProcess(
         copyToAttr.start_x = 0;
         copyToAttr.start_y = 0;
         copyToAttr.if_padding = 1;
-        bmcv_image_copy_to(context->handle, copyToAttr, image1,
-                           image_aligned);
+        bmcv_image_copy_to(context->handle, copyToAttr, image1, image_aligned);
       } else {
         image_aligned = image1;
       }
@@ -125,11 +122,11 @@ common::ErrorCode YoloxPreProcess::preProcess(
       // some API only accept bm_image whose stride is aligned to 64
       int aligned_net_w = FFALIGN(context->net_w, 64);
       int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
-      for (int i = 0; i < context->max_batch; i++) {
-        bm_image_create(context->handle, context->net_h,
-                        context->net_w, FORMAT_RGB_PLANAR,
-                        DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
-      }
+      // for (int i = 0; i < context->max_batch; i++) {
+      bm_image_create(context->handle, context->net_h, context->net_w,
+                      FORMAT_RGB_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
+                      strides);
+      // }
       bm_image_alloc_dev_mem(resized_img, BMCV_IMAGE_FOR_IN);
 
       bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
@@ -152,14 +149,14 @@ common::ErrorCode YoloxPreProcess::preProcess(
       bm_image_create(context->handle, context->net_h, context->net_w,
                       FORMAT_RGB_PLANAR, img_dtype, &converto_img);
       bm_image_alloc_dev_mem(converto_img, BMCV_IMAGE_FOR_IN);
-      bmcv_image_convert_to(context->handle, 1,
-                            context->converto_attr, &resized_img,
-                            &converto_img);
+      bmcv_image_convert_to(context->handle, 1, context->converto_attr,
+                            &resized_img, &converto_img);
       bm_image_destroy(resized_img);
 
       bm_device_mem_t input_mem;
       bm_image_get_device_mem(converto_img, &input_mem);
-      objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem = std::move(input_mem);
+      objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem =
+          std::move(input_mem);
       i++;
     }
   }

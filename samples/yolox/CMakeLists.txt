@@ -84,10 +84,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories("${SDK}/include/")
     include_directories("${SDK}/include/opencv4")
     link_directories("${SDK}/lib/")
-    link_libraries(pthread)
-
-    # spdlog https://github.com/gabime/spdlog
-    # include_directories(../share/3rdparty/spdlog/include)
 
     include_directories(../../share/3rdparty/gtest)
     include_directories(../../share/3rdparty/gtest/include)

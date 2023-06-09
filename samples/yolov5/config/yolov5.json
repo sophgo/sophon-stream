@@ -1,5 +1,5 @@
 {
-    "num_graphs": 2,
+    "num_graphs": 1,
     "num_channels_per_graph": 1,
 
     "decodeConfigure": [
