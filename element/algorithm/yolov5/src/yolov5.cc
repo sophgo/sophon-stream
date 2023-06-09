@@ -211,10 +211,6 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
 
   common::ObjectMetadatas objectMetadatas;
   std::vector<int> inputPorts = getInputPorts();
-<<<<<<< HEAD
-=======
-  std::vector<int> outputPorts = getOutputPorts();
->>>>>>> 5646b32 (refactory decode element and yolox usecase)
   int inputPort = inputPorts[0];
   int outputPort = 0;
   if (!getLastElementFlag()) {

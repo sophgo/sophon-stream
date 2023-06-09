@@ -59,9 +59,6 @@ constexpr const char* JSON_CONFIG_GRAPH_ID_FILED = "graph_id";
 constexpr const char* JSON_CONFIG_ELEMENTS_FILED = "elements";
 constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connections";
 
-<<<<<<< HEAD
-TEST(TestMultiAlgorithmGraph, MultiAlgorithmGraph) {
-=======
 constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
     "num_channels_per_graph";
 constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
@@ -120,7 +117,6 @@ usecase_config parse_usecase_json(std::string& json_path) {
 }
 
 TEST(TestYolov5, TestYolov5) {
->>>>>>> 3f3dee4 (123)
   ::logInit("debug", "");
 
   std::mutex mtx;

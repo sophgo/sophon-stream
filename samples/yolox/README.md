@@ -25,11 +25,7 @@
 
 配置文件位于[yolox配置文件](../yolox/config/)
 
-<<<<<<< HEAD
-其中, [yolox.json](../yolox/config/yolox.json)是例程的整体配置文件, 管理输入码流等信息。在一张图上可以支持多路数据的输入, num_channels_per_graph参数配置输入的路数, decodeConfigure中包含了每一路数据的url等信息。
-=======
 其中, [yolox.json](../yolox/config/usecase_yolox.json)是例程的整体配置文件, 管理输入码流等信息。在一张图上可以支持多路数据的输入, num_channels_per_graph参数配置输入的路数, channel中包含码流url等信息。
->>>>>>> 3f3dee4 (123)
 ```
 {
   "num_channels_per_graph": 3,
