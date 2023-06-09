@@ -86,11 +86,19 @@ common::ErrorCode Bytetrack::initInternal(const std::string& json) {
       break;
     }
 
+    // 获取参数
     initContext(configure.dump());
 
-    BYTETracker bytetracker(mContext->frameRate, mContext->trackBuffer,
-                            mContext->trackThresh, mContext->highThresh,
-                            mContext->matchThresh);
+    int threadNumber = getThreadNumber();
+
+    IVS_DEBUG("Bytetrack threadNumber: {0}", threadNumber);
+
+    // 初始化 tracker
+    for (int t = 0; t < threadNumber; ++t) {
+      mByteTrackerMap[t] = std::make_shared<BYTETracker>(
+          mContext->frameRate, mContext->trackBuffer, mContext->trackThresh,
+          mContext->highThresh, mContext->matchThresh);
+    }
 
   } while (false);
 
@@ -98,14 +106,21 @@ common::ErrorCode Bytetrack::initInternal(const std::string& json) {
 }
 
 /**
- * update track
- * @param[in/out] objectMetadatas:  输入数据和预测结果
+ * update tracker
+ * @param[in/out] objectMetadatas:  更新 tracker
  */
 void Bytetrack::process(
-    std::shared_ptr<common::ObjectMetadata>& objectMetadata) {
-  bytetracker.update(objectMetadata);
+    int dataPipeId, std::shared_ptr<common::ObjectMetadata>& objectMetadata) {
+  auto byteTrackerIt = mByteTrackerMap.find(dataPipeId);
+  if (mByteTrackerMap.end() != byteTrackerIt) {
+    auto byteTracker = byteTrackerIt->second;
+    if (byteTracker) {
+      byteTracker->update(objectMetadata);
+    } else {
+      IVS_WARN("empty byteTrackerMap for dataPipeId : {0}", dataPipeId);
+    }
+  }
 }
-
 /**
  * 资源释放函数
  */
@@ -114,27 +129,40 @@ void Bytetrack::uninitInternal() {}
 /**
   运行
 */
-common::ErrorCode Bytetrack::doWork() {
+common::ErrorCode Bytetrack::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
-  std::vector<int> inputPorts = getInputPorts();
-  std::vector<int> outputPorts = getOutputPorts();
-  int inputPort = inputPorts[0];
-  int outputPort = outputPorts[0];
 
-  auto data = getInputData(inputPort);
-  if (!data) {
+  std::vector<int> inputPorts = getInputPorts();
+  int inputPort = inputPorts[0];
+  int outputPort = 0;
+  if (!getLastElementFlag()) {
+    std::vector<int> outputPorts = getOutputPorts();
+    int outputPort = outputPorts[0];
+  }
+
+  if (getThreadStatus() != ThreadStatus::RUN) {
+    IVS_DEBUG("Bytetrack doWork thread stop");
     return errorCode;
   }
-  popInputData(inputPort);
+
+  auto data = getInputData(inputPort, dataPipeId);
+  if (!data) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    return errorCode;
+  }
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
-  process(objectMetadata);
+  process(dataPipeId, objectMetadata);
 
-  errorCode =
-      pushOutputData(outputPort, std::static_pointer_cast<void>(objectMetadata),
-                     std::chrono::milliseconds(200));
+  int channel_id = objectMetadata->mFrame->mChannelId;
+  int pipeId =
+      getLastElementFlag()
+          ? 0
+          : (channel_id % getOutputConnector(outputPort)->getDataPipeCount());
 
+  errorCode = pushOutputData(outputPort, pipeId,
+                             std::static_pointer_cast<void>(objectMetadata));
   if (common::ErrorCode::SUCCESS != errorCode) {
     IVS_WARN(
         "Send data fail, element id: {0:d}, output port: {1:d}, data: "
