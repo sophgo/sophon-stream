@@ -99,7 +99,7 @@ VideoDecFFM::VideoDecFFM() {
   pkt->data = NULL;
   pkt->size = 0;
 
-  frame = av_frame_alloc();
+  // frame = av_frame_alloc();
 }
 
 VideoDecFFM::~VideoDecFFM() {
@@ -337,6 +337,7 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
 }
 
 int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
+  frame = av_frame_alloc();
   frame_id = 0;
   if (strstr(input, "rtsp://")) this->is_rtsp = 1;
   this->handle = dec_handle;
@@ -389,6 +390,7 @@ void VideoDecFFM::closeDec() {
     frame = NULL;
   }
   frame_id = 0;
+  quit_flag = false;
 }
 
 int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,

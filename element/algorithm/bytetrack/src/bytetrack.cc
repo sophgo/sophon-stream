@@ -155,11 +155,11 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
 
   process(dataPipeId, objectMetadata);
 
-  int channel_id = objectMetadata->mFrame->mChannelId;
+  int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int pipeId =
       getLastElementFlag()
           ? 0
-          : (channel_id % getOutputConnector(outputPort)->getDataPipeCount());
+          : (channel_id_internal % getOutputConnector(outputPort)->getDataPipeCount());
 
   errorCode = pushOutputData(outputPort, pipeId,
                              std::static_pointer_cast<void>(objectMetadata));

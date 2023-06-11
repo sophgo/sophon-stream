@@ -31,6 +31,9 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/engine.cc
         src/connector.cc
     )
+    link_libraries(dl)
+    target_link_libraries(framework -ldl)
+     
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -g -rdynamic")
@@ -89,6 +92,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
         src/engine.cc
         src/connector.cc
     )
-    target_link_libraries(framework -fprofile-arcs -lgcov)
+    link_libraries(dl)
+    target_link_libraries(framework -ldl -fprofile-arcs -lgcov)
 
 endif()

@@ -66,6 +66,7 @@ struct Frame {
     }
 
     int mChannelId;
+    int mChannelIdInternal;
     std::int64_t mFrameId;
 
     FormatType mFormatType;
@@ -86,6 +87,7 @@ struct Frame {
     //std::shared_ptr<SophonData> mSpData;
     bm_handle_t mHandle;
     std::shared_ptr<bm_image> mSpData;
+    std::shared_ptr<bm_image> mSpDataOsd;
 };
 
 } // namespace common

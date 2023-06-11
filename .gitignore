@@ -3,4 +3,5 @@
 **/data
 
 .DS_Store
+.vscode
 

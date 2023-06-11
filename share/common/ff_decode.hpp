@@ -70,6 +70,8 @@ public:
     bm_image *grab();
 
     std::shared_ptr<bm_image> grab(int& frameId, int& eof,double& timestamp);
+
+    void closeDec();
  
 private:
     bool quit_flag = false;
@@ -101,5 +103,4 @@ private:
  
     void *vidPushImage();
     AVFrame *grabFrame(int& eof,double& timestamp);
-    void closeDec();
 };

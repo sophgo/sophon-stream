@@ -175,6 +175,8 @@ class Decode : public ::sophon_stream::framework::Element {
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
   std::mutex mThreadsPoolMtx;
+  std::atomic<int> mChannelCount;
+  std::map<int, int> mChannelIdInternal;
 };
 
 }  // namespace decode

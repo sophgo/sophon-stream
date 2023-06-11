@@ -27,6 +27,7 @@ common::ErrorCode Decode::initInternal(const std::string& json) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
+    mChannelCount = 0;
   } while (false);
 
   return errorCode;
@@ -143,6 +144,11 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   mThreadsPool.insert(
       std::make_pair(channelTask->request.channelId, channelInfo));
 
+  int channel_id =  channelTask->request.channelId;
+  if (mChannelIdInternal.find(channel_id)==mChannelIdInternal.end()) {
+    mChannelIdInternal[channel_id] = mChannelCount++;
+  }
+
   IVS_INFO("add one channel task finished!");
   return channelTask->response.errorCode;
 }
@@ -210,19 +216,21 @@ common::ErrorCode Decode::process(
       mThreadsPool.erase(iter);
     }
   }
-  objectMetadata->mFrame->mChannelId = channelTask->request.channelId;
+  int channel_id = channelTask->request.channelId;
+  objectMetadata->mFrame->mChannelId = channel_id; 
+  objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternal[channel_id];
 
   // push data to next element
-  int channel_id = objectMetadata->mFrame->mChannelId;
+  int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outputPort = 0;
   if (!getLastElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
     outputPort = outputPorts[0];
   }
-  int dataPipeId =
-      getLastElementFlag()
-          ? 0
-          : (channel_id % getOutputConnector(outputPort)->getDataPipeCount());
+  int dataPipeId = getLastElementFlag()
+                       ? 0
+                       : (channel_id_internal %
+                          getOutputConnector(outputPort)->getDataPipeCount());
   common::ErrorCode errorCode = pushOutputData(
       outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
   if (common::ErrorCode::SUCCESS != errorCode) {

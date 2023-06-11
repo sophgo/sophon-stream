@@ -77,17 +77,19 @@ void YoloxPostProcess::nms_sorted_bboxes(const std::vector<YoloxBox>& objects,
                                          float nms_threshold) {
   picked.clear();
   const int n = objects.size();
+  int suppressed[n];
+  memset(suppressed, 0, sizeof(float) * n);
 
   for (int i = 0; i < n; i++) {
+    if (suppressed[i] == 1) continue;
+    picked.push_back(i);
     const YoloxBox& a = objects[i];
-    int keep = 1;
-    for (int j = 0; j < (int)picked.size(); j++) {
-      const YoloxBox& b = objects[picked[j]];
-
+    for (int j = i + 1; j < n; j++) {
+      if (suppressed[j] == 1) continue;
+      const YoloxBox& b = objects[j];
       float iou = box_iou(a, b);
-      if (iou > nms_threshold) keep = 0;
+      if (iou > nms_threshold) suppressed[j] = 1;
     }
-    if (keep) picked.push_back(i);
   }
 }
 
@@ -149,23 +151,26 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
 
         YoloxBox box;
         // 检查一下取值范围
-        if(w_temp < 0 || h_temp < 0 || w_temp >= frame_width || h_temp > frame_height)
+        if (w_temp < 0 || h_temp < 0 || w_temp >= frame_width ||
+            h_temp > frame_height)
           continue;
-        box.left = (left >= 0  && left < frame_width)? left : 0;
-        box.top = (top >= 0 && top < frame_height) ? top : 0;
-        box.right = (right >= 0 && right < frame_width) ? right : (frame_width - 1);
-        box.bottom = (bottom > 0 && bottom < frame_height) ? bottom : (frame_height - 1);
+        box.left = (left >= 0) ? left : 0;
+        box.top = (top >= 0) ? top : 0;
+        box.right = (right < frame_width) ? right : (frame_width - 1);
+        box.bottom = (bottom < frame_height) ? bottom : (frame_height - 1);
         box.width = box.right - box.left;
         box.height = box.bottom - box.top;
+        if (box.width < 0 || box.height < 0) continue;
         box.score = box_prob;
         box.class_id = max_class_idx;
         if (w_temp * h_temp > m_min_box_area) yolobox_vec.push_back(box);
-        yolobox_vec.push_back(box);
       }
     }
+
     std::sort(
         yolobox_vec.begin(), yolobox_vec.end(),
-        [](const YoloxBox& a, const YoloxBox& b) { return a.score > b.score; });
+        [](const YoloxBox& a, const YoloxBox& b) { return a.score > b.score;
+        });
     std::vector<int> picked;
     nms_sorted_bboxes(yolobox_vec, picked, context->thresh_nms);
 
@@ -175,6 +180,7 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
           std::make_shared<common::ObjectMetadata>();
       spObjData->mDetectedObjectMetadata =
           std::make_shared<common::DetectedObjectMetadata>();
+
       spObjData->mDetectedObjectMetadata->mBox.mX = bbox.left;
       spObjData->mDetectedObjectMetadata->mBox.mY = bbox.top;
       spObjData->mDetectedObjectMetadata->mBox.mWidth = bbox.width;

@@ -1,0 +1,14 @@
+{
+    "configure":{
+        "model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel",
+        "threshold_conf":0.5,
+        "threshold_nms":0.5,
+        "stage":["post"]
+    },
+    "shared_object":"../../../element/algorithm/yolox/build/libyolox.so",
+    "device_id":0,
+    "id":0,
+    "name":"yolox",
+    "side":"sophgo",
+    "thread_number":1
+}

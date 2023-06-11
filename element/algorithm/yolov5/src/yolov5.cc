@@ -239,12 +239,12 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
   process(objectMetadatas);
 
   for (auto& objectMetadata : objectMetadatas) {
-    int channel_id = objectMetadata->mFrame->mChannelId;
-    int dataPipeId =
+    int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
+    int outDataPipeId =
         getLastElementFlag()
             ? 0
-            : (channel_id % getOutputConnector(outputPort)->getDataPipeCount());
-    errorCode = pushOutputData(outputPort, dataPipeId,
+            : (channel_id_internal % getOutputConnector(outputPort)->getDataPipeCount());
+    errorCode = pushOutputData(outputPort, outDataPipeId,
                                std::static_pointer_cast<void>(objectMetadata));
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_WARN(
