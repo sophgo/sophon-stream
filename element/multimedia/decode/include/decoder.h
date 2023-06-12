@@ -11,7 +11,7 @@
 #include "common/ObjectMetadata.h"
 #include "common/bm_wrapper.hpp"
 #include "common/bmnn_utils.h"
-#include "common/ff_decode.hpp"
+#include "ff_decode.h"
 #include "common/logger.h"
 
 namespace sophon_stream {
