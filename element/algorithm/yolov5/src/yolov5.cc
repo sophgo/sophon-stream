@@ -257,7 +257,7 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
   return common::ErrorCode::SUCCESS;
 }
 
-REGISTER_WORKER("Yolov5", Yolov5)
+REGISTER_WORKER("yolov5", Yolov5)
 
 }  // namespace yolov5
 }  // namespace element
