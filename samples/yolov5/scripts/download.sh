@@ -19,6 +19,6 @@ python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/9JzgcqIYv
 mv ./coco.names ../data/
 
 python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/tsVSE1KqJ
-mv ./tpu_kernel_module ../../../share/3rdparty/
+mv ./tpu_kernel_module ../../../3rdparty/
 
 popd

@@ -31,11 +31,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
 
+    include_directories(../../../framework)
     include_directories(../../../framework/include)
 
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
     add_library(osd SHARED
@@ -58,11 +58,11 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
 
+    include_directories(../../../framework)
     include_directories(../../../framework/include)
 
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
     add_library(osd SHARED

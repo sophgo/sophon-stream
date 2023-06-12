@@ -172,6 +172,7 @@ common::ErrorCode Yolov5PreProcess::preProcess(
         std::move(input_mem);
     i++;
   }
+  return common::ErrorCode::SUCCESS;
 }
 
 }  // namespace yolov5

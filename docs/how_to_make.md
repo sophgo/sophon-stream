@@ -13,7 +13,7 @@ soc
 ```
 mkdir build
 cd build
-cmake ../ -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/home/czhang/softwares/soc-sdk
+cmake ../ -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon-sdk-soc
 make -j4
 ```
 

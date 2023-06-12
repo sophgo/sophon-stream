@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/Graphics.hpp"
 #include "decoder.h"
 #include "element.h"
 

@@ -5,14 +5,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "bmcv_api.h"
+#include "bmcv_api_ext.h"
+#include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
 #include "common/ErrorCode.h"
-#include "common/Graphics.hpp"
 #include "common/ObjectMetadata.h"
-#include "common/bm_wrapper.hpp"
 #include "common/bmnn_utils.h"
-#include "ff_decode.h"
 #include "common/logger.h"
+#include "ff_decode.h"
 
 namespace sophon_stream {
 namespace element {

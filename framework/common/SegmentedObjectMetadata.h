@@ -11,8 +11,6 @@ namespace common {
 struct SegmentedObjectMetadata {
     SegmentedObjectMetadata(){}
 
-    // bool mTrackFeature;
-    // float mTrackCosineSimilarityThreshold;
     // std::string mItemName;
     // std::string mLabelName;
     std::shared_ptr<Frame> mFrame;

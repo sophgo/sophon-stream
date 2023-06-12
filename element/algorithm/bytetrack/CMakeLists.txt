@@ -36,11 +36,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(${EIGEN3_INCLUDE_DIRS})
     link_directories(${EIGEN3_LIB_DIRS})
 
+    include_directories(../../../framework/)
     include_directories(../../../framework/include)
 
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
     add_library(bytetrack SHARED
@@ -56,20 +56,22 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -g -rdynamic")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -fprofile-arcs -ftest-coverage -g -rdynamic")
+
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+
     include_directories("${SOPHON_SDK_SOC}/include/")
     include_directories("${SOPHON_SDK_SOC}/include/opencv4")
     link_directories("${SOPHON_SDK_SOC}/lib/")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
     
+    include_directories(../../../framework)
     include_directories(../../../framework/include)
 
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
 
     # use Eigen
     find_package(Eigen3 REQUIRED)

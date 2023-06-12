@@ -6,43 +6,31 @@
 #include "bmlib_runtime.h"
 #include "bmcv_api.h"
 #include "bmcv_api_ext.h"
-#include "Rational.h"
 
 namespace sophon_stream {
 namespace common {
 
-enum class FormatType {
-    UNKNOWN, 
-    NV12, 
-    NV21, 
-    BGR_PACKET, 
-    BGR_PLANAR, 
-    RGB_PACKET, 
-    RGB_PLANAR, 
-};
-
-enum class DataType {
-    INTEGER, 
-    FLOATING_POINT, 
-};
-
-struct SophonData{
-    SophonData(){
-            mData.reset(new bm_device_mem_t, [&](bm_device_mem_t* p){
-                bm_free_device(mHandle, *p);
-                delete p;
-        });
+struct Rational {
+    Rational()
+        : mNumber(0), 
+          mDenominator(1) {
     }
-    bm_handle_t mHandle;
-    std::shared_ptr<bm_device_mem_t> mData;
+
+    Rational(int number, int denominator)
+        : mNumber(number), 
+          mDenominator(denominator) {
+    }
+
+    int mNumber;
+    int mDenominator;
 };
 
 struct Frame {
     Frame()
         : mChannelId(-1), 
           mFrameId(-1), 
-          mFormatType(FormatType::UNKNOWN), 
-          mDataType(DataType::INTEGER), 
+          mFormatType(FORMAT_YUV420P), 
+          mDataType(DATA_TYPE_EXT_1N_BYTE), 
           mTimestamp(0), 
           mEndOfStream(false), 
           mChannel(0), 
@@ -69,8 +57,8 @@ struct Frame {
     int mChannelIdInternal;
     std::int64_t mFrameId;
 
-    FormatType mFormatType;
-    DataType mDataType;
+    bm_image_format_ext mFormatType;
+    bm_image_data_format_ext mDataType;
     Rational mFrameRate;
     std::int64_t mTimestamp;
     bool mEndOfStream;
@@ -84,7 +72,6 @@ struct Frame {
     int mHeight;
     int mHeightStep;
     std::size_t mDataSize;
-    //std::shared_ptr<SophonData> mSpData;
     bm_handle_t mHandle;
     std::shared_ptr<bm_image> mSpData;
     std::shared_ptr<bm_image> mSpDataOsd;

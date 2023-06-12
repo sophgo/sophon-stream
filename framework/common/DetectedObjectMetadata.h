@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Graphics.hpp"
+#include "graphics.h"
 
 namespace sophon_stream {
 namespace common {

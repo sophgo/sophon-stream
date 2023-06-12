@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <cstring>
 #include "bmruntime_interface.h"
-// #include "bm_wrapper.hpp"
 
 class NoCopyable {
   protected:

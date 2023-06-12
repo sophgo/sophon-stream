@@ -11,23 +11,24 @@
 #define SOPHON_STREAM_ELEMENT_YOLOX_CONTEXT_H_
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
+#include "bmcv_api.h"
+#include "bmcv_api_ext.h"
+#include "bmlib_runtime.h"
+#include "bmruntime_interface.h"
 #include "common/ErrorCode.h"
-#include "common/bm_wrapper.hpp"
 #include "common/bmnn_utils.h"
-
-#include <nlohmann/json.hpp>
 
 namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-#define FFALIGN(x, a) (((x)+(a)-1)&~((a)-1))
+#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
 struct YoloxContext {
-
   int deviceId;
 
   std::shared_ptr<BMNNContext> bmContext;
@@ -37,7 +38,7 @@ struct YoloxContext {
   float thresh_conf;  // 置信度阈值
   float thresh_nms;   // nms iou阈值
 
-  int class_num = 80; 
+  int class_num = 80;
   int net_h;
   int net_w;
   int max_batch;

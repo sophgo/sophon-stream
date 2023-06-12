@@ -12,9 +12,7 @@ struct LabelMetadata {
 };
 
 struct RecognizedObjectMetadata {
-    RecognizedObjectMetadata()
-        : mTrackFeature(false), 
-          mTrackCosineSimilarityThreshold(0.f) {
+    RecognizedObjectMetadata(){
     }
     
     int getLabel() const {
@@ -35,8 +33,6 @@ struct RecognizedObjectMetadata {
         }
     }
 
-    bool mTrackFeature;
-    float mTrackCosineSimilarityThreshold;
     std::string mItemName;
     std::string mLabelName;
     std::vector<float> mScores;

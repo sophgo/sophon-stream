@@ -7,7 +7,6 @@
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
 #include "common/logger.h"
-#include "common/type_trans.hpp"
 
 namespace sophon_stream {
 namespace element {
@@ -18,8 +17,8 @@ constexpr const char* Decoder::JSON_URL;
 void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {
   f->mWidth = img.width;
   f->mHeight = img.height;
-  f->mDataType = sophon_stream::common::data_bmcv2stream(img.data_type);
-  f->mFormatType = sophon_stream::common::format_bmcv2stream(img.image_format);
+  f->mDataType = img.data_type;
+  f->mFormatType = img.image_format;
   f->mChannel = 3;
   f->mDataSize = img.width * img.height * f->mChannel * sizeof(uchar);
 }
