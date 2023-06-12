@@ -16,7 +16,7 @@
 #include <memory>
 #include <string>
 
-#include "common/ErrorCode.h"
+#include "common/error_code.h"
 #include "common/logger.h"
 #include "element.h"
 

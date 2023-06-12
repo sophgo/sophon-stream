@@ -5,7 +5,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "common/ObjectMetadata.h"
+#include "common/object_metadata.h"
 #include "common/logger.h"
 #include "decoder.h"
 #include "element_factory.h"

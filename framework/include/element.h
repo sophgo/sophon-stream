@@ -22,7 +22,7 @@
 #include <thread>
 #include <vector>
 
-#include "common/ErrorCode.h"
+#include "common/error_code.h"
 #include "common/logger.h"
 #include "connector.h"
 #include "datapipe.h"

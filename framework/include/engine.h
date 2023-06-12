@@ -15,8 +15,8 @@
 #include <memory>
 #include <string>
 
-#include "common/ErrorCode.h"
-#include "common/Singleton.hpp"
+#include "common/error_code.h"
+#include "common/singleton.h"
 #include "common/logger.h"
 #include "element_manager.h"
 

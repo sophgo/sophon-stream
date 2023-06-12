@@ -19,7 +19,7 @@
 #include "bmcv_api_ext.h"
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
-#include "common/ErrorCode.h"
+#include "common/error_code.h"
 #include "common/bmnn_utils.h"
 
 namespace sophon_stream {

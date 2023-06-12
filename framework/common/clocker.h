@@ -1,10 +1,20 @@
-#ifndef CLOCKER_H
-#define CLOCKER_H
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_COMMON_CLOCKER_H_
+#define SOPHON_STREAM_COMMON_CLOCKER_H_
 
 #include <sys/time.h>
 
 #include <string>
 namespace sophon_stream {
+namespace common {
 
 class Clocker {
  public:
@@ -45,5 +55,6 @@ class Clocker {
   struct timeval time_end_;
 };  // class Clocker
 
+}  // namespace common
 }  // namespace sophon_stream
-#endif
+#endif  // SOPHON_STREAM_COMMON_CLOCKER_H_

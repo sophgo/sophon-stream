@@ -12,7 +12,7 @@
 
 #include <memory>
 
-#include "common/ObjectMetadata.h"
+#include "common/object_metadata.h"
 #include "element.h"
 #include "encoder.h"
 

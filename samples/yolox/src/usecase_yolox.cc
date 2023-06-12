@@ -5,9 +5,9 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 
-#include "common/Clocker.h"
-#include "common/ErrorCode.h"
-#include "common/ObjectMetadata.h"
+#include "common/clocker.h"
+#include "common/error_code.h"
+#include "common/object_metadata.h"
 #include "common/logger.h"
 #include "decode.h"
 #include "engine.h"
@@ -127,7 +127,7 @@ TEST(TestYolox, TestYolox) {
   std::mutex mtx;
   std::condition_variable cv;
 
-  sophon_stream::Clocker clocker;
+  sophon_stream::common::Clocker clocker;
   std::atomic_uint32_t frameCount(0);
   std::atomic_int32_t finishedChannelCount(0);
 

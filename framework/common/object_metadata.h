@@ -1,18 +1,28 @@
-#pragma once
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_COMMON_OBJECT_METADATA_H_
+#define SOPHON_STREAM_COMMON_OBJECT_METADATA_H_
 
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "DetectedObjectMetadata.h"
-#include "ErrorCode.h"
-#include "Frame.h"
-#include "RecognizedObjectMetadata.h"
-#include "SegmentedObjectMetadata.h"
-#include "TrackedObjectMetadata.h"
 #include "common/bmnn_utils.h"
+#include "detected_object_metadata.h"
+#include "error_code.h"
+#include "frame.h"
 #include "graphics.h"
+#include "recognized_object_metadata.h"
+#include "segmented_object_metadata.h"
+#include "tracked_object_metadata.h"
 
 namespace sophon_stream {
 namespace common {
@@ -105,3 +115,5 @@ using ObjectMetadatas = std::vector<std::shared_ptr<ObjectMetadata>>;
 
 }  // namespace common
 }  // namespace sophon_stream
+
+#endif  // SOPHON_STREAM_COMMON_OBJECT_METADATA_H_

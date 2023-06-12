@@ -18,7 +18,7 @@
 #include <memory>
 #include <mutex>
 
-#include "common/ErrorCode.h"
+#include "common/error_code.h"
 #include "common/logger.h"
 
 namespace sophon_stream {

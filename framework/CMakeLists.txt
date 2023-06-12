@@ -18,7 +18,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../3rdparty/nlohmann-json/include)
 
     add_library(ivslogger
-      common/logger.cpp
+      common/logger.cc
     )
 
     include_directories(../3rdparty/gtest)
@@ -80,7 +80,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../3rdparty/nlohmann-json/include)
 
     add_library(ivslogger
-      common/logger.cpp
+      common/logger.cc
     )
 
     include_directories(.)

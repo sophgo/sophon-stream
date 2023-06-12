@@ -13,7 +13,7 @@
 #include <memory>
 #include <mutex>
 
-#include "common/ObjectMetadata.h"
+#include "common/object_metadata.h"
 #include "element.h"
 
 namespace sophon_stream {

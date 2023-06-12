@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "common/ErrorCode.h"
-#include "common/ObjectMetadata.h"
+#include "common/error_code.h"
+#include "common/object_metadata.h"
 #include "yolox_context.h"
 
 namespace sophon_stream {
