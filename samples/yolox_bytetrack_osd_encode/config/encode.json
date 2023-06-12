@@ -2,7 +2,7 @@
   "configure": {
     "rtsp_port": 8554
   },
-  "shared_object": "../../../element/multimedia/encode/build/libencode.so",
+  "shared_object": "../../../build/lib/libencode.so",
   "device_id": 0,
   "id": 0,
   "name": "encode",

@@ -6,7 +6,7 @@
         "frame_rate": 30,
         "track_buffer": 30
     },
-    "shared_object": "../../../element/algorithm/bytetrack/build/libbytetrack.so",
+    "shared_object": "../../../build/lib/libbytetrack.so",
     "device_id": 0,
     "id": 0,
     "name": "bytetrack",

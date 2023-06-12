@@ -22,6 +22,10 @@ if (${TARGET_ARCH} STREQUAL "pcie")
       ../share/common/logger.cpp
     )
 
+    include_directories(../share/3rdparty/gtest)
+    include_directories(../share/3rdparty/gtest/include)
+    add_library(gtest ../share/3rdparty/gtest/src/gtest-all.cc ../../share/3rdparty/gtest/src/gtest_main.cc)
+
     include_directories(include)
     add_library(framework SHARED
         src/element.cc

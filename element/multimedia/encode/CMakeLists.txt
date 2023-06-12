@@ -28,10 +28,10 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(${LIBSOPHON_INCLUDE_DIRS})
     link_directories(${LIBSOPHON_LIB_DIRS})
 
+    set(BM_LIBS bmlib bmrt bmcv yuv)
+    set(JPU_LIBS bmjpuapi bmjpulite)
+
     include_directories(../../../framework/include)
-    link_directories(../../../framework/build)
-    link_libraries(framework)
-    link_libraries(ivslogger)
 
     include_directories(../../../share)
     include_directories(../../../share/3rdparty/spdlog/include)
@@ -43,18 +43,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/encode.cc
     )
 
-    target_link_libraries(encode ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread -lframework)
-
-
-    # include_directories(include)
-    # include_directories(../../../share/common)
-    # set(test_src
-    #   ../../../share/common/ff_decode.cpp
-	  #   src/encoder.cc
-	  #   src/main.cc
-    # )
-    # add_executable(main ${test_src})
-    # target_link_libraries(main -ldl ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread -lavcodec -lavformat -lavutil)
+    target_link_libraries(encode ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
 
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
@@ -64,25 +53,24 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+
+    include_directories("${SOPHON_SDK_SOC}/include/")
+    include_directories("${SOPHON_SDK_SOC}/include/opencv4")
+    link_directories("${SOPHON_SDK_SOC}/lib/")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
-    include_directories("${SDK}/include/")
-    include_directories("${SDK}/include/opencv4")
-    link_directories("${SDK}/lib/")
+
     include_directories(../../../framework/include)
-    link_directories(../../../framework/build_soc)
-    link_libraries(framework)
-    link_libraries(ivslogger)
+
     include_directories(../../../share)
     include_directories(../../../share/3rdparty/spdlog/include)
     include_directories(../../../share/3rdparty/nlohmann-json/include)
 
     include_directories(include)
-    add_library(yolov5 SHARED
-        src/yolov5_pre_process.cc
-        src/yolov5_post_process.cc
-        src/yolov5_inference.cc
-        src/yolov5.cc
+    add_library(encode SHARED
+        src/encoder.cc
+        src/encode.cc
     )
-    target_link_libraries(yolov5 ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -fprofile-arcs -lgcov -lpthread)
+
+    target_link_libraries(encode ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()
