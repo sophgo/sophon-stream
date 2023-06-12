@@ -3,7 +3,7 @@
     "osd_type": "track",
     "class_names": "../data/coco.names"
   },
-  "shared_object": "../../../element/multimedia/osd/build/libosd.so",
+  "shared_object": "../../../build/lib/libosd.so",
   "device_id": 0,
   "id": 0,
   "name": "osd",

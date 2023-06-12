@@ -28,15 +28,15 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(${LIBSOPHON_INCLUDE_DIRS})
     link_directories(${LIBSOPHON_LIB_DIRS})
 
+    set(BM_LIBS bmlib bmrt bmcv yuv)
+    set(JPU_LIBS bmjpuapi bmjpulite)
+
     # use Eigen
     find_package(Eigen3 REQUIRED)
     include_directories(${EIGEN3_INCLUDE_DIRS})
     link_directories(${EIGEN3_LIB_DIRS})
 
     include_directories(../../../framework/include)
-    link_directories(../../../framework/build)
-    link_libraries(framework)
-    link_libraries(ivslogger)
 
     include_directories(../../../share)
     include_directories(../../../share/3rdparty/spdlog/include)
@@ -50,7 +50,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/bytetrack_strack.cc
         src/bytetrack_bytetracker.cc
         )
-    target_link_libraries(bytetrack ${FFMPEG_LIBS} ${OpenCV_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -lpthread)
+    target_link_libraries(bytetrack ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
@@ -59,15 +59,14 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+    include_directories("${SOPHON_SDK_SOC}/include/")
+    include_directories("${SOPHON_SDK_SOC}/include/opencv4")
+    link_directories("${SOPHON_SDK_SOC}/lib/")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
-    include_directories("${SDK}/include/")
-    include_directories("${SDK}/include/opencv4")
-    link_directories("${SDK}/lib/")
+    
     include_directories(../../../framework/include)
-    link_directories(../../../framework/build_soc)
-    link_libraries(framework)
-    link_libraries(ivslogger)
+
     include_directories(../../../share)
     include_directories(../../../share/3rdparty/spdlog/include)
     include_directories(../../../share/3rdparty/nlohmann-json/include)
@@ -85,5 +84,5 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
         src/bytetrack_strack.cc
         src/bytetrack_bytetracker.cc
         )
-    target_link_libraries(bytetrack ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${the_libbmlib.so} ${the_libbmrt.so} ${the_libbmcv.so} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(bytetrack ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()
