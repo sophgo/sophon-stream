@@ -47,7 +47,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     add_library(decode SHARED
         src/decoder.cc
         src/decode.cc
-        ../../../share/common/ff_decode.cpp
+        src/ff_decode.cc
         )
 
     target_link_libraries(decode ${FFMPEG_LIBS} 
@@ -79,7 +79,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     add_library(decode SHARED
         src/decoder.cc
         src/decode.cc
-        ../../../share/common/ff_decode.cpp
+        src/ff_decode.cpp
         )
     target_link_libraries(decode ${FFMPEG_LIBS} 
         ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)

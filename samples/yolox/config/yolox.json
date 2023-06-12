@@ -5,6 +5,6 @@
     "source_type": 0
   },
   "class_names": "../data/coco.names",
-  "download_image": true,
+  "download_image": false,
   "engine_config_path": "../config/engine.json"
 }

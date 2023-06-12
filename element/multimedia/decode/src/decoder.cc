@@ -65,15 +65,13 @@ common::ErrorCode Decoder::process(
 
   int frame_id = 0;
   int eof = 0;
-  double timestamp = 0.0;
-  std::shared_ptr<bm_image> spBmImage = decoder.grab(frame_id, eof, timestamp);
+  std::shared_ptr<bm_image> spBmImage = decoder.grab(frame_id, eof);
 
   objectMetadata = std::make_shared<common::ObjectMetadata>();
   objectMetadata->mFrame = std::make_shared<common::Frame>();
 
   objectMetadata->mFrame->mHandle = m_handle;
   objectMetadata->mFrame->mFrameId = frame_id;
-  objectMetadata->mFrame->mTimestamp = timestamp * 1000000;
   objectMetadata->mFrame->mSpData = spBmImage;
   if (eof) {
     objectMetadata->mFrame->mEndOfStream = true;

@@ -73,6 +73,8 @@ common::ErrorCode YoloxPreProcess::preProcess(
         image1 = image0;
       }
 
+      // bm_image_destroy(image1);
+
       bm_image image_aligned;
       bool need_copy = image1.width & (64 - 1);
       if (need_copy) {
@@ -95,6 +97,10 @@ common::ErrorCode YoloxPreProcess::preProcess(
       } else {
         image_aligned = image1;
       }
+
+      // bm_image_destroy(image_aligned);
+
+      // // return common::ErrorCode::SUCCESS;
 
       float scale_w = float(context->net_w) / image_aligned.width;
       float scale_h = float(context->net_h) / image_aligned.height;
@@ -122,11 +128,9 @@ common::ErrorCode YoloxPreProcess::preProcess(
       // some API only accept bm_image whose stride is aligned to 64
       int aligned_net_w = FFALIGN(context->net_w, 64);
       int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
-      // for (int i = 0; i < context->max_batch; i++) {
       bm_image_create(context->handle, context->net_h, context->net_w,
                       FORMAT_RGB_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
                       strides);
-      // }
       bm_image_alloc_dev_mem(resized_img, BMCV_IMAGE_FOR_IN);
 
       bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
@@ -141,22 +145,32 @@ common::ErrorCode YoloxPreProcess::preProcess(
       if (need_copy) bm_image_destroy(image_aligned);
 
       bm_image_data_format_ext img_dtype = DATA_TYPE_EXT_FLOAT32;
-      auto tensor = context->bmNetwork->inputTensor(0);
+      const std::shared_ptr<BMNNTensor> tensor =
+          context->bmNetwork->inputTensor(0);
       if (tensor->get_dtype() == BM_INT8) {
         img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
       }
 
       bm_image_create(context->handle, context->net_h, context->net_w,
                       FORMAT_RGB_PLANAR, img_dtype, &converto_img);
-      bm_image_alloc_dev_mem(converto_img, BMCV_IMAGE_FOR_IN);
+
+      bm_device_mem_t mem;
+      int size_byte = 0;
+      bm_image_get_byte_size(converto_img, &size_byte);
+      ret = bm_malloc_device_byte(context->handle, &mem, size_byte);
+      bm_image_attach(converto_img, &mem);
+
       bmcv_image_convert_to(context->handle, 1, context->converto_attr,
                             &resized_img, &converto_img);
+
       bm_image_destroy(resized_img);
 
-      bm_device_mem_t input_mem;
-      bm_image_get_device_mem(converto_img, &input_mem);
-      objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem =
-          std::move(input_mem);
+      bm_image_get_device_mem(
+          converto_img,
+          &objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem);
+      bm_image_detach(converto_img);
+      bm_image_destroy(converto_img);
+
       i++;
     }
   }
