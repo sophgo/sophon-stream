@@ -25,11 +25,6 @@ class Encode : public ::sophon_stream::framework::Element {
   Encode();
   ~Encode() override;
 
-  Encode(const Encode&) = delete;
-  Encode& operator=(const Encode&) = delete;
-  Encode(Encode&&) = default;
-  Encode& operator=(Encode&&) = default;
-
   common::ErrorCode initInternal(const std::string& json) override;
   void uninitInternal() override;
 

@@ -8,14 +8,8 @@
 #include <unordered_map>
 #include <cstring>
 #include "bmruntime_interface.h"
+#include "no_copyable.h"
 
-class NoCopyable {
-  protected:
-    NoCopyable() =default;
-    ~NoCopyable() = default;
-    NoCopyable(const NoCopyable&) = delete;
-    NoCopyable& operator=(const NoCopyable& rhs)= delete;
-};
 
 class BMNNTensor{
   /**
@@ -154,7 +148,7 @@ class BMNNTensor{
 
 };
 
-class BMNNNetwork : public NoCopyable {
+class BMNNNetwork : public ::sophon_stream::common::NoCopyable {
   public:
   const bm_net_info_t *m_netinfo;
   bm_tensor_t* m_inputTensors;
@@ -365,7 +359,7 @@ class BMNNNetwork : public NoCopyable {
 
 };
 
-class BMNNHandle: public NoCopyable {
+class BMNNHandle: public ::sophon_stream::common::NoCopyable {
   bm_handle_t m_handle;
   int m_dev_id;
   public:
@@ -389,7 +383,7 @@ class BMNNHandle: public NoCopyable {
 
 using BMNNHandlePtr = std::shared_ptr<BMNNHandle>;
 
-class BMNNContext : public NoCopyable {
+class BMNNContext : public ::sophon_stream::common::NoCopyable {
   BMNNHandlePtr m_handlePtr;
   void *m_bmrt;
   std::vector<std::string> m_network_names;

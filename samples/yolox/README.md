@@ -1,4 +1,4 @@
-# YOLOX
+# YOLOX Demo
 
 ## 1. 概述
 
@@ -19,13 +19,13 @@
 
 ### 4.1 例程代码
 
-例程代码位于[yolox例程](../yolox/src/usecase_yolox.cc)
+例程代码位于[yolox例程](../yolox/src/yolox_demo.cc)
 
 ### 4.2 配置文件
 
 配置文件位于[yolox配置文件](../yolox/config/)
 
-其中, [yolox.json](../yolox/config/usecase_yolox.json)是例程的整体配置文件, 管理输入码流等信息。在一张图上可以支持多路数据的输入, num_channels_per_graph参数配置输入的路数, channel中包含码流url等信息。
+其中, [yolox.json](../yolox/config/yolox_demo.json)是例程的整体配置文件, 管理输入码流等信息。在一张图上可以支持多路数据的输入, num_channels_per_graph参数配置输入的路数, channel中包含码流url等信息。
 ```
 {
   "num_channels_per_graph": 3,

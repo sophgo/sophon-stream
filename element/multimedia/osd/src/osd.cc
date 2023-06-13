@@ -21,6 +21,7 @@
 
 #include "common/logger.h"
 #include "element_factory.h"
+#include "../../encode/include/encode.h"
 
 namespace sophon_stream {
 namespace element {

@@ -20,22 +20,18 @@
 
 #include "common/error_code.h"
 #include "common/logger.h"
+#include "common/no_copyable.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class DataPipe {
+class DataPipe : public ::sophon_stream::common::NoCopyable {
  public:
   using PushHandler = std::function<void()>;
 
   DataPipe();
 
   ~DataPipe();
-
-  DataPipe(const DataPipe&) = delete;
-  DataPipe& operator=(const DataPipe&) = delete;
-  DataPipe(DataPipe&&) = default;
-  DataPipe& operator=(DataPipe&&) = default;
 
   common::ErrorCode pushData(std::shared_ptr<void> data);
 
@@ -58,7 +54,7 @@ class DataPipe {
   PushHandler mPushHandler;
   std::size_t mCapacity;
 
-  const std::chrono::milliseconds timeout {200};
+  const std::chrono::milliseconds timeout{200};
 };
 
 }  // namespace framework

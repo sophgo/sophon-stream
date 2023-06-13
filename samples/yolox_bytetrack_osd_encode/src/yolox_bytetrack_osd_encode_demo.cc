@@ -11,15 +11,14 @@
 #include "common/logger.h"
 #include "decode.h"
 #include "engine.h"
-#include "gtest/gtest.h"
 #include "init_engine.h"
 
-typedef struct usecase_config_ {
+typedef struct demo_config_ {
   int num_graphs;
   int num_channels_per_graph;
   std::vector<nlohmann::json> channel_configs;
   std::string engine_config_file;
-} usecase_config;
+} demo_config;
 
 constexpr const char* JSON_CONFIG_ENGINE_CONFIG_PATH_FILED =
     "engine_config_path";
@@ -28,17 +27,17 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_CHANNEL_ID_FILED = "channel_id"
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_URL_FILED = "url";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED = "source_type";
 
-usecase_config parse_usecase_json(std::string& json_path) {
+demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
   assert(istream.is_open());
-  nlohmann::json usecase_json;
-  istream >> usecase_json;
+  nlohmann::json demo_json;
+  istream >> demo_json;
   istream.close();
 
-  usecase_config config;
+  demo_config config;
 
-  auto channel_config_it = usecase_json.find(JSON_CONFIG_CHANNEL_CONFIG_FILED);
+  auto channel_config_it = demo_json.find(JSON_CONFIG_CHANNEL_CONFIG_FILED);
   for (auto& channel_it : *channel_config_it) {
     nlohmann::json channel_json;
     channel_json["channel_id"] = 
@@ -54,13 +53,13 @@ usecase_config parse_usecase_json(std::string& json_path) {
   }
 
   config.engine_config_file =
-      usecase_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
+      demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
           ->get<std::string>();
 
   return config;
 }
 
-TEST(TestYoloxBytetrackOsdEncode, TestYoloxBytetrackOsdEncode) {
+int main() {
   ::logInit("debug", "");
 
   std::mutex mtx;
@@ -74,19 +73,19 @@ TEST(TestYoloxBytetrackOsdEncode, TestYoloxBytetrackOsdEncode) {
 
   std::ifstream istream;
   nlohmann::json engine_json;
-  std::string config_file = "../config/usecase.json";
-  usecase_config usecase_json = parse_usecase_json(config_file);
+  std::string config_file = "../config/yolox_bytetrack_osd_encode_demo.json";
+  demo_config demo_json = parse_demo_json(config_file);
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
-  istream.open(usecase_json.engine_config_file);
+  istream.open(demo_json.engine_config_file);
   assert(istream.is_open());
   istream >> engine_json;
   istream.close();
 
-  usecase_json.num_graphs = engine_json.size();
-  usecase_json.num_channels_per_graph = usecase_json.channel_configs.size();
+  demo_json.num_graphs = engine_json.size();
+  demo_json.num_channels_per_graph = demo_json.channel_configs.size();
   int num_channels =
-      usecase_json.num_channels_per_graph * usecase_json.num_graphs;
+      demo_json.num_channels_per_graph * demo_json.num_graphs;
 
   auto stopHandler = [&](std::shared_ptr<void> data) {
     // write stop data handler here
@@ -108,7 +107,7 @@ TEST(TestYoloxBytetrackOsdEncode, TestYoloxBytetrackOsdEncode) {
   init_engine(engine, engine_json, stopHandler, graph_src_id_port_map);
 
   for (auto graph_id : engine.getGraphIds()) {
-    for (auto& channel_config : usecase_json.channel_configs) {
+    for (auto& channel_config : demo_json.channel_configs) {
       auto channelTask =
           std::make_shared<sophon_stream::element::decode::ChannelTask>();
       channelTask->request.operation = sophon_stream::element::decode::
@@ -126,7 +125,7 @@ TEST(TestYoloxBytetrackOsdEncode, TestYoloxBytetrackOsdEncode) {
     std::unique_lock<std::mutex> uq(mtx);
     cv.wait(uq);
   }
-  for (int i = 0; i < usecase_json.num_graphs; i++) {
+  for (int i = 0; i < demo_json.num_graphs; i++) {
     std::cout << "graph stop" << std::endl;
     engine.stop(i);
   }
@@ -135,4 +134,5 @@ TEST(TestYoloxBytetrackOsdEncode, TestYoloxBytetrackOsdEncode) {
   double fps = static_cast<double>(frameCount) / totalCost;
   std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000
             << " fps." << std::endl;
+  return 0;
 }

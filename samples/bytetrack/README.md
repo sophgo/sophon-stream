@@ -1,4 +1,4 @@
-# ByteTrack
+# ByteTrack Demo
 
 ## 目录
 - [ByteTrack](#bytetrack)
@@ -72,11 +72,11 @@ chmod -R +x scripts/
 如果您使用SoC平台（如SE、SM系列边缘设备），刷机后在`/opt/sophon/`下已经预装了相应的libsophon、sophon-opencv和sophon-ffmpeg运行库包，可直接使用它作为运行环境。通常还需要一台x86主机作为开发环境，用于交叉编译C++程序。
 
 ## 5. Json配置说明
-bytetrack usecase 中各部分参数位于[config](../bytetrack/config/)目录，结构如下所示
+bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，结构如下所示
 
 ```bash
 ./config
-   ├── usecase_bytetrack.json    # bytetrack usecase 配置
+   ├── bytetrack_demo.json    # bytetrack demo 配置
    ├── bytetrack.json            # bytetrack目标跟踪器参数配置
    ├── decoder.json              # 解码配置
    ├── engine.json               # sophon-stream graph配置
@@ -85,7 +85,7 @@ bytetrack usecase 中各部分参数位于[config](../bytetrack/config/)目录�
    └── pre.json                  # 目标检测器前处理配置
 ```
 
-其中, [usecase_bytetrack.json](../bytetrack/config/usecase_bytetrack.json)是例程的整体配置文件, 管理输入码流等信息。在一张图上可以支持多路数据的输入, num_channels_per_graph参数配置输入的路数, channel中包含码流url等信息。
+其中, [bytetrack_demo.json](../bytetrack/config/bytetrack_demo.json)是例程的整体配置文件, 管理输入码流等信息。在一张图上可以支持多路数据的输入, num_channels_per_graph参数配置输入的路数, channel中包含码流url等信息。
 ```json
 {
     "num_channels_per_graph": 1,
@@ -266,7 +266,7 @@ connection是所有element之间的连接方式, 通过element_id和port_id确�
 
 运行可执行文件
 ```bash
-./usecase_bytetrack
+./bytetrack_demo
 ```
 
 2路视频流运行结果如下
@@ -285,7 +285,7 @@ frame count is 1422 | fps is 267.457 fps.
 
 soc环境运行时如果报错
 ```bash
-./usecase_bytetrack: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
+./bytetrack_demo: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
 ```
 
 需要设置环境变量

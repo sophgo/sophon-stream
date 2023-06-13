@@ -18,12 +18,13 @@
 
 #include "common/error_code.h"
 #include "common/logger.h"
+#include "common/no_copyable.h"
 #include "element.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class ElementManager {
+class ElementManager : public ::sophon_stream::common::NoCopyable {
  public:
   using DataHandler = framework::Element::DataHandler;
   using ThreadStatus = framework::Element::ThreadStatus;
@@ -31,11 +32,6 @@ class ElementManager {
   ElementManager();
 
   ~ElementManager();
-
-  ElementManager(const ElementManager&) = delete;
-  ElementManager& operator=(const ElementManager&) = delete;
-  ElementManager(ElementManager&&) = default;
-  ElementManager& operator=(ElementManager&&) = default;
 
   common::ErrorCode init(const std::string& json);
 

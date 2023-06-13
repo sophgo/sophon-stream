@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(sophon-stream)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)

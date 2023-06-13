@@ -18,4 +18,4 @@ make -j4
 ```
 
 `framework`和`element`会在build/lib中生成动态链接库
-`samples`会在相应例程文件夹下的`build`文件夹生成可执行文件，如`samples/yolov5`会在`samples/yolov5/build`下生成`usecase_yolov5`可执行文件
+`samples`会在相应例程文件夹下的`build`文件夹生成可执行文件，如`samples/yolov5`会在`samples/yolov5/build`下生成`yolov5_demo`可执行文件

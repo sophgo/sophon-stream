@@ -29,14 +29,8 @@ constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD = "threshold_nms";
 constexpr const char* CONFIG_INTERNAL_THRESHOLD_TPU_KERNEL_FIELD =
     "use_tpu_kernel";
 
-/**
- * 构造函数
- */
 Yolov5::Yolov5() {}
 
-/**
- * 析构函数
- */
 Yolov5::~Yolov5() {}
 
 common::ErrorCode Yolov5::initContext(const std::string& json) {
@@ -115,13 +109,6 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
   return common::ErrorCode::SUCCESS;
 }
 
-/**
- * 初始化函数
- * @param[in] side:  设备类型
- * @param[in] deviceId:  设备ID
- * @param[in] json:  初始化字符串
- * @return 错误码
- */
 common::ErrorCode Yolov5::initInternal(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
@@ -172,10 +159,6 @@ common::ErrorCode Yolov5::initInternal(const std::string& json) {
   return errorCode;
 }
 
-/**
- * 预测函数
- * @param[in/out] objectMetadatas:  输入数据和预测结果
- */
 void Yolov5::process(common::ObjectMetadatas& objectMetadatas) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   if (use_pre) {
@@ -201,9 +184,6 @@ void Yolov5::process(common::ObjectMetadatas& objectMetadatas) {
   if (use_post) mPostProcess->postProcess(mContext, objectMetadatas);
 }
 
-/**
- * 资源释放函数
- */
 void Yolov5::uninitInternal() {}
 
 common::ErrorCode Yolov5::doWork(int dataPipeId) {

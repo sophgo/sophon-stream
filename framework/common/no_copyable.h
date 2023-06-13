@@ -7,19 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "TemplatePost.h"
-
-#include "TemplateSophgoContext.h"
-#include "common/logger.h"
+#ifndef SOPHON_STREAM_COMMON_NO_COPYABLE_H_
+#define SOPHON_STREAM_COMMON_NO_COPYABLE_H_
 
 namespace sophon_stream {
-namespace element {
-namespace template {
+namespace common {
 
-  void TemplatePost::init(TemplateSophgoContext & context) {}
+class NoCopyable {
+ protected:
+  NoCopyable() = default;
+  ~NoCopyable() = default;
+  NoCopyable(const NoCopyable&) = delete;
+  NoCopyable& operator=(const NoCopyable& rhs) = delete;
+};
 
-  void TemplatePost::postProcess(TemplateSophgoContext & context,
-                                 common::ObjectMetadatas & objectMetadatas) {}
-}  // namespace template
-}  // namespace element
+}  // namespace common
 }  // namespace sophon_stream
+
+#endif  // SOPHON_STREAM_COMMON_NO_COPYABLE_H_

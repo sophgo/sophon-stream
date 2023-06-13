@@ -24,13 +24,14 @@
 
 #include "common/error_code.h"
 #include "common/logger.h"
+#include "common/no_copyable.h"
 #include "connector.h"
 #include "datapipe.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class Element {
+class Element : public ::sophon_stream::common::NoCopyable {
  public:
   using DataHandler = std::function<void(std::shared_ptr<void>)>;
 
@@ -46,11 +47,6 @@ class Element {
   Element();
 
   virtual ~Element();
-
-  Element(const Element&) = delete;
-  Element& operator=(const Element&) = delete;
-  Element(Element&&) = default;
-  Element& operator=(Element&&) = default;
 
   common::ErrorCode init(const std::string& json);
 

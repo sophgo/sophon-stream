@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/no_copyable.h"
 #include "decoder.h"
 #include "element.h"
 
@@ -29,7 +30,7 @@ struct ChannelTask {
   ChannelOperateResponse response;
 };
 
-class ThreadWrapper {
+class ThreadWrapper : public ::sophon_stream::common::NoCopyable {
   friend class Decoder;
 
   using InitHandler = std::function<common::ErrorCode(void)>;
@@ -116,8 +117,6 @@ class ThreadWrapper {
   }
 
  private:
-  ThreadWrapper(const ThreadWrapper&) = delete;
-  ThreadWrapper& operator=(const ThreadWrapper&) = delete;
   void run() {
     common::ErrorCode ret = mInitHandler();
     while (ThreadStatus::STOP != mThreadStatus &&
@@ -148,34 +147,27 @@ class Decode : public ::sophon_stream::framework::Element {
   Decode();
   ~Decode() override;
 
-  Decode(const Decode&) = delete;
-  Decode& operator=(const Decode&) = delete;
-  Decode(Decode&&) = default;
-  Decode& operator=(Decode&&) = default;
-
- private:
   common::ErrorCode initInternal(const std::string& json) override;
   void uninitInternal() override;
-  void onStart() override;
-  void onStop() override;
+
   common::ErrorCode doWork(int dataPipe) override;
-
-  common::ErrorCode startTask(std::shared_ptr<ChannelTask>& channelTask);
-
-  common::ErrorCode stopTask(std::shared_ptr<ChannelTask>& channelTask);
-
-  common::ErrorCode pauseTask(std::shared_ptr<ChannelTask>& channelTask);
-
-  common::ErrorCode resumeTask(std::shared_ptr<ChannelTask>& channelTask);
-
-  common::ErrorCode process(const std::shared_ptr<ChannelTask>& channelTask,
-                            const std::shared_ptr<ChannelInfo>& channelInfo);
 
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
   std::mutex mThreadsPoolMtx;
   std::atomic<int> mChannelCount;
   std::map<int, int> mChannelIdInternal;
+
+  void onStart() override;
+  void onStop() override;
+
+  common::ErrorCode startTask(std::shared_ptr<ChannelTask>& channelTask);
+  common::ErrorCode stopTask(std::shared_ptr<ChannelTask>& channelTask);
+  common::ErrorCode pauseTask(std::shared_ptr<ChannelTask>& channelTask);
+  common::ErrorCode resumeTask(std::shared_ptr<ChannelTask>& channelTask);
+
+  common::ErrorCode process(const std::shared_ptr<ChannelTask>& channelTask,
+                            const std::shared_ptr<ChannelInfo>& channelInfo);
 };
 
 }  // namespace decode

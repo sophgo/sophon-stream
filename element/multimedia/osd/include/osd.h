@@ -26,11 +26,6 @@ class Osd : public ::sophon_stream::framework::Element {
   Osd();
   ~Osd() override;
 
-  Osd(const Osd&) = delete;
-  Osd& operator=(const Osd&) = delete;
-  Osd(Osd&&) = default;
-  Osd& operator=(Osd&&) = default;
-
   common::ErrorCode initInternal(const std::string& json) override;
   void uninitInternal() override;
 

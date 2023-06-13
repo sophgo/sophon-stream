@@ -13,10 +13,13 @@
 #include <sys/time.h>
 
 #include <string>
+
+#include "common/no_copyable.h"
+
 namespace sophon_stream {
 namespace common {
 
-class Clocker {
+class Clocker : public ::sophon_stream::common::NoCopyable {
  public:
   Clocker() { reset(); }
   ~Clocker() {}
@@ -30,12 +33,6 @@ class Clocker {
     strDateTime = std::string(buf);
   }
 
- private:
-  Clocker(const Clocker&) = delete;
-  Clocker(Clocker&&) = delete;
-  Clocker operator=(const Clocker&) = delete;
-
- public:
   void reset() { gettimeofday(&time_begin_, nullptr); }
 
   long tell_ms() {

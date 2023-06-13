@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(sophon_stream)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)
@@ -17,13 +17,9 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../3rdparty/spdlog/include)
     include_directories(../3rdparty/nlohmann-json/include)
 
-    add_library(ivslogger
+    add_library(ivslogger SHARED
       common/logger.cc
     )
-
-    include_directories(../3rdparty/gtest)
-    include_directories(../3rdparty/gtest/include)
-    add_library(gtest ../3rdparty/gtest/src/gtest-all.cc ../../3rdparty/gtest/src/gtest_main.cc)
 
     include_directories(./)
     include_directories(include)
@@ -68,11 +64,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
 
     include_directories(../3rdparty/nlohmann-json/include)
 
-    # gtest includes and libraries for all tests
-    include_directories(../3rdparty/gtest/ ../3rdparty/gtest/include src)
-
-    add_library(gtest ../3rdparty/gtest/src/gtest-all.cc ../3rdparty/gtest/src/gtest_main.cc)
-    link_libraries(gtest)
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
 

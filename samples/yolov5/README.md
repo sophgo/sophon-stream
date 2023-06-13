@@ -1,4 +1,4 @@
-# yolov5
+# YOLOv5 Demo
 
 ## 1 概述
 
@@ -12,7 +12,7 @@
 
 ### 3.1 使用例程
 
-例程位于[sophon-stream yolov5例程](./src/usecase_yolov5.cc)，其中包括解析配置文件、构建graph、为sink port设置数据处理函数等内容。
+例程位于[sophon-stream yolov5例程](./src/yolov5_demo.cc)，其中包括解析配置文件、构建graph、为sink port设置数据处理函数等内容。
 
 ### 3.2 配置文件
 

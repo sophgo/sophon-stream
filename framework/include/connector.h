@@ -10,15 +10,15 @@
 #ifndef SOPHON_STREAM_FRAMEWORK_CONNECTOR_H_
 #define SOPHON_STREAM_FRAMEWORK_CONNECTOR_H_
 
+#include "common/no_copyable.h"
 #include "datapipe.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class Connector {
+class Connector : public ::sophon_stream::common::NoCopyable {
  public:
   Connector(int dataPipeCount);
-  Connector() = delete;
 
   std::shared_ptr<void> popDataWithId(int id);
   common::ErrorCode pushDataWithId(int id, std::shared_ptr<void> data);

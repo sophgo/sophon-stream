@@ -11,7 +11,6 @@
 #include "common/logger.h"
 #include "decode.h"
 #include "engine.h"
-#include "gtest/gtest.h"
 #include "init_engine.h"
 
 const std::vector<std::vector<int>> colors = {
@@ -55,14 +54,14 @@ void draw_bmcv(bm_handle_t& handle, int classId,
   }
 }
 
-typedef struct usecase_config_ {
+typedef struct demo_config_ {
   int num_graphs;
   int num_channels_per_graph;
   nlohmann::json channel_config;
   bool download_image;
   std::string engine_config_file;
   std::vector<std::string> class_names;
-} usecase_config;
+} demo_config;
 
 constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
     "num_channels_per_graph";
@@ -72,29 +71,29 @@ constexpr const char* JSON_CONFIG_ENGINE_CONFIG_PATH_FILED =
 constexpr const char* JSON_CONFIG_CLASS_NAMES_FILED = "class_names";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FILED = "channel";
 
-usecase_config parse_usecase_json(std::string& json_path) {
+demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
   assert(istream.is_open());
-  nlohmann::json usecase_json;
-  istream >> usecase_json;
+  nlohmann::json demo_json;
+  istream >> demo_json;
   istream.close();
 
-  usecase_config config;
+  demo_config config;
 
   config.num_channels_per_graph =
-      usecase_json.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED)->get<int>();
+      demo_json.find(JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED)->get<int>();
 
-  auto channel_config_it = usecase_json.find(JSON_CONFIG_CHANNEL_CONFIG_FILED);
+  auto channel_config_it = demo_json.find(JSON_CONFIG_CHANNEL_CONFIG_FILED);
   config.channel_config = *channel_config_it;
 
   config.download_image =
-      usecase_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
+      demo_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
   config.engine_config_file =
-      usecase_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
+      demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
           ->get<std::string>();
   std::string class_names_file =
-      usecase_json.find(JSON_CONFIG_CLASS_NAMES_FILED)->get<std::string>();
+      demo_json.find(JSON_CONFIG_CLASS_NAMES_FILED)->get<std::string>();
 
   if (config.download_image) {
     const char* dir_path = "./results";
@@ -121,7 +120,7 @@ usecase_config parse_usecase_json(std::string& json_path) {
   return config;
 }
 
-TEST(TestYolov5, TestYolov5) {
+int main() {
   ::logInit("debug", "");
 
   std::mutex mtx;
@@ -135,18 +134,18 @@ TEST(TestYolov5, TestYolov5) {
 
   std::ifstream istream;
   nlohmann::json engine_json;
-  std::string yolov5_config_file = "../config/yolov5.json";
-  usecase_config yolov5_json = parse_usecase_json(yolov5_config_file);
+  std::string yolox_config_file = "../config/yolox_demo.json";
+  demo_config yolox_json = parse_demo_json(yolox_config_file);
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
-  istream.open(yolov5_json.engine_config_file);
+  istream.open(yolox_json.engine_config_file);
   assert(istream.is_open());
   istream >> engine_json;
   istream.close();
 
-  yolov5_json.num_graphs = engine_json.size();
-  int num_channels =
-      yolov5_json.num_channels_per_graph * yolov5_json.num_graphs;
+  yolox_json.num_graphs = engine_json.size();
+  int num_channels = yolox_json.num_channels_per_graph * yolox_json.num_graphs;
+
   auto stopHandler = [&](std::shared_ptr<void> data) {
     // write stop data handler here
     auto objectMetadata =
@@ -161,7 +160,7 @@ TEST(TestYolov5, TestYolov5) {
       }
       return;
     }
-    if (yolov5_json.download_image) {
+    if (yolox_json.download_image) {
       int width = objectMetadata->mFrame->mWidth;
       int height = objectMetadata->mFrame->mHeight;
       bm_image image = *objectMetadata->mFrame->mSpData;
@@ -174,7 +173,7 @@ TEST(TestYolov5, TestYolov5) {
         // draw image
         draw_bmcv(
             objectMetadata->mFrame->mHandle,
-            subObj->mDetectedObjectMetadata->mClassify, yolov5_json.class_names,
+            subObj->mDetectedObjectMetadata->mClassify, yolox_json.class_names,
             subObj->mDetectedObjectMetadata->mScores[0],
             subObj->mDetectedObjectMetadata->mBox.mX,
             subObj->mDetectedObjectMetadata->mBox.mY,
@@ -203,9 +202,9 @@ TEST(TestYolov5, TestYolov5) {
   init_engine(engine, engine_json, stopHandler, graph_src_id_port_map);
 
   for (auto graph_id : engine.getGraphIds()) {
-    for (int channel_id = 0; channel_id < yolov5_json.num_channels_per_graph;
+    for (int channel_id = 0; channel_id < yolox_json.num_channels_per_graph;
          ++channel_id) {
-      nlohmann::json channel_config = yolov5_json.channel_config;
+      nlohmann::json channel_config = yolox_json.channel_config;
       channel_config["channel_id"] = channel_id;
       auto channelTask =
           std::make_shared<sophon_stream::element::decode::ChannelTask>();
@@ -224,7 +223,7 @@ TEST(TestYolov5, TestYolov5) {
     std::unique_lock<std::mutex> uq(mtx);
     cv.wait(uq);
   }
-  for (int i = 0; i < yolov5_json.num_graphs; i++) {
+  for (int i = 0; i < yolox_json.num_graphs; i++) {
     std::cout << "graph stop" << std::endl;
     engine.stop(i);
   }
@@ -233,4 +232,5 @@ TEST(TestYolov5, TestYolov5) {
   double fps = static_cast<double>(frameCount) / totalCost;
   std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000
             << " fps." << std::endl;
+  return 0;
 }

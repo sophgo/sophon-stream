@@ -24,19 +24,10 @@ namespace yolox {
 
 class Yolox : public ::sophon_stream::framework::Element {
  public:
-
   Yolox();
   ~Yolox() override;
 
-  Yolox(const Yolox&) = delete;
-  Yolox& operator=(const Yolox&) = delete;
-  Yolox(Yolox&&) = default;
-  Yolox& operator=(Yolox&&) = default;
-
   common::ErrorCode initInternal(const std::string& json) override;
-
-  void process(common::ObjectMetadatas& objectMetadatas);
-
   void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
@@ -51,11 +42,10 @@ class Yolox : public ::sophon_stream::framework::Element {
   bool use_infer = false;
   bool use_post = false;
 
-  common::ErrorCode initContext(const std::string& json);
-
   int mBatch;
 
-
+  common::ErrorCode initContext(const std::string& json);
+  void process(common::ObjectMetadatas& objectMetadatas);
 };
 
 }  // namespace yolox

@@ -16,14 +16,15 @@
 #include <string>
 
 #include "common/error_code.h"
-#include "common/singleton.h"
 #include "common/logger.h"
+#include "common/no_copyable.h"
+#include "common/singleton.h"
 #include "element_manager.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class Engine {
+class Engine : public ::sophon_stream::common::NoCopyable {
  public:
   using DataHandler = framework::ElementManager::DataHandler;
 
@@ -57,11 +58,6 @@ class Engine {
   Engine();
 
   ~Engine();
-
-  Engine(const Engine&) = delete;
-  Engine& operator=(const Engine&) = delete;
-  Engine(Engine&&) = delete;
-  Engine& operator=(Engine&&) = delete;
 
   std::map<int /* graphId */, std::shared_ptr<framework::ElementManager> >
       mElementManagerMap;
