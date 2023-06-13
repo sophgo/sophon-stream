@@ -12,7 +12,6 @@ namespace sophon_stream {
 namespace element {
 namespace decode {
 
-constexpr const char* Decoder::JSON_URL;
 
 void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {
   f->mWidth = img.width;
@@ -27,26 +26,10 @@ Decoder::Decoder() {}
 
 Decoder::~Decoder() {}
 
-common::ErrorCode Decoder::init(int deviceId, const std::string& json) {
+common::ErrorCode Decoder::init(int deviceId, const std::string& url) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
-    auto configure = nlohmann::json::parse(json, nullptr, false);
-    if (!configure.is_object()) {
-      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-      IVS_ERROR("json parse failed! json:{0}", json);
-      break;
-    }
-
-    auto urlIt = configure.find(JSON_URL);
-    if (configure.end() == urlIt || !urlIt->is_string()) {
-      IVS_ERROR(
-          "Can not find {0} with string type in worker json configure, json: "
-          "{1}",
-          JSON_URL, json);
-      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-      break;
-    }
-    mUrl = urlIt->get<std::string>();
+    mUrl = url;
 
     int ret = bm_dev_request(&m_handle, deviceId);
     mDeviceId = deviceId;

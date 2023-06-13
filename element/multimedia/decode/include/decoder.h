@@ -25,12 +25,10 @@ class Decoder :public ::sophon_stream::common::NoCopyable {
   Decoder();
   ~Decoder();
 
-  common::ErrorCode init(int deviceId, const std::string& json);
+  common::ErrorCode init(int deviceId, const std::string& url);
   common::ErrorCode process(
       std::shared_ptr<common::ObjectMetadata>& objectMetadata);
   void uninit();
-
-  static constexpr const char* JSON_URL = "url";
 
  private:
   bm_handle_t m_handle;

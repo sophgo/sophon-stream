@@ -5,14 +5,19 @@
 
 #include <nlohmann/json.hpp>
 
-#include "common/object_metadata.h"
 #include "common/logger.h"
+#include "common/object_metadata.h"
 #include "decoder.h"
 #include "element_factory.h"
 
 namespace sophon_stream {
 namespace element {
 namespace decode {
+
+
+  constexpr const char* Decode::JSON_CHANNEL_ID;
+  constexpr const char* Decode::JSON_SOURCE_TYPE;
+  constexpr const char* Decode::JSON_URL;
 
 Decode::Decode() {}
 
@@ -80,8 +85,47 @@ common::ErrorCode Decode::doWork(int dataPipeId) {
   return errorCode;
 }
 
+common::ErrorCode Decode::parse_channel_task(std::shared_ptr<ChannelTask>& channelTask) {
+  common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+  const std::string json = channelTask->request.json;
+  do {
+    auto configure = nlohmann::json::parse(json, nullptr, false);
+    if (!configure.is_object()) {
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      IVS_ERROR("json parse failed! json:{0}", json);
+      break;
+    }
+
+    auto urlIt = configure.find(JSON_URL);
+    if (configure.end() == urlIt || !urlIt->is_string()) {
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          JSON_URL, json);
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+    channelTask->request.url = urlIt->get<std::string>();
+
+    auto channelIdIt = configure.find(JSON_CHANNEL_ID);
+    if (configure.end() == channelIdIt || !channelIdIt->is_number_integer()) {
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          JSON_CHANNEL_ID, json);
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+    channelTask->request.channelId = channelIdIt->get<int>();
+
+  } while (false);
+
+  return errorCode;
+}
+
 common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   IVS_INFO("add one channel task");
+  parse_channel_task(channelTask);
   std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
 
   if (mThreadsPool.find(channelTask->request.channelId) != mThreadsPool.end()) {
@@ -120,7 +164,7 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
                  static_cast<void*>(channelInfo->mSpDecoder.get()));
 
         common::ErrorCode ret = channelInfo->mSpDecoder->init(
-            getDeviceId(), channelTask->request.json);
+            getDeviceId(), channelTask->request.url);
 
         channelTask->response.errorCode = common::ErrorCode::SUCCESS;
         channelInfo->mCv->notify_one();
@@ -144,8 +188,8 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   mThreadsPool.insert(
       std::make_pair(channelTask->request.channelId, channelInfo));
 
-  int channel_id =  channelTask->request.channelId;
-  if (mChannelIdInternal.find(channel_id)==mChannelIdInternal.end()) {
+  int channel_id = channelTask->request.channelId;
+  if (mChannelIdInternal.find(channel_id) == mChannelIdInternal.end()) {
     mChannelIdInternal[channel_id] = mChannelCount++;
   }
 
@@ -217,7 +261,7 @@ common::ErrorCode Decode::process(
     }
   }
   int channel_id = channelTask->request.channelId;
-  objectMetadata->mFrame->mChannelId = channel_id; 
+  objectMetadata->mFrame->mChannelId = channel_id;
   objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternal[channel_id];
 
   // push data to next element

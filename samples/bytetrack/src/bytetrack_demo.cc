@@ -205,7 +205,6 @@ int main() {
           std::make_shared<sophon_stream::element::decode::ChannelTask>();
       channelTask->request.operation = sophon_stream::element::decode::
           ChannelOperateRequest::ChannelOperate::START;
-      channelTask->request.channelId = channel_id;
       channelTask->request.json = channel_config.dump();
       std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
       sophon_stream::common::ErrorCode errorCode =

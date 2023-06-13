@@ -16,6 +16,7 @@ struct ChannelOperateRequest {
     RESUME,
   };
   int channelId;
+  std::string url;
   ChannelOperate operation;
   std::string json;
 };
@@ -152,6 +153,10 @@ class Decode : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipe) override;
 
+  static constexpr const char* JSON_CHANNEL_ID = "channel_id";
+  static constexpr const char* JSON_SOURCE_TYPE = "source_type";
+  static constexpr const char* JSON_URL = "url";
+
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
   std::mutex mThreadsPoolMtx;
@@ -168,6 +173,8 @@ class Decode : public ::sophon_stream::framework::Element {
 
   common::ErrorCode process(const std::shared_ptr<ChannelTask>& channelTask,
                             const std::shared_ptr<ChannelInfo>& channelInfo);
+
+  common::ErrorCode parse_channel_task(std::shared_ptr<ChannelTask>& channelTask);
 };
 
 }  // namespace decode
