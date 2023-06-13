@@ -92,7 +92,7 @@ chmod -R +x scripts/
 
 ### 6.1 Json配置说明
 
-配置文件位于[配置文件](../yolox_bytetrack_osd_encode/config)
+配置文件位于 [./config](../yolox_bytetrack_osd_encode/config)
 
 其中，[yolox_bytetrack_osd_encode_demo.json](../yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels中包含每一路码流url等信息。
 
