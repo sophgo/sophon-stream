@@ -51,7 +51,7 @@ chmod -R +x scripts/
 
 下载的模型包括：
 ```bash
-./models
+./data/models
 ├── BM1684
 │   ├── yolox_s_fp32_1b.bmodel    # 用于BM1684的FP32 BModel，batch_size=1
 │   ├── yolox_s_fp32_4b.bmodel    # 用于BM1684的FP32 BModel，batch_size=4
@@ -65,7 +65,7 @@ chmod -R +x scripts/
 ```
 下载的数据包括：
 ```bash
-./videos
+./data/videos
 └──  test_car_person_1080P.avi                 # 测试视频
 ```
 
