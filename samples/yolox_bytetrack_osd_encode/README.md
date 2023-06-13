@@ -23,7 +23,7 @@
 
 本例程插件的连接方式如下图所示:
 
-![elements.jpg](pics/elements.jpg)
+![elements.jpg](pics/dec_det_track_osd_enc.png)
 
 ## 2. 特性
 * 检测模型使用yolox；
@@ -54,8 +54,8 @@ chmod -R +x scripts/
 ├── BM1684X
 │   ├── yolox_s_fp32_1b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=1
 │   ├── yolox_s_fp32_4b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=4
-│   ├── yolox_s_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1batch_size=1
-└── └── yolox_s_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4batch_size=4
+│   ├── yolox_s_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1
+└── └── yolox_s_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4
 ```
 下载的数据包括：
 ```bash
@@ -83,10 +83,10 @@ chmod -R +x scripts/
 ## 5. 程序编译
 程序运行前需要编译可执行文件。
 ### 5.1 x86/arm PCIe平台
-可以直接在PCIe平台上编译程序，具体请参考[sophon-stream编译](../docs/HowToMake.md)
+可以直接在PCIe平台上编译程序，具体请参考[sophon-stream编译](../../docs/HowToMake.md)
 
 ### 5.2 SoC平台
-通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](../docs/HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](../../docs/HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
 
 ## 6. 程序运行
 
