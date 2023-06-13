@@ -22,7 +22,7 @@
 
 本例程用于说明如何使用sophon-stream快速构建视频目标跟踪应用。
 
-在本例程的连接方式如下图所示:
+本例程插件的连接方式如下图所示:
 
 ![elements.jpg](pics/elements.jpg)
 
