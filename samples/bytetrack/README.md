@@ -1,7 +1,7 @@
 # ByteTrack Demo
 
 ## 目录
-- [ByteTrack](#bytetrack)
+- [ByteTrack Demo](#bytetrack-demo)
   - [目录](#目录)
   - [1. 简介](#1-简介)
   - [2. 特性](#2-特性)
@@ -9,12 +9,13 @@
   - [4. 环境准备](#4-环境准备)
     - [4.1 x86/arm PCIe平台](#41-x86arm-pcie平台)
     - [4.2 SoC平台](#42-soc平台)
-  - [5. Json配置说明](#5-json配置说明)
-  - [6. 程序编译](#6-程序编译)
-    - [6.1 x86/arm PCIe平台](#61-x86arm-pcie平台)
-    - [6.2 SoC平台](#62-soc平台)
-  - [7. 运行测试](#7-运行测试)
-  - [8. 性能测试](#8-性能测试)
+  - [5. 程序编译](#5-程序编译)
+    - [5.1 x86/arm PCIe平台](#51-x86arm-pcie平台)
+    - [5.2 SoC平台](#52-soc平台)
+  - [6. 程序运行](#6-程序运行)
+    - [6.1 Json配置说明](#61-json配置说明)
+    - [6.2 运行](#62-运行)
+  - [7. 性能测试](#7-性能测试)
 
 
 ## 1. 简介
@@ -74,7 +75,18 @@ chmod -R +x scripts/
 
 如果您使用SoC平台（如SE、SM系列边缘设备），刷机后在`/opt/sophon/`下已经预装了相应的libsophon、sophon-opencv和sophon-ffmpeg运行库包，可直接使用它作为运行环境。通常还需要一台x86主机作为开发环境，用于交叉编译C++程序。
 
-## 5. Json配置说明
+
+## 5. 程序编译
+程序运行前需要编译可执行文件。
+### 5.1 x86/arm PCIe平台
+可以直接在PCIe平台上编译程序，具体请参考[sophon-stream编译](../docs/HowToMake.md)
+
+### 5.2 SoC平台
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](../docs/HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
+
+## 6. 程序运行
+
+### 6.1. Json配置说明
 bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，结构如下所示
 
 ```bash
@@ -256,15 +268,7 @@ connection是所有element之间的连接方式， 通过element_id和port_id确
 }
 ```
 
-## 6. 程序编译
-程序运行前需要编译可执行文件。
-### 6.1 x86/arm PCIe平台
-可以直接在PCIe平台上编译程序，具体请参考[sophon-stream编译](../docs/HowToMake.md)
-
-### 6.2 SoC平台
-通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](../docs/HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
-
-## 7. 运行测试
+### 6.2. 运行
 对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的可执行文件及所需的模型、测试数据拷贝到SoC平台中测试。测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
 运行可执行文件
@@ -296,7 +300,7 @@ soc环境运行时如果报错
 export LD_LIBRARY_PATH=path-to/framework/build/:$LD_LIBRARY_PATH
 ```
 
-##  8. 性能测试
+##  7. 性能测试
 
 在不同的测试平台上，使用不同数量的graph、视频通道、element线程，测试视频`data/videos/test_car_person_1080P.avi`，性能测试结果如下：
 
