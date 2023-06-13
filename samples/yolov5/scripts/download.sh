@@ -18,7 +18,4 @@ mv ./yolov5s_tpukernel_int8_4b.bmodel ../data/models
 python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/9JzgcqIYv
 mv ./coco.names ../data/
 
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/tsVSE1KqJ
-mv ./tpu_kernel_module ../../../3rdparty/
-
 popd
