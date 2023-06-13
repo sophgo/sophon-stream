@@ -18,6 +18,9 @@
 
 
 ## 1. 简介
+
+本例程用于说明如何使用sophon-stream快速构建视频目标跟踪应用。
+
 ByteTrack是一个简单、快速、强大的多目标跟踪器，且不依赖特征提取模型。
 
 **论文** (https://arxiv.org/abs/2110.06864)
@@ -65,7 +68,7 @@ chmod -R +x scripts/
 
 ### 4.1 x86/arm PCIe平台
 
-如果您在x86/arm平台安装了PCIe加速卡（如SC系列加速卡），可以直接使用它作为开发环境和运行环境。您需要安装libsophon、sophon-opencv和sophon-ffmpeg，具体步骤可参考[x86-pcie平台的开发和运行环境搭建](../../docs/Environment_Install_Guide.md#3-x86-pcie平台的开发和运行环境搭建)或[arm-pcie平台的开发和运行环境搭建](../../docs/Environment_Install_Guide.md#5-arm-pcie平台的开发和运行环境搭建)。
+如果您在x86/arm平台安装了PCIe加速卡（如SC系列加速卡），可以直接使用它作为开发环境和运行环境。您需要安装libsophon、sophon-opencv和sophon-ffmpeg，具体步骤可参考[x86-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建)或[arm-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建)。
 
 ### 4.2 SoC平台
 
@@ -76,7 +79,7 @@ bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，�
 
 ```bash
 ./config
-   ├── bytetrack_demo.json    # bytetrack demo 配置
+   ├── bytetrack_demo.json       # bytetrack demo 配置
    ├── bytetrack.json            # bytetrack目标跟踪器参数配置
    ├── decoder.json              # 解码配置
    ├── engine.json               # sophon-stream graph配置
@@ -85,7 +88,7 @@ bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，�
    └── pre.json                  # 目标检测器前处理配置
 ```
 
-其中, [bytetrack_demo.json](../bytetrack/config/bytetrack_demo.json)是例程的整体配置文件, 管理输入码流等信息。在一张图上可以支持多路数据的输入, num_channels_per_graph参数配置输入的路数, channel中包含码流url等信息。
+其中， [bytetrack_demo.json](../bytetrack/config/bytetrack_demo.json)是例程的整体配置文件， 管理输入码流等信息。在一张图上可以支持多路数据的输入， num_channels_per_graph参数配置输入的路数， channel中包含码流url等信息。
 ```json
 {
     "num_channels_per_graph": 1,
@@ -97,8 +100,8 @@ bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，�
     "engine_config_path": "../config/engine.json"
   }
 ```
-[engine.json](../bytetrack/config/engine.json)包含对每一张graph的配置信息。这里摘取一部分作为示例：在一张图内, 需要初始化每个element的信息和element之间的连接方式。element_id是唯一的, 起到标识身份的作用。element_config指向该element的详细配置文件地址, port_id是该element的输入输出端口编号, 多输入或多输出的情况下, 输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口, is_sink标识当前端口是否是整张图的输出端口。
-connection是所有element之间的连接方式, 通过element_id和port_id确定。
+[engine.json](../bytetrack/config/engine.json)包含对每一张graph的配置信息。这里摘取一部分作为示例：在一张图内， 需要初始化每个element的信息和element之间的连接方式。element_id是唯一的， 起到标识身份的作用。element_config指向该element的详细配置文件地址， port_id是该element的输入输出端口编号， 多输入或多输出的情况下， 输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口， is_sink标识当前端口是否是整张图的输出端口。
+connection是所有element之间的连接方式， 通过element_id和port_id确定。
 ```json
 {
     "graph_id": 0,
@@ -233,8 +236,8 @@ connection是所有element之间的连接方式, 通过element_id和port_id确�
     ]
 }
 ```
-[bytetrack.json](../bytetrack/config/bytetrack.json)等配置文件是对具体某个element的配置细节, 设置了模型参数、动态库路径、阈值等信息。
-其中, thread_number是element内部的工作线程数量, 一个线程会对应一个数据队列, 多路输入情况下, 需要合理设置数据队列数目, 来保证线程工作压力均匀且合理。
+[bytetrack.json](../bytetrack/config/bytetrack.json)等配置文件是对具体某个element的配置细节， 设置了模型参数、动态库路径、阈值等信息。
+其中， thread_number是element内部的工作线程数量， 一个线程会对应一个数据队列， 多路输入情况下， 需要合理设置数据队列数目， 来保证线程工作压力均匀且合理。
 ```json
 {
     "configure": {
@@ -256,10 +259,10 @@ connection是所有element之间的连接方式, 通过element_id和port_id确�
 ## 6. 程序编译
 程序运行前需要编译可执行文件。
 ### 6.1 x86/arm PCIe平台
-可以直接在PCIe平台上编译程序,具体请参考[sophon-stream编译](../docs/how_to_make.md)
+可以直接在PCIe平台上编译程序，具体请参考[sophon-stream编译](../docs/HowToMake.md)
 
 ### 6.2 SoC平台
-通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至soc-sdk目录中，具体请参考[sophon-stream编译](../docs/how_to_make.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](../docs/HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
 
 ## 7. 运行测试
 对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的可执行文件及所需的模型、测试数据拷贝到SoC平台中测试。测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
