@@ -18,5 +18,8 @@ make -j4
 ```
 
 ### 编译结果
-`framework`和`element`会在`build/lib`中生成动态链接库
-`samples`会在相应例程文件夹下的`build`文件夹生成可执行文件，如`samples/yolov5`会在`samples/yolov5/build`下生成`yolov5_demo`可执行文件
+1.`framework`和`element`会在`build/lib`中生成动态链接库
+
+2.`samples`会在相应例程文件夹下的`build`文件夹生成可执行文件，如`samples/yolov5`会在`samples/yolov5/build`下生成`yolov5_demo`可执行文件
+
+对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的动态链接库和可执行文件拷贝到SoC平台中测试。
