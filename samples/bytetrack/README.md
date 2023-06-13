@@ -60,8 +60,8 @@ chmod -R +x scripts/
 ├── BM1684X
 │   ├── yolox_s_fp32_1b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=1
 │   ├── yolox_s_fp32_4b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=4
-│   ├── yolox_s_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1batch_size=1
-└── └── yolox_s_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4batch_size=4
+│   ├── yolox_s_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1
+└── └── yolox_s_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4
 ```
 下载的数据包括：
 ```bash
@@ -294,7 +294,7 @@ soc环境运行时如果报错
 
 需要设置环境变量
 ```bash
-export LD_LIBRARY_PATH=path-to/framework/build/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
 ```
 
 ##  7. 性能测试

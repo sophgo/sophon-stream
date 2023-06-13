@@ -5,10 +5,10 @@
         "threshold_nms":0.5,
         "stage":["infer"]
     },
-    "shared_object":"../../../element/algorithm/yolox/build/libyolox.so",
+    "shared_object":"../../../build/lib/libyolox.so",
     "device_id":0,
     "id":0,
     "name":"yolox",
     "side":"sophgo",
-    "thread_number":1
+    "thread_number":2
 }

@@ -6,7 +6,7 @@
       "stage":["infer"],
       "use_tpu_kernel": true
   },
-  "shared_object":"../../../element/algorithm/yolov5/build/libyolov5.so",
+  "shared_object":"../../../build/lib/libyolov5.so",
   "device_id":0,
   "id":0,
   "name":"yolov5",

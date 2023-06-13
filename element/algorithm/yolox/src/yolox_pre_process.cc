@@ -73,8 +73,6 @@ common::ErrorCode YoloxPreProcess::preProcess(
         image1 = image0;
       }
 
-      // bm_image_destroy(image1);
-
       bm_image image_aligned;
       bool need_copy = image1.width & (64 - 1);
       if (need_copy) {
@@ -97,10 +95,6 @@ common::ErrorCode YoloxPreProcess::preProcess(
       } else {
         image_aligned = image1;
       }
-
-      // bm_image_destroy(image_aligned);
-
-      // // return common::ErrorCode::SUCCESS;
 
       float scale_w = float(context->net_w) / image_aligned.width;
       float scale_h = float(context->net_h) / image_aligned.height;
