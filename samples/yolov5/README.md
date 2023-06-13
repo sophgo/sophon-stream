@@ -27,11 +27,11 @@
 
 **源代码** (https://github.com/ultralytics/yolov5) v6.1版本
 
-本例程中，yolov5算法的前处理、推理、后处理分别在三个element上进行运算，element内部可以开启多个线程，保证了一定的检测效率；
+本例程中，yolov5算法的前处理、推理、后处理分别在三个element上进行运算，element内部可以开启多个线程，保证了一定的检测效率
 
 ## 2. 特性
 
-* 支持BM1684X(x86 PCIe、SoC)和BM1684(x86 PCIe、SoC、arm PCIe)
+* 支持BM1684X(x86 PCIe、SoC)
 * 支持多路视频流
 * 支持多线程
 
@@ -94,7 +94,7 @@ yolov5 demo中各部分参数位于 [config](./config/) 目录，结构如下所
 └── yolov5_pre.json             # yolov5 前处理配置
 ```
 
-其中， [yolov5_demo.json](../yolov5/config/yolov5_demo.json)是例程的整体配置文件， 管理输入码流等信息。在一张图上可以支持多路数据的输入， num_channels_per_graph参数配置输入的路数， channel中包含码流url等信息。
+其中，[yolov5_demo.json](./config/yolov5_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
 
 ```json
 {
@@ -109,10 +109,10 @@ yolov5 demo中各部分参数位于 [config](./config/) 目录，结构如下所
 }
 ```
 
-[engine.json](../yolov5/config/engine.json) 包含对graph的配置信息， 这部分配置确定之后基本不会发生更改。
+[engine.json](./config/engine.json)包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
 
-这里摘取配置文件的一部分作为示例：在该文件内， 需要初始化每个element的信息和element之间的连接方式。element_id是唯一的， 起到标识身份的作用。element_config指向该element的详细配置文件地址， port_id是该element的输入输出端口编号， 多输入或多输出的情况下， 输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口， is_sink标识当前端口是否是整张图的输出端口。
-connection是所有element之间的连接方式， 通过element_id和port_id确定。
+这里摘取配置文件的一部分作为示例：在该文件内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
+connection是所有element之间的连接方式，通过element_id和port_id确定。
 
 ```json
 {
@@ -171,8 +171,8 @@ connection是所有element之间的连接方式， 通过element_id和port_id确
     }
 ```
 
-[yolov5_pre.json](../yolov5/config/yolov5_pre.json)等配置文件是对具体某个element的配置细节， 设置了模型参数、动态库路径、阈值等信息。
-其中， thread_number是element内部的工作线程数量， 一个线程会对应一个数据队列， 多路输入情况下， 需要合理设置数据队列数目， 来保证线程工作压力均匀且合理。
+[yolov5_pre.json](./config/yolov5_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。
+其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 
 ```json
 {
@@ -221,7 +221,7 @@ export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
 
 ## 7. 性能测试
 
-目前，yolov5例程支持在BM1684、BM1684X的PCIE、SOC模式下进行推理。
+目前，yolov5例程支持在BM1684X的PCIE、SOC模式下进行推理。
 
 测试视频`data/videos/test_car_person_1080P.avi`，结果如下:
 

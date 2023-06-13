@@ -106,7 +106,7 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
 └── yolox_pre.json          # yolox 前处理配置
 ```
 
-其中，[yolox_demo.json](../yolox/config/yolox_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
+其中，[yolox_demo.json](./config/yolox_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
 
 ```json
 {
@@ -121,7 +121,7 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
 }
 ```
 
-[engine.json](../yolox/config/engine.json) 包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
+[engine.json](./config/engine.json) 包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
 
 这里摘取配置文件的一部分作为示例：在该文件内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
 connection是所有element之间的连接方式，通过element_id和port_id确定。
@@ -183,7 +183,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
     }
 ```
 
-[yolox_pre.json](../yolox/config/yolox_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。
+[yolox_pre.json](./config/yolox_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。
 其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 
 ```json
