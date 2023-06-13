@@ -1,12 +1,12 @@
 {
     "configure": {
-        "track_thresh": 0.6,
-        "high_thresh": 0.7,
-        "match_thresh": 0.8,
+        "track_thresh": 0.5,
+        "high_thresh": 0.6,
+        "match_thresh": 0.7,
         "frame_rate": 30,
         "track_buffer": 30
     },
-    "shared_object": "../../../element/algorithm/bytetrack/build/libbytetrack.so",
+    "shared_object": "../../../build/lib/libbytetrack.so",
     "device_id": 0,
     "id": 0,
     "name": "bytetrack",

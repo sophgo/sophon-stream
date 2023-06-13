@@ -1,6 +1,6 @@
 {
   "configure": {},
-  "shared_object": "../../../element/multimedia/decode/build/libdecode.so",
+  "shared_object": "../../../build/lib/libdecode.so",
   "device_id": 0,
   "id": 0,
   "name": "decode",

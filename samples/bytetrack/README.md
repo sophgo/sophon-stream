@@ -22,7 +22,7 @@
 
 本例程用于说明如何使用sophon-stream快速构建视频目标跟踪应用。
 
-在本例程的连接方式如下图所示: 
+在本例程的连接方式如下图所示:
 
 ![elements.jpg](pics/elements.jpg)
 
@@ -34,7 +34,7 @@ ByteTrack是一个简单、快速、强大的多目标跟踪器，且不依赖�
 
 ## 2. 特性
 * 支持BM1684X(x86 PCIe、SoC)和BM1684(x86 PCIe、SoC、arm PCIe)
-* 支持检测模块和跟踪模块解藕，可适配各种检测器，本例程主要以YOLOX作为检测器
+* 支持检测模块和跟踪模块解耦，可适配各种检测器，本例程主要以YOLOX作为检测器
 * 支持多路视频流
 * 支持多线程
 
@@ -79,7 +79,6 @@ chmod -R +x scripts/
 
 如果您使用SoC平台（如SE、SM系列边缘设备），刷机后在`/opt/sophon/`下已经预装了相应的libsophon、sophon-opencv和sophon-ffmpeg运行库包，可直接使用它作为运行环境。通常还需要一台x86主机作为开发环境，用于交叉编译C++程序。
 
-
 ## 5. 程序编译
 程序运行前需要编译可执行文件。
 ### 5.1 x86/arm PCIe平台
@@ -90,8 +89,8 @@ chmod -R +x scripts/
 
 ## 6. 程序运行
 
-### 6.1. Json配置说明
-bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，结构如下所示
+### 6.1 Json配置说明
+bytetrack demo中各部分参数位于[config](../bytetrack/config/)目录，结构如下所示
 
 ```bash
 ./config
@@ -104,7 +103,7 @@ bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，�
    └── pre.json                  # 目标检测器前处理配置
 ```
 
-其中， [bytetrack_demo.json](../bytetrack/config/bytetrack_demo.json)是例程的整体配置文件， 管理输入码流等信息。在一张图上可以支持多路数据的输入， num_channels_per_graph参数配置输入的路数， channel中包含码流url等信息。
+其中，[bytetrack_demo.json](../bytetrack/config/bytetrack_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
 ```json
 {
     "num_channels_per_graph": 1,
@@ -116,8 +115,8 @@ bytetrack demo 中各部分参数位于[config](../bytetrack/config/)目录，�
     "engine_config_path": "../config/engine.json"
   }
 ```
-[engine.json](../bytetrack/config/engine.json)包含对每一张graph的配置信息。这里摘取一部分作为示例：在一张图内， 需要初始化每个element的信息和element之间的连接方式。element_id是唯一的， 起到标识身份的作用。element_config指向该element的详细配置文件地址， port_id是该element的输入输出端口编号， 多输入或多输出的情况下， 输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口， is_sink标识当前端口是否是整张图的输出端口。
-connection是所有element之间的连接方式， 通过element_id和port_id确定。
+[engine.json](../bytetrack/config/engine.json)包含对每一张graph的配置信息。这里摘取一部分作为示例：在一张图内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
+connection是所有element之间的连接方式，通过element_id和port_id确定。
 ```json
 {
     "graph_id": 0,
@@ -252,18 +251,18 @@ connection是所有element之间的连接方式， 通过element_id和port_id确
     ]
 }
 ```
-[bytetrack.json](../bytetrack/config/bytetrack.json)等配置文件是对具体某个element的配置细节， 设置了模型参数、动态库路径、阈值等信息。
-其中， thread_number是element内部的工作线程数量， 一个线程会对应一个数据队列， 多路输入情况下， 需要合理设置数据队列数目， 来保证线程工作压力均匀且合理。
+[bytetrack.json](../bytetrack/config/bytetrack.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。
+其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 ```json
 {
     "configure": {
-        "track_thresh": 0.6,
-        "high_thresh": 0.7,
-        "match_thresh": 0.8,
+        "track_thresh": 0.5,
+        "high_thresh": 0.6,
+        "match_thresh": 0.7,
         "frame_rate": 30,
         "track_buffer": 30
     },
-    "shared_object": "../../../element/algorithm/bytetrack/build/libbytetrack.so",
+    "shared_object": "../../../build/lib/libbytetrack.so",
     "device_id": 0,
     "id": 0,
     "name": "bytetrack",
@@ -272,7 +271,7 @@ connection是所有element之间的连接方式， 通过element_id和port_id确
 }
 ```
 
-### 6.2. 运行
+### 6.2 运行
 对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的动态链接库、可执行文件、所需的模型和测试数据拷贝到SoC平台中测试。测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
 运行可执行文件
@@ -282,14 +281,8 @@ connection是所有element之间的连接方式， 通过element_id和port_id确
 
 2路视频流运行结果如下
 ```bash
- total time cost 5316744 us.
-frame count is 1422 | fps is 267.457 fps.
-[       OK ] TestMultiAlgorithmGraph.MultiAlgorithmGraph (5317 ms)
-[----------] 1 test from TestMultiAlgorithmGraph (5317 ms total)
-
-[----------] Global test environment tear-down
-[==========] 1 test from 1 test case ran. (5317 ms total)
-[  PASSED  ] 1 test.
+total time cost 5246889 us.
+frame count is 1422 | fps is 271.018 fps.
 ```
 
 >**注意：**

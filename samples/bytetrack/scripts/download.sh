@@ -9,7 +9,7 @@ pushd $scripts_dir
 # datasets
 if [ ! -d "../data" ];
 then
-    python3 -m dfn --url http://219.142.246.77:65000/sharing/1wWiybkMJ
+    python3 -m dfn --url http://219.142.246.77:65000/sharing/wEeqHde0i
     unzip data.zip -d ../
     rm data.zip
 
