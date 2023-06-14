@@ -104,8 +104,6 @@ Sophon Stream所依赖的环境主要包括用于编译和量化模型的TPU-NNT
     ```
 此镜像仅用于编译和量化模型，程序编译和运行请在开发和运行环境中进行。更多TPU-NNTC的教程请参考[算能官网](https://developer.sophgo.com/site/index/material/31/all.html)的《TPU-NNTC快速入门指南》和《TPU-NNTC开发参考手册》。
 
-
-
 ## 3 x86 PCIe平台的开发和运行环境搭建
 如果您在x86平台安装了PCIe加速卡，开发环境与运行环境可以是统一的，您可以直接在宿主机上搭建开发和运行环境。
 

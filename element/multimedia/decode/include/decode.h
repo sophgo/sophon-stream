@@ -8,29 +8,6 @@ namespace sophon_stream {
 namespace element {
 namespace decode {
 
-struct ChannelOperateRequest {
-  enum class ChannelOperate {
-    START,
-    STOP,
-    PAUSE,
-    RESUME,
-  };
-  int channelId;
-  std::string url;
-  ChannelOperate operation;
-  std::string json;
-};
-
-struct ChannelOperateResponse {
-  common::ErrorCode errorCode;
-  std::string errorInfo;
-};
-
-struct ChannelTask {
-  ChannelOperateRequest request;
-  ChannelOperateResponse response;
-};
-
 class ThreadWrapper : public ::sophon_stream::common::NoCopyable {
   friend class Decoder;
 
@@ -174,7 +151,8 @@ class Decode : public ::sophon_stream::framework::Element {
   common::ErrorCode process(const std::shared_ptr<ChannelTask>& channelTask,
                             const std::shared_ptr<ChannelInfo>& channelInfo);
 
-  common::ErrorCode parse_channel_task(std::shared_ptr<ChannelTask>& channelTask);
+  common::ErrorCode parse_channel_task(
+      std::shared_ptr<ChannelTask>& channelTask);
 };
 
 }  // namespace decode

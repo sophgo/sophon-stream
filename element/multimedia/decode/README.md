@@ -41,22 +41,22 @@ sophon-stream解码器插件具有一些可配置的参数，可以根据需求�
     {
       "channel_id": 2,
       "url": "../data/videos/mot17_01_frcnn.mp4",
-      "source_type": 0
+      "source_type": "VIDEO"
     },
     {
       "channel_id": 3,
       "url": "../data/videos/mot17_03_frcnn.mp4",
-      "source_type": 0
+      "source_type": "VIDEO"
     },
     {
       "channel_id": 20,
       "url": "../data/videos/mot17_06_frcnn.mp4",
-      "source_type": 0
+      "source_type": "VIDEO"
     },
     {
       "channel_id": 30,
       "url": "../data/videos/mot17_08_frcnn.mp4",
-      "source_type": 0
+      "source_type": "VIDEO"
     }
   ]
 ```
@@ -65,12 +65,23 @@ sophon-stream解码器插件具有一些可配置的参数，可以根据需求�
 |:-------------:| :-------: | :------------------:| :------------------------:|
 | channel_id | 整数   | 无 | 输入数据通道编号 |
 |   url      | 字符串 | 无 | 输入数据路径，包括本地视频、图片和视频流 |
-|source_type | 整数   | 0  | 输入数据类型，0代表本地视频或图片，1代表RTSP视频流，2代表RTMP视频流 |
+|source_type | 字符串  | 无  | 输入数据类型，"RSTP"代表RTSP视频流，“RTMP”代表RTMP视频流，“VIDEO”代表本地视频，“IMG_DIR”代表图片文件夹 |
 
 其中，channel_id为输入视频的通道编号，与[编码器](../encode/README.md)输出channel_id相对应。例如，输入channel_id为20，使用编码器保存结果为本地视频时，文件名为20.avi。
+
+一个图片文件夹表示一个视频，按frame_id命名，例如
+
+```bash
+IMG_DIR/
+  ├── ****1.jpg
+  ├── ****2.jpg
+  ├── ****3.jpg
+  ├── ****4.jpg
+  ├── ****5.jpg
+  ............
+  └──******.jpg
+```
 
 > **注意**：
 1. 输入RTSP数据流的URL须以`rtsp://`开头
 2. 输入RTMP数据流的URL须以`rtmp://`开头
-
-

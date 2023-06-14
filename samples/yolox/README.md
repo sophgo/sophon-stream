@@ -1,21 +1,21 @@
 # YOLOX Demo
 
 ## 目录
-- [YOLOX](#yolox-demo)
-    - [目录](#目录)
-    - [1. 简介](#1-简介)
-    - [2. 特性](#2-特性)
-    - [3. 准备模型与数据](#3-准备模型与数据)
-    - [4. 环境准备](#4-环境准备)
-        - [4.1 x86/arm PCIe平台](#41-x86arm-pcie平台)
-        - [4.2 SoC平台](#42-soc平台)
-    - [5. 程序编译](#5-程序编译)
-        - [5.1 x86/arm PCIe平台](#51-x86arm-pcie平台)
-        - [5.2 SoC平台](#52-soc平台)
-    - [6. 程序运行](#6-程序运行)
-        - [6.1 Json配置说明](#61-json配置说明)
-        - [6.2 运行](#62-运行)
-    - [7. 性能测试](#7-性能测试)
+- [YOLOX Demo](#yolox-demo)
+  - [目录](#目录)
+  - [1. 简介](#1-简介)
+  - [2. 特性](#2-特性)
+  - [3. 准备模型与数据](#3-准备模型与数据)
+  - [4. 环境准备](#4-环境准备)
+    - [4.1 x86/arm PCIe平台](#41-x86arm-pcie平台)
+    - [4.2 SoC平台](#42-soc平台)
+  - [5. 程序编译](#5-程序编译)
+    - [5.1 x86/arm PCIe平台](#51-x86arm-pcie平台)
+    - [5.2 SoC平台](#52-soc平台)
+  - [6. 程序运行](#6-程序运行)
+    - [6.1 Json配置说明](#61-json配置说明)
+    - [6.2 运行](#62-运行)
+  - [7. 性能测试](#7-性能测试)
 ## 1. 简介
 
 本例程用于说明如何使用sophon-stream快速构建视频目标检测应用。
@@ -113,7 +113,7 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
   "num_channels_per_graph": 3,
   "channel": {
     "url": "../data/videos/test_car_person_1080P.avi",
-    "source_type": 0
+    "source_type": "VIDEO"
   },
   "class_names": "../data/coco.names",
   "download_image": false,

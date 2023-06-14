@@ -30,24 +30,36 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
     auto configure = nlohmann::json::parse(json, nullptr, false);
     if (!configure.is_object()) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      IVS_ERROR("json parse failed! json:{0}", json);
       break;
     }
 
     auto encodeTypeIt = configure.find(CONFIG_INTERNAL_ENCODE_TYPE_FIELD);
     if (configure.end() != encodeTypeIt) {
       std::string encodeType = encodeTypeIt->get<std::string>();
+      mEncodeType = EncodeType::UNKNOWN;
       if (encodeType == "RTSP") mEncodeType = EncodeType::RTSP;
       if (encodeType == "RTMP") mEncodeType = EncodeType::RTMP;
       if (encodeType == "VIDEO") mEncodeType = EncodeType::VIDEO;
     } else {
-      IVS_WARN("Can't find encode_type in json");
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          CONFIG_INTERNAL_ENCODE_TYPE_FIELD, json);
+      break;
     }
     if (mEncodeType == EncodeType::RTSP) {
       auto rtspPortIt = configure.find(CONFIG_INTERNAL_RTSP_PORT_FIELD);
       if (configure.end() != rtspPortIt) {
         mRtspPort = rtspPortIt->get<std::string>();
       } else {
-        IVS_WARN("Can't find rtsp_port in json");
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        IVS_ERROR(
+            "Can not find {0} with string type in worker json configure, json: "
+            "{1}",
+            CONFIG_INTERNAL_RTSP_PORT_FIELD, json);
+        break;
       }
     }
     if (mEncodeType == EncodeType::RTMP) {
@@ -55,7 +67,12 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       if (configure.end() != rtmpPortIt) {
         mRtmpPort = rtmpPortIt->get<std::string>();
       } else {
-        IVS_WARN("Can't find rtmp_port in json");
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        IVS_ERROR(
+            "Can not find {0} with string type in worker json configure, json: "
+            "{1}",
+            CONFIG_INTERNAL_RTMP_PORT_FIELD, json);
+        break;
       }
     }
     auto encFmtIt = configure.find(CONFIG_INTERNAL_ENC_FMT_FIELD);
@@ -65,7 +82,12 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         IVS_ERROR("Encode format error, please input h264_bm or h265_bm");
       }
     } else {
-      IVS_WARN("Can't find enc_fmt in json");
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          CONFIG_INTERNAL_ENC_FMT_FIELD, json);
+      break;
     }
     auto pixFmtIt = configure.find(CONFIG_INTERNAL_PIX_FMT_FIELD);
     if (configure.end() != pixFmtIt) {
@@ -74,7 +96,12 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         IVS_ERROR("Encode format error, please input I420 or NV12");
       }
     } else {
-      IVS_WARN("Can't find pix_fmt in json");
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          CONFIG_INTERNAL_PIX_FMT_FIELD, json);
+      break;
     }
 
     std::string enParams = "gop=32:gop_preset=3:framerate=25:bitrate=2000";
@@ -163,8 +190,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   int outDataPipeId =
       getLastElementFlag()
           ? 0
-          : (channel_id_internal %
-             getOutputConnectorCapacity(outputPort));
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
   errorCode = pushOutputData(outputPort, outDataPipeId, objectMetadata);
   if (common::ErrorCode::SUCCESS != errorCode) {
     IVS_WARN(

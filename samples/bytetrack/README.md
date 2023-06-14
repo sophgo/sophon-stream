@@ -24,7 +24,7 @@
 
 本例程插件的连接方式如下图所示:
 
-![elements.jpg](pics/elements.jpg)
+![elements.jpg](pics/tracker.png)
 
 ByteTrack是一个简单、快速、强大的多目标跟踪器，且不依赖特征提取模型。
 
@@ -109,7 +109,7 @@ bytetrack demo中各部分参数位于[config](../bytetrack/config/)目录，结
     "num_channels_per_graph": 1,
     "channel": {
       "url": "../data/videos/test_car_person_1080P.avi",
-      "source_type": 0
+      "source_type": "VIDEO"
     },
     "download_image": false,
     "engine_config_path": "../config/engine.json"

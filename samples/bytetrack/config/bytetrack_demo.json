@@ -2,7 +2,7 @@
   "num_channels_per_graph": 1,
   "channel": {
     "url": "../data/videos/test_car_person_1080P.avi",
-    "source_type": 0
+    "source_type": "VIDEO"
   },
   "download_image": false,
   "engine_config_path": "../config/engine.json"

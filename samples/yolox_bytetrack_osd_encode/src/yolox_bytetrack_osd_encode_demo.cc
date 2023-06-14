@@ -7,8 +7,8 @@
 
 #include "common/clocker.h"
 #include "common/error_code.h"
-#include "common/object_metadata.h"
 #include "common/logger.h"
+#include "common/object_metadata.h"
 #include "decode.h"
 #include "engine.h"
 #include "init_engine.h"
@@ -23,9 +23,11 @@ typedef struct demo_config_ {
 constexpr const char* JSON_CONFIG_ENGINE_CONFIG_PATH_FILED =
     "engine_config_path";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FILED = "channels";
-constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_CHANNEL_ID_FILED = "channel_id";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_CHANNEL_ID_FILED =
+    "channel_id";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_URL_FILED = "url";
-constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED = "source_type";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED =
+    "source_type";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -40,21 +42,19 @@ demo_config parse_demo_json(std::string& json_path) {
   auto channel_config_it = demo_json.find(JSON_CONFIG_CHANNEL_CONFIG_FILED);
   for (auto& channel_it : *channel_config_it) {
     nlohmann::json channel_json;
-    channel_json["channel_id"] = 
+    channel_json["channel_id"] =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_CHANNEL_ID_FILED)
-          ->get<int>();
-    channel_json["url"] = 
-        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_URL_FILED)
-          ->get<std::string>();
-    channel_json["source_type"] = 
+            ->get<int>();
+    channel_json["url"] = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_URL_FILED)
+                              ->get<std::string>();
+    channel_json["source_type"] =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED)
-          ->get<int>();
+            ->get<std::string>();
     config.channel_configs.push_back(channel_json);
   }
 
   config.engine_config_file =
-      demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
-          ->get<std::string>();
+      demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)->get<std::string>();
 
   return config;
 }
@@ -84,8 +84,7 @@ int main() {
 
   demo_json.num_graphs = engine_json.size();
   demo_json.num_channels_per_graph = demo_json.channel_configs.size();
-  int num_channels =
-      demo_json.num_channels_per_graph * demo_json.num_graphs;
+  int num_channels = demo_json.num_channels_per_graph * demo_json.num_graphs;
 
   auto sinkHandler = [&](std::shared_ptr<void> data) {
     // write stop data handler here
