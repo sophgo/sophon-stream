@@ -54,7 +54,13 @@ int map_avformat_to_bmformat(int avformat);
 bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
                                 bool is_jpeg);
 
-bm_status_t jpgDec(bm_handle_t& handle, std::string input_name, bm_image& img);
+/**
+ * @brief picture decode. support jpg and png
+ */
+std::shared_ptr<bm_image> picDec(bm_handle_t& handle, const char* path);
+std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, std::string input_name);
+std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, std::string input_name);
+std::shared_ptr<bm_image> bmpDec(bm_handle_t& handle, std::string input_name);
 
 /**
  * video decode class
@@ -110,4 +116,4 @@ class VideoDecFFM {
   void closeDec();
 };
 
-#endif // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_FF_DECODE_H_
+#endif  // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_FF_DECODE_H_

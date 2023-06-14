@@ -1,6 +1,9 @@
 #pragma once
 
+#include <dirent.h>
+
 #include <memory>
+#include <regex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -9,6 +12,7 @@
 #include "bmcv_api_ext.h"
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
+#include "channel.h"
 #include "common/bmnn_utils.h"
 #include "common/error_code.h"
 #include "common/logger.h"
@@ -20,12 +24,13 @@ namespace sophon_stream {
 namespace element {
 namespace decode {
 
-class Decoder :public ::sophon_stream::common::NoCopyable {
+class Decoder : public ::sophon_stream::common::NoCopyable {
  public:
   Decoder();
   ~Decoder();
 
-  common::ErrorCode init(int deviceId, const std::string& url);
+  common::ErrorCode init(int deviceId, const std::string& url,
+                         const ChannelOperateRequest::SourceType& sourceType);
   common::ErrorCode process(
       std::shared_ptr<common::ObjectMetadata>& objectMetadata);
   void uninit();
@@ -36,6 +41,10 @@ class Decoder :public ::sophon_stream::common::NoCopyable {
 
   std::string mUrl;
   int mDeviceId;
+  ChannelOperateRequest::SourceType mSourceType;
+
+  int mImgIndex;
+  std::vector<std::string> mImagePaths;
 };
 }  // namespace decode
 }  // namespace element

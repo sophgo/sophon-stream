@@ -41,7 +41,7 @@ class Encode : public ::sophon_stream::framework::Element {
   std::map<int, std::shared_ptr<Encoder>> mEncoderMap;
   bm_handle_t m_handle;
   std::map<int, std::string> mChannelOutputPath;
-  enum class EncodeType { RTSP, RTMP, VIDEO };
+  enum class EncodeType { RTSP, RTMP, VIDEO, UNKNOWN };
   EncodeType mEncodeType;
   std::string mRtspPort;
   std::string mRtmpPort;

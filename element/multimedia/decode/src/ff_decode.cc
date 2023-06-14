@@ -561,7 +561,226 @@ std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
   return spBmImage;
 }
 
-bm_status_t jpgDec(bm_handle_t& handle, string input_name, bm_image& img) {
+bool is_jpg(const char* filename) {
+  std::ifstream file(filename, std::ios::binary);
+  char header[3];
+  file.read(header, sizeof(header));
+  return (file.good() && header[0] == (char)0xFF && header[1] == (char)0xD8 &&
+          header[2] == (char)0xFF);
+}
+
+bool is_png(const char* filename) {
+  std::ifstream file(filename, std::ios::binary);
+  char header[8];
+  file.read(header, sizeof(header));
+  return (
+      file.good() &&
+      !std::memcmp(header, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", sizeof(header)));
+}
+
+bool is_bmp(const char* filename) {
+  std::ifstream file(filename, std::ios::binary);
+  char header[2];
+  file.read(header, sizeof(header));
+  return (file.good() && header[0] == 'B' && header[1] == 'M');
+}
+
+std::shared_ptr<bm_image> picDec(bm_handle_t& handle, const char* path) {
+  string input_name = path;
+  if (is_jpg(path)) {
+    std::shared_ptr<bm_image> ret = jpgDec(handle, input_name);
+    return ret;
+  } else if (is_png(path)) {
+    std::shared_ptr<bm_image> ret = pngDec(handle, input_name);
+    return ret;
+  } else if (is_bmp(path)) {
+    std::shared_ptr<bm_image> ret = bmpDec(handle, input_name);
+    return ret;
+  } else {
+    fprintf(stderr, "not support pic format, only support jpg and png\n");
+    exit(1);
+  }
+}
+
+std::shared_ptr<bm_image> bmpDec(bm_handle_t& handle, string input_name) {
+  std::shared_ptr<bm_image> spBmImage = nullptr;
+  spBmImage.reset(new bm_image, [](bm_image* p) {
+    bm_image_destroy(*p);
+    delete p;
+    p = nullptr;
+  });
+  FILE* infile = fopen(input_name.c_str(), "rb+");
+  fseek(infile, 0, SEEK_END);
+  int numBytes = ftell(infile);
+  fseek(infile, 0, SEEK_SET);
+  uint8_t* bs_buffer = (uint8_t*)av_malloc(numBytes);
+  fread(bs_buffer, sizeof(uint8_t), numBytes, infile);
+  fclose(infile);
+
+  const AVCodec* codec;
+  AVCodecContext* dec_ctx = NULL;
+  AVPacket* pkt;
+  AVFrame* frame;
+
+  pkt = av_packet_alloc();
+  if (!pkt) {
+    fprintf(stderr, "could not alloc av packet\n");
+    exit(1);
+  }
+  codec = avcodec_find_decoder(AV_CODEC_ID_BMP);
+  if (!codec) {
+    fprintf(stderr, "Codec not found\n");
+    exit(1);
+  }
+  dec_ctx = avcodec_alloc_context3(codec);
+  if (!dec_ctx) {
+    fprintf(stderr, "Could not allocate video codec context\n");
+    exit(1);
+  }
+
+  if (avcodec_open2(dec_ctx, codec, NULL) < 0) {
+    fprintf(stderr, "Could not open codec\n");
+    exit(1);
+  }
+  frame = av_frame_alloc();
+  if (!frame) {
+    fprintf(stderr, "Could not allocate video frame\n");
+    exit(1);
+  }
+
+  pkt->size = numBytes;
+  pkt->data = (unsigned char*)bs_buffer;
+  if (pkt->size) {
+    int ret;
+    ret = avcodec_send_packet(dec_ctx, pkt);
+
+    if (ret < 0) {
+      fprintf(stderr, "Error sending a packet for decoding\n");
+      exit(1);
+    }
+
+    ret = avcodec_receive_frame(dec_ctx, frame);
+
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+      fprintf(stderr, "Error could not receive frame\n");
+      exit(1);
+    } else if (ret < 0) {
+      fprintf(stderr, "Error during decoding\n");
+      exit(1);
+    }
+
+    fflush(stdout);
+
+    data_on_device_mem = false;
+    avframe_to_bm_image(handle, frame, spBmImage.get(), false);
+    free(bs_buffer);
+    avcodec_free_context(&dec_ctx);
+    av_frame_free(&frame);
+    av_packet_free(&pkt);
+    return spBmImage;
+  } else {
+    fprintf(stderr, "Error decode bmp, can not read file size\n");
+    free(bs_buffer);
+    avcodec_free_context(&dec_ctx);
+    av_frame_free(&frame);
+    av_packet_free(&pkt);
+    return spBmImage;
+  }
+}
+
+std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, string input_name) {
+  std::shared_ptr<bm_image> spBmImage = nullptr;
+  spBmImage.reset(new bm_image, [](bm_image* p) {
+    bm_image_destroy(*p);
+    delete p;
+    p = nullptr;
+  });
+  FILE* infile = fopen(input_name.c_str(), "rb+");
+  fseek(infile, 0, SEEK_END);
+  int numBytes = ftell(infile);
+  fseek(infile, 0, SEEK_SET);
+  uint8_t* bs_buffer = (uint8_t*)av_malloc(numBytes);
+  fread(bs_buffer, sizeof(uint8_t), numBytes, infile);
+  fclose(infile);
+
+  const AVCodec* codec;
+  AVCodecContext* dec_ctx = NULL;
+  AVPacket* pkt;
+  AVFrame* frame;
+
+  pkt = av_packet_alloc();
+  if (!pkt) {
+    fprintf(stderr, "could not alloc av packet\n");
+    exit(1);
+  }
+  codec = avcodec_find_decoder(AV_CODEC_ID_PNG);
+  if (!codec) {
+    fprintf(stderr, "Codec not found\n");
+    exit(1);
+  }
+  dec_ctx = avcodec_alloc_context3(codec);
+  if (!dec_ctx) {
+    fprintf(stderr, "Could not allocate video codec context\n");
+    exit(1);
+  }
+
+  if (avcodec_open2(dec_ctx, codec, NULL) < 0) {
+    fprintf(stderr, "Could not open codec\n");
+    exit(1);
+  }
+  frame = av_frame_alloc();
+  if (!frame) {
+    fprintf(stderr, "Could not allocate video frame\n");
+    exit(1);
+  }
+
+  pkt->size = numBytes;
+  pkt->data = (unsigned char*)bs_buffer;
+  if (pkt->size) {
+    int ret;
+    ret = avcodec_send_packet(dec_ctx, pkt);
+
+    if (ret < 0) {
+      fprintf(stderr, "Error sending a packet for decoding\n");
+      exit(1);
+    }
+
+    ret = avcodec_receive_frame(dec_ctx, frame);
+
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+      fprintf(stderr, "Error could not receive frame\n");
+      exit(1);
+    } else if (ret < 0) {
+      fprintf(stderr, "Error during decoding\n");
+      exit(1);
+    }
+
+    fflush(stdout);
+
+    data_on_device_mem = false;
+    avframe_to_bm_image(handle, frame, spBmImage.get(), false);
+    free(bs_buffer);
+    avcodec_free_context(&dec_ctx);
+    av_frame_free(&frame);
+    av_packet_free(&pkt);
+    return spBmImage;
+  } else {
+    fprintf(stderr, "Error decode png, can not read file size\n");
+    free(bs_buffer);
+    avcodec_free_context(&dec_ctx);
+    av_frame_free(&frame);
+    av_packet_free(&pkt);
+    return spBmImage;
+  }
+}
+
+std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, string input_name) {
+  std::shared_ptr<bm_image> spBmImage = nullptr;
+  spBmImage.reset(new bm_image, [](bm_image* p) {
+    bm_image_destroy(*p);
+    delete p;
+    p = nullptr;
+  });
   AVInputFormat* iformat = nullptr;
   AVFormatContext* pFormatCtx = nullptr;
   AVCodecContext* dec_ctx = nullptr;
@@ -697,53 +916,6 @@ bm_status_t jpgDec(bm_handle_t& handle, string input_name, bm_image& img) {
     goto Func_Exit;
   }
 
-  // filter convert format to I420
-  // TODO
-  if (!hardware_decode) {
-    int height = pFrame->height;
-    int width = pFrame->width;
-    uchar bgr_buffer[height * width * 3];
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        int indexY = y * pFrame->linesize[0] + x;
-        int indexU = (y / 2) * pFrame->linesize[1] + x;
-        int indexV = (y / 2) * pFrame->linesize[2] + x;
-
-        uchar Y = pFrame->data[0][indexY];
-        uchar U = pFrame->data[1][indexU];
-        uchar V = pFrame->data[2][indexV];
-
-        double M[12] = {
-            1.0000000000000000,    0.0000000000000000,   1.4018863751529200,
-            -179.4414560195740000, 1.0000000000000000,   -0.3458066722146720,
-            -0.7149028511111540,   135.7708189857060000, 1.0000000000000000,
-            1.7709825540494100,    0.0000000000000000,   -226.6857669183240000};
-
-        int R = M[0] * Y + M[1] * (U) + M[2] * (V) + M[3];
-        int G = M[4] * Y + M[5] * (U) + M[6] * (V) + M[7];
-        int B = M[8] * Y + M[9] * (U) + M[10] * (V) + M[11];
-
-        R = (R < 0) ? 0 : R;
-        G = (G < 0) ? 0 : G;
-        B = (B < 0) ? 0 : B;
-        R = (R > 255) ? 255 : R;
-        G = (G > 255) ? 255 : G;
-        B = (B > 255) ? 255 : B;
-
-        bgr_buffer[(y * width + x) * 3 + 0] = uchar(B);
-        bgr_buffer[(y * width + x) * 3 + 1] = uchar(G);
-        bgr_buffer[(y * width + x) * 3 + 2] = uchar(R);
-
-        // std::cout << "B " << B << " G " << G << " R " << R << std::endl;
-      }
-    }
-
-    bm_image_create(handle, height, width, FORMAT_BGR_PACKED,
-                    DATA_TYPE_EXT_1N_BYTE, &img);
-    void* buffers[1] = {bgr_buffer};
-    bm_image_copy_host_to_device(img, buffers);
-    goto Func_Exit;
-  }
   // vpp_convert do not support YUV422P, use libyuv to filter
   if (AV_PIX_FMT_YUVJ422P == pFrame->format) {
     I420Frame = av_frame_alloc();
@@ -774,7 +946,7 @@ bm_status_t jpgDec(bm_handle_t& handle, string input_name, bm_image& img) {
     data_on_device_mem = false;
   }
 
-  avframe_to_bm_image(handle, pFrame, &img, true);
+  avframe_to_bm_image(handle, pFrame, spBmImage.get(), true);
 
 Func_Exit:
   av_packet_unref(&pkt);
@@ -804,5 +976,5 @@ Func_Exit:
   if (bs_buffer) {
     av_free(bs_buffer);
   }
-  return ret;  // TODO
+  return spBmImage;  // TODO
 }
