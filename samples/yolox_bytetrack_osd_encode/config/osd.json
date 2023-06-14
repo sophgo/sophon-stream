@@ -5,7 +5,6 @@
   },
   "shared_object": "../../../build/lib/libosd.so",
   "device_id": 0,
-  "id": 0,
   "name": "osd",
   "side": "sophgo",
   "thread_number": 1
