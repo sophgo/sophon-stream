@@ -18,7 +18,7 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 ```json
 {
   "configure": {
-    "osd_type": "track",
+    "osd_type": "TRACK",
     "class_names": "../data/coco.names"
   },
   "shared_object": "../../../build/lib/libosd.so",
@@ -32,7 +32,7 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 
 |      参数名    |    类型    | 默认值 | 说明 |
 |:-------------:| :-------: | :------------------:| :----------------------------------------------:|
-|  osd_type |    字符串     | 无 |画图类型，包括 “det”、“track“|
+|  osd_type |    字符串     | 无 |画图类型，包括 “DET”、“TRACK“|
 |  shared_object |   字符串   |  "../../../build/lib/libencode.so"  | libencode 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
 |     id      |    整数       | 0  | element id |

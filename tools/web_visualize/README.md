@@ -2,7 +2,9 @@
 本工具可以实现接受post请求，并在web端显示请求中的rtsp流，最大支持16路视频显示
 
 ## 环境准备
-本工具依赖环境 python (3.8.9) opencv-python (4.7.0.72), Flask (2.3.2) websockets(11.0.3)。
+```
+pip3 install -r requirements.txt
+```
 另外，本工具依赖8000，8765-8780端口，请保证端口未被占用或更换端口。
 
 ## 运行

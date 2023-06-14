@@ -1,6 +1,6 @@
 {
   "configure": {
-    "osd_type": "track",
+    "osd_type": "TRACK",
     "class_names": "../data/coco.names"
   },
   "shared_object": "../../../build/lib/libosd.so",

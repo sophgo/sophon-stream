@@ -127,8 +127,8 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
     std::string osd_type =
         configure.find(CONFIG_INTERNAL_OSD_TYPE_FIELD)->get<std::string>();
     mOsdType = OsdType::UNKNOWN;
-    if (osd_type == "det") mOsdType = OsdType::DET;
-    if (osd_type == "track") mOsdType = OsdType::TRACK;
+    if (osd_type == "DET") mOsdType = OsdType::DET;
+    if (osd_type == "TRACK") mOsdType = OsdType::TRACK;
 
     if (mOsdType == OsdType::DET) {
       std::string class_names_file =

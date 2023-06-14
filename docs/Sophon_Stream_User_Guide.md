@@ -1,4 +1,4 @@
-# 算能 Sophon-Stream 用户手册
+# 算能 sophon-stream 用户手册
 
 ## 1. 快速入门
 
@@ -6,7 +6,7 @@
 
 #### 1.1.1 x86/arm PCIe平台
 
-如果您在x86/arm平台安装了PCIe加速卡（如SC系列加速卡），可以直接使用它作为开发环境和运行环境。您需要安装libsophon、sophon-opencv和sophon-ffmpeg，具体步骤可参考[x86-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建)或[arm-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建)。
+如果您在x86/arm平台安装了PCIe加速卡（如SC系列加速卡），可以直接使用它作为开发环境和运行环境。您需要安装libsophon、sophon-opencv和sophon-ffmpeg，具体步骤可参考[x86-pcie平台的开发和运行环境搭建](EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建)或[arm-pcie平台的开发和运行环境搭建](EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建)。
 
 ### 1.1.2 SoC平台
 
@@ -14,7 +14,7 @@
 
 ### 1.2 编译命令
 
-完成环境配置后，用户可以参考 [sophon-stream编译指南](./HowToMake.md)，使用如下命令编译第一个例程。
+完成环境配置后，用户可以参考 [sophon-stream编译指南](./HowToMake.md)，使用如下命令编译。
 
 ### 1.2.1 x86/arm PCIe平台
 
@@ -27,7 +27,7 @@ make -j
 
 ### 1.2.2 SoC平台
 
-通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](../../docs/HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](./HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
 
 ```bash
 mkdir build
@@ -41,17 +41,14 @@ make -j
 具体地，CMakeLists.txt中提供了插件化的编译指令。如果用户不需要启用sophon-stream的全部功能，可以适当选择其中一些插件的编译命令进行注释，例如:
 
 ```cmake
+add_subdirectory(element/algorithm/decode)
 add_subdirectory(element/algorithm/yolox)
-add_subdirectory(element/algorithm/yolov5)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/yolov5/build)
-add_subdirectory(samples/yolov5)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/yolox/build)
 add_subdirectory(samples/yolox)
 ```
 
-上例中，脚本将分别编译yolox和yolov5算法插件，以及两个算法对应的例程。如果用户的工程中不涉及其中某项功能，可以将该部分算法及对应的sample编译命令进行注释。
+上例中，脚本将分别编译yolox算法插件，以及算法对应的例程。如果用户的工程中不涉及其中某项功能，可以将该部分算法及对应的例程编译命令进行注释。
 
 ### 1.3 编译结果
 
@@ -78,7 +75,7 @@ sophon-stream基于SophonSDK设计。SophonSDK是算能科技基于自主研发�
 
 ![stream_and_sdk](./pics/stream_sdk.png)
 
-sophon-stream由framework和element两部分组成，framework是整体的框架，作为底层决定了sophon-stream的运行方式，如图的构建、数据传输等。element是图上所有节点的统称，它们由同一个抽象基类派生而来，负责基于SophonSDK提供某项特定功能，如视频编解码、图像处理等。
+sophon-stream由framework和element两部分组成，framework是整体的框架，作为底层决定了sophon-stream的运行方式，如图的构建、数据传输等。element是所有图节点的统称，它们由同一个抽象基类派生而来，负责基于SophonSDK提供某项特定功能，如视频编解码、图像处理等。
 
 ## 3. 框架
 
@@ -370,8 +367,6 @@ auto channelTask =
 
 channelTask->request.operation = 
     sophon_stream::element::decode::ChannelOperateRequest::ChannelOperate::START;
-
-channelTask->request.channelId = channel_id;
 
 channelTask->request.json = channel_config.dump();
 

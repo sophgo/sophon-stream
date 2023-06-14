@@ -2,12 +2,7 @@
 
 ## 1 简介
 
-sophon-stream是基于插件的流处理框架。用户通过串联插件，可以快速构建流处理应用。
-
-- 支持多图
-- 单图内支持多模型串联、并联
-- 插件支持多线程
-
+sophon-stream是面向算丰开发平台的数据流处理工具。本软件基于插件化的思想，使用C++11开发了一套支持多路数据流并发处理的流水线框架。基于现有的接口，sophon-stream对用户具有易使用、易二次开发的优点，可以大大简化用户配置工程或添加插件的复杂度。sophon-stream基于SophonSDK，可以充分发挥算丰硬件的编解码能力及人工智能算法的推理能力，从而获得较高的性能。
 
 主要目录结构和模块说明：
 
@@ -25,8 +20,8 @@ sophon-stream是基于插件的流处理框架。用户通过串联插件，可�
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo      |
 |                         | [yolox_bytetrack_osd_encode](./samples/yolox_bytetrack_osd_encode)| 目标跟踪算法结果推流demo|
 
-
 ## 2 快速入门
+请参考[sophon-stream用户文档](./docs/SophonStreamUserGuide.md)
 
 ## 3 FAQ
 请参考[sophon-stream常见问题及解答](./docs/FAQ.md)
