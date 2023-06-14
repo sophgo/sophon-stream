@@ -70,7 +70,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../3rdparty/spdlog/include)
     include_directories(../3rdparty/nlohmann-json/include)
 
-    add_library(ivslogger
+    add_library(ivslogger SHARED
       common/logger.cc
     )
 
