@@ -323,7 +323,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ```
 {
   "configure": {
-    "osd_type": "track",
+    "osd_type": "TRACK",
     "class_names": "../data/coco.names"
   },
   "shared_object": "../../../build/lib/libosd.so",
