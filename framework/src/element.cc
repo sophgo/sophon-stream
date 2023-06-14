@@ -241,7 +241,7 @@ common::ErrorCode Element::pushOutputData(
       }
     }
   }
-  return mOutputConnectorMap[outputPort]->pushDataWithId(dataPipeId, data);
+  return mOutputConnectorMap[outputPort].lock()->pushDataWithId(dataPipeId, data);
 
   IVS_ERROR(
       "Can not find data handler or data pipe on output port, output port: "
@@ -251,7 +251,7 @@ common::ErrorCode Element::pushOutputData(
 }
 
 std::shared_ptr<Connector> Element::getOutputConnector(int portId) {
-  return mOutputConnectorMap[portId];
+  return mOutputConnectorMap[portId].lock();
 }
 
 void Element::addInputPort(int port) { mInputPorts.push_back(port); }
@@ -266,15 +266,15 @@ std::size_t Element::getInputDataCount(int inputPort, int dataPipeId) {
 
 common::ErrorCode Element::getOutputDatapipeCapacity(int outputPort,
                                                      int& capacity) {
-  capacity = mOutputConnectorMap[outputPort]->getCapacity();
+  capacity = mOutputConnectorMap[outputPort].lock()->getCapacity();
   return common::ErrorCode::SUCCESS;
 }
 
 common::ErrorCode Element::getOutputDatapipeSize(int outputPort, int channelId,
                                                  int& size) {
   int dataPipeId =
-      channelId % mOutputConnectorMap[outputPort]->getDataPipeCount();
-  size = mOutputConnectorMap[outputPort]->getDataPipeSize(dataPipeId);
+      channelId % mOutputConnectorMap[outputPort].lock()->getDataPipeCount();
+  size = mOutputConnectorMap[outputPort].lock()->getDataPipeSize(dataPipeId);
   return common::ErrorCode::SUCCESS;
 }
 
