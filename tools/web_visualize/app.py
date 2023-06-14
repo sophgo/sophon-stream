@@ -4,6 +4,7 @@ import asyncio
 import websockets
 import base64
 from threading import Thread
+
 class VideoCamera(object):
     def __init__(self):
         self.video = None
@@ -31,22 +32,25 @@ async def sendImg(websocket, path): #decode and send images to websocket clients
             base64img='data:image/jpeg;base64,{}'.format(s)
             await websocket.send(base64img)
 
-async def mainfunc(port):     # start a websocket server
-    async with websockets.serve(sendImg, "localhost", port):
+async def mainfunc(port,hostip):     # start a websocket server
+    async with websockets.serve(sendImg, hostip, port):
         print("runing ",port)
         await asyncio.Future()
 
 class Compute(Thread):
-    def __init__(self, portnum):
+    def __init__(self, portnum, hostip):
         Thread.__init__(self)
         self.portnum = portnum
+        self.hostip = hostip
+
     def run(self):
-        asyncio.run(mainfunc(8764+self.portnum))
+        asyncio.run(mainfunc(8764+self.portnum,self.hostip))
 
 @app.route('/pushstream', methods=['POST']) 
 def pushstream(): #get post request and start websocket server
     global portnum
     global indexnum
+    hostip=request.host
     if indexnum>=16:
         data={"error":"out of Road"}
         response = app.response_class(
@@ -69,7 +73,7 @@ def pushstream(): #get post request and start websocket server
         return response
     portnum+=1
     indexnum+=1
-    thread_a =Compute(portnum)
+    thread_a =Compute(portnum,hostip.split(':')[0])
     thread_a.start()
     response = app.response_class(status=200)
     return response

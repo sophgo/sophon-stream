@@ -24,7 +24,9 @@
 <img src="" id="capture16" alt="">
 </body>
 <script>
-var ws_ip="127.0.0.1" //ip for websocket server
+var reg = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/;
+var ip = reg.exec(window.location.href)[0]; //get ip for frontend
+var ws_ip = ip; //ip for websocket server
 var id = setInterval(function(){ //connet to websocket server and get frames
     let vedio = document.getElementById('capture1')
     let ws = new WebSocket('ws://'+ws_ip+':8765');
