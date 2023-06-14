@@ -77,9 +77,13 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
     mContext->output_num = mContext->bmNetwork->outputTensorNum();
     mContext->min_dim =
         mContext->bmNetwork->outputTensor(0)->get_shape()->num_dims;
-    mContext->class_num =
-        mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] / 3 - 4 -
-        1;  // class_nums + box_4 + conf_1
+    if (mContext->use_tpu_kernel)
+      mContext->class_num =
+          mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] / 3 - 4 -
+          1;  // class_nums + box_4 + conf_1
+    else
+      mContext->class_num =
+          mContext->bmNetwork->outputTensor(0)->get_shape()->dims[4] - 4 - 1;
 
     // 4.converto
     float input_scale = inputTensor->get_scale();
