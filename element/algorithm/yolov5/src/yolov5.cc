@@ -201,7 +201,7 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
   while (objectMetadatas.size() < mBatch &&
          (getThreadStatus() == ThreadStatus::RUN)) {
     // 如果队列为空则等待
-    auto data = getInputData(inputPort, dataPipeId);
+    auto data = popInputData(inputPort, dataPipeId);
     if (!data) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
       continue;
@@ -223,7 +223,7 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
     int outDataPipeId =
         getLastElementFlag()
             ? 0
-            : (channel_id_internal % getOutputConnector(outputPort)->getDataPipeCount());
+            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
     errorCode = pushOutputData(outputPort, outDataPipeId,
                                std::static_pointer_cast<void>(objectMetadata));
     if (common::ErrorCode::SUCCESS != errorCode) {

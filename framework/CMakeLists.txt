@@ -26,7 +26,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     add_library(framework SHARED
         src/element.cc
         src/datapipe.cc
-        src/element_manager.cc
+        src/graph.cc
         src/element_factory.cc
         src/engine.cc
         src/connector.cc
@@ -79,7 +79,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     add_library(framework SHARED
         src/element.cc
         src/datapipe.cc
-        src/element_manager.cc
+        src/graph.cc
         src/element_factory.cc
         src/engine.cc
         src/connector.cc

@@ -60,10 +60,16 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   common::ErrorCode resume();
 
+  std::shared_ptr<void> popInputData(int inputPort, int dataPipeId);
+
   common::ErrorCode pushInputData(int inputPort, int dataPipeId,
                                   std::shared_ptr<void> data);
 
-  void setStopHandler(int outputPort, DataHandler dataHandler);
+  std::shared_ptr<void> popOutputData(int outputPort, int dataPipeId) = delete;
+  common::ErrorCode pushOutputData(int outputPort, int dataPipeId,
+                                   std::shared_ptr<void> data);
+
+  void setSinkHandler(int outputPort, DataHandler dataHandler);
 
   int getId() const { return mId; }
 
@@ -95,22 +101,10 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   virtual common::ErrorCode doWork(int dataPipeId) = 0;
 
-  std::size_t getInputDataCount(int inputPort, int dataPipeId);
-
-  std::shared_ptr<void> getInputData(int inputPort, int dataPipeId);
-
-  common::ErrorCode pushOutputData(int outputPort, int dataPipeId,
-                                   std::shared_ptr<void> data);
-
-  common::ErrorCode getOutputDatapipeCapacity(int outputPort, int& capacity);
-
-  common::ErrorCode getOutputDatapipeSize(int outputPort, int channelId,
-                                          int& size);
-
   std::vector<int> getInputPorts();
   std::vector<int> getOutputPorts();
 
-  std::shared_ptr<Connector> getOutputConnector(int portId);
+  int getOutputConnectorCapacity(int outputPort);
 
  private:
   int mId;

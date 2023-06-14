@@ -145,7 +145,7 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
     return errorCode;
   }
 
-  auto data = getInputData(inputPort, dataPipeId);
+  auto data = popInputData(inputPort, dataPipeId);
   if (!data) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     return errorCode;
@@ -159,7 +159,7 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
   int pipeId = getLastElementFlag()
                    ? 0
                    : (channel_id_internal %
-                      getOutputConnector(outputPort)->getDataPipeCount());
+                      getOutputConnectorCapacity(outputPort));
 
   errorCode = pushOutputData(outputPort, pipeId,
                              std::static_pointer_cast<void>(objectMetadata));

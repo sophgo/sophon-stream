@@ -60,7 +60,7 @@ void Decode::onStop() {
 common::ErrorCode Decode::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   int inputPort = 0;
-  auto data = getInputData(inputPort, dataPipeId);
+  auto data = popInputData(inputPort, dataPipeId);
   if (!data) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     return errorCode;
@@ -274,7 +274,7 @@ common::ErrorCode Decode::process(
   int dataPipeId = getLastElementFlag()
                        ? 0
                        : (channel_id_internal %
-                          getOutputConnector(outputPort)->getDataPipeCount());
+                          getOutputConnectorCapacity(outputPort));
   common::ErrorCode errorCode = pushOutputData(
       outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
   if (common::ErrorCode::SUCCESS != errorCode) {

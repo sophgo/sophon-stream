@@ -164,7 +164,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
 
   std::shared_ptr<void> data;
   while (getThreadStatus() == ThreadStatus::RUN) {
-    data = getInputData(inputPort, dataPipeId);
+    data = popInputData(inputPort, dataPipeId);
     if (!data) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
       continue;
@@ -183,7 +183,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
   int outDataPipeId =
       getLastElementFlag()
           ? 0
-          : (channel_id_internal % getOutputConnector(outputPort)->getDataPipeCount());
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
   errorCode = pushOutputData(outputPort, outDataPipeId, objectMetadata);
   if (common::ErrorCode::SUCCESS != errorCode) {
     IVS_WARN(

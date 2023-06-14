@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "element_manager.h"
+#include "graph.h"
 
 #include <dlfcn.h>
 
@@ -20,25 +20,25 @@
 namespace sophon_stream {
 namespace framework {
 
-constexpr const char* ElementManager::JSON_GRAPH_ID_FIELD;
-constexpr const char* ElementManager::JSON_WORKERS_FIELD;
-constexpr const char* ElementManager::JSON_CONNECTIONS_FIELD;
-constexpr const char* ElementManager::JSON_MODEL_SHARED_OBJECT_FIELD;
-constexpr const char* ElementManager::JSON_WORKER_NAME_FIELD;
-constexpr const char* ElementManager::JSON_CONNECTION_SRC_ID_FIELD;
-constexpr const char* ElementManager::JSON_CONNECTION_SRC_PORT_FIELD;
-constexpr const char* ElementManager::JSON_CONNECTION_DST_ID_FIELD;
-constexpr const char* ElementManager::JSON_CONNECTION_DST_PORT_FIELD;
+constexpr const char* Graph::JSON_GRAPH_ID_FIELD;
+constexpr const char* Graph::JSON_WORKERS_FIELD;
+constexpr const char* Graph::JSON_CONNECTIONS_FIELD;
+constexpr const char* Graph::JSON_MODEL_SHARED_OBJECT_FIELD;
+constexpr const char* Graph::JSON_WORKER_NAME_FIELD;
+constexpr const char* Graph::JSON_CONNECTION_SRC_ID_FIELD;
+constexpr const char* Graph::JSON_CONNECTION_SRC_PORT_FIELD;
+constexpr const char* Graph::JSON_CONNECTION_DST_ID_FIELD;
+constexpr const char* Graph::JSON_CONNECTION_DST_PORT_FIELD;
 
-ElementManager::ElementManager() : mId(-1), mThreadStatus(ThreadStatus::STOP) {}
+Graph::Graph() : mId(-1), mThreadStatus(ThreadStatus::STOP) {}
 
-ElementManager::~ElementManager() {
+Graph::~Graph() {
   auto& elementFactory = framework::SingletonElementFactory::getInstance();
   elementFactory.~ElementFactory();
   // uninit();
 }
 
-common::ErrorCode ElementManager::init(const std::string& json) {
+common::ErrorCode Graph::init(const std::string& json) {
   IVS_INFO("Init start, json: {0}", json);
 
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -89,7 +89,7 @@ common::ErrorCode ElementManager::init(const std::string& json) {
   return errorCode;
 }
 
-void ElementManager::uninit() {
+void Graph::uninit() {
   int id = mId;
   IVS_INFO("Uninit start, graph id: {0:d}", id);
 
@@ -103,7 +103,7 @@ void ElementManager::uninit() {
   IVS_INFO("Uninit finish, graph id: {0:d}", id);
 }
 
-common::ErrorCode ElementManager::start() {
+common::ErrorCode Graph::start() {
   IVS_INFO("Start graph thread start, graph id: {0:d}", mId);
 
   if (ThreadStatus::STOP != mThreadStatus) {
@@ -128,7 +128,7 @@ common::ErrorCode ElementManager::start() {
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode ElementManager::stop() {
+common::ErrorCode Graph::stop() {
   IVS_INFO("Stop graph thread start, graph id: {0:d}", mId);
 
   if (ThreadStatus::STOP == mThreadStatus) {
@@ -151,7 +151,7 @@ common::ErrorCode ElementManager::stop() {
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode ElementManager::pause() {
+common::ErrorCode Graph::pause() {
   IVS_INFO("Pause graph thread start, graph id: {0:d}", mId);
 
   if (ThreadStatus::RUN != mThreadStatus) {
@@ -176,7 +176,7 @@ common::ErrorCode ElementManager::pause() {
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode ElementManager::resume() {
+common::ErrorCode Graph::resume() {
   IVS_INFO("Resume graph thread start, graph id: {0:d}", mId);
 
   if (ThreadStatus::PAUSE != mThreadStatus) {
@@ -201,7 +201,7 @@ common::ErrorCode ElementManager::resume() {
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode ElementManager::initElements(const std::string& json) {
+common::ErrorCode Graph::initElements(const std::string& json) {
   IVS_INFO("Init elements start, graph id: {0:d}, json: {1}", mId, json);
 
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -294,7 +294,7 @@ common::ErrorCode ElementManager::initElements(const std::string& json) {
   return errorCode;
 }
 
-common::ErrorCode ElementManager::initConnections(const std::string& json) {
+common::ErrorCode Graph::initConnections(const std::string& json) {
   IVS_INFO("Init connections start, graph id: {0:d}, json: {1}", mId, json);
 
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -376,7 +376,7 @@ common::ErrorCode ElementManager::initConnections(const std::string& json) {
   return errorCode;
 }
 
-common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
+common::ErrorCode Graph::connect(int srcId, int srcPort, int dstId,
                                           int dstPort) {
   auto srcElementIt = mElementMap.find(srcId);
   if (mElementMap.end() == srcElementIt) {
@@ -415,7 +415,7 @@ common::ErrorCode ElementManager::connect(int srcId, int srcPort, int dstId,
   return common::ErrorCode::SUCCESS;
 }
 
-void ElementManager::setStopHandler(int elementId, int outputPort,
+void Graph::setSinkHandler(int elementId, int outputPort,
                                     DataHandler dataHandler) {
   IVS_INFO(
       "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
@@ -436,10 +436,10 @@ void ElementManager::setStopHandler(int elementId, int outputPort,
     return;
   }
 
-  element->setStopHandler(outputPort, dataHandler);
+  element->setSinkHandler(outputPort, dataHandler);
 }
 
-common::ErrorCode ElementManager::pushInputData(
+common::ErrorCode Graph::pushSourceData(
     int elementId, int inputPort, std::shared_ptr<void> data) {
   IVS_DEBUG(
       "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
@@ -463,7 +463,7 @@ common::ErrorCode ElementManager::pushInputData(
   return element->pushInputData(inputPort, 0, data);
 }
 
-std::pair<std::string, int> ElementManager::getSideAndDeviceId(int elementId) {
+std::pair<std::string, int> Graph::getSideAndDeviceId(int elementId) {
   IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}", mId,
            elementId);
 
@@ -484,6 +484,6 @@ std::pair<std::string, int> ElementManager::getSideAndDeviceId(int elementId) {
   return std::make_pair(element->getSide(), element->getId());
 }
 
-int ElementManager::getId() const { return mId; }
+int Graph::getId() const { return mId; }
 }  // namespace framework
 }  // namespace sophon_stream

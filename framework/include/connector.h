@@ -20,18 +20,14 @@ class Connector : public ::sophon_stream::common::NoCopyable {
  public:
   Connector(int dataPipeCount);
 
-  std::shared_ptr<void> popDataWithId(int id);
-  common::ErrorCode pushDataWithId(int id, std::shared_ptr<void> data);
-  int getDataCount(int id);
-  int getDataPipeCount() const;
+  std::shared_ptr<void> popData(int id);
+  common::ErrorCode pushData(int id, std::shared_ptr<void> data);
+  int getSize() const;
   int getCapacity() const;
-
-  int getDataPipeSize(int id);
 
  private:
   std::vector<std::shared_ptr<DataPipe>> mDataPipes;
   std::shared_ptr<DataPipe> getDataPipe(int id) const;
-  int mDataPipeCount = 0;
   int mCapacity = 0;
 };
 

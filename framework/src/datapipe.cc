@@ -39,15 +39,6 @@ common::ErrorCode DataPipe::pushData(std::shared_ptr<void> data) {
   }
 }
 
-std::shared_ptr<void> DataPipe::getData() const {
-  std::lock_guard<std::mutex> lock(mDataQueueMutex);
-  if (mDataQueue.empty()) {
-    return std::shared_ptr<void>();
-  } else {
-    return mDataQueue.front();
-  }
-}
-
 std::shared_ptr<void> DataPipe::popData()
 {
   std::lock_guard<std::mutex> lock(mDataQueueMutex);
@@ -63,8 +54,6 @@ std::shared_ptr<void> DataPipe::popData()
 void DataPipe::setPushHandler(PushHandler pushHandler) {
   mPushHandler = pushHandler;
 }
-
-void DataPipe::setCapacity(std::size_t capacity) { mCapacity = capacity; }
 
 std::size_t DataPipe::getSize() const {
   std::lock_guard<std::mutex> lock(mDataQueueMutex);

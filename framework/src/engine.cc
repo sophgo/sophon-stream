@@ -14,9 +14,9 @@ Engine::~Engine() {}
 
 common::ErrorCode Engine::start(int graphId) {
   IVS_INFO("Engine start graph thread start, graph id: {0:d}", graphId);
-  std::lock_guard<std::mutex> lk(mElementManagerMapLock);
-  auto graphIt = mElementManagerMap.find(graphId);
-  if (mElementManagerMap.end() == graphIt) {
+  std::lock_guard<std::mutex> lk(mGraphMapLock);
+  auto graphIt = mGraphMap.find(graphId);
+  if (mGraphMap.end() == graphIt) {
     IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
     return common::ErrorCode::NO_SUCH_GRAPH_ID;
   }
@@ -34,9 +34,9 @@ common::ErrorCode Engine::start(int graphId) {
 common::ErrorCode Engine::stop(int graphId) {
   IVS_INFO("Engine stop graph thread start, graph id: {0:d}", graphId);
 
-  std::lock_guard<std::mutex> lk(mElementManagerMapLock);
-  auto graphIt = mElementManagerMap.find(graphId);
-  if (mElementManagerMap.end() == graphIt) {
+  std::lock_guard<std::mutex> lk(mGraphMapLock);
+  auto graphIt = mGraphMap.find(graphId);
+  if (mGraphMap.end() == graphIt) {
     IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
     return common::ErrorCode::NO_SUCH_GRAPH_ID;
   }
@@ -54,9 +54,9 @@ common::ErrorCode Engine::stop(int graphId) {
 common::ErrorCode Engine::pause(int graphId) {
   IVS_INFO("Engine pause graph thread start, graph id: {0:d}", graphId);
 
-  std::lock_guard<std::mutex> lk(mElementManagerMapLock);
-  auto graphIt = mElementManagerMap.find(graphId);
-  if (mElementManagerMap.end() == graphIt) {
+  std::lock_guard<std::mutex> lk(mGraphMapLock);
+  auto graphIt = mGraphMap.find(graphId);
+  if (mGraphMap.end() == graphIt) {
     IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
     return common::ErrorCode::NO_SUCH_GRAPH_ID;
   }
@@ -74,9 +74,9 @@ common::ErrorCode Engine::pause(int graphId) {
 common::ErrorCode Engine::resume(int graphId) {
   IVS_INFO("Engine resume graph thread start, graph id: {0:d}", graphId);
 
-  std::lock_guard<std::mutex> lk(mElementManagerMapLock);
-  auto graphIt = mElementManagerMap.find(graphId);
-  if (mElementManagerMap.end() == graphIt) {
+  std::lock_guard<std::mutex> lk(mGraphMapLock);
+  auto graphIt = mGraphMap.find(graphId);
+  if (mGraphMap.end() == graphIt) {
     IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
     return common::ErrorCode::NO_SUCH_GRAPH_ID;
   }
@@ -97,9 +97,9 @@ common::ErrorCode Engine::addGraph(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
   do {
-    std::lock_guard<std::mutex> lk(mElementManagerMapLock);
+    std::lock_guard<std::mutex> lk(mGraphMapLock);
 
-    auto graph = std::make_shared<framework::ElementManager>();
+    auto graph = std::make_shared<framework::Graph>();
 
     errorCode = graph->init(json);
     if (common::ErrorCode::SUCCESS != errorCode) {
@@ -113,7 +113,7 @@ common::ErrorCode Engine::addGraph(const std::string& json) {
       return errorCode;
     }
 
-    mElementManagerMap[graph->getId()] = graph;
+    mGraphMap[graph->getId()] = graph;
     IVS_INFO("Add graph finish, json: {0}", json);
     mGraphIds.push_back(graph->getId());
 
@@ -123,30 +123,30 @@ common::ErrorCode Engine::addGraph(const std::string& json) {
 }
 
 void Engine::removeGraph(int graphId) {
-  std::lock_guard<std::mutex> lk(mElementManagerMapLock);
+  std::lock_guard<std::mutex> lk(mGraphMapLock);
   IVS_INFO("Remove graph start, graph id: {0:d}", graphId);
-  mElementManagerMap.erase(graphId);
+  mGraphMap.erase(graphId);
   IVS_INFO("Remove graph finish, graph id: {0:d}", graphId);
 }
 
 bool Engine::graphExist(int graphId) {
-  std::lock_guard<std::mutex> lk(mElementManagerMapLock);
+  std::lock_guard<std::mutex> lk(mGraphMapLock);
 
-  if (mElementManagerMap.end() != mElementManagerMap.find(graphId)) {
+  if (mGraphMap.end() != mGraphMap.find(graphId)) {
     return true;
   }
   return false;
 }
 
-void Engine::setStopHandler(int graphId, int elementId, int outputPort,
+void Engine::setSinkHandler(int graphId, int elementId, int outputPort,
                             DataHandler dataHandler) {
   IVS_INFO(
       "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
       "{2:d}",
       graphId, elementId, outputPort);
 
-  auto graphIt = mElementManagerMap.find(graphId);
-  if (mElementManagerMap.end() == graphIt) {
+  auto graphIt = mGraphMap.find(graphId);
+  if (mGraphMap.end() == graphIt) {
     IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
     return;
   }
@@ -157,18 +157,18 @@ void Engine::setStopHandler(int graphId, int elementId, int outputPort,
     return;
   }
 
-  graph->setStopHandler(elementId, outputPort, dataHandler);
+  graph->setSinkHandler(elementId, outputPort, dataHandler);
 }
 
-common::ErrorCode Engine::pushInputData(
+common::ErrorCode Engine::pushSourceData(
     int graphId, int elementId, int inputPort, std::shared_ptr<void> data) {
   IVS_DEBUG(
       "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
       "data: {3:p}",
       graphId, elementId, inputPort, data.get());
 
-  auto graphIt = mElementManagerMap.find(graphId);
-  if (mElementManagerMap.end() == graphIt) {
+  auto graphIt = mGraphMap.find(graphId);
+  if (mGraphMap.end() == graphIt) {
     IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
     return common::ErrorCode::NO_SUCH_GRAPH_ID;
   }
@@ -179,7 +179,7 @@ common::ErrorCode Engine::pushInputData(
     return common::ErrorCode::UNKNOWN;
   }
 
-  return graph->pushInputData(elementId, inputPort, data);
+  return graph->pushSourceData(elementId, inputPort, data);
 }
 
 std::pair<std::string, int> Engine::getSideAndDeviceId(int graphId,
@@ -187,8 +187,8 @@ std::pair<std::string, int> Engine::getSideAndDeviceId(int graphId,
   IVS_INFO("Get side and device id, graph id: {0:d}, element id: {1:d}",
            graphId, elementId);
 
-  auto graphIt = mElementManagerMap.find(graphId);
-  if (mElementManagerMap.end() == graphIt) {
+  auto graphIt = mGraphMap.find(graphId);
+  if (mGraphMap.end() == graphIt) {
     IVS_ERROR("Can not find graph, graph id: {0:d}", graphId);
     return std::make_pair("", -1);
   }

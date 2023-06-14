@@ -19,14 +19,14 @@
 #include "common/logger.h"
 #include "common/no_copyable.h"
 #include "common/singleton.h"
-#include "element_manager.h"
+#include "graph.h"
 
 namespace sophon_stream {
 namespace framework {
 
 class Engine : public ::sophon_stream::common::NoCopyable {
  public:
-  using DataHandler = framework::ElementManager::DataHandler;
+  using DataHandler = framework::Graph::DataHandler;
 
   common::ErrorCode start(int graphId);
 
@@ -42,10 +42,10 @@ class Engine : public ::sophon_stream::common::NoCopyable {
 
   bool graphExist(int graphId);
 
-  common::ErrorCode pushInputData(int graphId, int elementId, int inputPort,
+  common::ErrorCode pushSourceData(int graphId, int elementId, int inputPort,
                                   std::shared_ptr<void> data);
 
-  void setStopHandler(int graphId, int elementId, int outputPort,
+  void setSinkHandler(int graphId, int elementId, int outputPort,
                       DataHandler dataHandler);
 
   std::pair<std::string, int> getSideAndDeviceId(int graphId, int elementId);
@@ -59,9 +59,9 @@ class Engine : public ::sophon_stream::common::NoCopyable {
 
   ~Engine();
 
-  std::map<int /* graphId */, std::shared_ptr<framework::ElementManager> >
-      mElementManagerMap;
-  std::mutex mElementManagerMapLock;
+  std::map<int /* graphId */, std::shared_ptr<framework::Graph> >
+      mGraphMap;
+  std::mutex mGraphMapLock;
 
   std::vector<int> mGraphIds;
 };

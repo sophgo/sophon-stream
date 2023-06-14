@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_FRAMEWORK_ELEMENT_MANAGER_H_
-#define SOPHON_STREAM_FRAMEWORK_ELEMENT_MANAGER_H_
+#ifndef SOPHON_STREAM_FRAMEWORK_GRAPH_H_
+#define SOPHON_STREAM_FRAMEWORK_GRAPH_H_
 
 #include <atomic>
 #include <chrono>
@@ -24,14 +24,14 @@
 namespace sophon_stream {
 namespace framework {
 
-class ElementManager : public ::sophon_stream::common::NoCopyable {
+class Graph : public ::sophon_stream::common::NoCopyable {
  public:
   using DataHandler = framework::Element::DataHandler;
   using ThreadStatus = framework::Element::ThreadStatus;
 
-  ElementManager();
+  Graph();
 
-  ~ElementManager();
+  ~Graph();
 
   common::ErrorCode init(const std::string& json);
 
@@ -45,10 +45,10 @@ class ElementManager : public ::sophon_stream::common::NoCopyable {
 
   common::ErrorCode resume();
 
-  common::ErrorCode pushInputData(int elementId, int inputPort,
+  common::ErrorCode pushSourceData(int elementId, int inputPort,
                                   std::shared_ptr<void> data);
 
-  void setStopHandler(int elementId, int outputPort, DataHandler dataHandler);
+  void setSinkHandler(int elementId, int outputPort, DataHandler dataHandler);
 
   std::pair<std::string, int> getSideAndDeviceId(int elementId);
 
@@ -82,4 +82,4 @@ class ElementManager : public ::sophon_stream::common::NoCopyable {
 }  // namespace framework
 }  // namespace sophon_stream
 
-#endif  // SOPHON_STREAM_FRAMEWORK_ELEMENT_MANAGER_H_
+#endif  // SOPHON_STREAM_FRAMEWORK_GRAPH_H_

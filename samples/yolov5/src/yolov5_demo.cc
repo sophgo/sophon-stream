@@ -7,8 +7,8 @@
 
 #include "common/clocker.h"
 #include "common/error_code.h"
-#include "common/object_metadata.h"
 #include "common/logger.h"
+#include "common/object_metadata.h"
 #include "decode.h"
 #include "engine.h"
 #include "init_engine.h"
@@ -36,19 +36,17 @@ void draw_bmcv(bm_handle_t& handle, int classId,
   rect.crop_h = height;
   std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
             << rect.crop_h << std::endl;
-  bmcv_image_draw_rectangle(
-      handle, frame, 1, &rect, 3, colors[classId % colors_num][0],
-      colors[classId % colors_num][1], colors[classId % colors_num][2]);
+  std::vector<int> color = colors[classId % colors_num];
+  bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0], color[1],
+                            color[2]);
   if (put_text_flag) {
     std::string label = class_names[classId] + ":" + cv::format("%.2f", conf);
     bmcv_point_t org = {left, top};
-    bmcv_color_t color = {colors[classId % colors_num][0],
-                          colors[classId % colors_num][1],
-                          colors[classId % colors_num][2]};
+    bmcv_color_t bmcv_color = {color[0], color[1], color[2]};
     int thickness = 2;
     float fontScale = 2;
     if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
-                                          color, fontScale, thickness)) {
+                                          bmcv_color, fontScale, thickness)) {
       std::cout << "bmcv put text error !!!" << std::endl;
     }
   }
@@ -90,8 +88,7 @@ demo_config parse_demo_json(std::string& json_path) {
   config.download_image =
       demo_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
   config.engine_config_file =
-      demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)
-          ->get<std::string>();
+      demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)->get<std::string>();
   std::string class_names_file =
       demo_json.find(JSON_CONFIG_CLASS_NAMES_FILED)->get<std::string>();
 
@@ -146,7 +143,7 @@ int main() {
   yolov5_json.num_graphs = engine_json.size();
   int num_channels =
       yolov5_json.num_channels_per_graph * yolov5_json.num_graphs;
-  auto stopHandler = [&](std::shared_ptr<void> data) {
+  auto sinkHandler = [&](std::shared_ptr<void> data) {
     // write stop data handler here
     auto objectMetadata =
         std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
@@ -199,7 +196,7 @@ int main() {
   };
 
   std::map<int, std::pair<int, int>> graph_src_id_port_map;
-  init_engine(engine, engine_json, stopHandler, graph_src_id_port_map);
+  init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
 
   for (auto graph_id : engine.getGraphIds()) {
     for (int channel_id = 0; channel_id < yolov5_json.num_channels_per_graph;
@@ -213,8 +210,8 @@ int main() {
       channelTask->request.json = channel_config.dump();
       std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
       sophon_stream::common::ErrorCode errorCode =
-          engine.pushInputData(graph_id, src_id_port.first, src_id_port.second,
-                               std::static_pointer_cast<void>(channelTask));
+          engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
+                                std::static_pointer_cast<void>(channelTask));
     }
   }
 

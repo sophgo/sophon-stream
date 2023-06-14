@@ -96,7 +96,7 @@ void parse_connection_json(
 
 void init_engine(
     sophon_stream::framework::Engine& engine, nlohmann::json& engine_json,
-    const sophon_stream::framework::Engine::DataHandler& stopHandler,
+    const sophon_stream::framework::Engine::DataHandler& sinkHandler,
     std::map<int, std::pair<int, int>>& graph_src_id_port_map) {
   for (auto& graph_it : engine_json) {
     nlohmann::json graphConfigure, elementsConfigure;
@@ -113,8 +113,8 @@ void init_engine(
     parse_connection_json(connect_it, graphConfigure);
 
     engine.addGraph(graphConfigure.dump());
-    engine.setStopHandler(graph_id, sink_id_port.first, sink_id_port.second,
-                          stopHandler);
+    engine.setSinkHandler(graph_id, sink_id_port.first, sink_id_port.second,
+                          sinkHandler);
     graph_src_id_port_map[graph_id] = src_id_port;
   }
 }

@@ -13,31 +13,25 @@ namespace sophon_stream {
 namespace framework {
 
 Connector::Connector(int dataPipeCount) {
-  mDataPipeCount = dataPipeCount;
-  mDataPipes.reserve(mDataPipeCount);
-  for (int i = 0; i < mDataPipeCount; ++i) {
+  mCapacity = dataPipeCount;
+  mDataPipes.reserve(mCapacity);
+  for (int i = 0; i < mCapacity; ++i) {
     auto datapipe = std::make_shared<DataPipe>();
     mDataPipes.push_back(datapipe);
   }
-  mCapacity = mDataPipes[0] == nullptr ? mDataPipes[0]->getCapacity() : 0;
 }
 
-std::shared_ptr<void> Connector::popDataWithId(int id) {
+std::shared_ptr<void> Connector::popData(int id) {
   return getDataPipe(id)->popData();
 }
 
-common::ErrorCode Connector::pushDataWithId(
+common::ErrorCode Connector::pushData(
     int id, std::shared_ptr<void> data) {
   return getDataPipe(id)->pushData(data);
 }
 
-int Connector::getDataCount(int id) { return getDataPipe(id)->getSize(); }
-
-int Connector::getDataPipeCount() const { return mDataPipeCount; }
 
 int Connector::getCapacity() const { return mCapacity; }
-
-int Connector::getDataPipeSize(int id) { return mDataPipes[id]->getSize(); }
 
 std::shared_ptr<DataPipe> Connector::getDataPipe(int id) const {
   if (id < 0 || id > mDataPipes.size()) {
