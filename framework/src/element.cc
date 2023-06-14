@@ -10,13 +10,6 @@
 namespace sophon_stream {
 namespace framework {
 
-constexpr const char* Element::JSON_ID_FIELD;
-constexpr const char* Element::JSON_SIDE_FIELD;
-constexpr const char* Element::JSON_DEVICE_ID_FIELD;
-constexpr const char* Element::JSON_THREAD_NUMBER_FIELD;
-constexpr const char* Element::JSON_CONFIGURE_FIELD;
-constexpr const char* Element::JSON_IS_SINK_FILED;
-
 void Element::connect(Element& srcElement, int srcElementPort,
                       Element& dstElement, int dstElementPort) {
   auto& inputConnector = dstElement.mInputConnectorMap[dstElementPort];

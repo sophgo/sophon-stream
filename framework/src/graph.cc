@@ -20,15 +20,15 @@
 namespace sophon_stream {
 namespace framework {
 
-constexpr const char* Graph::JSON_GRAPH_ID_FIELD;
-constexpr const char* Graph::JSON_WORKERS_FIELD;
-constexpr const char* Graph::JSON_CONNECTIONS_FIELD;
-constexpr const char* Graph::JSON_MODEL_SHARED_OBJECT_FIELD;
-constexpr const char* Graph::JSON_WORKER_NAME_FIELD;
-constexpr const char* Graph::JSON_CONNECTION_SRC_ID_FIELD;
-constexpr const char* Graph::JSON_CONNECTION_SRC_PORT_FIELD;
-constexpr const char* Graph::JSON_CONNECTION_DST_ID_FIELD;
-constexpr const char* Graph::JSON_CONNECTION_DST_PORT_FIELD;
+// constexpr const char* Graph::JSON_GRAPH_ID_FIELD;
+// constexpr const char* Graph::JSON_WORKERS_FIELD;
+// constexpr const char* Graph::JSON_CONNECTIONS_FIELD;
+// constexpr const char* Graph::JSON_MODEL_SHARED_OBJECT_FIELD;
+// constexpr const char* Graph::JSON_WORKER_NAME_FIELD;
+// constexpr const char* Graph::JSON_CONNECTION_SRC_ID_FIELD;
+// constexpr const char* Graph::JSON_CONNECTION_SRC_PORT_FIELD;
+// constexpr const char* Graph::JSON_CONNECTION_DST_ID_FIELD;
+// constexpr const char* Graph::JSON_CONNECTION_DST_PORT_FIELD;
 
 Graph::Graph() : mId(-1), mThreadStatus(ThreadStatus::STOP) {}
 

@@ -107,8 +107,6 @@ void draw_track_result(bm_handle_t& handle, int track_id, int left, int top,
   }
 }
 
-constexpr const char* CONFIG_INTERNAL_OSD_TYPE_FIELD = "osd_type";
-constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD = "class_names";
 
 Osd::Osd() {}
 

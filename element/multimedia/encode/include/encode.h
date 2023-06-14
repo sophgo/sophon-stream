@@ -30,6 +30,13 @@ class Encode : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
+  static constexpr const char* CONFIG_INTERNAL_ENCODE_TYPE_FIELD =
+      "encode_type";
+  static constexpr const char* CONFIG_INTERNAL_RTSP_PORT_FIELD = "rtsp_port";
+  static constexpr const char* CONFIG_INTERNAL_RTMP_PORT_FIELD = "rtmp_port";
+  static constexpr const char* CONFIG_INTERNAL_ENC_FMT_FIELD = "enc_fmt";
+  static constexpr const char* CONFIG_INTERNAL_PIX_FMT_FIELD = "pix_fmt";
+
  private:
   std::map<int, std::shared_ptr<Encoder>> mEncoderMap;
   bm_handle_t m_handle;

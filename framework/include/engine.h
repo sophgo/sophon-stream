@@ -52,6 +52,8 @@ class Engine : public ::sophon_stream::common::NoCopyable {
 
   std::vector<int> getGraphIds();
 
+  static constexpr const char* JSON_GRAPH_ID_FIELD = "graph_id";
+
  private:
   friend class common::Singleton<Engine>;
 

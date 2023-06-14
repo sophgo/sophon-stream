@@ -22,7 +22,7 @@ namespace osd {
 
 class Osd : public ::sophon_stream::framework::Element {
  public:
-  enum class OsdType { UNKNOWN, DET, TRACK };
+  enum class OsdType { DET, TRACK, UNKNOWN };
   Osd();
   ~Osd() override;
 
@@ -30,6 +30,9 @@ class Osd : public ::sophon_stream::framework::Element {
   void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
+
+  static constexpr const char* CONFIG_INTERNAL_OSD_TYPE_FIELD = "osd_type";
+  static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD = "class_names";
 
  private:
   std::vector<std::string> mClassNames;

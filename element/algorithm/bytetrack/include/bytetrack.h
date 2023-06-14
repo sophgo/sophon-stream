@@ -34,6 +34,16 @@ class Bytetrack : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
+  static constexpr const char* CONFIG_INTERNAL_FRAME_RATE_FIELD = "frame_rate";
+  static constexpr const char* CONFIG_INTERNAL_TRACK_BUFFER_FIELD =
+      "track_buffer";
+  static constexpr const char* CONFIG_INTERNAL_TRACK_THRESH_FIELD =
+      "track_thresh";
+  static constexpr const char* CONFIG_INTERNAL_HIGH_THRESH_FIELD =
+      "high_thresh";
+  static constexpr const char* CONFIG_INTERNAL_MATCH_THRESH_FIELD =
+      "match_thresh";
+
  private:
   std::shared_ptr<BytetrackContext> mContext;  // context对象
 

@@ -18,12 +18,6 @@ namespace sophon_stream {
 namespace element {
 namespace bytetrack {
 
-constexpr const char* CONFIG_INTERNAL_FRAME_RATE_FIELD = "frame_rate";
-constexpr const char* CONFIG_INTERNAL_TRACK_BUFFER_FIELD = "track_buffer";
-constexpr const char* CONFIG_INTERNAL_TRACK_THRESH_FIELD = "track_thresh";
-constexpr const char* CONFIG_INTERNAL_HIGH_THRESH_FIELD = "high_thresh";
-constexpr const char* CONFIG_INTERNAL_MATCH_THRESH_FIELD = "match_thresh";
-
 Bytetrack::Bytetrack() { IVS_DEBUG("Bytetrack Element construct!!!"); }
 
 Bytetrack::~Bytetrack() {}
@@ -156,10 +150,10 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
   process(dataPipeId, objectMetadata);
 
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
-  int pipeId = getLastElementFlag()
-                   ? 0
-                   : (channel_id_internal %
-                      getOutputConnectorCapacity(outputPort));
+  int pipeId =
+      getLastElementFlag()
+          ? 0
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
 
   errorCode = pushOutputData(outputPort, pipeId,
                              std::static_pointer_cast<void>(objectMetadata));

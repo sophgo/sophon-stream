@@ -32,6 +32,13 @@ class Yolox : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
+  static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
+  static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD =
+      "threshold_conf";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD =
+      "threshold_nms";
+
  private:
   std::shared_ptr<YoloxContext> mContext;          // context对象
   std::shared_ptr<YoloxPreProcess> mPreProcess;    // 预处理对象

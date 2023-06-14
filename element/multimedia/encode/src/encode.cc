@@ -18,11 +18,7 @@ namespace sophon_stream {
 namespace element {
 namespace encode {
 
-constexpr const char* CONFIG_INTERNAL_ENCODE_TYPE_FIELD = "encode_type";
-constexpr const char* CONFIG_INTERNAL_RTSP_PORT_FIELD = "rtsp_port";
-constexpr const char* CONFIG_INTERNAL_RTMP_PORT_FIELD = "rtmp_port";
-constexpr const char* CONFIG_INTERNAL_ENC_FMT_FIELD = "enc_fmt";
-constexpr const char* CONFIG_INTERNAL_PIX_FMT_FIELD = "pix_fmt";
+
 
 Encode::Encode() {}
 

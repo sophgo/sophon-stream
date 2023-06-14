@@ -36,6 +36,13 @@ class Yolov5 : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
+  static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
+  static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD = "threshold_conf";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD = "threshold_nms";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_TPU_KERNEL_FIELD =
+    "use_tpu_kernel";
+
  private:
   std::shared_ptr<Yolov5Context> mContext;          // context对象
   std::shared_ptr<Yolov5PreProcess> mPreProcess;    // 预处理对象

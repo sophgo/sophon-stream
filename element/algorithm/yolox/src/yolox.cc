@@ -18,11 +18,6 @@ namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
-constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
-constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD = "threshold_conf";
-constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD = "threshold_nms";
-
 Yolox::Yolox() {}
 
 Yolox::~Yolox() {}

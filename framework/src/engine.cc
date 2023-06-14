@@ -6,7 +6,7 @@
 namespace sophon_stream {
 namespace framework {
 
-static constexpr const char* JSON_GRAPH_ID_FIELD = "graph_id";
+// static constexpr const char* JSON_GRAPH_ID_FIELD = "graph_id";
 
 Engine::Engine() {}
 

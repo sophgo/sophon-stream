@@ -14,11 +14,6 @@ namespace sophon_stream {
 namespace element {
 namespace decode {
 
-
-  constexpr const char* Decode::JSON_CHANNEL_ID;
-  constexpr const char* Decode::JSON_SOURCE_TYPE;
-  constexpr const char* Decode::JSON_URL;
-
 Decode::Decode() {}
 
 Decode::~Decode() {}
@@ -85,7 +80,8 @@ common::ErrorCode Decode::doWork(int dataPipeId) {
   return errorCode;
 }
 
-common::ErrorCode Decode::parse_channel_task(std::shared_ptr<ChannelTask>& channelTask) {
+common::ErrorCode Decode::parse_channel_task(
+    std::shared_ptr<ChannelTask>& channelTask) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   const std::string json = channelTask->request.json;
   do {
@@ -271,10 +267,10 @@ common::ErrorCode Decode::process(
     std::vector<int> outputPorts = getOutputPorts();
     outputPort = outputPorts[0];
   }
-  int dataPipeId = getLastElementFlag()
-                       ? 0
-                       : (channel_id_internal %
-                          getOutputConnectorCapacity(outputPort));
+  int dataPipeId =
+      getLastElementFlag()
+          ? 0
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
   common::ErrorCode errorCode = pushOutputData(
       outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
   if (common::ErrorCode::SUCCESS != errorCode) {

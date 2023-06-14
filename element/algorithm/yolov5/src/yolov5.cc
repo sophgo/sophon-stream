@@ -22,13 +22,6 @@ namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
-constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
-constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
-constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD = "threshold_conf";
-constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD = "threshold_nms";
-constexpr const char* CONFIG_INTERNAL_THRESHOLD_TPU_KERNEL_FIELD =
-    "use_tpu_kernel";
-
 Yolov5::Yolov5() {}
 
 Yolov5::~Yolov5() {}
