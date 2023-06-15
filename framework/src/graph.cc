@@ -406,7 +406,7 @@ common::ErrorCode Graph::connect(int srcId, int srcPort, int dstId,
 }
 
 void Graph::setSinkHandler(int elementId, int outputPort,
-                                    DataHandler dataHandler) {
+                                    SinkHandler sinkHandler) {
   IVS_INFO(
       "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
       "{2:d}",
@@ -426,7 +426,7 @@ void Graph::setSinkHandler(int elementId, int outputPort,
     return;
   }
 
-  element->setSinkHandler(outputPort, dataHandler);
+  element->setSinkHandler(outputPort, sinkHandler);
 }
 
 common::ErrorCode Graph::pushSourceData(

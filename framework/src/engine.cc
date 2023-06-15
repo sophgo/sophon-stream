@@ -137,7 +137,7 @@ bool Engine::graphExist(int graphId) {
 }
 
 void Engine::setSinkHandler(int graphId, int elementId, int outputPort,
-                            DataHandler dataHandler) {
+                            SinkHandler sinkHandler) {
   IVS_INFO(
       "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
       "{2:d}",
@@ -155,7 +155,7 @@ void Engine::setSinkHandler(int graphId, int elementId, int outputPort,
     return;
   }
 
-  graph->setSinkHandler(elementId, outputPort, dataHandler);
+  graph->setSinkHandler(elementId, outputPort, sinkHandler);
 }
 
 common::ErrorCode Engine::pushSourceData(

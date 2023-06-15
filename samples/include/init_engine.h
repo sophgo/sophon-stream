@@ -96,7 +96,7 @@ void parse_connection_json(
 
 void init_engine(
     sophon_stream::framework::Engine& engine, nlohmann::json& engine_json,
-    const sophon_stream::framework::Engine::DataHandler& sinkHandler,
+    const sophon_stream::framework::Engine::SinkHandler& sinkHandler,
     std::map<int, std::pair<int, int>>& graph_src_id_port_map) {
   for (auto& graph_it : engine_json) {
     nlohmann::json graphConfigure, elementsConfigure;

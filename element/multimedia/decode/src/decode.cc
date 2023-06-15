@@ -306,12 +306,12 @@ common::ErrorCode Decode::process(
   // push data to next element
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outputPort = 0;
-  if (!getLastElementFlag()) {
+  if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
     outputPort = outputPorts[0];
   }
   int dataPipeId =
-      getLastElementFlag()
+      getSinkElementFlag()
           ? 0
           : (channel_id_internal % getOutputConnectorCapacity(outputPort));
   common::ErrorCode errorCode = pushOutputData(

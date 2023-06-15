@@ -1,27 +1,26 @@
-# 算能sophon-stream用户手册
+# 算能 sophon-stream 用户手册
 
 ## 目录
-- [算能sophon-stream用户手册](#算能sophon-stream用户手册)
+- [算能 sophon-stream 用户手册](#算能-sophon-stream-用户手册)
   - [目录](#目录)
   - [1. 快速入门](#1-快速入门)
     - [1.1 安装和配置环境](#11-安装和配置环境)
       - [1.1.1 x86/arm PCIe平台](#111-x86arm-pcie平台)
-    - [1.1.2 SoC平台](#112-soc平台)
+      - [1.1.2 SoC平台](#112-soc平台)
     - [1.2 编译命令](#12-编译命令)
-    - [1.2.1 x86/arm PCIe平台](#121-x86arm-pcie平台)
-    - [1.2.2 SoC平台](#122-soc平台)
+      - [1.2.1 x86/arm PCIe平台](#121-x86arm-pcie平台)
+      - [1.2.2 SoC平台](#122-soc平台)
     - [1.3 编译结果](#13-编译结果)
   - [2. 概述](#2-概述)
-  - [2.1 sophon-stream优势](#21-sophon-stream优势)
-  - [2.2 sophon-stream软件栈](#22-sophon-stream软件栈)
+    - [2.1 sophon-stream优势](#21-sophon-stream优势)
+    - [2.2 sophon-stream软件栈](#22-sophon-stream软件栈)
   - [3. 框架](#3-框架)
-    - [3.1 Engine](#31-engine)
+    - [3.1 Element](#31-element)
     - [3.2 Graph](#32-graph)
-    - [3.3 Element](#33-element)
-    - [3.3.1 ObjectMetadata](#331-objectmetadata)
-    - [3.3.2 Frame](#332-frame)
+    - [3.3 Engine](#33-engine)
     - [3.4 Connector](#34-connector)
-    - [3.5 DataPipe](#35-datapipe)
+    - [3.5 ObjectMetadata](#35-objectmetadata)
+    - [3.6 Frame](#36-frame)
   - [4. 插件](#4-插件)
     - [4.1 algorithm](#41-algorithm)
       - [4.1.1 概述](#411-概述)
@@ -123,42 +122,7 @@ sophon-stream框架包含三层结构，分别是Engine，Graph和Element。三�
 
 Engine是sophon-stream中最外层的结构，向外部工程提供接口。Engine管理着多个Graph，而每个Graph是一张独立的有向无环图，管理着多个Element。
 
-### 3.1 Engine
-
-engine类是一个单例，一个进程中只存在一个engine。engine类对外的接口主要包括：
-
-```cpp
-// 启停某个graph
-common::ErrorCode start(int graphId);
-common::ErrorCode stop(int graphId);
-// 添加一个graph
-common::ErrorCode addGraph(const std::string& json);
-// 向某个graph中的source element推入数据。用于启动解码功能。
-common::ErrorCode pushSourceData(int graphId, int elementId, int inputPort,
-                                std::shared_ptr<void> data);
-// 为某个graph的sink element的sinkPort设置数据处理函数，例如绘图、发送等。
-void setSinkHandler(int graphId, int elementId, int outputPort,
-                    DataHandler dataHandler);
-```
-
-### 3.2 Graph
-
-graph类的实例由engine管理，它提供接口给engine调用，主要在初始化或析构一张图时起作用。graph类对外的接口主要包括：
-
-```cpp
-// 初始化及反初始化当前graph
-common::ErrorCode init(const std::string& json);
-void uninit();
-// 启停当前graph
-common::ErrorCode start();
-common::ErrorCode stop();
-// 向source element推入数据，用于启动DecoderElement的解码任务
-common::ErrorCode pushSourceData(int elementId, int inputPort,
-                                std::shared_ptr<void> data);
-// 为sink element的sinkPort设置数据处理函数，例如绘图、发送等
-void setSinkHandler(int elementId, int outputPort, DataHandler dataHandler);
-```
-### 3.3 Element
+### 3.1 Element
 
 element类是sophon-stream的通用基类，用户二次开发的插件也都基于element。作为一个抽象类，element类统一规定了所有派生类的主要接口和成员，包括数据如何传递、线程如何管理、两个element之间通过何种方式连接等。
 
@@ -179,8 +143,8 @@ int mThreadNumber; // element内部工作的线程数，也等于InputConnector�
 std::map<int, std::shared_ptr<framework::Connector>> mInputConnectorMap;
 std::map<int, std::weak_ptr<framework::Connector>> mOutputConnectorMap;
 
-/* 管理输出StopHandler的映射，key是输出的port_id，value是一个签名为void(std::shared_ptr<void>)的函数。StopHandler为graph末尾的元素提供数据处理功能，一般包括绘图等。 */
-std::map<int, DataHandler> mStopHandlerMap;
+/* 管理输出SinkHandler的映射，key是输出的port_id，value是一个签名为void(std::shared_ptr<void>)的函数。SinkHandler为graph末尾的元素提供数据处理功能，一般包括绘图等。 */
+std::map<int, SinkHandler> mSinkHandlerMap;
 ```
 
 主要的成员函数: 
@@ -196,48 +160,54 @@ common::ErrorCode stop();
 // push数据，用于启动DecoderElement的解码任务
 common::ErrorCode pushInputData(int inputPort, int dataPipeId, std::shared_ptr<void> data);
 
+// 线程函数，负责循环调用doWork()并分配CPU时间片资源
+void run(int dataPipeId)
+
 // 纯虚函数，派生类中用于初始化自定义的属性，例如算法相关内容
 virtual common::ErrorCode initInternal(const std::string& json) = 0;
+
 // 纯虚函数，派生类中自定义具体的算法逻辑，一般为[pop数据——组batch——运行算法——push数据]等
 virtual common::ErrorCode doWork(int dataPipeId) = 0;
 // 循环调用doWork()，线程资源调度
 void run(int dataPipeId);
 
-// 将已处理完的数据push到输出Connector。特别地，如果当前element是sink element，则执行StopHandler。
+// 将已处理完的数据push到输出Connector。特别地，如果当前element是sink element，则执行SinkHandler。
 common::ErrorCode pushOutputData(int outputPort, int dataPipeId, std::shared_ptr<void> data);
 ```
 
-### 3.3.1 ObjectMetadata
+### 3.2 Graph
 
-ObjectMetadata是sophon-stream的通用数据结构，所有element中的功能都基于此结构设计。
-
-ObjectMetadata的主要成员包括: 
+graph类的实例由engine管理，它提供接口给engine调用，主要在初始化或析构一张图时起作用。graph类对外的接口主要包括：
 
 ```cpp
-std::shared_ptr<common::Packet> mPacket; // 储存解码前信息
-std::shared_ptr<common::Frame> mFrame;   // 储存解码后信息: bm_image、frame_id、EndOfStream标识等
-std::shared_ptr<bmTensors> mInputBMtensors; // 当前frame经过预处理得到的inputTensor
-std::shared_ptr<bmTensors> mOutputBMtensors; // 当前frame经过推理得到的outputTensor
-
-// 嵌套的objectMetadata，储存当前图上的子结构
-std::vector<std::shared_ptr<ObjectMetadata> > mSubObjectMetadatas; 
-// detect相关信息，例如box坐标
-std::shared_ptr<common::DetectedObjectMetadata> mDetectedObjectMetadata; 
-// track相关信息，例如track_id
-std::shared_ptr<common::TrackedObjectMetadata> mTrackedObjectMetadata;
+// 初始化及反初始化当前graph
+common::ErrorCode init(const std::string& json);
+void uninit();
+// 启停当前graph
+common::ErrorCode start();
+common::ErrorCode stop();
+// 向source element推入数据，用于启动DecoderElement的解码任务
+common::ErrorCode pushSourceData(int elementId, int inputPort,
+                                std::shared_ptr<void> data);
+// 为sink element的sinkPort设置数据处理函数，例如绘图、发送等
+void setSinkHandler(int elementId, int outputPort, SinkHandler sinkHandler);
 ```
+### 3.3 Engine
 
-### 3.3.2 Frame
-
-Frame是ObjectMetadata中储存了图像信息的结构，其主要成员包括：
+engine类是一个单例，一个进程中只存在一个engine。engine类对外的接口主要包括：
 
 ```cpp
-int mChannelId;                         // 指定了推流服务中对应码流的url，不在配置文件中指定的情况下，默认从0开始赋值
-int mChannelIdInternal;                 // 内部channel_id，从0开始赋值，用于计算connector中的数据流向
-std::int64_t mFrameId;                  // 解码得到的帧id，在一路数据中递增
-bool mEndOfStream;                      // 数据流结束的标识
-std::shared_ptr<bm_image> mSpData;      // 存放原始bm_image
-std::shared_ptr<bm_image> mSpDataOsd;   // 存放osd插件绘图之后的bm_image
+// 启停某个graph
+common::ErrorCode start(int graphId);
+common::ErrorCode stop(int graphId);
+// 添加一个graph
+common::ErrorCode addGraph(const std::string& json);
+// 向某个graph中的source element推入数据。用于启动解码功能。
+common::ErrorCode pushSourceData(int graphId, int elementId, int inputPort,
+                                std::shared_ptr<void> data);
+// 为某个graph的sink element的sinkPort设置数据处理函数，例如绘图、发送等。
+void setSinkHandler(int graphId, int elementId, int outputPort,
+                    SinkHandler sinkHandler);
 ```
 
 ### 3.4 Connector
@@ -266,31 +236,37 @@ class Connector : public ::sophon_stream::common::NoCopyable {
 ```
 
 Connector类的成员方法都由id获取某个datapipe，然后调用该datapipe的对应方法来实现。
+### 3.5 ObjectMetadata
 
-### 3.5 DataPipe
+ObjectMetadata是sophon-stream的通用数据结构，所有element中的功能都基于此结构设计。
 
-DataPipe类是通用的阻塞队列，其成员包括: 
+ObjectMetadata的主要成员包括: 
 
 ```cpp
-class DataPipe : public ::sophon_stream::common::NoCopyable {
- public:
-  
-  // 向队列尾部push数据
-  common::ErrorCode pushData(std::shared_ptr<void> data);
+std::shared_ptr<common::Packet> mPacket; // 储存解码前信息
+std::shared_ptr<common::Frame> mFrame;   // 储存解码后信息: bm_image、frame_id、EndOfStream标识等
+std::shared_ptr<bmTensors> mInputBMtensors; // 当前frame经过预处理得到的inputTensor
+std::shared_ptr<bmTensors> mOutputBMtensors; // 当前frame经过推理得到的outputTensor
 
-  // 获得当前队列大小
-  std::size_t getSize() const;
+// 嵌套的objectMetadata，储存当前图上的子结构
+std::vector<std::shared_ptr<ObjectMetadata> > mSubObjectMetadatas; 
+// detect相关信息，例如box坐标
+std::shared_ptr<common::DetectedObjectMetadata> mDetectedObjectMetadata; 
+// track相关信息，例如track_id
+std::shared_ptr<common::TrackedObjectMetadata> mTrackedObjectMetadata;
+```
 
-  // 从队列头部获取并弹出数据
-  std::shared_ptr<void> popData();
+### 3.6 Frame
 
- private:
-  
-  std::deque<std::shared_ptr<void> > mDataQueue;
+Frame是ObjectMetadata中储存了图像信息的结构，其主要成员包括：
 
-  // push数据的超时时间，默认设为200ms
-  const std::chrono::milliseconds timeout{200};
-};
+```cpp
+int mChannelId;                         // 指定了推流服务中对应码流的url，不在配置文件中指定的情况下，默认从0开始赋值
+int mChannelIdInternal;                 // 内部channel_id，从0开始赋值，用于计算connector中的数据流向
+std::int64_t mFrameId;                  // 解码得到的帧id，在一路数据中递增
+bool mEndOfStream;                      // 数据流结束的标识
+std::shared_ptr<bm_image> mSpData;      // 存放原始bm_image
+std::shared_ptr<bm_image> mSpDataOsd;   // 存放osd插件绘图之后的bm_image
 ```
 
 ## 4. 插件
@@ -305,7 +281,7 @@ sophon-stream/element/multimedia 目录是多媒体插件的集合，目前包�
 
 #### 4.1.1 概述
 
-算法插件是基于SophonSDK中BMCV和BMRuntime库实现的具有图像处理和推理功能的模块，包括前处理、推理、后处理三个部分。用户根据业务需求，只需要载入对应的模型，即可调用硬件启动相应的功能。
+算法插件是基于SophonSDK中BMCV和BMruntime库实现的具有图像处理和推理功能的模块，包括前处理、推理、后处理三个部分。用户根据业务需求，只需要载入对应的模型，即可调用硬件启动相应的功能。
 
 算法插件具有以下特性：
 
@@ -342,6 +318,7 @@ yolox的配置文件形如：
     ]
   },
   "shared_object": "../../../build/lib/libyolox.so",
+  "id": 0,
   "device_id": 0,
   "name": "yolox",
   "side": "sophgo",
@@ -380,6 +357,7 @@ yolov5的配置文件形如：
         "use_tpu_kernel": true
     },
     "shared_object": "../../../build/lib/libyolov5.so",
+    "id": 0,
     "device_id": 0,
     "name": "yolov5",
     "side": "sophgo",
@@ -406,6 +384,7 @@ bytetrack是华中科技大学、香港大学和字节跳动联合提出的一�
         "track_buffer": 30
     },
     "shared_object": "../../../build/lib/libbytetrack.so",
+    "id": 0,
     "device_id": 0,
     "name": "bytetrack",
     "side": "sophgo",
@@ -445,7 +424,7 @@ channelTask->request.operation =
 channelTask->request.json = channel_config.dump();
 
 sophon_stream::common::ErrorCode errorCode = 
-    engine.pushSourceData(graph_id, 
+    engine.pushInputData(graph_id, 
                         src_id_port.first, 
                         src_id_port.second, 
                         std::static_pointer_cast<void>(channelTask));
@@ -459,6 +438,7 @@ decode的配置文件包括以下内容:
 {
   "configure": {},
   "shared_object": "../../../build/lib/libdecode.so",
+  "id": 0,
   "device_id": 0,
   "name": "decode",
   "side": "sophgo",
@@ -489,6 +469,7 @@ encode的配置文件包括以下内容:
     "pix_fmt": "I420"
   },
   "shared_object": "../../../build/lib/libencode.so",
+  "id": 0,
   "device_id": 0,
   "name": "encode",
   "side": "sophgo",
@@ -507,10 +488,11 @@ osd插件的配置文件包括:
 ```json
 {
   "configure": {
-    "osd_type": "TRACK",
+    "osd_type": "track",
     "class_names": "../data/coco.names"
   },
   "shared_object": "../../../build/lib/libosd.so",
+  "id": 0,
   "device_id": 0,
   "name": "osd",
   "side": "sophgo",
@@ -518,7 +500,7 @@ osd插件的配置文件包括:
 }
 ```
 
-其中，"osd_type" 字段标识了算法类型，可以设置为 "DET" 或 "TRACK" 
+其中，"osd_type" 字段标识了算法类型，可以设置为 "det" 或 "track" 
 
 配置参数的详细介绍请参见 [osd介绍](../element/multimedia/osd/README.md)
 
@@ -526,7 +508,7 @@ osd插件的配置文件包括:
 
 基于sophon-stream创建应用程序，其实是基于sophon-stream的framework和element搭建业务流水线。
 
-在实现了基础插件之后，只需要编写配置文件和相应的入口程序，就可以完成流水线的搭建。
+在实现了基础的算法功能之后，只需要编写配置文件和相应的入口程序，就可以完成流水线的搭建。
 
 接下来，本文以一个典型的应用程序介绍配置文件和入口程序的编写要点。
 
@@ -539,7 +521,7 @@ osd插件的配置文件包括:
   - 绘制跟踪结果
   - 编码输出
 
-构建的graph如下图所示:
+本节以 [参考例程](../samples/yolox_bytetrack_osd_encode/src/yolox_bytetrack_osd_encode_demo.cc) 为例进行讲解。该例程构建的graph如下图所示:
 
 ![dec_det_track_osd_enc](./pics/dec_det_track_osd_enc.png)
 
@@ -653,7 +635,7 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
 
 其中，需要重点关注的是 "elements" 和 "connections" 部分。"elements" 是graph内所有element的列表，对于每个element，需要配置element_id、对应的配置文件路径和端口信息。同一个graph内不同的element应具有不同的element_id。element的端口包括输入和输出端口，同一种类的不同端口之间同样应该由不同的port_id区分开。每个端口都具有 "is_src" 和 "is_sink" 属性，标志着当前是否是整张graph的输入或输出端口。
 
-一般只有decode element才会具有输入端口，decode element在一张图中只有一个。对于此element，需要在应用程序中为其发送channelTask，以启动pipeline的工作。不同的是，输出端口不要求element的类型，任何element都可以具有输出端口，具体应该参考工程需求进行配置。对于具有输出端口的element，应为其设置StopHandler，即正确处理输出数据的回调函数。
+一般只有decode element才会具有输入端口，decode element在一张图中只有一个。对于此element，需要在应用程序中为其发送channelTask，以启动pipeline的工作。不同的是，输出端口不要求element的类型，任何element都可以具有输出端口，具体应该参考工程需求进行配置。对于具有输出端口的element，应为其设置SinkHandler，即正确处理输出数据的回调函数。
 
 ### 5.3 入口程序
 
@@ -664,7 +646,7 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
  - 解析demo的配置文件
  - 解析engine的配置文件
  - 调用engine.addGraph()，初始化所有element及其connection
- - 设置sink element的StopHandler
+ - 设置sink element的SinkHandler
  - 发送channelTask，触发decode element的工作任务
  - 等候所有码流处理完毕，结束任务
  - 统计fps等信息
@@ -677,8 +659,9 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
  ```bash
  [info] [/sophon-stream/framework/src/engine.cc:95] Add graph start, json: {"connections":[{"dst_id":5001,"dst_port":0,"src_id":5000,"src_port":0},{"dst_id":5002,"dst_port":0,"src_id":5001,"src_port":0},{"dst_id":5003,"dst_port":0,"src_id":5002,"src_port":0}],"elements":[{"configure":{},"device_id":0,"id":5000,"name":"decode","shared_object":"../../../build/lib/libdecode.so","side":"sophgo","thread_number":1},{"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["pre"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5001,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2},{"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["infer"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5002,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2},{"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["post"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5003,"is_sink":true,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2}],"graph_id":0}
  ```
+
  - element的配置信息
-    - 对于算法插件，还会打印模型信息
+
  ```bash
  [info] [/sophon-stream/framework/src/element.cc:45] Init start, json: {"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["pre"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5001,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2}
 [BMRT][bmcpu_setup:349] INFO:cpu_lib 'libcpuop.so' is loaded.
@@ -695,11 +678,15 @@ NetName: yolox_s_bmnetp
   Output 0) '15' shape=[ 4 8400 85 ] dtype=FLOAT32 scale=1
 ########################
  ```
+
  - connection信息
+
  ```bash
  [debug] [/sophon-stream/framework/src/element.cc:26] InputConnector initialized, mId = 5001, inputPort = 0, dataPipeNum = 2
  ```
+
  - 启动graph、element
+
  ```bash
 [info] [/sophon-stream/framework/src/graph.cc:107] Start graph thread start, graph id: 0
 [info] [/sophon-stream/framework/src/element.cc:125] Start element thread start, element id: 5000
@@ -711,18 +698,23 @@ NetName: yolox_s_bmnetp
 [info] [/sophon-stream/framework/src/element.cc:125] Start element thread start, element id: 5003
 [info] [/sophon-stream/framework/src/element.cc:140] Start element thread finish, element id: 5003
 [info] [/sophon-stream/framework/src/graph.cc:127] Start graph thread finish, graph id: 0
+ ```
 
- ```
  - 设置sink handler
+
  ```bash
- [info] [/sophon-stream/framework/src/engine.cc:143] Set data handler, graph id: 0, element id: 5003, output port: 0
+ [info] [/sophon-stream/framework/src/engine.cc:143] Set sink handler, graph id: 0, element id: 5003, output port: 0
  ```
+
  - 设置channel_task，启动decode
+
  ```bash
  [info] [/sophon-stream/element/multimedia/decode/src/decode.cc:127] add one channel task
  [info] [/sophon-stream/element/multimedia/decode/src/decode.cc:163] channel info decoder address: 0x7f7814000b70
  ```
+
  - element工作状态
+
 ```bash
 [engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5000, output port: 0, data:0x7f781cab01d0
 [engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5000, output port: 0, data:0x7f781cad9110
@@ -731,7 +723,9 @@ NetName: yolox_s_bmnetp
 [engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5002, output port: 0, data:0x7f781c067480
 [engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5002, output port: 0, data:0x7f781c0daf90
 ```
+
  - 解码至文件尾
+
  ```bash
  [h264_bm @ 0x7f7814007f80] av_read_frame ret(-541478725) maybe eof...
  ```
@@ -750,9 +744,10 @@ NetName: yolox_s_bmnetp
  [engine] [info] [/sophon-stream/framework/src/element.cc:145] Stop element thread start, element id: 5003
  [engine] [info] [/sophon-stream/framework/src/element.cc:159] Stop element thread finish, element id: 5003
  [engine] [info] [/sophon-stream/framework/src/graph.cc:150] Stop graph thread finish, graph id: 0
-
  ```
+
  - 统计耗时、帧数、fps
+
 ```bash
 total time cost 5286871 us.
 frame count is 1422 | fps is 268.968 fps.

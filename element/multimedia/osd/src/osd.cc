@@ -155,7 +155,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
   std::vector<int> inputPorts = getInputPorts();
   int inputPort = inputPorts[0];
   int outputPort = 0;
-  if (!getLastElementFlag()) {
+  if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
     int outputPort = outputPorts[0];
   }
@@ -179,7 +179,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
 
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outDataPipeId =
-      getLastElementFlag()
+      getSinkElementFlag()
           ? 0
           : (channel_id_internal % getOutputConnectorCapacity(outputPort));
   errorCode = pushOutputData(outputPort, outDataPipeId, objectMetadata);

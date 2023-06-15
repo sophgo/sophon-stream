@@ -66,7 +66,7 @@ common::ErrorCode Element::init(const std::string& json) {
 
     auto sinkIt = configure.find(JSON_IS_SINK_FILED);
     if (configure.end() != sinkIt && sinkIt->is_boolean()) {
-      mLastElementFlag = sinkIt->get<bool>();
+      mSinkElementFlag = sinkIt->get<bool>();
     }
 
     auto deviceIdIt = configure.find(JSON_DEVICE_ID_FIELD);
@@ -214,19 +214,19 @@ std::shared_ptr<void> Element::popInputData(int inputPort, int dataPipeId) {
   return mInputConnectorMap[inputPort]->popData(dataPipeId);
 }
 
-void Element::setSinkHandler(int outputPort, DataHandler dataHandler) {
+void Element::setSinkHandler(int outputPort, SinkHandler dataHandler) {
   IVS_INFO("Set data handler, element id: {0:d}, output port: {1:d}", mId,
            outputPort);
-  if (mLastElementFlag) mStopHandlerMap[outputPort] = dataHandler;
+  if (mSinkElementFlag) mSinkHandlerMap[outputPort] = dataHandler;
 }
 
 common::ErrorCode Element::pushOutputData(
     int outputPort, int dataPipeId, std::shared_ptr<void> data) {
   IVS_DEBUG("send data, element id: {0:d}, output port: {1:d}, data:{2:p}", mId,
             outputPort, data.get());
-  if (mLastElementFlag) {
-    auto handlerIt = mStopHandlerMap.find(outputPort);
-    if (mStopHandlerMap.end() != handlerIt) {
+  if (mSinkElementFlag) {
+    auto handlerIt = mSinkHandlerMap.find(outputPort);
+    if (mSinkHandlerMap.end() != handlerIt) {
       auto dataHandler = handlerIt->second;
       if (dataHandler) {
         dataHandler(data);

@@ -26,7 +26,7 @@ namespace framework {
 
 class Engine : public ::sophon_stream::common::NoCopyable {
  public:
-  using DataHandler = framework::Graph::DataHandler;
+  using SinkHandler = framework::Graph::SinkHandler;
 
   common::ErrorCode start(int graphId);
 
@@ -46,7 +46,7 @@ class Engine : public ::sophon_stream::common::NoCopyable {
                                   std::shared_ptr<void> data);
 
   void setSinkHandler(int graphId, int elementId, int outputPort,
-                      DataHandler dataHandler);
+                      SinkHandler sinkHandler);
 
   std::pair<std::string, int> getSideAndDeviceId(int graphId, int elementId);
 

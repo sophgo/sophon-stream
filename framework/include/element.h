@@ -33,7 +33,7 @@ namespace framework {
 
 class Element : public ::sophon_stream::common::NoCopyable {
  public:
-  using DataHandler = std::function<void(std::shared_ptr<void>)>;
+  using SinkHandler = std::function<void(std::shared_ptr<void>)>;
 
   enum class ThreadStatus {
     STOP,
@@ -69,7 +69,7 @@ class Element : public ::sophon_stream::common::NoCopyable {
   common::ErrorCode pushOutputData(int outputPort, int dataPipeId,
                                    std::shared_ptr<void> data);
 
-  void setSinkHandler(int outputPort, DataHandler dataHandler);
+  void setSinkHandler(int outputPort, SinkHandler sinkHandler);
 
   int getId() const { return mId; }
 
@@ -81,7 +81,7 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   ThreadStatus getThreadStatus() const { return mThreadStatus; }
 
-  bool getLastElementFlag() const { return mLastElementFlag; }
+  bool getSinkElementFlag() const { return mSinkElementFlag; }
 
   static constexpr const char* JSON_ID_FIELD = "id";
   static constexpr const char* JSON_SIDE_FIELD = "side";
@@ -124,14 +124,14 @@ class Element : public ::sophon_stream::common::NoCopyable {
   // port_id -> weak_ptr::connector
   std::map<int, std::weak_ptr<framework::Connector>> mOutputConnectorMap;
 
-  std::map<int /* outputPort */, DataHandler> mStopHandlerMap;
+  std::map<int /* outputPort */, SinkHandler> mSinkHandlerMap;
 
   std::vector<int> mInputPorts;
   std::vector<int> mOutputPorts;
   void addInputPort(int port);
   void addOutputPort(int port);
 
-  bool mLastElementFlag = false;
+  bool mSinkElementFlag = false;
 };
 
 }  // namespace framework
