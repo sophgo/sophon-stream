@@ -116,7 +116,7 @@ sophon-stream由framework和element两部分组成，framework是整体的框架
 
 ## 3. 框架
 
-sophon-stream框架包含三层结构，分别是Engine，Graph(Element Manager)和Element。三者之间的层次关系如下图所示。
+sophon-stream框架包含三层结构，分别是Engine，Graph和Element。三者之间的层次关系如下图所示。
 
 ![engine](./pics/engine.png)
 
@@ -226,6 +226,19 @@ std::shared_ptr<common::DetectedObjectMetadata> mDetectedObjectMetadata;
 std::shared_ptr<common::TrackedObjectMetadata> mTrackedObjectMetadata;
 ```
 
+### 3.3.2 Frame
+
+Frame是ObjectMetadata中储存了图像信息的结构，其主要成员包括：
+
+```cpp
+int mChannelId;                         // 指定了推流服务中对应码流的url，不在配置文件中指定的情况下，默认从0开始赋值
+int mChannelIdInternal;                 // 内部channel_id，从0开始赋值，用于计算connector中的数据流向
+std::int64_t mFrameId;                  // 解码得到的帧id，在一路数据中递增
+bool mEndOfStream;                      // 数据流结束的标识
+std::shared_ptr<bm_image> mSpData;      // 存放原始bm_image
+std::shared_ptr<bm_image> mSpDataOsd;   // 存放osd插件绘图之后的bm_image
+```
+
 ### 3.4 Connector
 
 Connector是在两个element之间传递数据的桥梁。一个connector的实例可以管理多个datapipe。
@@ -241,7 +254,9 @@ class Connector : public ::sophon_stream::common::NoCopyable {
   
   // 将data push到编号为id的队列
   common::ErrorCode pushDataWithId(int id, std::shared_ptr<void> data);
- 
+
+  // 获取connector中队列的数目
+  int getCapacity() const;
  private:
   
   // 多个DataPipe 
@@ -295,7 +310,7 @@ sophon-stream/element/multimedia 目录是多媒体插件的集合，目前包�
 
  - element每个线程都与输入connector的一个datapipe绑定。组batch发生在doWork()函数的开始，从当前线程对应的datapipe中获取数据
  - 发送数据时，保证下游element各个线程负载均衡
- - 如果两个模块之间只有模型内部参数的差异，前处理、推理、后处理的流程完全相同时，可以复用前处理和推理element
+ - 如果两个模块之间只有模型内部参数的差异，前处理、推理、后处理的流程完全相同时，可以复用前处理和后处理element
  - 支持将前处理、推理和后处理分别配置在不同的element上。如此配置的目的是充分利用cpu和tpu资源，提高算法效率
 
 #### 4.1.2 yolox
@@ -526,6 +541,7 @@ yolox_bytetrack_osd_encode_demo.json 是该demo的总体配置，其形如：
 
 ```json
 {
+  {
   "channels": [
     {
       "channel_id": 2,
@@ -540,9 +556,12 @@ yolox_bytetrack_osd_encode_demo.json 是该demo的总体配置，其形如：
   ],
   "engine_config_path": "../config/engine.json"
 }
+}
 ```
 
-demo的配置文件包括两个属性。一是 channels ，在一个list中记录所有输入的url、channel_id和source_type信息。需要注意的是：source_type需要参考 [decode配置](../element/multimedia/decode/README.md) 准确设置。
+demo的配置文件包括两个属性。一是`channels` ，在一个list中记录所有输入的`url`、`channel_id`和`source_type`信息。需要注意的是：`source_type`需要参考 [decode配置](../element/multimedia/decode/README.md) 准确设置。
+
+该配置文件中，`channel_id`标记了encode插件启动推流服务器时，输出视频流的URL。推流URL配置请参考 [#4.2.2 encode](#422-encode)。如果不需要该功能，可以参考 [yolov5 demo](../samples/yolov5/src/yolov5_demo.cc) 及 [yolov5 配置文件](../samples/yolov5/config/yolov5_demo.json)，不设置`channel_id`，在demo中默认从0开始赋值。
 
 engine.json 是当前demo程序中构造的graph信息，储存了每个graph内包含的element及element之间如何连接等信息。其形如：
 

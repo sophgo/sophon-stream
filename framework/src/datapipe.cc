@@ -28,9 +28,6 @@ common::ErrorCode DataPipe::pushData(std::shared_ptr<void> data) {
     if (mDataQueue.size() >= mCapacity) {
       IVS_WARN("data queue size too high, size is :{0}", mDataQueue.size());
     }
-    if (mPushHandler) {
-      mPushHandler();
-    }
 
     return common::ErrorCode::SUCCESS;
   } else {
@@ -50,17 +47,6 @@ std::shared_ptr<void> DataPipe::popData()
   }
   return data;
 }
-
-void DataPipe::setPushHandler(PushHandler pushHandler) {
-  mPushHandler = pushHandler;
-}
-
-std::size_t DataPipe::getSize() const {
-  std::lock_guard<std::mutex> lock(mDataQueueMutex);
-  return mDataQueue.size();
-}
-
-std::size_t DataPipe::getCapacity() const { return mCapacity; }
 
 }  // namespace framework
 }  // namespace sophon_stream

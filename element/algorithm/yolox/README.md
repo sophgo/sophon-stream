@@ -19,7 +19,6 @@ sophon-stream yolox插件具有一些可配置的参数，可以根据需求进�
     },
     "shared_object":"../../../build/lib/libyolox.so",
     "device_id":0,
-    "id":0,
     "name":"yolox",
     "side":"sophgo",
     "thread_number":2
@@ -34,7 +33,6 @@ sophon-stream yolox插件具有一些可配置的参数，可以根据需求进�
 |  stage    |   列表   | ["pre"]  | 标志前处理、推理、后处理三个阶段 |
 |  shared_object |   字符串   |  "../../../build/lib/libyolox.so"  | libyolox 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
-|     id      |    整数       | 0  | element id |
 |     name    |    字符串     | "yolox" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
 | thread_number |    整数     | 1 | 启动线程数 |

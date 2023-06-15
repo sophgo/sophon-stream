@@ -121,6 +121,7 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   // port_id -> shared_ptr::connector
   std::map<int, std::shared_ptr<framework::Connector>> mInputConnectorMap;
+  // port_id -> weak_ptr::connector
   std::map<int, std::weak_ptr<framework::Connector>> mOutputConnectorMap;
 
   std::map<int /* outputPort */, DataHandler> mStopHandlerMap;

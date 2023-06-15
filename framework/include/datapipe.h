@@ -37,12 +37,6 @@ class DataPipe : public ::sophon_stream::common::NoCopyable {
 
   common::ErrorCode pushData(std::shared_ptr<void> data);
 
-  void setPushHandler(PushHandler pushHandler);
-
-  std::size_t getSize() const;
-
-  std::size_t getCapacity() const;
-
  private:
   std::deque<std::shared_ptr<void> > mDataQueue;
   mutable std::mutex mDataQueueMutex;

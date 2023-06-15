@@ -20,7 +20,6 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
     },
     "shared_object":"../../../build/lib/libyolov5.so",
     "device_id":0,
-    "id":0,
     "name":"yolov5",
     "side":"sophgo",
     "thread_number":1
@@ -36,7 +35,6 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
 |  use_tpu_kernel  |   布尔值    |  true | 是否启用tpu_kernel后处理 |
 |  shared_object |   字符串   |  "../../../build/lib/libyolov5.so"  | libyolov5 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
-|     id      |    整数       | 0  | element id |
 |     name    |    字符串     | "yolov5" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
 | thread_number |    整数     | 1 | 启动线程数 |

@@ -22,7 +22,6 @@ class Connector : public ::sophon_stream::common::NoCopyable {
 
   std::shared_ptr<void> popData(int id);
   common::ErrorCode pushData(int id, std::shared_ptr<void> data);
-  int getSize() const;
   int getCapacity() const;
 
  private:
