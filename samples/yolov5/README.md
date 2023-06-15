@@ -67,11 +67,25 @@ chmod -R +x scripts/
     └── yolov5s_tpukernel_int8_4b.bmodel            # 用于BM1684X的INT8 BModel，batch_size=4，后处理采用tpu_kernel 
 ```
 
+模型说明:
+
+以上模型移植于[yolov5官方](https://github.com/ultralytics/yolov5)，插件配置`mean=[0,0,0]`，`std=[1,1,1]`，支持COCO数据集的80分类检测任务。
+
 下载的数据包括：
 
 ```bash
-./videos
-└── test_car_person_1080P.avi   # 测试视频
+videos/
+├── carvana_video.mp4   # 测试视频
+├── mot17_01_frcnn.mp4
+├── mot17_03_frcnn.mp4
+├── mot17_06_frcnn.mp4
+├── mot17_07_frcnn.mp4
+├── mot17_08_frcnn.mp4
+├── mot17_12_frcnn.mp4
+├── mot17_14_frcnn.mp4
+├── sample_1080p_h265.mp4
+└── test_car_person_1080P.avi
+
 ```
 
 ## 4. 环境准备
@@ -194,18 +208,31 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 
 ```json
 {
-    "configure":{
-        "model_path":"../data/models/yolov5s_tpukernel_int8_4b.bmodel",
-        "threshold_conf":0.5,
-        "threshold_nms":0.5,
-        "stage":["pre"],
+    "configure": {
+        "model_path": "../data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_4b.bmodel",
+        "threshold_conf": 0.5,
+        "threshold_nms": 0.5,
+        "bgr2rgb": true,
+        "mean": [
+            0,
+            0,
+            0
+        ],
+        "std": [
+            1,
+            1,
+            1
+        ],
+        "stage": [
+            "pre"
+        ],
         "use_tpu_kernel": true
     },
-    "shared_object":"../../../build/lib/libyolov5.so",
-    "device_id":0,
-    "name":"yolov5",
-    "side":"sophgo",
-    "thread_number":1
+    "shared_object": "../../../build/lib/libyolov5.so",
+    "device_id": 0,
+    "name": "yolov5",
+    "side": "sophgo",
+    "thread_number": 1
 }
 ```
 

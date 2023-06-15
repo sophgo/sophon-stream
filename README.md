@@ -21,7 +21,7 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [yolox_bytetrack_osd_encode](./samples/yolox_bytetrack_osd_encode)| 目标跟踪算法结果推流demo|
 
 ## 2 快速入门
-请参考[sophon-stream用户文档](./docs/SophonStreamUserGuide.md)
+请参考[sophon-stream用户文档](./docs/Sophon_Stream_User_Guide.md)
 
 ## 3 FAQ
 请参考[sophon-stream常见问题及解答](./docs/FAQ.md)

@@ -15,10 +15,24 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
         "model_path":"../data/models/yolov5s_tpukernel_int8_4b.bmodel",
         "threshold_conf":0.5,
         "threshold_nms":0.5,
-        "stage":["pre"],
+        "bgr2rgb": true,
+        "mean": [
+            0,
+            0,
+            0
+        ],
+        "std": [
+            1,
+            1,
+            1
+        ],
+        "stage": [
+            "pre"
+        ],
         "use_tpu_kernel": true
     },
     "shared_object":"../../../build/lib/libyolov5.so",
+    "id":0,
     "device_id":0,
     "name":"yolov5",
     "side":"sophgo",
@@ -31,10 +45,14 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
 |  model_path  |   字符串   | "../data/models/yolov5s_tpukernel_int8_4b.bmodel" | yolov5模型路径 |
 |  threshold_conf   |   浮点数   | 0.5 | 目标检测物体置信度阈值 |
 |  threshold_nms  |   浮点数   | 0.5 | 目标检测NMS IOU阈值 |
+|  bgr2rgb  |   bool   | true | 解码器解出来的图像默认是bgr格式，是否需要将图像转换成rgb格式 |
+|  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
+|  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  stage    |   列表   | ["pre"]  | 标志前处理、推理、后处理三个阶段 |
 |  use_tpu_kernel  |   布尔值    |  true | 是否启用tpu_kernel后处理 |
 |  shared_object |   字符串   |  "../../../build/lib/libyolov5.so"  | libyolov5 动态库路径 |
-|  device_id  |    整数       |  0 | tpu 设备号 |
+|     id      |    整数       | 0  | element id |
+|  device_id  |    整数       |  0 | tpu 设备号 |s
 |     name    |    字符串     | "yolov5" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
 | thread_number |    整数     | 1 | 启动线程数 |

@@ -94,9 +94,9 @@ common::ErrorCode Yolov5PreProcess::preProcess(
       stride2[0] = FFALIGN(stride1[0], 64);
       stride2[1] = FFALIGN(stride1[1], 64);
       stride2[2] = FFALIGN(stride1[2], 64);
-      bm_image_create(context->bmContext->handle(), image1.height,
-                      image1.width, image1.image_format, image1.data_type,
-                      &image_aligned, stride2);
+      bm_image_create(context->bmContext->handle(), image1.height, image1.width,
+                      image1.image_format, image1.data_type, &image_aligned,
+                      stride2);
 
       bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
       bmcv_copy_to_atrr_t copyToAttr;
@@ -142,7 +142,7 @@ common::ErrorCode Yolov5PreProcess::preProcess(
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
     // for (int i = 0; i < context->max_batch; i++) {
     bm_image_create(context->handle, context->net_h, context->net_w,
-                    FORMAT_RGB_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
+                    FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
                     strides);
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
     auto ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
@@ -154,31 +154,37 @@ common::ErrorCode Yolov5PreProcess::preProcess(
       bm_image_destroy(image1);
     }
     if (need_copy) bm_image_destroy(image_aligned);
-    
+
     bm_image_data_format_ext img_dtype = DATA_TYPE_EXT_FLOAT32;
     auto tensor = context->bmNetwork->inputTensor(0);
     if (tensor->get_dtype() == BM_INT8) {
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
     }
 
-    bm_image_create(context->handle, context->net_h, context->net_w,
-                    FORMAT_RGB_PLANAR, img_dtype, &converto_img);
+    if (context->bgr2rgb)
+      bm_image_create(context->handle, context->net_h, context->net_w,
+                      FORMAT_RGB_PLANAR, img_dtype, &converto_img);
+    else
+      bm_image_create(context->handle, context->net_h, context->net_w,
+                      FORMAT_BGR_PLANAR, img_dtype,
+                      &converto_img);  // TODO, 无需调用bmcv_image_convert_to
+
     bm_device_mem_t mem;
-      int size_byte = 0;
-      bm_image_get_byte_size(converto_img, &size_byte);
-      ret = bm_malloc_device_byte(context->handle, &mem, size_byte);
-      bm_image_attach(converto_img, &mem);
+    int size_byte = 0;
+    bm_image_get_byte_size(converto_img, &size_byte);
+    ret = bm_malloc_device_byte(context->handle, &mem, size_byte);
+    bm_image_attach(converto_img, &mem);
 
-      bmcv_image_convert_to(context->handle, 1, context->converto_attr,
-                            &resized_img, &converto_img);
+    bmcv_image_convert_to(context->handle, 1, context->converto_attr,
+                          &resized_img, &converto_img);
 
-      bm_image_destroy(resized_img);
+    bm_image_destroy(resized_img);
 
-      bm_image_get_device_mem(
-          converto_img,
-          &objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem);
-      bm_image_detach(converto_img);
-      bm_image_destroy(converto_img);
+    bm_image_get_device_mem(
+        converto_img,
+        &objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem);
+    bm_image_detach(converto_img);
+    bm_image_destroy(converto_img);
     i++;
   }
   return common::ErrorCode::SUCCESS;

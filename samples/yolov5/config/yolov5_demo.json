@@ -5,6 +5,6 @@
     "source_type": "VIDEO"
   },
   "class_names": "../data/coco.names",
-  "download_image": false,
+  "download_image": true,
   "engine_config_path": "../config/engine.json"
 }

@@ -8,9 +8,10 @@ pushd $scripts_dir
 
 mkdir ../data
 
-mkdir -p ../data/videos
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/MKEB9Hltz
-mv test_car_person_1080P.avi ../data/videos
+python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/i43toW1VC
+unzip videos.zip
+rm -rf videos.zip
+mv ./videos ../data/
 
 mkdir ../data/models
 python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/vpMpnA5Y9

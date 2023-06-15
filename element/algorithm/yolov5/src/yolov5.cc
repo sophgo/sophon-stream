@@ -43,6 +43,18 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
     mContext->thresh_nms = threshNmsIt->get<float>();
 
+    mContext->bgr2rgb = true;
+    auto bgr2rgbIt = configure.find(CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD);
+    mContext->bgr2rgb = bgr2rgbIt->get<bool>();
+
+    auto meanIt = configure.find(CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD);
+    mContext->mean = meanIt->get<std::vector<float>>();
+    assert(mContext->mean.size() == 3);
+
+    auto stdIt = configure.find(CONFIG_INTERNAL_THRESHOLD_STD_FIELD);
+    mContext->stdd = stdIt->get<std::vector<float>>();
+    assert(mContext->stdd.size() == 3);
+
     auto tpu_kernelIt =
         configure.find(CONFIG_INTERNAL_THRESHOLD_TPU_KERNEL_FIELD);
     if (configure.end() == tpu_kernelIt || !tpu_kernelIt->is_boolean()) {
@@ -81,12 +93,12 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
     // 4.converto
     float input_scale = inputTensor->get_scale();
     input_scale = input_scale * 1.0 / 255.f;
-    mContext->converto_attr.alpha_0 = input_scale;
-    mContext->converto_attr.beta_0 = 0;
-    mContext->converto_attr.alpha_1 = input_scale;
-    mContext->converto_attr.beta_1 = 0;
-    mContext->converto_attr.alpha_2 = input_scale;
-    mContext->converto_attr.beta_2 = 0;
+    mContext->converto_attr.alpha_0 = input_scale / (mContext->stdd[0]);
+    mContext->converto_attr.beta_0 = -(mContext->mean[0]) / (mContext->stdd[0]);
+    mContext->converto_attr.alpha_1 = input_scale / (mContext->stdd[1]);
+    mContext->converto_attr.beta_1 = -(mContext->mean[1]) / (mContext->stdd[1]);
+    mContext->converto_attr.alpha_2 = input_scale / (mContext->stdd[2]);
+    mContext->converto_attr.beta_2 = -(mContext->mean[2]) / (mContext->stdd[2]);
 
     // 6. tpu_kernel postprocess
     if (mContext->use_tpu_kernel) {
