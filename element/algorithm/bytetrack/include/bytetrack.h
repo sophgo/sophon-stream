@@ -29,26 +29,29 @@ class Bytetrack : public ::sophon_stream::framework::Element {
   Bytetrack();
   ~Bytetrack() override;
 
-  Bytetrack(const Bytetrack&) = delete;
-  Bytetrack& operator=(const Bytetrack&) = delete;
-  Bytetrack(Bytetrack&&) = default;
-  Bytetrack& operator=(Bytetrack&&) = default;
-
   common::ErrorCode initInternal(const std::string& json) override;
-
-  void process(int dataPipeId,
-               std::shared_ptr<common::ObjectMetadata>& objectMetadata);
-
   void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
 
+  static constexpr const char* CONFIG_INTERNAL_FRAME_RATE_FIELD = "frame_rate";
+  static constexpr const char* CONFIG_INTERNAL_TRACK_BUFFER_FIELD =
+      "track_buffer";
+  static constexpr const char* CONFIG_INTERNAL_TRACK_THRESH_FIELD =
+      "track_thresh";
+  static constexpr const char* CONFIG_INTERNAL_HIGH_THRESH_FIELD =
+      "high_thresh";
+  static constexpr const char* CONFIG_INTERNAL_MATCH_THRESH_FIELD =
+      "match_thresh";
+
  private:
   std::shared_ptr<BytetrackContext> mContext;  // context对象
 
-  common::ErrorCode initContext(const std::string& json);
-
   std::map<int, std::shared_ptr<BYTETracker>> mByteTrackerMap;
+
+  common::ErrorCode initContext(const std::string& json);
+  void process(int dataPipeId,
+               std::shared_ptr<common::ObjectMetadata>& objectMetadata);
 };
 
 }  // namespace bytetrack

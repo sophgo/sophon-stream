@@ -28,61 +28,38 @@ namespace yolov5 {
  */
 class Yolov5 : public ::sophon_stream::framework::Element {
  public:
-  /**
-   * 构造函数
-   */
   Yolov5();
-  /**
-   * 析构函数
-   */
   ~Yolov5() override;
 
-  Yolov5(const Yolov5&) = delete;
-  Yolov5& operator=(const Yolov5&) = delete;
-  Yolov5(Yolov5&&) = default;
-  Yolov5& operator=(Yolov5&&) = default;
-
-  /**
-   * 初始化函数
-   * @param[in] side:  设备类型
-   * @param[in] deviceId:  设备ID
-   * @param[in] json:  初始化字符串
-   * @return 错误码
-   */
   common::ErrorCode initInternal(const std::string& json) override;
-  /**
-   * 预测函数
-   * @param[in/out] objectMetadatas:  输入数据和预测结果
-   */
-  void process(common::ObjectMetadatas& objectMetadatas);
-  /**
-   * 资源释放函数
-   */
   void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
 
+  static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
+  static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD = "threshold_conf";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD = "threshold_nms";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_TPU_KERNEL_FIELD =
+    "use_tpu_kernel";
+
  private:
-  std::shared_ptr<Yolov5Context> mContext;  // context对象
-  std::shared_ptr<Yolov5PreProcess> mPreProcess;         // 预处理对象
-  std::shared_ptr<Yolov5Inference> mInference;    // 推理对象
-  std::shared_ptr<Yolov5PostProcess> mPostProcess;       // 后处理对象
+  std::shared_ptr<Yolov5Context> mContext;          // context对象
+  std::shared_ptr<Yolov5PreProcess> mPreProcess;    // 预处理对象
+  std::shared_ptr<Yolov5Inference> mInference;      // 推理对象
+  std::shared_ptr<Yolov5PostProcess> mPostProcess;  // 后处理对象
 
   bool use_pre = false;
   bool use_infer = false;
   bool use_post = false;
-
-  common::ErrorCode initContext(const std::string& json);
-
-  /**
-   * @brief 需要推理的batch数
-   */
   int mBatch;
 
+  common::ErrorCode initContext(const std::string& json);
+  void process(common::ObjectMetadatas& objectMetadatas);
 };
 
 }  // namespace yolov5
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_ELEMENT_YOLOV5_H_
+#endif  // SOPHON_STREAM_ELEMENT_YOLOV5_H_

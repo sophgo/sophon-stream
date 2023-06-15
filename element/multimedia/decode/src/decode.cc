@@ -5,8 +5,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include "common/ObjectMetadata.h"
 #include "common/logger.h"
+#include "common/object_metadata.h"
 #include "decoder.h"
 #include "element_factory.h"
 
@@ -55,7 +55,7 @@ void Decode::onStop() {
 common::ErrorCode Decode::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   int inputPort = 0;
-  auto data = getInputData(inputPort, dataPipeId);
+  auto data = popInputData(inputPort, dataPipeId);
   if (!data) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     return errorCode;
@@ -80,8 +80,90 @@ common::ErrorCode Decode::doWork(int dataPipeId) {
   return errorCode;
 }
 
+common::ErrorCode Decode::parse_channel_task(
+    std::shared_ptr<ChannelTask>& channelTask) {
+  common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+  const std::string json = channelTask->request.json;
+  do {
+    auto configure = nlohmann::json::parse(json, nullptr, false);
+    if (!configure.is_object()) {
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      IVS_ERROR("json parse failed! json:{0}", json);
+      break;
+    }
+
+    auto urlIt = configure.find(JSON_URL);
+    if (configure.end() == urlIt || !urlIt->is_string()) {
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          JSON_URL, json);
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+    channelTask->request.url = urlIt->get<std::string>();
+
+    auto channelIdIt = configure.find(JSON_CHANNEL_ID);
+    if (configure.end() == channelIdIt || !channelIdIt->is_number_integer()) {
+      IVS_ERROR(
+          "Can not find {0} with int type in worker json configure, json: "
+          "{1}",
+          JSON_CHANNEL_ID, json);
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+    channelTask->request.channelId = channelIdIt->get<int>();
+
+    auto sourceTypeIdIt = configure.find(JSON_SOURCE_TYPE);
+    if (configure.end() == sourceTypeIdIt || !sourceTypeIdIt->is_string()) {
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          JSON_SOURCE_TYPE, json);
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+    auto sourceType = sourceTypeIdIt->get<std::string>();
+    channelTask->request.sourceType =
+        ChannelOperateRequest::SourceType::UNKNOWN;
+    if (sourceType == "RTSP") {
+      IVS_INFO("Source type is RTSP");
+      if (channelTask->request.url.compare(0, 7, "rtsp://") != 0) {
+        IVS_ERROR("RTSP format error");
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        break;
+      }
+      channelTask->request.sourceType = ChannelOperateRequest::SourceType::RTSP;
+    } else if (sourceType == "RTMP") {
+      IVS_INFO("Source type is RTMP");
+      if (channelTask->request.url.compare(0, 7, "rtmp://") != 0) {
+        IVS_ERROR("RTMP format error");
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        break;
+      }
+      channelTask->request.sourceType = ChannelOperateRequest::SourceType::RTMP;
+    } else if (sourceType == "VIDEO") {
+      IVS_INFO("Source type is VIDEO");
+      channelTask->request.sourceType =
+          ChannelOperateRequest::SourceType::VIDEO;
+    } else if (sourceType == "IMG_DIR") {
+      IVS_INFO("Source type is IMG_DIR");
+      channelTask->request.sourceType =
+          ChannelOperateRequest::SourceType::IMG_DIR;
+    } else {
+      IVS_ERROR("{0} error, please input RTSP, RTMP VIDEO or IMG_DIR",
+                JSON_SOURCE_TYPE);
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+  } while (false);
+
+  return errorCode;
+}
+
 common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   IVS_INFO("add one channel task");
+  parse_channel_task(channelTask);
   std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
 
   if (mThreadsPool.find(channelTask->request.channelId) != mThreadsPool.end()) {
@@ -120,7 +202,8 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
                  static_cast<void*>(channelInfo->mSpDecoder.get()));
 
         common::ErrorCode ret = channelInfo->mSpDecoder->init(
-            getDeviceId(), channelTask->request.json);
+            getDeviceId(), channelTask->request.url,
+            channelTask->request.sourceType);
 
         channelTask->response.errorCode = common::ErrorCode::SUCCESS;
         channelInfo->mCv->notify_one();
@@ -144,8 +227,8 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   mThreadsPool.insert(
       std::make_pair(channelTask->request.channelId, channelInfo));
 
-  int channel_id =  channelTask->request.channelId;
-  if (mChannelIdInternal.find(channel_id)==mChannelIdInternal.end()) {
+  int channel_id = channelTask->request.channelId;
+  if (mChannelIdInternal.find(channel_id) == mChannelIdInternal.end()) {
     mChannelIdInternal[channel_id] = mChannelCount++;
   }
 
@@ -217,7 +300,7 @@ common::ErrorCode Decode::process(
     }
   }
   int channel_id = channelTask->request.channelId;
-  objectMetadata->mFrame->mChannelId = channel_id; 
+  objectMetadata->mFrame->mChannelId = channel_id;
   objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternal[channel_id];
 
   // push data to next element
@@ -227,10 +310,10 @@ common::ErrorCode Decode::process(
     std::vector<int> outputPorts = getOutputPorts();
     outputPort = outputPorts[0];
   }
-  int dataPipeId = getLastElementFlag()
-                       ? 0
-                       : (channel_id_internal %
-                          getOutputConnector(outputPort)->getDataPipeCount());
+  int dataPipeId =
+      getLastElementFlag()
+          ? 0
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
   common::ErrorCode errorCode = pushOutputData(
       outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
   if (common::ErrorCode::SUCCESS != errorCode) {

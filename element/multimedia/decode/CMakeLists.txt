@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(multimedia)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 
 if(GPU_VERSION)
@@ -37,11 +37,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
 
+    include_directories(../../../framework)
     include_directories(../../../framework/include)
 
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
     
     include_directories(include)
     add_library(decode SHARED
@@ -69,17 +69,17 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
 
+    include_directories(../../../framework)
     include_directories(../../../framework/include)
     
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
     add_library(decode SHARED
         src/decoder.cc
         src/decode.cc
-        src/ff_decode.cpp
+        src/ff_decode.cc
         )
     target_link_libraries(decode ${FFMPEG_LIBS} 
         ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)

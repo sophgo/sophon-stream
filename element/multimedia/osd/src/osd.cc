@@ -21,6 +21,7 @@
 
 #include "common/logger.h"
 #include "element_factory.h"
+#include "../../encode/include/encode.h"
 
 namespace sophon_stream {
 namespace element {
@@ -106,8 +107,6 @@ void draw_track_result(bm_handle_t& handle, int track_id, int left, int top,
   }
 }
 
-constexpr const char* CONFIG_INTERNAL_OSD_TYPE_FIELD = "osd_type";
-constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD = "class_names";
 
 Osd::Osd() {}
 
@@ -126,8 +125,8 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
     std::string osd_type =
         configure.find(CONFIG_INTERNAL_OSD_TYPE_FIELD)->get<std::string>();
     mOsdType = OsdType::UNKNOWN;
-    if (osd_type == "det") mOsdType = OsdType::DET;
-    if (osd_type == "track") mOsdType = OsdType::TRACK;
+    if (osd_type == "DET") mOsdType = OsdType::DET;
+    if (osd_type == "TRACK") mOsdType = OsdType::TRACK;
 
     if (mOsdType == OsdType::DET) {
       std::string class_names_file =
@@ -163,7 +162,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
 
   std::shared_ptr<void> data;
   while (getThreadStatus() == ThreadStatus::RUN) {
-    data = getInputData(inputPort, dataPipeId);
+    data = popInputData(inputPort, dataPipeId);
     if (!data) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
       continue;
@@ -182,7 +181,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
   int outDataPipeId =
       getLastElementFlag()
           ? 0
-          : (channel_id_internal % getOutputConnector(outputPort)->getDataPipeCount());
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
   errorCode = pushOutputData(outputPort, outDataPipeId, objectMetadata);
   if (common::ErrorCode::SUCCESS != errorCode) {
     IVS_WARN(

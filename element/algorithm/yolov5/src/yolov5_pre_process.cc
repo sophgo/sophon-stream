@@ -154,24 +154,34 @@ common::ErrorCode Yolov5PreProcess::preProcess(
       bm_image_destroy(image1);
     }
     if (need_copy) bm_image_destroy(image_aligned);
+    
     bm_image_data_format_ext img_dtype = DATA_TYPE_EXT_FLOAT32;
     auto tensor = context->bmNetwork->inputTensor(0);
     if (tensor->get_dtype() == BM_INT8) {
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
     }
+
     bm_image_create(context->handle, context->net_h, context->net_w,
                     FORMAT_RGB_PLANAR, img_dtype, &converto_img);
-    bm_image_alloc_dev_mem(converto_img, BMCV_IMAGE_FOR_IN);
-    bmcv_image_convert_to(context->handle, 1, context->converto_attr,
-                          &resized_img, &converto_img);
-    bm_image_destroy(resized_img);
+    bm_device_mem_t mem;
+      int size_byte = 0;
+      bm_image_get_byte_size(converto_img, &size_byte);
+      ret = bm_malloc_device_byte(context->handle, &mem, size_byte);
+      bm_image_attach(converto_img, &mem);
 
-    bm_device_mem_t input_mem;
-    bm_image_get_device_mem(converto_img, &input_mem);
-    objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem =
-        std::move(input_mem);
+      bmcv_image_convert_to(context->handle, 1, context->converto_attr,
+                            &resized_img, &converto_img);
+
+      bm_image_destroy(resized_img);
+
+      bm_image_get_device_mem(
+          converto_img,
+          &objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem);
+      bm_image_detach(converto_img);
+      bm_image_destroy(converto_img);
     i++;
   }
+  return common::ErrorCode::SUCCESS;
 }
 
 }  // namespace yolov5

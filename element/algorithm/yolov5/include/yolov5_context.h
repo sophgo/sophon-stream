@@ -11,22 +11,23 @@
 #define SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
-#include "common/ErrorCode.h"
-#include "common/bm_wrapper.hpp"
+#include "bmcv_api.h"
+#include "bmcv_api_ext.h"
+#include "bmlib_runtime.h"
+#include "bmruntime_interface.h"
+#include "common/error_code.h"
 #include "common/bmnn_utils.h"
-
-#include <nlohmann/json.hpp>
-
 
 namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
 #define USE_ASPECT_RATIO 1
-#define FFALIGN(x, a) (((x)+(a)-1)&~((a)-1))
+#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
 #define MAX_YOLO_INPUT_NUM 3
 #define MAX_YOLO_ANCHOR_NUM 3
@@ -50,8 +51,7 @@ typedef struct {
 #define MAX_BATCH 16
 
 struct Yolov5Context {
-
-  int deviceId;                             // 设备ID
+  int deviceId;  // 设备ID
 
   std::shared_ptr<BMNNContext> bmContext;
   std::shared_ptr<BMNNNetwork> bmNetwork;
@@ -83,4 +83,4 @@ struct Yolov5Context {
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_
+#endif  // SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_

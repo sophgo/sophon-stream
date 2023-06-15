@@ -18,13 +18,14 @@
 #include <memory>
 #include <mutex>
 
-#include "common/ErrorCode.h"
+#include "common/error_code.h"
 #include "common/logger.h"
+#include "common/no_copyable.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class DataPipe {
+class DataPipe : public ::sophon_stream::common::NoCopyable {
  public:
   using PushHandler = std::function<void()>;
 
@@ -32,24 +33,9 @@ class DataPipe {
 
   ~DataPipe();
 
-  DataPipe(const DataPipe&) = delete;
-  DataPipe& operator=(const DataPipe&) = delete;
-  DataPipe(DataPipe&&) = default;
-  DataPipe& operator=(DataPipe&&) = default;
+  std::shared_ptr<void> popData();
 
   common::ErrorCode pushData(std::shared_ptr<void> data);
-
-  std::shared_ptr<void> getData() const;
-
-  void setPushHandler(PushHandler pushHandler);
-
-  void setCapacity(std::size_t capacity);
-
-  std::size_t getSize() const;
-
-  std::size_t getCapacity() const;
-
-  std::shared_ptr<void> popData();
 
  private:
   std::deque<std::shared_ptr<void> > mDataQueue;
@@ -58,7 +44,7 @@ class DataPipe {
   PushHandler mPushHandler;
   std::size_t mCapacity;
 
-  const std::chrono::milliseconds timeout {200};
+  const std::chrono::milliseconds timeout{200};
 };
 
 }  // namespace framework

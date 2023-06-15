@@ -1,39 +1,39 @@
 #pragma once
 
+#include <dirent.h>
+
 #include <memory>
+#include <regex>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "bmcv_api.h"
+#include "bmcv_api_ext.h"
+#include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
-#include "common/ErrorCode.h"
-#include "common/Graphics.hpp"
-#include "common/ObjectMetadata.h"
-#include "common/bm_wrapper.hpp"
+#include "channel.h"
 #include "common/bmnn_utils.h"
-#include "ff_decode.h"
+#include "common/error_code.h"
 #include "common/logger.h"
+#include "common/no_copyable.h"
+#include "common/object_metadata.h"
+#include "ff_decode.h"
 
 namespace sophon_stream {
 namespace element {
 namespace decode {
 
-class Decoder {
+class Decoder : public ::sophon_stream::common::NoCopyable {
  public:
   Decoder();
   ~Decoder();
 
-  Decoder(const Decoder&) = delete;
-  Decoder& operator=(const Decoder&) = delete;
-  Decoder(Decoder&&) = default;
-  Decoder& operator=(Decoder&&) = default;
-
-  common::ErrorCode init(int deviceId, const std::string& json);
+  common::ErrorCode init(int deviceId, const std::string& url,
+                         const ChannelOperateRequest::SourceType& sourceType);
   common::ErrorCode process(
       std::shared_ptr<common::ObjectMetadata>& objectMetadata);
   void uninit();
-
-  static constexpr const char* JSON_URL = "url";
 
  private:
   bm_handle_t m_handle;
@@ -41,6 +41,10 @@ class Decoder {
 
   std::string mUrl;
   int mDeviceId;
+  ChannelOperateRequest::SourceType mSourceType;
+
+  int mImgIndex;
+  std::vector<std::string> mImagePaths;
 };
 }  // namespace decode
 }  // namespace element

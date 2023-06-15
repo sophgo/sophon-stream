@@ -24,22 +24,26 @@ namespace yolox {
 
 class Yolox : public ::sophon_stream::framework::Element {
  public:
-
   Yolox();
   ~Yolox() override;
 
-  Yolox(const Yolox&) = delete;
-  Yolox& operator=(const Yolox&) = delete;
-  Yolox(Yolox&&) = default;
-  Yolox& operator=(Yolox&&) = default;
-
   common::ErrorCode initInternal(const std::string& json) override;
-
-  void process(common::ObjectMetadatas& objectMetadatas);
-
   void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
+
+  static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
+  static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD =
+      "threshold_conf";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD =
+      "threshold_nms";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD = "bgr2rgb";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD =
+      "mean";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_STD_FIELD =
+      "std";
+
 
  private:
   std::shared_ptr<YoloxContext> mContext;          // context对象
@@ -51,11 +55,10 @@ class Yolox : public ::sophon_stream::framework::Element {
   bool use_infer = false;
   bool use_post = false;
 
-  common::ErrorCode initContext(const std::string& json);
-
   int mBatch;
 
-
+  common::ErrorCode initContext(const std::string& json);
+  void process(common::ObjectMetadatas& objectMetadatas);
 };
 
 }  // namespace yolox

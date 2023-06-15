@@ -14,8 +14,8 @@
 
 #include "bytetrack_lapjv.h"
 #include "bytetrack_strack.h"
-#include "common/ErrorCode.h"
-#include "common/ObjectMetadata.h"
+#include "common/error_code.h"
+#include "common/object_metadata.h"
 #include "common/logger.h"
 #include "element.h"
 

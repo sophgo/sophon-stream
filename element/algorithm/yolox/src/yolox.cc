@@ -18,11 +18,6 @@ namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
-constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
-constexpr const char* CONFIG_INTERNAL_THRESHOLD_CONF_FIELD = "threshold_conf";
-constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD = "threshold_nms";
-
 Yolox::Yolox() {}
 
 Yolox::~Yolox() {}
@@ -43,6 +38,18 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
 
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
     mContext->thresh_nms = threshNmsIt->get<float>();
+
+    mContext->bgr2rgb = true;
+    auto bgr2rgbIt = configure.find(CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD);
+    mContext->bgr2rgb = bgr2rgbIt->get<bool>();
+
+    auto meanIt = configure.find(CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD);
+    mContext->mean = meanIt->get<std::vector<float>>();
+    assert(mContext->mean.size() == 3);
+
+    auto stdIt = configure.find(CONFIG_INTERNAL_THRESHOLD_STD_FIELD);
+    mContext->stdd = stdIt->get<std::vector<float>>();
+    assert(mContext->stdd.size() == 3);
 
     // 1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
@@ -66,12 +73,12 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
     float input_scale = inputTensor->get_scale();
     // yolox原始模型输入是0-255,scale=1.0意味着不需要做缩放
     // input_scale /= 255;
-    mContext->converto_attr.alpha_0 = input_scale;
-    mContext->converto_attr.beta_0 = 0;
-    mContext->converto_attr.alpha_1 = input_scale;
-    mContext->converto_attr.beta_1 = 0;
-    mContext->converto_attr.alpha_2 = input_scale;
-    mContext->converto_attr.beta_2 = 0;
+    mContext->converto_attr.alpha_0 = input_scale / (mContext->stdd[0]);
+    mContext->converto_attr.beta_0 = -(mContext->mean[0]) / (mContext->stdd[0]);
+    mContext->converto_attr.alpha_1 = input_scale / (mContext->stdd[1]);
+    mContext->converto_attr.beta_1 = -(mContext->mean[1]) / (mContext->stdd[1]);
+    mContext->converto_attr.alpha_2 = input_scale / (mContext->stdd[2]);
+    mContext->converto_attr.beta_2 = -(mContext->mean[2]) / (mContext->stdd[2]);
   } while (false);
 
   return common::ErrorCode::SUCCESS;
@@ -178,7 +185,7 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
   while (objectMetadatas.size() < mBatch &&
          (getThreadStatus() == ThreadStatus::RUN)) {
     // 如果队列为空则等待
-    auto data = getInputData(inputPort, dataPipeId);
+    auto data = popInputData(inputPort, dataPipeId);
     if (!data) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
       continue;
@@ -200,7 +207,7 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
     int outDataPipeId =
         getLastElementFlag()
             ? 0
-            : (channel_id_internal % getOutputConnector(outputPort)->getDataPipeCount());
+            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
     errorCode = pushOutputData(outputPort, outDataPipeId,
                                std::static_pointer_cast<void>(objectMetadata));
     if (common::ErrorCode::SUCCESS != errorCode) {

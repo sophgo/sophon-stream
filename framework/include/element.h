@@ -22,15 +22,16 @@
 #include <thread>
 #include <vector>
 
-#include "common/ErrorCode.h"
+#include "common/error_code.h"
 #include "common/logger.h"
+#include "common/no_copyable.h"
 #include "connector.h"
 #include "datapipe.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class Element {
+class Element : public ::sophon_stream::common::NoCopyable {
  public:
   using DataHandler = std::function<void(std::shared_ptr<void>)>;
 
@@ -47,11 +48,6 @@ class Element {
 
   virtual ~Element();
 
-  Element(const Element&) = delete;
-  Element& operator=(const Element&) = delete;
-  Element(Element&&) = default;
-  Element& operator=(Element&&) = default;
-
   common::ErrorCode init(const std::string& json);
 
   void uninit();
@@ -64,10 +60,16 @@ class Element {
 
   common::ErrorCode resume();
 
+  std::shared_ptr<void> popInputData(int inputPort, int dataPipeId);
+
   common::ErrorCode pushInputData(int inputPort, int dataPipeId,
                                   std::shared_ptr<void> data);
 
-  void setStopHandler(int outputPort, DataHandler dataHandler);
+  std::shared_ptr<void> popOutputData(int outputPort, int dataPipeId) = delete;
+  common::ErrorCode pushOutputData(int outputPort, int dataPipeId,
+                                   std::shared_ptr<void> data);
+
+  void setSinkHandler(int outputPort, DataHandler dataHandler);
 
   int getId() const { return mId; }
 
@@ -99,22 +101,10 @@ class Element {
 
   virtual common::ErrorCode doWork(int dataPipeId) = 0;
 
-  std::size_t getInputDataCount(int inputPort, int dataPipeId);
-
-  std::shared_ptr<void> getInputData(int inputPort, int dataPipeId);
-
-  common::ErrorCode pushOutputData(int outputPort, int dataPipeId,
-                                   std::shared_ptr<void> data);
-
-  common::ErrorCode getOutputDatapipeCapacity(int outputPort, int& capacity);
-
-  common::ErrorCode getOutputDatapipeSize(int outputPort, int channelId,
-                                          int& size);
-
   std::vector<int> getInputPorts();
   std::vector<int> getOutputPorts();
 
-  std::shared_ptr<Connector> getOutputConnector(int portId);
+  int getOutputConnectorCapacity(int outputPort);
 
  private:
   int mId;
@@ -131,7 +121,8 @@ class Element {
 
   // port_id -> shared_ptr::connector
   std::map<int, std::shared_ptr<framework::Connector>> mInputConnectorMap;
-  std::map<int, std::shared_ptr<framework::Connector>> mOutputConnectorMap;
+  // port_id -> weak_ptr::connector
+  std::map<int, std::weak_ptr<framework::Connector>> mOutputConnectorMap;
 
   std::map<int /* outputPort */, DataHandler> mStopHandlerMap;
 

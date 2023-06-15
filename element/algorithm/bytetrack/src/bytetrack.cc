@@ -18,12 +18,6 @@ namespace sophon_stream {
 namespace element {
 namespace bytetrack {
 
-constexpr const char* CONFIG_INTERNAL_FRAME_RATE_FIELD = "frame_rate";
-constexpr const char* CONFIG_INTERNAL_TRACK_BUFFER_FIELD = "track_buffer";
-constexpr const char* CONFIG_INTERNAL_TRACK_THRESH_FIELD = "track_thresh";
-constexpr const char* CONFIG_INTERNAL_HIGH_THRESH_FIELD = "high_thresh";
-constexpr const char* CONFIG_INTERNAL_MATCH_THRESH_FIELD = "match_thresh";
-
 Bytetrack::Bytetrack() { IVS_DEBUG("Bytetrack Element construct!!!"); }
 
 Bytetrack::~Bytetrack() {}
@@ -51,15 +45,15 @@ common::ErrorCode Bytetrack::initContext(const std::string& json) {
 
     auto trackThreshIt = configure.find(CONFIG_INTERNAL_TRACK_THRESH_FIELD);
     mContext->trackThresh =
-        trackThreshIt != configure.end() ? trackThreshIt->get<float>() : 0.6;
+        trackThreshIt != configure.end() ? trackThreshIt->get<float>() : 0.5;
 
     auto highThreshIt = configure.find(CONFIG_INTERNAL_HIGH_THRESH_FIELD);
     mContext->highThresh =
-        highThreshIt != configure.end() ? highThreshIt->get<float>() : 0.7;
+        highThreshIt != configure.end() ? highThreshIt->get<float>() : 0.6;
 
     auto matchThreshIt = configure.find(CONFIG_INTERNAL_MATCH_THRESH_FIELD);
     mContext->matchThresh =
-        matchThreshIt != configure.end() ? matchThreshIt->get<float>() : 0.8;
+        matchThreshIt != configure.end() ? matchThreshIt->get<float>() : 0.7;
 
     IVS_DEBUG(
         "Bytetrack::initContext: frameRate: {0}, trackBuffer: {1}, "
@@ -145,7 +139,7 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
     return errorCode;
   }
 
-  auto data = getInputData(inputPort, dataPipeId);
+  auto data = popInputData(inputPort, dataPipeId);
   if (!data) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     return errorCode;
@@ -159,7 +153,7 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
   int pipeId =
       getLastElementFlag()
           ? 0
-          : (channel_id_internal % getOutputConnector(outputPort)->getDataPipeCount());
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
 
   errorCode = pushOutputData(outputPort, pipeId,
                              std::static_pointer_cast<void>(objectMetadata));

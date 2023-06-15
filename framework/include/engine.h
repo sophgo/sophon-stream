@@ -15,17 +15,18 @@
 #include <memory>
 #include <string>
 
-#include "common/ErrorCode.h"
-#include "common/Singleton.hpp"
+#include "common/error_code.h"
 #include "common/logger.h"
-#include "element_manager.h"
+#include "common/no_copyable.h"
+#include "common/singleton.h"
+#include "graph.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class Engine {
+class Engine : public ::sophon_stream::common::NoCopyable {
  public:
-  using DataHandler = framework::ElementManager::DataHandler;
+  using DataHandler = framework::Graph::DataHandler;
 
   common::ErrorCode start(int graphId);
 
@@ -41,15 +42,17 @@ class Engine {
 
   bool graphExist(int graphId);
 
-  common::ErrorCode pushInputData(int graphId, int elementId, int inputPort,
+  common::ErrorCode pushSourceData(int graphId, int elementId, int inputPort,
                                   std::shared_ptr<void> data);
 
-  void setStopHandler(int graphId, int elementId, int outputPort,
+  void setSinkHandler(int graphId, int elementId, int outputPort,
                       DataHandler dataHandler);
 
   std::pair<std::string, int> getSideAndDeviceId(int graphId, int elementId);
 
   std::vector<int> getGraphIds();
+
+  static constexpr const char* JSON_GRAPH_ID_FIELD = "graph_id";
 
  private:
   friend class common::Singleton<Engine>;
@@ -58,14 +61,9 @@ class Engine {
 
   ~Engine();
 
-  Engine(const Engine&) = delete;
-  Engine& operator=(const Engine&) = delete;
-  Engine(Engine&&) = delete;
-  Engine& operator=(Engine&&) = delete;
-
-  std::map<int /* graphId */, std::shared_ptr<framework::ElementManager> >
-      mElementManagerMap;
-  std::mutex mElementManagerMapLock;
+  std::map<int /* graphId */, std::shared_ptr<framework::Graph> >
+      mGraphMap;
+  std::mutex mGraphMapLock;
 
   std::vector<int> mGraphIds;
 };

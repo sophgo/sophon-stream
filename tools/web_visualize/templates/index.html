@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>web visualiza tool</title>
+    <link rel="stylesheet" type="text/css" href="/static/index.css">
+</head>
+<body>
+<img src="" id="capture1" alt="">
+<img src="" id="capture2" alt="">
+<img src="" id="capture3" alt="">
+<img src="" id="capture4" alt="">
+<img src="" id="capture5" alt="">
+<img src="" id="capture6" alt="">
+<img src="" id="capture7" alt="">
+<img src="" id="capture8" alt="">
+<img src="" id="capture9" alt="">
+<img src="" id="capture10" alt="">
+<img src="" id="capture11" alt="">
+<img src="" id="capture12" alt="">
+<img src="" id="capture13" alt="">
+<img src="" id="capture14" alt="">
+<img src="" id="capture15" alt="">
+<img src="" id="capture16" alt="">
+</body>
+<script>
+var reg = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/;
+var ip = reg.exec(window.location.href)[0]; //get ip for frontend
+var ws_ip = ip; //ip for websocket server
+var id = setInterval(function(){ //connet to websocket server and get frames
+    let vedio = document.getElementById('capture1')
+    let ws = new WebSocket('ws://'+ws_ip+':8765');
+    ws.onopen = function (e) {
+        ws.send('the request from client');
+        clearInterval(id);
+    };
+    ws.onmessage = function (e) {
+        vedio.setAttribute('src', e.data)
+
+    }
+},1000)
+
+var id2 = setInterval(function(){
+    let vedio2 = document.getElementById('capture2')
+    let ws2 = new WebSocket('ws://'+ws_ip+':8766');
+    ws2.onopen = function (e) {
+        ws2.send('the request from client');
+        clearInterval(id2);
+    };
+    ws2.onmessage = function (e) {
+        vedio2.setAttribute('src', e.data)
+
+    }
+},1000)
+
+var id3 = setInterval(function(){
+    let vedio3 = document.getElementById('capture3')
+    let ws3 = new WebSocket('ws://'+ws_ip+':8767');
+    ws3.onopen = function (e) {
+        ws3.send('the request from client');
+        clearInterval(id3);
+    };
+    ws3.onmessage = function (e) {
+        vedio3.setAttribute('src', e.data)
+    }
+},1000)
+
+var id4 = setInterval(function(){
+    let vedio4 = document.getElementById('capture4')
+    let ws4 = new WebSocket('ws://'+ws_ip+':8768');
+    ws4.onopen = function (e) {
+        ws4.send('the request from client');
+        clearInterval(id4);
+    };
+    ws4.onmessage = function (e) {
+        vedio4.setAttribute('src', e.data)
+
+    }
+},1000)
+
+var id5 = setInterval(function(){
+    let vedio5 = document.getElementById('capture5')
+    let ws5 = new WebSocket('ws://'+ws_ip+':8769');
+    ws5.onopen = function (e) {
+        ws5.send('the request from client');
+        clearInterval(id5);
+    };
+    ws5.onmessage = function (e) {
+        vedio5.setAttribute('src', e.data)
+
+    }
+},1000)
+var id6 = setInterval(function(){
+    let vedio6 = document.getElementById('capture6')
+    let ws6 = new WebSocket('ws://'+ws_ip+':8770');
+    ws6.onopen = function (e) {
+        ws6.send('the request from client');
+        clearInterval(id6);
+    };
+    ws6.onmessage = function (e) {
+        vedio6.setAttribute('src', e.data)
+
+    }
+},1000)
+var id7 = setInterval(function(){
+    let vedio7 = document.getElementById('capture7')
+    let ws7 = new WebSocket('ws://'+ws_ip+':8771');
+    ws7.onopen = function (e) {
+        ws7.send('the request from client');
+        clearInterval(id7);
+    };
+    ws7.onmessage = function (e) {
+        vedio7.setAttribute('src', e.data)
+
+    }
+},1000)
+var id8 = setInterval(function(){
+    let vedio8 = document.getElementById('capture8')
+    let ws8 = new WebSocket('ws://'+ws_ip+':8772');
+    ws8.onopen = function (e) {
+        ws8.send('the request from client');
+        clearInterval(id8);
+    };
+    ws8.onmessage = function (e) {
+        vedio8.setAttribute('src', e.data)
+
+    }
+},1000)
+var id9 = setInterval(function(){
+    let vedio9 = document.getElementById('capture9')
+    let ws9 = new WebSocket('ws://'+ws_ip+':8773');
+    ws9.onopen = function (e) {
+        ws9.send('the request from client');
+        clearInterval(id9);
+    };
+    ws9.onmessage = function (e) {
+        vedio9.setAttribute('src', e.data)
+
+    }
+},1000)
+var id10 = setInterval(function(){
+    let vedio10 = document.getElementById('capture10')
+    let ws10 = new WebSocket('ws://'+ws_ip+':8774');
+    ws10.onopen = function (e) {
+        ws10.send('the request from client');
+        clearInterval(id10);
+    };
+    ws10.onmessage = function (e) {
+        vedio10.setAttribute('src', e.data)
+
+    }
+},1000)
+var id11 = setInterval(function(){
+    let vedio11 = document.getElementById('capture11')
+    let ws11 = new WebSocket('ws://'+ws_ip+':8775');
+    ws11.onopen = function (e) {
+        ws11.send('the request from client');
+        clearInterval(id11);
+    };
+    ws11.onmessage = function (e) {
+        vedio11.setAttribute('src', e.data)
+
+    }
+},1000)
+var id12 = setInterval(function(){
+    let vedio12 = document.getElementById('capture12')
+    let ws12 = new WebSocket('ws://'+ws_ip+':8776');
+    ws12.onopen = function (e) {
+        ws12.send('the request from client');
+        clearInterval(id12);
+    };
+    ws12.onmessage = function (e) {
+        vedio12.setAttribute('src', e.data)
+
+    }
+},1000)
+var id13 = setInterval(function(){
+    let vedio13 = document.getElementById('capture13')
+    let ws13 = new WebSocket('ws://'+ws_ip+':8777');
+    ws13.onopen = function (e) {
+        ws13.send('the request from client');
+        clearInterval(id13);
+    };
+    ws13.onmessage = function (e) {
+        vedio13.setAttribute('src', e.data)
+
+    }
+},1000)
+var id14 = setInterval(function(){
+    let vedio14 = document.getElementById('capture14')
+    let ws14 = new WebSocket('ws://'+ws_ip+':8778');
+    ws14.onopen = function (e) {
+        ws14.send('the request from client');
+        clearInterval(id14);
+    };
+    ws14.onmessage = function (e) {
+        vedio14.setAttribute('src', e.data)
+
+    }
+},1000)
+var id15 = setInterval(function(){
+    let vedio15 = document.getElementById('capture15')
+    let ws15 = new WebSocket('ws://'+ws_ip+':8779');
+    ws15.onopen = function (e) {
+        ws15.send('the request from client');
+        clearInterval(id15);
+    };
+    ws15.onmessage = function (e) {
+        vedio15.setAttribute('src', e.data)
+
+    }
+},1000)
+var id16 = setInterval(function(){
+    let vedio16 = document.getElementById('capture16')
+    let ws16 = new WebSocket('ws://'+ws_ip+':8780');
+    ws16.onopen = function (e) {
+        ws16.send('the request from client');
+        clearInterval(id16);
+    };
+    ws16.onmessage = function (e) {
+        vedio16.setAttribute('src', e.data)
+
+    }
+},1000)
+</script>
+</html>

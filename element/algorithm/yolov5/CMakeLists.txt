@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(algorithmAPI)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -g")
 
@@ -31,11 +31,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
 
+    include_directories(../../../framework)
     include_directories(../../../framework/include)
 
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
     add_library(yolov5 SHARED
@@ -61,11 +61,11 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
     
+    include_directories(../../../framework)
     include_directories(../../../framework/include)
 
-    include_directories(../../../share)
-    include_directories(../../../share/3rdparty/spdlog/include)
-    include_directories(../../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/spdlog/include)
+    include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
     add_library(yolov5 SHARED

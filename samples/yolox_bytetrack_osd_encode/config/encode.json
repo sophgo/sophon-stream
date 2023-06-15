@@ -1,10 +1,13 @@
 {
   "configure": {
-    "rtsp_port": 8554
+    "encode_type": "RTSP",
+    "rtsp_port": "8554",
+    "rtmp_port": "1935",
+    "enc_fmt": "h264_bm",
+    "pix_fmt": "I420"
   },
   "shared_object": "../../../build/lib/libencode.so",
   "device_id": 0,
-  "id": 0,
   "name": "encode",
   "side": "sophgo",
   "thread_number": 4

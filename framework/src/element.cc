@@ -10,13 +10,6 @@
 namespace sophon_stream {
 namespace framework {
 
-constexpr const char* Element::JSON_ID_FIELD;
-constexpr const char* Element::JSON_SIDE_FIELD;
-constexpr const char* Element::JSON_DEVICE_ID_FIELD;
-constexpr const char* Element::JSON_THREAD_NUMBER_FIELD;
-constexpr const char* Element::JSON_CONFIGURE_FIELD;
-constexpr const char* Element::JSON_IS_SINK_FILED;
-
 void Element::connect(Element& srcElement, int srcElementPort,
                       Element& dstElement, int dstElementPort) {
   auto& inputConnector = dstElement.mInputConnectorMap[dstElementPort];
@@ -211,17 +204,17 @@ common::ErrorCode Element::pushInputData(int inputPort, int dataPipeId,
         "{2}",
         mId, inputPort, mThreadNumber);
   }
-  return mInputConnectorMap[inputPort]->pushDataWithId(dataPipeId, data);
+  return mInputConnectorMap[inputPort]->pushData(dataPipeId, data);
 }
 
-std::shared_ptr<void> Element::getInputData(int inputPort, int dataPipeId) {
+std::shared_ptr<void> Element::popInputData(int inputPort, int dataPipeId) {
   if (mInputConnectorMap[inputPort] == nullptr)
     mInputConnectorMap[inputPort] =
         std::make_shared<framework::Connector>(mThreadNumber);
-  return mInputConnectorMap[inputPort]->popDataWithId(dataPipeId);
+  return mInputConnectorMap[inputPort]->popData(dataPipeId);
 }
 
-void Element::setStopHandler(int outputPort, DataHandler dataHandler) {
+void Element::setSinkHandler(int outputPort, DataHandler dataHandler) {
   IVS_INFO("Set data handler, element id: {0:d}, output port: {1:d}", mId,
            outputPort);
   if (mLastElementFlag) mStopHandlerMap[outputPort] = dataHandler;
@@ -241,7 +234,7 @@ common::ErrorCode Element::pushOutputData(
       }
     }
   }
-  return mOutputConnectorMap[outputPort]->pushDataWithId(dataPipeId, data);
+  return mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data);
 
   IVS_ERROR(
       "Can not find data handler or data pipe on output port, output port: "
@@ -250,8 +243,8 @@ common::ErrorCode Element::pushOutputData(
   return common::ErrorCode::NO_SUCH_WORKER_PORT;
 }
 
-std::shared_ptr<Connector> Element::getOutputConnector(int portId) {
-  return mOutputConnectorMap[portId];
+int Element::getOutputConnectorCapacity(int outputPort) {
+  return mOutputConnectorMap[outputPort].lock()->getCapacity();
 }
 
 void Element::addInputPort(int port) { mInputPorts.push_back(port); }
@@ -259,24 +252,6 @@ void Element::addOutputPort(int port) { mOutputPorts.push_back(port); }
 
 std::vector<int> Element::getInputPorts() { return mInputPorts; }
 std::vector<int> Element::getOutputPorts() { return mOutputPorts; };
-
-std::size_t Element::getInputDataCount(int inputPort, int dataPipeId) {
-  return mInputConnectorMap[inputPort]->getDataCount(dataPipeId);
-}
-
-common::ErrorCode Element::getOutputDatapipeCapacity(int outputPort,
-                                                     int& capacity) {
-  capacity = mOutputConnectorMap[outputPort]->getCapacity();
-  return common::ErrorCode::SUCCESS;
-}
-
-common::ErrorCode Element::getOutputDatapipeSize(int outputPort, int channelId,
-                                                 int& size) {
-  int dataPipeId =
-      channelId % mOutputConnectorMap[outputPort]->getDataPipeCount();
-  size = mOutputConnectorMap[outputPort]->getDataPipeSize(dataPipeId);
-  return common::ErrorCode::SUCCESS;
-}
 
 }  // namespace framework
 }  // namespace sophon_stream

@@ -15,14 +15,15 @@
 #include <memory>
 #include <string>
 
-#include "common/ErrorCode.h"
-#include "common/Singleton.hpp"
+#include "common/error_code.h"
+#include "common/no_copyable.h"
+#include "common/singleton.h"
 #include "element.h"
 
 namespace sophon_stream {
 namespace framework {
 
-class ElementFactory {
+class ElementFactory : public ::sophon_stream::common::NoCopyable {
  public:
   using ElementMaker = std::function<std::shared_ptr<framework::Element>()>;
 
@@ -38,11 +39,6 @@ class ElementFactory {
   std::map<std::string, ElementMaker> mElementMakerMap;
 
   ~ElementFactory();
-
-  ElementFactory(const ElementFactory&) = delete;
-  ElementFactory& operator=(const ElementFactory&) = delete;
-  ElementFactory(ElementFactory&&) = delete;
-  ElementFactory& operator=(ElementFactory&&) = delete;
 };
 
 using SingletonElementFactory = common::Singleton<ElementFactory>;

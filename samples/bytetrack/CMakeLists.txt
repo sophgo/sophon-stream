@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(sophon_stream)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_BUILD_TYPE "Debug")
 
 if (NOT DEFINED TARGET_ARCH)
@@ -31,29 +31,24 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(${LIBSOPHON_INCLUDE_DIRS})
     link_directories(${LIBSOPHON_LIB_DIRS})
 
-    include_directories(../../share/3rdparty/gtest)
-    include_directories(../../share/3rdparty/gtest/include)
-    link_libraries(gtest)
-
     link_libraries(pthread)
     link_libraries(dl)
 
     link_directories(../../build/lib)
-    link_libraries(ivslogger)
 
-    include_directories(../../share)
-    include_directories(../../share/3rdparty/spdlog/include)
-    include_directories(../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../3rdparty/spdlog/include)
+    include_directories(../../3rdparty/nlohmann-json/include)
     include_directories(../../element/multimedia/decode/include)
+    include_directories(../../framework)
     include_directories(../../framework/include)
 
     include_directories(../include)
-    set(test_src
-        src/usecase_bytetrack.cc
+    set(demo_src
+        src/bytetrack_demo.cc
     )
-    get_filename_component(test_name ${test_src} NAME_WE)
-    add_executable(${test_name} ${test_src})
-    target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -lframework)
+    get_filename_component(demo_name ${demo_src} NAME_WE)
+    add_executable(${demo_name} ${demo_src})
+    target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
 
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
@@ -72,32 +67,26 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(JPU_LIBS bmjpuapi bmjpulite)
 
     include_directories(.)
-    include_directories(../share)
     link_libraries(pthread)
-
-    include_directories(../../share/3rdparty/gtest)
-    include_directories(../../share/3rdparty/gtest/include)
-    link_libraries(gtest)
 
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(pthread)
     link_libraries(dl)
 
     link_directories(../../build/lib)
-    link_libraries(ivslogger)
 
-    include_directories(../../share)
-    include_directories(../../share/3rdparty/spdlog/include)
-    include_directories(../../share/3rdparty/nlohmann-json/include)
+    include_directories(../../3rdparty/spdlog/include)
+    include_directories(../../3rdparty/nlohmann-json/include)
     include_directories(../../element/multimedia/decode/include)
+    include_directories(../../framework)
     include_directories(../../framework/include)
 
     include_directories(../include)
-    set(test_src
-        src/usecase_bytetrack.cc
+    set(demo_src
+        src/bytetrack_demo.cc
     )
-    get_filename_component(test_name ${test_src} NAME_WE)
-    add_executable(${test_name} ${test_src})
-    target_link_libraries(${test_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -lframework)
+    get_filename_component(demo_name ${demo_src} NAME_WE)
+    add_executable(${demo_name} ${demo_src})
+    target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
 
 endif()

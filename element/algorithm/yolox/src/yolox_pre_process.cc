@@ -73,8 +73,6 @@ common::ErrorCode YoloxPreProcess::preProcess(
         image1 = image0;
       }
 
-      // bm_image_destroy(image1);
-
       bm_image image_aligned;
       bool need_copy = image1.width & (64 - 1);
       if (need_copy) {
@@ -97,10 +95,6 @@ common::ErrorCode YoloxPreProcess::preProcess(
       } else {
         image_aligned = image1;
       }
-
-      // bm_image_destroy(image_aligned);
-
-      // // return common::ErrorCode::SUCCESS;
 
       float scale_w = float(context->net_w) / image_aligned.width;
       float scale_h = float(context->net_h) / image_aligned.height;
@@ -129,7 +123,7 @@ common::ErrorCode YoloxPreProcess::preProcess(
       int aligned_net_w = FFALIGN(context->net_w, 64);
       int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
       bm_image_create(context->handle, context->net_h, context->net_w,
-                      FORMAT_RGB_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
+                      FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
                       strides);
       bm_image_alloc_dev_mem(resized_img, BMCV_IMAGE_FOR_IN);
 
@@ -150,9 +144,13 @@ common::ErrorCode YoloxPreProcess::preProcess(
       if (tensor->get_dtype() == BM_INT8) {
         img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
       }
-
-      bm_image_create(context->handle, context->net_h, context->net_w,
-                      FORMAT_RGB_PLANAR, img_dtype, &converto_img);
+      if (context->bgr2rgb)
+        bm_image_create(context->handle, context->net_h, context->net_w,
+                        FORMAT_RGB_PLANAR, img_dtype, &converto_img);
+      else
+        bm_image_create(context->handle, context->net_h, context->net_w,
+                        FORMAT_BGR_PLANAR, img_dtype,
+                        &converto_img);  // TODO, 无需调用bmcv_image_convert_to
 
       bm_device_mem_t mem;
       int size_byte = 0;
