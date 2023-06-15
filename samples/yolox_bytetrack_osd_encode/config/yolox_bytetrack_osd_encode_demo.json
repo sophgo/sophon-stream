@@ -3,22 +3,26 @@
     {
       "channel_id": 2,
       "url": "../data/videos/mot17_01_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 3,
       "url": "../data/videos/mot17_03_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 20,
       "url": "../data/videos/mot17_06_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 30,
       "url": "../data/videos/mot17_08_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     }
   ],
   "engine_config_path": "../config/engine.json"

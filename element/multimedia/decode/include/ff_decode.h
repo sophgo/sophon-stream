@@ -84,6 +84,12 @@ class VideoDecFFM {
   /* grab a bm_image from the cache queue*/
   std::shared_ptr<bm_image> grab(int& frame_id, int& eof);
 
+  /* get frame count */
+  int mFrameCount();
+
+  /* close video decoder */
+  void closeDec();
+
  private:
   bool quit_flag = false;
 
@@ -113,7 +119,6 @@ class VideoDecFFM {
                        int sophon_idx);
 
   AVFrame* grabFrame(int& eof);
-  void closeDec();
 };
 
 #endif  // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_FF_DECODE_H_

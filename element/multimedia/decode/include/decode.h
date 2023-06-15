@@ -133,6 +133,7 @@ class Decode : public ::sophon_stream::framework::Element {
   static constexpr const char* JSON_CHANNEL_ID = "channel_id";
   static constexpr const char* JSON_SOURCE_TYPE = "source_type";
   static constexpr const char* JSON_URL = "url";
+  static constexpr const char* JSON_LOOP_NUM = "loop_num";
 
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;

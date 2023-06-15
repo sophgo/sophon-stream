@@ -17,6 +17,7 @@ struct ChannelOperateRequest {
   };
   enum class SourceType { RTSP, RTMP, VIDEO, IMG_DIR, UNKNOWN };
   int channelId;
+  int loopNum;
   std::string url;
   SourceType sourceType;
   ChannelOperate operation;

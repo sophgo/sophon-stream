@@ -344,6 +344,28 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
   return BM_SUCCESS;
 }
 
+int VideoDecFFM::mFrameCount() {
+  int videoStreamIndex = -1;
+  // Find the video stream
+  for (unsigned int i = 0; i < ifmt_ctx->nb_streams; ++i) {
+    if (ifmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+      videoStreamIndex = i;
+      break;
+    }
+  }
+
+  if (videoStreamIndex == -1) {
+    std::cerr << "Failed to find the video stream" << std::endl;
+    avformat_close_input(&ifmt_ctx);
+    return -1;
+  }
+
+  // Get the frame count from the video stream
+  int64_t frameCount = ifmt_ctx->streams[videoStreamIndex]->nb_frames;
+
+  return frameCount;
+}
+
 int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   frame = av_frame_alloc();
   frame_id = 0;
@@ -588,14 +610,11 @@ bool is_bmp(const char* filename) {
 std::shared_ptr<bm_image> picDec(bm_handle_t& handle, const char* path) {
   string input_name = path;
   if (is_jpg(path)) {
-    std::shared_ptr<bm_image> ret = jpgDec(handle, input_name);
-    return ret;
+    return jpgDec(handle, input_name);
   } else if (is_png(path)) {
-    std::shared_ptr<bm_image> ret = pngDec(handle, input_name);
-    return ret;
+    return pngDec(handle, input_name);
   } else if (is_bmp(path)) {
-    std::shared_ptr<bm_image> ret = bmpDec(handle, input_name);
-    return ret;
+    return bmpDec(handle, input_name);
   } else {
     fprintf(stderr, "not support pic format, only support jpg and png\n");
     exit(1);

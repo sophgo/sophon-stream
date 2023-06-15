@@ -12,16 +12,6 @@ namespace sophon_stream {
 namespace element {
 namespace decode {
 
-std::vector<std::string> stringSplit(const std::string& str, char delim) {
-  std::string s;
-  s.append(1, delim);
-  std::regex reg(s);
-  std::vector<std::string> elems(
-      std::sregex_token_iterator(str.begin(), str.end(), reg, -1),
-      std::sregex_token_iterator());
-  return elems;
-}
-
 bool check_path(std::string file_path,
                 std::vector<std::string> correct_postfixes) {
   auto index = file_path.rfind('.');
@@ -75,20 +65,25 @@ Decoder::~Decoder() {}
 
 common::ErrorCode Decoder::init(
     int deviceId, const std::string& url,
-    const ChannelOperateRequest::SourceType& sourceType) {
+    const ChannelOperateRequest::SourceType& sourceType, int loopNum) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
     mUrl = url;
-
+    mLoopNum = loopNum;
     int ret = bm_dev_request(&m_handle, deviceId);
     mDeviceId = deviceId;
     mSourceType = sourceType;
+    mImgIndex = 0;
     assert(BM_SUCCESS == ret);
 
     decoder.openDec(&m_handle, mUrl.c_str());
 
+    if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
+      mFrameCount = decoder.mFrameCount();
+      IVS_INFO("Init decoder, video frame count: {}", mFrameCount);
+    }
+
     if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
-      mImgIndex = 0;
       std::vector<std::string> correct_postfixes = {"jpg", "png", "bmp"};
       getAllFiles(mUrl, mImagePaths, correct_postfixes);
       std::sort(mImagePaths.begin(), mImagePaths.end());
@@ -103,19 +98,49 @@ common::ErrorCode Decoder::process(
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
   if (mSourceType == ChannelOperateRequest::SourceType::RTSP ||
-      mSourceType == ChannelOperateRequest::SourceType::RTMP ||
-      mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
+      mSourceType == ChannelOperateRequest::SourceType::RTMP) {
     int frame_id = 0;
     int eof = 0;
-    std::shared_ptr<bm_image> spBmImage = decoder.grab(frame_id, eof);
-
+    std::shared_ptr<bm_image> spBmImage = nullptr;
+    spBmImage = decoder.grab(frame_id, eof);
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
 
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
+
     if (eof) {
+      objectMetadata->mFrame->mEndOfStream = true;
+      errorCode = common::ErrorCode::STREAM_END;
+    } else {
+      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+    }
+
+    if (common::ErrorCode::SUCCESS != errorCode) {
+      objectMetadata->mErrorCode = errorCode;
+    }
+  } else if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
+    int frame_id = 0;
+    int eof = 0;
+    std::shared_ptr<bm_image> spBmImage = nullptr;
+    spBmImage = decoder.grab(frame_id, eof);
+    objectMetadata = std::make_shared<common::ObjectMetadata>();
+    objectMetadata->mFrame = std::make_shared<common::Frame>();
+
+    objectMetadata->mFrame->mHandle = m_handle;
+    objectMetadata->mFrame->mFrameId = frame_id;
+    objectMetadata->mFrame->mSpData = spBmImage;
+
+    /* 已知视频帧数，最后一帧时初始化decoder，开始下一个循环 */
+    if ((mImgIndex % mFrameCount) == (mFrameCount - 1)) {
+      --mLoopNum;
+      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+      decoder.closeDec();
+      decoder.openDec(&m_handle, mUrl.c_str());
+    }
+    ++mImgIndex;
+    if (!mLoopNum) {
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
     } else {
@@ -128,17 +153,20 @@ common::ErrorCode Decoder::process(
   } else if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
     std::shared_ptr<bm_image> spBmImage = nullptr;
 
-    if (mImgIndex < mImagePaths.size()) {
-      spBmImage = picDec(m_handle, mImagePaths[mImgIndex].c_str());
-    }
-    ++mImgIndex;
+    spBmImage =
+        picDec(m_handle, mImagePaths[mImgIndex % mImagePaths.size()].c_str());
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = mImgIndex;
     objectMetadata->mFrame->mSpData = spBmImage;
 
-    if (mImgIndex >= mImagePaths.size()) {
+    /* mImgIndex会不停累加，mImgIndex % mImagePaths.size()的值为
+    mImagePaths.size() - 1，即最后一张图像时，mLoopNum-1 */
+    if ((mImgIndex % mImagePaths.size()) == (mImagePaths.size() - 1))
+      --mLoopNum;
+    ++mImgIndex;
+    if (!mLoopNum) {
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
     } else {

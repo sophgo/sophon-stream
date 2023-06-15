@@ -28,6 +28,7 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_CHANNEL_ID_FILED =
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_URL_FILED = "url";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED =
     "source_type";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED = "loop_num";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -50,6 +51,8 @@ demo_config parse_demo_json(std::string& json_path) {
     channel_json["source_type"] =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED)
             ->get<std::string>();
+    channel_json["loop_num"] =
+        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED)->get<int>();
     config.channel_configs.push_back(channel_json);
   }
 
@@ -116,7 +119,7 @@ int main() {
       std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
       sophon_stream::common::ErrorCode errorCode =
           engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
-                               std::static_pointer_cast<void>(channelTask));
+                                std::static_pointer_cast<void>(channelTask));
     }
   }
 
