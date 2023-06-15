@@ -1,5 +1,42 @@
 # 算能 sophon-stream 用户手册
 
+## 目录
+- [算能 sophon-stream 用户手册](#算能-sophon-stream-用户手册)
+  - [目录](#目录)
+  - [1. 快速入门](#1-快速入门)
+    - [1.1 安装和配置环境](#11-安装和配置环境)
+      - [1.1.1 x86/arm PCIe平台](#111-x86arm-pcie平台)
+    - [1.1.2 SoC平台](#112-soc平台)
+    - [1.2 编译命令](#12-编译命令)
+    - [1.2.1 x86/arm PCIe平台](#121-x86arm-pcie平台)
+    - [1.2.2 SoC平台](#122-soc平台)
+    - [1.3 编译结果](#13-编译结果)
+  - [2. 概述](#2-概述)
+  - [2.1 sophon-stream优势](#21-sophon-stream优势)
+  - [2.2 sophon-stream软件栈](#22-sophon-stream软件栈)
+  - [3. 框架](#3-框架)
+    - [3.1 Engine](#31-engine)
+    - [3.2 Graph](#32-graph)
+    - [3.3 Element](#33-element)
+    - [3.3.1 ObjectMetadata](#331-objectmetadata)
+    - [3.4 Connector](#34-connector)
+    - [3.5 DataPipe](#35-datapipe)
+  - [4. 插件](#4-插件)
+    - [4.1 algorithm](#41-algorithm)
+      - [4.1.1 概述](#411-概述)
+      - [4.1.2 yolox](#412-yolox)
+      - [4.1.3 yolov5](#413-yolov5)
+      - [4.1.4 bytetrack](#414-bytetrack)
+    - [4.2 multimedia](#42-multimedia)
+      - [4.2.1 decode](#421-decode)
+      - [4.2.2 encode](#422-encode)
+      - [4.2.3 osd](#423-osd)
+  - [5. 应用程序](#5-应用程序)
+    - [5.1 例程概述](#51-例程概述)
+    - [5.2 配置文件](#52-配置文件)
+    - [5.3 入口程序](#53-入口程序)
+    - [5.4 用户侧信息](#54-用户侧信息)
+
 ## 1. 快速入门
 
 ### 1.1 安装和配置环境
@@ -95,17 +132,17 @@ common::ErrorCode start(int graphId);
 common::ErrorCode stop(int graphId);
 // 添加一个graph
 common::ErrorCode addGraph(const std::string& json);
-// 向某个graph中的某个element推入数据。用于启动解码功能。
-common::ErrorCode pushInputData(int graphId, int elementId, int inputPort,
+// 向某个graph中的source element推入数据。用于启动解码功能。
+common::ErrorCode pushSourceData(int graphId, int elementId, int inputPort,
                                 std::shared_ptr<void> data);
-// 为某个graph的某个element的sinkPort设置数据处理函数，例如绘图、发送等。
-void setStopHandler(int graphId, int elementId, int outputPort,
+// 为某个graph的sink element的sinkPort设置数据处理函数，例如绘图、发送等。
+void setSinkHandler(int graphId, int elementId, int outputPort,
                     DataHandler dataHandler);
 ```
 
-### 3.2 Element Manager
+### 3.2 Graph
 
-element_manager类的实例由engine管理，它提供接口给engine调用，主要在初始化或析构一张图时起作用。element_manager类对外的接口主要包括：
+graph类的实例由engine管理，它提供接口给engine调用，主要在初始化或析构一张图时起作用。graph类对外的接口主要包括：
 
 ```cpp
 // 初始化及反初始化当前graph
@@ -114,11 +151,11 @@ void uninit();
 // 启停当前graph
 common::ErrorCode start();
 common::ErrorCode stop();
-// 向某个element推入数据，用于启动DecoderElement的解码任务
-common::ErrorCode pushInputData(int elementId, int inputPort,
+// 向source element推入数据，用于启动DecoderElement的解码任务
+common::ErrorCode pushSourceData(int elementId, int inputPort,
                                 std::shared_ptr<void> data);
-// 为某个element的sinkPort设置数据处理函数，例如绘图、发送等
-void setStopHandler(int elementId, int outputPort, DataHandler dataHandler);
+// 为sink element的sinkPort设置数据处理函数，例如绘图、发送等
+void setSinkHandler(int elementId, int outputPort, DataHandler dataHandler);
 ```
 ### 3.3 Element
 
@@ -141,7 +178,7 @@ int mThreadNumber; // element内部工作的线程数，也等于InputConnector�
 std::map<int, std::shared_ptr<framework::Connector>> mInputConnectorMap;
 std::map<int, std::weak_ptr<framework::Connector>> mOutputConnectorMap;
 
-/* 管理输出StopHandler的映射，key是输出的port_id，value是一个签名为void(std::shared_ptr<void>)的函数。StopHandler为graph末尾的元素提供数据处理功能，一般包括绘图、推流等。 */
+/* 管理输出StopHandler的映射，key是输出的port_id，value是一个签名为void(std::shared_ptr<void>)的函数。StopHandler为graph末尾的元素提供数据处理功能，一般包括绘图等。 */
 std::map<int, DataHandler> mStopHandlerMap;
 ```
 
@@ -165,8 +202,6 @@ virtual common::ErrorCode doWork(int dataPipeId) = 0;
 // 循环调用doWork()，线程资源调度
 void run(int dataPipeId);
 
-// 指定端口和该端口上的dataPipeId，获取队列中的元素数量
-std::size_t getInputDataCount(int inputPort, int dataPipeId);
 // 将已处理完的数据push到输出Connector。特别地，如果当前element是sink element，则执行StopHandler。
 common::ErrorCode pushOutputData(int outputPort, int dataPipeId, std::shared_ptr<void> data);
 ```
@@ -279,7 +314,6 @@ yolox的配置文件形如：
     },
     "shared_object":"../../../build/lib/libyolox.so",
     "device_id":0,
-    "id":0,
     "name":"yolox",
     "side":"sophgo",
     "thread_number":2
@@ -305,7 +339,6 @@ yolov5的配置文件形如：
     },
     "shared_object":"../../../build/lib/libyolov5.so",
     "device_id":0,
-    "id":0,
     "name":"yolov5",
     "side":"sophgo",
     "thread_number":1
@@ -332,7 +365,6 @@ bytetrack是华中科技大学、香港大学和字节跳动联合提出的一�
     },
     "shared_object": "../../../build/lib/libbytetrack.so",
     "device_id": 0,
-    "id": 0,
     "name": "bytetrack",
     "side": "sophgo",
     "thread_number": 2
@@ -386,7 +418,6 @@ decode的配置文件包括以下内容:
   "configure": {},
   "shared_object": "../../../build/lib/libdecode.so",
   "device_id": 0,
-  "id": 0,
   "name": "decode",
   "side": "sophgo",
   "thread_number": 1
@@ -417,7 +448,6 @@ encode的配置文件包括以下内容:
   },
   "shared_object": "../../../build/lib/libencode.so",
   "device_id": 0,
-  "id": 0,
   "name": "encode",
   "side": "sophgo",
   "thread_number": 4
@@ -440,7 +470,6 @@ osd插件的配置文件包括:
   },
   "shared_object": "../../../build/lib/libosd.so",
   "device_id": 0,
-  "id": 0,
   "name": "osd",
   "side": "sophgo",
   "thread_number": 1
@@ -501,12 +530,12 @@ yolox_bytetrack_osd_encode_demo.json 是该demo的总体配置，其形如：
     {
       "channel_id": 2,
       "url": "../data/videos/mot17_01_frcnn.mp4",
-      "source_type": 0
+      "source_type": "VIDEO"
     },
     {
       "channel_id": 3,
       "url": "../data/videos/mot17_03_frcnn.mp4",
-      "source_type": 0
+      "source_type": "VIDEO"
     }
   ],
   "engine_config_path": "../config/engine.json"
@@ -595,3 +624,90 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
  - 统计fps等信息
 
 ### 5.4 用户侧信息
+
+运行一个例程时，命令行中会依序打印如下信息：
+
+ - graph的配置信息
+ ```bash
+ [info] [/sophon-stream/framework/src/engine.cc:95] Add graph start, json: {"connections":[{"dst_id":5001,"dst_port":0,"src_id":5000,"src_port":0},{"dst_id":5002,"dst_port":0,"src_id":5001,"src_port":0},{"dst_id":5003,"dst_port":0,"src_id":5002,"src_port":0}],"elements":[{"configure":{},"device_id":0,"id":5000,"name":"decode","shared_object":"../../../build/lib/libdecode.so","side":"sophgo","thread_number":1},{"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["pre"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5001,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2},{"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["infer"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5002,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2},{"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["post"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5003,"is_sink":true,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2}],"graph_id":0}
+ ```
+ - element的配置信息
+    - 对于算法插件，还会打印模型信息
+ ```bash
+ [info] [/sophon-stream/framework/src/element.cc:45] Init start, json: {"configure":{"model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel","stage":["pre"],"threshold_conf":0.5,"threshold_nms":0.5},"device_id":0,"id":5001,"name":"yolox","shared_object":"../../../build/lib/libyolox.so","side":"sophgo","thread_number":2}
+[BMRT][bmcpu_setup:349] INFO:cpu_lib 'libcpuop.so' is loaded.
+bmcpu init: skip cpu_user_defined
+open usercpu.so, init user_cpu_init
+[BMRT][load_bmodel:1079] INFO:Loading bmodel from [../data/models/BM1684X/yolox_s_int8_4b.bmodel]. Thanks for your patience...
+[BMRT][load_bmodel:1023] INFO:pre net num: 0, load net num: 1
+*** Run in PCIE mode ***
+
+########################
+NetName: yolox_s_bmnetp
+---- stage 0 ----
+  Input 0) 'x.1' shape=[ 4 3 640 640 ] dtype=INT8 scale=0.498161
+  Output 0) '15' shape=[ 4 8400 85 ] dtype=FLOAT32 scale=1
+########################
+ ```
+ - connection信息
+ ```bash
+ [debug] [/sophon-stream/framework/src/element.cc:26] InputConnector initialized, mId = 5001, inputPort = 0, dataPipeNum = 2
+ ```
+ - 启动graph、element
+ ```bash
+[info] [/sophon-stream/framework/src/graph.cc:107] Start graph thread start, graph id: 0
+[info] [/sophon-stream/framework/src/element.cc:125] Start element thread start, element id: 5000
+[info] [/sophon-stream/framework/src/element.cc:140] Start element thread finish, element id: 5000
+[info] [/sophon-stream/framework/src/element.cc:125] Start element thread start, element id: 5001
+[info] [/sophon-stream/framework/src/element.cc:140] Start element thread finish, element id: 5001
+[info] [/sophon-stream/framework/src/element.cc:125] Start element thread start, element id: 5002
+[info] [/sophon-stream/framework/src/element.cc:140] Start element thread finish, element id: 5002
+[info] [/sophon-stream/framework/src/element.cc:125] Start element thread start, element id: 5003
+[info] [/sophon-stream/framework/src/element.cc:140] Start element thread finish, element id: 5003
+[info] [/sophon-stream/framework/src/graph.cc:127] Start graph thread finish, graph id: 0
+
+ ```
+ - 设置sink handler
+ ```bash
+ [info] [/sophon-stream/framework/src/engine.cc:143] Set data handler, graph id: 0, element id: 5003, output port: 0
+ ```
+ - 设置channel_task，启动decode
+ ```bash
+ [info] [/sophon-stream/element/multimedia/decode/src/decode.cc:127] add one channel task
+ [info] [/sophon-stream/element/multimedia/decode/src/decode.cc:163] channel info decoder address: 0x7f7814000b70
+ ```
+ - element工作状态
+```bash
+[engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5000, output port: 0, data:0x7f781cab01d0
+[engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5000, output port: 0, data:0x7f781cad9110
+[engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5000, output port: 0, data:0x7f781c0681b0
+[engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5002, output port: 0, data:0x7f781c0127d0
+[engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5002, output port: 0, data:0x7f781c067480
+[engine] [debug] [/sophon-stream/framework/src/element.cc:232] send data, element id: 5002, output port: 0, data:0x7f781c0daf90
+```
+ - 解码至文件尾
+ ```bash
+ [h264_bm @ 0x7f7814007f80] av_read_frame ret(-541478725) maybe eof...
+ ```
+ - engine、graph、element线程终止
+ ```bash
+ [engine] [info] [/sophon-stream/framework/src/engine.cc:35] Engine stop graph thread start, graph id: 0
+ [engine] [info] [/sophon-stream/framework/src/engine.cc:50] Engine stop graph thread finish, graph id: 0
+ [engine] [info] [/sophon-stream/framework/src/graph.cc:132] Stop graph thread start, graph id: 0
+ [engine] [info] [/sophon-stream/framework/src/element.cc:145] Stop element thread start, element id: 5000
+ [engine] [info] [/sophon-stream/element/multimedia/decode/src/decode.cc:52] Decode stop...
+ [engine] [info] [/sophon-stream/framework/src/element.cc:159] Stop element thread finish, element id: 5000
+ [engine] [info] [/sophon-stream/framework/src/element.cc:145] Stop element thread start, element id: 5001
+ [engine] [info] [/sophon-stream/framework/src/element.cc:159] Stop element thread finish, element id: 5001
+ [engine] [info] [/sophon-stream/framework/src/element.cc:145] Stop element thread start, element id: 5002
+ [engine] [info] [/sophon-stream/framework/src/element.cc:159] Stop element thread finish, element id: 5002
+ [engine] [info] [/sophon-stream/framework/src/element.cc:145] Stop element thread start, element id: 5003
+ [engine] [info] [/sophon-stream/framework/src/element.cc:159] Stop element thread finish, element id: 5003
+ [engine] [info] [/sophon-stream/framework/src/graph.cc:150] Stop graph thread finish, graph id: 0
+
+ ```
+ - 统计耗时、帧数、fps
+```bash
+total time cost 5286871 us.
+frame count is 1422 | fps is 268.968 fps.
+```
