@@ -322,17 +322,30 @@ yolox的配置文件形如：
 
 ```json
 {
-    "configure":{
-        "model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel",
-        "threshold_conf":0.5,
-        "threshold_nms":0.5,
-        "stage":["pre"]
-    },
-    "shared_object":"../../../build/lib/libyolox.so",
-    "device_id":0,
-    "name":"yolox",
-    "side":"sophgo",
-    "thread_number":2
+  "configure": {
+    "model_path": "../data/models/BM1684X/yolox_s_int8_4b.bmodel",
+    "threshold_conf": 0.5,
+    "threshold_nms": 0.5,
+    "bgr2rgb": true,
+    "mean": [
+      0,
+      0,
+      0
+    ],
+    "std": [
+      1,
+      1,
+      1
+    ],
+    "stage": [
+      "pre"
+    ]
+  },
+  "shared_object": "../../../build/lib/libyolox.so",
+  "device_id": 0,
+  "name": "yolox",
+  "side": "sophgo",
+  "thread_number": 2
 }
 ```
 配置参数的详细介绍请参见 [yolox插件介绍](../element/algorithm/yolox/README.md)
@@ -346,18 +359,31 @@ yolov5是世界上最受欢迎的视觉模型，使用十分广泛。
 yolov5的配置文件形如：
 ```json
 {
-    "configure":{
-        "model_path":"../data/models/yolov5s_tpukernel_int8_4b.bmodel",
-        "threshold_conf":0.5,
-        "threshold_nms":0.5,
-        "stage":["pre"],
+    "configure": {
+        "model_path": "../data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_4b.bmodel",
+        "threshold_conf": 0.5,
+        "threshold_nms": 0.5,
+        "bgr2rgb": true,
+        "mean": [
+            0,
+            0,
+            0
+        ],
+        "std": [
+            1,
+            1,
+            1
+        ],
+        "stage": [
+            "pre"
+        ],
         "use_tpu_kernel": true
     },
-    "shared_object":"../../../build/lib/libyolov5.so",
-    "device_id":0,
-    "name":"yolov5",
-    "side":"sophgo",
-    "thread_number":1
+    "shared_object": "../../../build/lib/libyolov5.so",
+    "device_id": 0,
+    "name": "yolov5",
+    "side": "sophgo",
+    "thread_number": 1
 }
 ```
 
