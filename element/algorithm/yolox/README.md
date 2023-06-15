@@ -11,17 +11,30 @@ sophon-stream yolox插件具有一些可配置的参数，可以根据需求进�
 
 ```json
 {
-    "configure":{
-        "model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel",
-        "threshold_conf":0.5,
-        "threshold_nms":0.5,
-        "stage":["pre"]
-    },
-    "shared_object":"../../../build/lib/libyolox.so",
-    "device_id":0,
-    "name":"yolox",
-    "side":"sophgo",
-    "thread_number":2
+  "configure": {
+    "model_path": "../data/models/BM1684X/yolox_s_int8_4b.bmodel",
+    "threshold_conf": 0.5,
+    "threshold_nms": 0.5,
+    "bgr2rgb": true,
+    "mean": [
+      0,
+      0,
+      0
+    ],
+    "std": [
+      1,
+      1,
+      1
+    ],
+    "stage": [
+      "pre"
+    ]
+  },
+  "shared_object": "../../../build/lib/libyolox.so",
+  "device_id": 0,
+  "name": "yolox",
+  "side": "sophgo",
+  "thread_number": 2
 }
 ```
 
@@ -30,6 +43,9 @@ sophon-stream yolox插件具有一些可配置的参数，可以根据需求进�
 |  model_path  |   字符串   | "../data/models/BM1684X/yolox_s_int8_4b.bmodel" | yolox模型路径 |
 |  threshold_conf   |   浮点数   | 0.5 | 目标检测物体置信度阈值 |
 |  threshold_nms  |   浮点数   | 0.5 | 目标检测NMS IOU阈值 |
+|  bgr2rgb  |   bool   | true | 解码器解出来的图像默认是bgr格式，是否需要将图像转换成rgb格式 |
+|  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
+|  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  stage    |   列表   | ["pre"]  | 标志前处理、推理、后处理三个阶段 |
 |  shared_object |   字符串   |  "../../../build/lib/libyolox.so"  | libyolox 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
@@ -38,4 +54,4 @@ sophon-stream yolox插件具有一些可配置的参数，可以根据需求进�
 | thread_number |    整数     | 1 | 启动线程数 |
 
 > **注意**：
-stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用tpu和cpu资源，提高检测效率。
+1.stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用tpu和cpu资源，提高检测效率。

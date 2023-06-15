@@ -1,13 +1,26 @@
 {
-    "configure":{
-        "model_path":"../data/models/BM1684X/yolox_s_int8_4b.bmodel",
-        "threshold_conf":0.5,
-        "threshold_nms":0.5,
-        "stage":["pre"]
-    },
-    "shared_object":"../../../build/lib/libyolox.so",
-    "device_id":0,
-    "name":"yolox",
-    "side":"sophgo",
-    "thread_number":2
+  "configure": {
+    "model_path": "../data/models/BM1684X/yolox_s_int8_4b.bmodel",
+    "threshold_conf": 0.5,
+    "threshold_nms": 0.5,
+    "bgr2rgb": true,
+    "mean": [
+      0,
+      0,
+      0
+    ],
+    "std": [
+      1,
+      1,
+      1
+    ],
+    "stage": [
+      "pre"
+    ]
+  },
+  "shared_object": "../../../build/lib/libyolox.so",
+  "device_id": 0,
+  "name": "yolox",
+  "side": "sophgo",
+  "thread_number": 2
 }

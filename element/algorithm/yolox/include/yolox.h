@@ -38,6 +38,12 @@ class Yolox : public ::sophon_stream::framework::Element {
       "threshold_conf";
   static constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD =
       "threshold_nms";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD = "bgr2rgb";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD =
+      "mean";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_STD_FIELD =
+      "std";
+
 
  private:
   std::shared_ptr<YoloxContext> mContext;          // context对象

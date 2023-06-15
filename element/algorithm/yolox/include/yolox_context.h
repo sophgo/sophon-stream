@@ -19,8 +19,8 @@
 #include "bmcv_api_ext.h"
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
-#include "common/error_code.h"
 #include "common/bmnn_utils.h"
+#include "common/error_code.h"
 
 namespace sophon_stream {
 namespace element {
@@ -34,6 +34,10 @@ struct YoloxContext {
   std::shared_ptr<BMNNContext> bmContext;
   std::shared_ptr<BMNNNetwork> bmNetwork;
   bm_handle_t handle;
+
+  std::vector<float> mean;  // 前处理均值， 长度为3，顺序为rgb
+  std::vector<float> stdd;  // 前处理方差， 长度为3，顺序为rgb
+  bool bgr2rgb;             // 是否将bgr图像转成rgb推理
 
   float thresh_conf;  // 置信度阈值
   float thresh_nms;   // nms iou阈值
