@@ -72,7 +72,7 @@ chmod -R +x scripts/
 ```
 模型说明:
 
-1.`yolox_s_bytetrack_`系列移植于[bytetrack官方](https://github.com/ifzhang/ByteTrack)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`
+1.`yolox_s_bytetrack_`系列模型移植于[bytetrack官方](https://github.com/ifzhang/ByteTrack)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`
 
 2.`yolox_s`系列模型移植于[yolox官方](https://github.com/Megvii-BaseDetection/YOLOX)，插件配置`mean=[0,0,0]`，`std=[1,1,1]`
 
