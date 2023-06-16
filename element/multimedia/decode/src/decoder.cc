@@ -78,13 +78,6 @@ common::ErrorCode Decoder::init(
 
     decoder.openDec(&m_handle, mUrl.c_str());
 
-    if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
-      mFrameCount = decoder.mFrameCount();
-      mVideoTpye = mFrameCount > 0 ? 1 : 0;
-      IVS_INFO("mVideoTpye:{0}", mVideoTpye);
-      IVS_INFO("Init decoder, video frame count: {0}", mFrameCount);
-    }
-
     if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
       std::vector<std::string> correct_postfixes = {"jpg", "png", "bmp"};
       getAllFiles(mUrl, mImagePaths, correct_postfixes);
@@ -123,67 +116,35 @@ common::ErrorCode Decoder::process(
       objectMetadata->mErrorCode = errorCode;
     }
   } else if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
-    if (mVideoTpye) {
-      int frame_id = 0;
-      int eof = 0;
-      std::shared_ptr<bm_image> spBmImage = nullptr;
-      spBmImage = decoder.grab(frame_id, eof);
-      objectMetadata = std::make_shared<common::ObjectMetadata>();
-      objectMetadata->mFrame = std::make_shared<common::Frame>();
+    int frame_id = 0;
+    int eof = 0;
+    std::shared_ptr<bm_image> spBmImage = nullptr;
+    spBmImage = decoder.grab(frame_id, eof);
+    objectMetadata = std::make_shared<common::ObjectMetadata>();
+    objectMetadata->mFrame = std::make_shared<common::Frame>();
 
-      objectMetadata->mFrame->mHandle = m_handle;
-      objectMetadata->mFrame->mFrameId = frame_id;
-      objectMetadata->mFrame->mSpData = spBmImage;
-
-      /* 已知视频帧数，最后一帧时初始化decoder，开始下一个循环 */
-      if ((mImgIndex % mFrameCount) == (mFrameCount - 1)) {
-        --mLoopNum;
-        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+    objectMetadata->mFrame->mHandle = m_handle;
+    objectMetadata->mFrame->mFrameId = frame_id;
+    objectMetadata->mFrame->mSpData = spBmImage;
+    if (eof) {
+      --mLoopNum;
+      if (mLoopNum > 0) {
+        objectMetadata->mFrame->mSpData = lastBmImage;
+        bm_image2Frame(objectMetadata->mFrame, *lastBmImage);
         decoder.closeDec();
         decoder.openDec(&m_handle, mUrl.c_str());
-      }
-      ++mImgIndex;
-      if (!mLoopNum) {
+      } else {
         objectMetadata->mFrame->mEndOfStream = true;
         errorCode = common::ErrorCode::STREAM_END;
-      } else {
-        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
-      }
-
-      if (common::ErrorCode::SUCCESS != errorCode) {
-        objectMetadata->mErrorCode = errorCode;
       }
     } else {
-      int frame_id = 0;
-      int eof = 0;
-      std::shared_ptr<bm_image> spBmImage = nullptr;
-      spBmImage = decoder.grab(frame_id, eof);
-      objectMetadata = std::make_shared<common::ObjectMetadata>();
-      objectMetadata->mFrame = std::make_shared<common::Frame>();
-
-      objectMetadata->mFrame->mHandle = m_handle;
-      objectMetadata->mFrame->mFrameId = frame_id;
-      objectMetadata->mFrame->mSpData = spBmImage;
-      if (eof) {
-        --mLoopNum;
-        if (mLoopNum > 0) {
-          objectMetadata->mFrame->mSpData = lastBmImage;
-          bm_image2Frame(objectMetadata->mFrame, *lastBmImage);
-          decoder.closeDec();
-          decoder.openDec(&m_handle, mUrl.c_str());
-        } else {
-          objectMetadata->mFrame->mEndOfStream = true;
-          errorCode = common::ErrorCode::STREAM_END;
-        }
-      } else {
-        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
-      }
-
-      if (common::ErrorCode::SUCCESS != errorCode) {
-        objectMetadata->mErrorCode = errorCode;
-      }
-      lastBmImage = spBmImage;
+      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
+
+    if (common::ErrorCode::SUCCESS != errorCode) {
+      objectMetadata->mErrorCode = errorCode;
+    }
+    lastBmImage = spBmImage;
   } else if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
     std::shared_ptr<bm_image> spBmImage = nullptr;
 
