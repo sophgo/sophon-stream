@@ -79,15 +79,9 @@ common::ErrorCode Decoder::init(
     decoder.openDec(&m_handle, mUrl.c_str());
 
     if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
-      auto postFixes = mUrl.substr(mUrl.length() - 5, 5);
-      IVS_DEBUG("postFixes:{0}", postFixes);
-      if (postFixes == ".h264") {
-        mVideoTpye = 0;
-      } else {
-        mVideoTpye = 1;
-        mFrameCount = decoder.mFrameCount();
-      }
-
+      mFrameCount = decoder.mFrameCount();
+      mVideoTpye = mFrameCount > 0 ? 1 : 0;
+      IVS_INFO("mVideoTpye:{0}", mVideoTpye);
       IVS_INFO("Init decoder, video frame count: {0}", mFrameCount);
     }
 
