@@ -167,14 +167,21 @@ common::ErrorCode YoloxInference::predict(
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
 
-  auto inputTensors = mergeInputDeviceMem(context, objectMetadatas);
-  auto outputTensors = getOutputDeviceMem(context);
+  if (context->max_batch > 1) {
+    auto inputTensors = mergeInputDeviceMem(context, objectMetadatas);
+    auto outputTensors = getOutputDeviceMem(context);
 
-  int ret = 0;
-  ret = context->bmNetwork->forward(inputTensors->tensors,
-                                    outputTensors->tensors);
+    int ret = 0;
+    ret = context->bmNetwork->forward(inputTensors->tensors,
+                                      outputTensors->tensors);
 
-  splitOutputMemIntoObjectMetadatas(context, objectMetadatas, outputTensors);
+    splitOutputMemIntoObjectMetadatas(context, objectMetadatas, outputTensors);
+  } else {
+    objectMetadatas[0]->mOutputBMtensors = getOutputDeviceMem(context);
+    int ret = context->bmNetwork->forward(
+        objectMetadatas[0]->mInputBMtensors->tensors,
+        objectMetadatas[0]->mOutputBMtensors->tensors);
+  }
 
   return common::ErrorCode::SUCCESS;
 }

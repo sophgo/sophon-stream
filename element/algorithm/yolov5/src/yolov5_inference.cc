@@ -19,7 +19,7 @@ void Yolov5Inference::init(std::shared_ptr<Yolov5Context> context) {}
 
 std::shared_ptr<sophon_stream::common::bmTensors>
 Yolov5Inference::mergeInputDeviceMem(std::shared_ptr<Yolov5Context> context,
-                                    common::ObjectMetadatas& objectMetadatas) {
+                                     common::ObjectMetadatas& objectMetadatas) {
   // 合并inputBMtensors，并且申请连续的outputBMtensors
   std::shared_ptr<sophon_stream::common::bmTensors> inputTensors =
       std::make_shared<sophon_stream::common::bmTensors>();
@@ -167,15 +167,22 @@ common::ErrorCode Yolov5Inference::predict(
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
 
-  auto inputTensors = mergeInputDeviceMem(context, objectMetadatas);
-  auto outputTensors = getOutputDeviceMem(context);
+  if (context->max_batch > 1) {
+    auto inputTensors = mergeInputDeviceMem(context, objectMetadatas);
+    auto outputTensors = getOutputDeviceMem(context);
 
-  int ret = 0;
-  ret = context->bmNetwork->forward(inputTensors->tensors,
-                                    outputTensors->tensors);
+    int ret = 0;
+    ret = context->bmNetwork->forward(inputTensors->tensors,
+                                      outputTensors->tensors);
 
-  splitOutputMemIntoObjectMetadatas(context, objectMetadatas, outputTensors);
-  
+    splitOutputMemIntoObjectMetadatas(context, objectMetadatas, outputTensors);
+  } else {
+    objectMetadatas[0]->mOutputBMtensors = getOutputDeviceMem(context);
+    int ret = context->bmNetwork->forward(
+        objectMetadatas[0]->mInputBMtensors->tensors,
+        objectMetadatas[0]->mOutputBMtensors->tensors);
+  }
+
   return common::ErrorCode::SUCCESS;
 }
 
