@@ -164,7 +164,7 @@ common::ErrorCode Decode::parse_channel_task(
             ChannelOperateRequest::SourceType::IMG_DIR) {
       auto loopNumIt = configure.find(JSON_LOOP_NUM);
       if (configure.end() == loopNumIt || !channelIdIt->is_number_integer()) {
-        IVS_ERROR(
+        IVS_WARN(
             "Can not find {0} with int type in worker json configure, json: "
             "{1}",
             JSON_LOOP_NUM, json);

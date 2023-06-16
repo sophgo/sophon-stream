@@ -45,6 +45,8 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   int mLoopNum;
   int mImgIndex;
   int mFrameCount;
+  int mVideoTpye;
+  std::shared_ptr<bm_image> lastBmImage;
   ChannelOperateRequest::SourceType mSourceType;
   std::vector<std::string> mImagePaths;
 };
