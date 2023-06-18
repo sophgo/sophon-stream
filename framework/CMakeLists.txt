@@ -14,11 +14,30 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -rdynamic")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
 
+    set(FFMPEG_DIR  /opt/sophon/sophon-ffmpeg-latest/lib/cmake)
+    find_package(FFMPEG REQUIRED)
+    include_directories(${FFMPEG_INCLUDE_DIRS})
+    link_directories(${FFMPEG_LIB_DIRS})
+
+    set(OpenCV_DIR  /opt/sophon/sophon-opencv-latest/lib/cmake/opencv4)
+    find_package(OpenCV REQUIRED)
+    include_directories(${OpenCV_INCLUDE_DIRS})
+    link_directories(${OpenCV_LIB_DIRS})
+
+    set(LIBSOPHON_DIR  /opt/sophon/libsophon-current/data/libsophon-config.cmake)
+    find_package(LIBSOPHON REQUIRED)
+    include_directories(${LIBSOPHON_INCLUDE_DIRS})
+    link_directories(${LIBSOPHON_LIB_DIRS})
+
+    set(BM_LIBS bmlib bmrt bmcv yuv)
+    set(JPU_LIBS bmjpuapi bmjpulite)
+
     include_directories(../3rdparty/spdlog/include)
     include_directories(../3rdparty/nlohmann-json/include)
 
     add_library(ivslogger SHARED
       common/logger.cc
+      common/profiler.cc
     )
 
     include_directories(./)
@@ -72,6 +91,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
 
     add_library(ivslogger SHARED
       common/logger.cc
+      common/profiler.cc
     )
 
     include_directories(.)

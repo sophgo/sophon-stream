@@ -13,6 +13,7 @@
 #include <memory>
 #include <mutex>
 
+#include "common/profiler.h"
 #include "element.h"
 #include "yolov5_context.h"
 #include "yolov5_inference.h"
@@ -59,6 +60,9 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   bool use_infer = false;
   bool use_post = false;
   int mBatch;
+
+  std::string mFpsProfilerName;
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 
   common::ErrorCode initContext(const std::string& json);
   void process(common::ObjectMetadatas& objectMetadatas);

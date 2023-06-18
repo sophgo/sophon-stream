@@ -9,6 +9,7 @@
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
+#include "common/profiler.h"
 #include "decode.h"
 #include "engine.h"
 #include "init_engine.h"
@@ -143,6 +144,7 @@ int main() {
   yolov5_json.num_graphs = engine_json.size();
   int num_channels =
       yolov5_json.num_channels_per_graph * yolov5_json.num_graphs;
+  ::sophon_stream::common::FpsProfiler fpsProfiler("fps_yolov5_demo", 100);
   auto sinkHandler = [&](std::shared_ptr<void> data) {
     // write stop data handler here
     auto objectMetadata =
@@ -193,6 +195,7 @@ int main() {
       free(jpeg_data);
       bm_image_destroy(imageStorage);
     }
+    fpsProfiler.add(1);
   };
 
   std::map<int, std::pair<int, int>> graph_src_id_port_map;
