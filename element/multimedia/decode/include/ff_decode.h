@@ -34,6 +34,8 @@ extern "C" {
 #define USEING_MEM_HEAP2 4
 #define USEING_MEM_HEAP1 2
 
+static const int DISCONNECTED_ERROR_CODE = -22;
+
 typedef struct {
   uint8_t* start;
   int size;
@@ -94,6 +96,7 @@ class VideoDecFFM {
   bool quit_flag = false;
 
   int is_rtsp;
+  const char* rtsp_url;
   int width;
   int height;
   int pix_fmt;
@@ -117,6 +120,10 @@ class VideoDecFFM {
   int openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
                        AVFormatContext* fmt_ctx, enum AVMediaType type,
                        int sophon_idx);
+
+  int isNetworkError(int ret);
+
+  void reConnectRTSP();
 
   AVFrame* grabFrame(int& eof);
 };
