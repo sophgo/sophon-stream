@@ -39,6 +39,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
       common/logger.cc
       common/profiler.cc
     )
+    target_link_libraries(ivslogger -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS})
 
     include_directories(./)
     include_directories(include)
@@ -51,7 +52,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/connector.cc
     )
     link_libraries(dl)
-    target_link_libraries(framework -ldl)
+    target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS})
      
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
@@ -63,9 +64,9 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
-    include_directories("${SDK}/include/")
-    include_directories("${SDK}/include/opencv4")
-    link_directories("${SDK}/lib/")
+    include_directories("${SOPHON_SDK_SOC}/include/")
+    include_directories("${SOPHON_SDK_SOC}/include/opencv4")
+    link_directories("${SOPHON_SDK_SOC}/lib/")
     include_directories(.)
 
     add_compile_options(-fPIC)
@@ -74,9 +75,12 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
-    include_directories("${SDK}/include/")
-    include_directories("${SDK}/include/opencv4")
-    link_directories("${SDK}/lib/")
+    include_directories("${SOPHON_SDK_SOC}/include/")
+    include_directories("${SOPHON_SDK_SOC}/include/opencv4")
+    link_directories("${SOPHON_SDK_SOC}/lib/")
+    set(BM_LIBS bmlib bmrt bmcv yuv)
+    set(JPU_LIBS bmjpuapi bmjpulite)
+
     link_libraries(pthread)
 
     include_directories(../3rdparty/spdlog/include)
@@ -93,6 +97,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
       common/logger.cc
       common/profiler.cc
     )
+    target_link_libraries(ivslogger -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov)
 
     include_directories(.)
     include_directories(include)
@@ -105,6 +110,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
         src/connector.cc
     )
     link_libraries(dl)
-    target_link_libraries(framework -ldl -fprofile-arcs -lgcov)
+    target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov)
 
 endif()
