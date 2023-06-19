@@ -96,7 +96,9 @@ class VideoDecFFM {
   bool quit_flag = false;
 
   int is_rtsp;
+  int is_rtmp;
   const char* rtsp_url;
+  const char* rtmp_url;
   int width;
   int height;
   int pix_fmt;
@@ -123,7 +125,7 @@ class VideoDecFFM {
 
   int isNetworkError(int ret);
 
-  void reConnectRTSP();
+  void reConnectVideoStream();
 
   AVFrame* grabFrame(int& eof);
 };
