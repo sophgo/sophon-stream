@@ -319,22 +319,41 @@ void Yolov5PostProcess::postProcessCPU(
         assert(feat_c == anchor_num);
         int feature_size = feat_h * feat_w * nout;
         float* tensor_data = (float*)output_tensor->get_cpu_data();
+
         for (int anchor_idx = 0; anchor_idx < anchor_num; anchor_idx++) {
           float* ptr = tensor_data + anchor_idx * feature_size;
           for (int i = 0; i < area; i++) {
-            dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w *
-                     context->net_w;
-            dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h *
-                     context->net_h;
-            dst[2] =
-                pow((sigmoid(ptr[2]) * 2), 2) * anchors[tidx][anchor_idx][0];
-            dst[3] =
-                pow((sigmoid(ptr[3]) * 2), 2) * anchors[tidx][anchor_idx][1];
-            dst[4] = sigmoid(ptr[4]);
-            float score = dst[4];
-            if (score > context->thresh_conf) {
-              for (int d = 5; d < nout; d++) {
-                dst[d] = sigmoid(ptr[d]);
+            float score = sigmoid(ptr[4]);
+            if (score >= context->thresh_conf) {
+              int class_id = argmax(&ptr[5], context->class_num);
+              float confidence = sigmoid(ptr[class_id + 5]);
+              if (confidence * score >= context->thresh_conf) {
+                dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w *
+                         context->net_w;
+                dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h *
+                         context->net_h;
+                dst[2] = pow((sigmoid(ptr[2]) * 2), 2) *
+                         anchors[tidx][anchor_idx][0];
+                dst[3] = pow((sigmoid(ptr[3]) * 2), 2) *
+                         anchors[tidx][anchor_idx][1];
+                for (int d = 5; d < nout; d++) {
+                  dst[d] = sigmoid(ptr[d]);
+                }
+                float centerX = (dst[0] + 1 - tx1) / ratio - 1;
+                float centerY = (dst[1] + 1 - ty1) / ratio - 1;
+                float width = (dst[2] + 0.5) / ratio;
+                float height = (dst[3] + 0.5) / ratio;
+
+                YoloV5Box box;
+                box.x = int(centerX - width / 2);
+                if (box.x < 0) box.x = 0;
+                box.y = int(centerY - height / 2);
+                if (box.y < 0) box.y = 0;
+                box.width = width;
+                box.height = height;
+                box.class_id = class_id;
+                box.score = confidence * score;
+                yolobox_vec.push_back(box);
               }
             }
             dst += nout;
@@ -349,29 +368,6 @@ void Yolov5PostProcess::postProcessCPU(
       output_data = (float*)out_tensor->get_cpu_data();
     }
 
-    for (int i = 0; i < box_num; i++) {
-      float* ptr = output_data + i * nout;
-      float score = ptr[4];
-      int class_id = argmax(&ptr[5], context->class_num);
-      float confidence = ptr[class_id + 5];
-      if (confidence * score > context->thresh_conf) {
-        float centerX = (ptr[0] + 1 - tx1) / ratio - 1;
-        float centerY = (ptr[1] + 1 - ty1) / ratio - 1;
-        float width = (ptr[2] + 0.5) / ratio;
-        float height = (ptr[3] + 0.5) / ratio;
-
-        YoloV5Box box;
-        box.x = int(centerX - width / 2);
-        if (box.x < 0) box.x = 0;
-        box.y = int(centerY - height / 2);
-        if (box.y < 0) box.y = 0;
-        box.width = width;
-        box.height = height;
-        box.class_id = class_id;
-        box.score = confidence * score;
-        yolobox_vec.push_back(box);
-      }
-    }
     NMS(yolobox_vec, context->thresh_nms);
 
     for (auto bbox : yolobox_vec) {

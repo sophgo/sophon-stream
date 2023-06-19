@@ -56,6 +56,7 @@ common::ErrorCode YoloxPreProcess::preProcess(
 
   initTensors(context, objectMetadatas);
 
+  auto jsonPlanner = context->bgr2rgb ? FORMAT_RGB_PLANAR : FORMAT_BGR_PLANAR;
   int i = 0;
   for (auto& objMetadata : objectMetadatas) {
     if (objMetadata->mFrame->mSpData != nullptr) {
@@ -64,9 +65,9 @@ common::ErrorCode YoloxPreProcess::preProcess(
       bm_image image0 = *objMetadata->mFrame->mSpData;
       bm_image image1;
       // convert to RGB_PLANAR
-      if (image0.image_format != FORMAT_BGR_PLANAR) {
+      if (image0.image_format != jsonPlanner) {
         bm_image_create(context->handle, image0.height, image0.width,
-                        FORMAT_BGR_PLANAR, image0.data_type, &image1);
+                        jsonPlanner, image0.data_type, &image1);
         bm_image_alloc_dev_mem(image1, BMCV_IMAGE_FOR_IN);
         bmcv_image_storage_convert(context->handle, 1, &image0, &image1);
       } else {
@@ -123,7 +124,7 @@ common::ErrorCode YoloxPreProcess::preProcess(
       int aligned_net_w = FFALIGN(context->net_w, 64);
       int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
       bm_image_create(context->handle, context->net_h, context->net_w,
-                      FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
+                      jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img,
                       strides);
       bm_image_alloc_dev_mem(resized_img, BMCV_IMAGE_FOR_IN);
 
@@ -144,13 +145,8 @@ common::ErrorCode YoloxPreProcess::preProcess(
       if (tensor->get_dtype() == BM_INT8) {
         img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
       }
-      if (context->bgr2rgb)
-        bm_image_create(context->handle, context->net_h, context->net_w,
-                        FORMAT_RGB_PLANAR, img_dtype, &converto_img);
-      else
-        bm_image_create(context->handle, context->net_h, context->net_w,
-                        FORMAT_BGR_PLANAR, img_dtype,
-                        &converto_img);  // TODO, 无需调用bmcv_image_convert_to
+      bm_image_create(context->handle, context->net_h, context->net_w,
+                      jsonPlanner, img_dtype, &converto_img);
 
       bm_device_mem_t mem;
       int size_byte = 0;
