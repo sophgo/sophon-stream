@@ -41,4 +41,4 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 | thread_number |    整数     | 4| 启动线程数，需要保证和处理码流数一致 |
 
 > **注意**：
-1. osd_type为det时，需提供class_names文件地址
+1. osd_type为"DET"时，需提供class_names文件地址

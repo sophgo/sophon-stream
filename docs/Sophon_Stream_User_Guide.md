@@ -135,7 +135,7 @@ Element与外部的数据传递通过connector来进行，每个输入或输出p
 element基类的主要成员变量:
 
 ```cpp
-int mId;     // element id，用于在engine及element_manager中确定element的身份，在graph中具有唯一性
+int mId;     // element id，用于在engine及graph中确定element的身份，在graph中具有唯一性
 int mDeviceId;  // device id，涉及tpu操作时使用的设备id。pcie模式下可以按需设置，soc模式下应设置为0
 int mThreadNumber; // element内部工作的线程数，也等于InputConnector中的DataPipe数目
 
@@ -500,7 +500,7 @@ osd插件的配置文件包括:
 }
 ```
 
-其中，"osd_type" 字段标识了算法类型，可以设置为 "det" 或 "track" 
+其中，"osd_type" 字段标识了算法类型，可以设置为 "DET" 或 "TRACK" 
 
 配置参数的详细介绍请参见 [osd介绍](../element/multimedia/osd/README.md)
 
