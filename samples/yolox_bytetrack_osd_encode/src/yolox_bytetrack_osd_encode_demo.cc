@@ -51,8 +51,12 @@ demo_config parse_demo_json(std::string& json_path) {
     channel_json["source_type"] =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED)
             ->get<std::string>();
-    channel_json["loop_num"] =
-        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED)->get<int>();
+
+    channel_json["loop_num"] = 1;
+    auto loop_num_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED);
+    if (channel_it.end()!=loop_num_it)
+        channel_json["loop_num"] = loop_num_it->get<int>();
+
     config.channel_configs.push_back(channel_json);
   }
 
