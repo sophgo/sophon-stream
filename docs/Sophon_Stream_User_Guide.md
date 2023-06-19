@@ -135,7 +135,7 @@ Element与外部的数据传递通过connector来进行，每个输入或输出p
 element基类的主要成员变量:
 
 ```cpp
-int mId;     // element id，用于在engine及element_manager中确定element的身份，在graph中具有唯一性
+int mId;     // element id，用于在engine及graph中确定element的身份，在graph中具有唯一性
 int mDeviceId;  // device id，涉及tpu操作时使用的设备id。pcie模式下可以按需设置，soc模式下应设置为0
 int mThreadNumber; // element内部工作的线程数，也等于InputConnector中的DataPipe数目
 
@@ -281,7 +281,7 @@ sophon-stream/element/multimedia 目录是多媒体插件的集合，目前包�
 
 #### 4.1.1 概述
 
-算法插件是基于SophonSDK中BMCV和BMruntime库实现的具有图像处理和推理功能的模块，包括前处理、推理、后处理三个部分。用户根据业务需求，只需要载入对应的模型，即可调用硬件启动相应的功能。
+算法插件是基于SophonSDK中BMCV和BMRuntime库实现的具有图像处理和推理功能的模块，包括前处理、推理、后处理三个部分。用户根据业务需求，只需要载入对应的模型，即可调用硬件启动相应的功能。
 
 算法插件具有以下特性：
 
@@ -500,7 +500,7 @@ osd插件的配置文件包括:
 }
 ```
 
-其中，"osd_type" 字段标识了算法类型，可以设置为 "det" 或 "track" 
+其中，"osd_type" 字段标识了算法类型，可以设置为 "DET" 或 "TRACK" 
 
 配置参数的详细介绍请参见 [osd介绍](../element/multimedia/osd/README.md)
 
