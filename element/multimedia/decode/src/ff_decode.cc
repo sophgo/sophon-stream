@@ -97,6 +97,7 @@ VideoDecFFM::VideoDecFFM() {
   decoder = NULL;
 
   is_rtsp = 0;
+  is_rtmp = 0;
   width = 0;
   height = 0;
   pix_fmt = 0;
@@ -372,11 +373,15 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   if (strstr(input, "rtsp://")) {
     this->is_rtsp = 1;
     this->rtsp_url = input;
+  } else if (strstr(input, "rtmp://")) {
+    this->is_rtmp = 1;
+    this->rtmp_url = input;
   }
   this->handle = dec_handle;
   int ret = 0;
   AVDictionary* dict = NULL;
   av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
+  av_dict_set(&dict, "rtmp_flags", "prefer_tcp", 0);
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
     av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
@@ -496,17 +501,20 @@ int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
   return 0;
 }
 
-void VideoDecFFM::reConnectRTSP() {
+void VideoDecFFM::reConnectVideoStream() {
   while (1) {
     // 尝试连接服务器
     AVDictionary* dict = NULL;
     av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
-    auto ret = avformat_open_input(&ifmt_ctx, rtsp_url, NULL, &dict);
+    av_dict_set(&dict, "rtmp_flags", "prefer_tcp", 0);
+    auto url = this->is_rtsp ? this->rtsp_url : this->rtmp_url;
+    av_log(video_dec_ctx, AV_LOG_ERROR, "Start reconnected, url: %s.\n", url);
+    auto ret = avformat_open_input(&ifmt_ctx, url, NULL, &dict);
     if (ret < 0) {
       // 连接失败，等待一段时间后重新尝试连接
       avformat_close_input(&ifmt_ctx);
       av_log(video_dec_ctx, AV_LOG_ERROR,
-             "RTSP reconnected: avformat_open_input failed ret(%d), "
+             "RTSP or RTMP reconnected: avformat_open_input failed ret(%d), "
              "waiting for reconnect.\n",
              ret);
       // 等待3s
@@ -518,15 +526,16 @@ void VideoDecFFM::reConnectRTSP() {
     if (ret < 0) {
       // 媒体流信息获取失败，需要重试建立连接
       avformat_close_input(&ifmt_ctx);
-      av_log(video_dec_ctx, AV_LOG_ERROR,
-             "RTSP reconnected: avformat_find_stream_info failed ret(%d), "
-             "waiting for reconnect.\n",
-             ret);
+      av_log(
+          video_dec_ctx, AV_LOG_ERROR,
+          "RTSP or RTMP reconnected: avformat_find_stream_info failed ret(%d), "
+          "waiting for reconnect.\n",
+          ret);
       // 等待3s
       sleep(3);
       continue;
     }
-    av_log(video_dec_ctx, AV_LOG_ERROR, "RTSP reconnected success.\n");
+    av_log(video_dec_ctx, AV_LOG_ERROR, "RTSP or RTMP reconnected success.\n");
     // 成功连接
     break;
   }
@@ -536,10 +545,10 @@ int VideoDecFFM::isNetworkError(int ret) {
   int errCode = AVERROR(ret);
   char errbuf[AV_ERROR_MAX_STRING_SIZE];
   int errMsg = av_strerror(errCode, errbuf, AV_ERROR_MAX_STRING_SIZE);
-  av_log(video_dec_ctx, AV_LOG_ERROR, "RTSP connect failed, errbuf: %s \n",
-         errbuf);
-  av_log(video_dec_ctx, AV_LOG_ERROR, "RTSP connect failed, errMsg: %d \n",
-         errMsg);
+  av_log(video_dec_ctx, AV_LOG_ERROR,
+         "RTSP or RTMP connect failed, errbuf: %s \n", errbuf);
+  av_log(video_dec_ctx, AV_LOG_ERROR,
+         "RTSP or RTMP connect failed, errMsg: %d \n", errMsg);
   if (errMsg == DISCONNECTED_ERROR_CODE) {
     return 1;
   }
@@ -557,11 +566,11 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     av_packet_unref(pkt);
     ret = av_read_frame(ifmt_ctx, pkt);
     if (ret < 0) {
-      if (this->is_rtsp && isNetworkError(ret)) {
+      if ((this->is_rtsp || this->is_rtmp) && isNetworkError(ret)) {
         avformat_close_input(&ifmt_ctx);  // 关闭当前连接
         av_log(video_dec_ctx, AV_LOG_ERROR,
-               "RTSP network error ret(%d), start retry.\n", ret);
-        reConnectRTSP();
+               "RTSP or RTMP network error ret(%d), start retry.\n", ret);
+        reConnectVideoStream();
         continue;
       } else if (ret == AVERROR(EAGAIN)) {
         gettimeofday(&tv2, NULL);
