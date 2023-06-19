@@ -70,6 +70,7 @@ common::ErrorCode Yolov5PreProcess::preProcess(
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
   initTensors(context, objectMetadatas);
 
+  auto jsonPlanner = context->bgr2rgb ? FORMAT_RGB_PLANAR : FORMAT_BGR_PLANAR;
   int i = 0;
   for (auto& objMetadata : objectMetadatas) {
     if (objMetadata->mFrame->mSpData == nullptr) continue;
@@ -78,9 +79,9 @@ common::ErrorCode Yolov5PreProcess::preProcess(
     bm_image image0 = *objMetadata->mFrame->mSpData;
     bm_image image1;
     // convert to RGB_PLANAR
-    if (image0.image_format != FORMAT_BGR_PLANAR) {
-      bm_image_create(context->handle, image0.height, image0.width,
-                      FORMAT_BGR_PLANAR, image0.data_type, &image1);
+    if (image0.image_format != jsonPlanner) {
+      bm_image_create(context->handle, image0.height, image0.width, jsonPlanner,
+                      image0.data_type, &image1);
       bm_image_alloc_dev_mem(image1, BMCV_IMAGE_FOR_IN);
       bmcv_image_storage_convert(context->handle, 1, &image0, &image1);
     } else {
@@ -142,8 +143,7 @@ common::ErrorCode Yolov5PreProcess::preProcess(
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
     // for (int i = 0; i < context->max_batch; i++) {
     bm_image_create(context->handle, context->net_h, context->net_w,
-                    FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
-                    strides);
+                    jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
     auto ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
                                               image_aligned, &resized_img,
@@ -161,13 +161,8 @@ common::ErrorCode Yolov5PreProcess::preProcess(
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
     }
 
-    if (context->bgr2rgb)
-      bm_image_create(context->handle, context->net_h, context->net_w,
-                      FORMAT_RGB_PLANAR, img_dtype, &converto_img);
-    else
-      bm_image_create(context->handle, context->net_h, context->net_w,
-                      FORMAT_BGR_PLANAR, img_dtype,
-                      &converto_img);  // TODO, 无需调用bmcv_image_convert_to
+    bm_image_create(context->handle, context->net_h, context->net_w,
+                    jsonPlanner, img_dtype, &converto_img);
 
     bm_device_mem_t mem;
     int size_byte = 0;
