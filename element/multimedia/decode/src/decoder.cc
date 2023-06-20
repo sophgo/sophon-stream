@@ -77,6 +77,11 @@ common::ErrorCode Decoder::init(
     assert(BM_SUCCESS == ret);
 
     decoder.openDec(&m_handle, mUrl.c_str());
+    decoder.mFrameCount(mUrl.c_str(), mFrameCount);
+    if (!mFrameCount) {
+      IVS_ERROR("Decoder init error, mFrameCount: {0}", mFrameCount);
+    }
+    IVS_INFO("Decoder init, mFrameCount: {0}", mFrameCount);
 
     if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
       std::vector<std::string> correct_postfixes = {"jpg", "png", "bmp"};
