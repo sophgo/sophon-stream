@@ -87,7 +87,7 @@ class VideoDecFFM {
   std::shared_ptr<bm_image> grab(int& frame_id, int& eof);
 
   /* get frame count */
-  int mFrameCount();
+  void mFrameCount(const char* video_file, int& mFrameCount);
 
   /* close video decoder */
   void closeDec();
