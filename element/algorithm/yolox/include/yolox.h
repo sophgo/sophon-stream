@@ -12,6 +12,7 @@
 
 #include <memory>
 
+#include "common/profiler.h"
 #include "element.h"
 #include "yolox_context.h"
 #include "yolox_inference.h"
@@ -56,6 +57,9 @@ class Yolox : public ::sophon_stream::framework::Element {
   bool use_post = false;
 
   int mBatch;
+
+  std::string mFpsProfilerName;
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 
   common::ErrorCode initContext(const std::string& json);
   void process(common::ObjectMetadatas& objectMetadatas);

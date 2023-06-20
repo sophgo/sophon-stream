@@ -102,12 +102,20 @@ common::ErrorCode Yolox::initInternal(const std::string& json) {
 
     std::vector<std::string> stages =
         stageNameIt->get<std::vector<std::string>>();
-    if (std::find(stages.begin(), stages.end(), "pre") != stages.end())
+    if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
       use_pre = true;
-    if (std::find(stages.begin(), stages.end(), "infer") != stages.end())
+      mFpsProfilerName = "fps_yolox_pre";
+    }
+    if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
       use_infer = true;
-    if (std::find(stages.begin(), stages.end(), "post") != stages.end())
+      mFpsProfilerName = "fps_yolox_infer";
+    }
+    if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
       use_post = true;
+      mFpsProfilerName = "fps_yolox_post";
+    }
+
+    mFpsProfiler.config(mFpsProfilerName, 100);
 
     // 新建context,预处理,推理和后处理对象
     mContext = std::make_shared<YoloxContext>();
@@ -217,6 +225,7 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
           getId(), outputPort, static_cast<void*>(objectMetadata.get()));
     }
   }
+  mFpsProfiler.add(objectMetadatas.size());
 
   return common::ErrorCode::SUCCESS;
 }

@@ -91,6 +91,7 @@ void Yolov5PostProcess::setTpuKernelMem(
     std::shared_ptr<Yolov5Context> context,
     common::ObjectMetadatas& objectMetadatas, tpu_kernel& tpu_k) {
   int out_len_max = 25200 * 7;
+  if(objectMetadatas[0]->mFrame->mEndOfStream) return;
   int input_num = objectMetadatas[0]->mOutputBMtensors->tensors.size();  // 3
   int batch_num = 1;  // 4b has bug, now only for 1b.
   tpu_k.func_id = context->func_id;
@@ -155,7 +156,6 @@ void Yolov5PostProcess::setTpuKernelMem(
   }
 }
 
-// tpu-kernel
 void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
                                     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return;
