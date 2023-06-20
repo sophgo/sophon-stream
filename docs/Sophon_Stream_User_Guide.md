@@ -177,7 +177,7 @@ common::ErrorCode pushOutputData(int outputPort, int dataPipeId, std::shared_ptr
 
 ### 3.2 Graph
 
-graph类的实例由engine管理，它提供接口给engine调用，主要在初始化或析构一张图时起作用。graph类对外的接口主要包括：
+graph类的实例由engine管理，它提供接口给engine调用，主要在初始化或析构一张图时起作用。各graph可配置在不同设备运行，不推荐graph中各element配置在不同设备运行。graph类对外的接口主要包括：
 
 ```cpp
 // 初始化及反初始化当前graph

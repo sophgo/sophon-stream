@@ -345,26 +345,44 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
   return BM_SUCCESS;
 }
 
-int VideoDecFFM::mFrameCount() {
-  int videoStreamIndex = -1;
-  // Find the video stream
-  for (unsigned int i = 0; i < ifmt_ctx->nb_streams; ++i) {
-    if (ifmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-      videoStreamIndex = i;
+void VideoDecFFM::mFrameCount(const char* video_file, int& mFrameCount) {
+  AVFormatContext* fmt_ctx = NULL;
+  AVPacket pkt;
+  mFrameCount = 0;
+  int video_stream_idx = -1;
+  int ret = avformat_open_input(&fmt_ctx, video_file, NULL, NULL);
+  if (ret < 0) {
+    av_log(NULL, AV_LOG_ERROR, "Could not open input file '%s'\n", video_file);
+    return;
+  }
+  ret = avformat_find_stream_info(fmt_ctx, NULL);
+  if (ret < 0) {
+    av_log(NULL, AV_LOG_ERROR,
+           "Could not find stream information in input file '%s'\n",
+           video_file);
+    return;
+  }
+  for (int i = 0; i < fmt_ctx->nb_streams; i++) {
+    if (fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+      video_stream_idx = i;
       break;
     }
   }
-
-  if (videoStreamIndex == -1) {
-    std::cerr << "Failed to find the video stream" << std::endl;
-    avformat_close_input(&ifmt_ctx);
-    return -1;
+  if (video_stream_idx < 0) {
+    av_log(NULL, AV_LOG_ERROR,
+           "Could not find video stream in input file '%s'\n", video_file);
+    return;
   }
-
   // Get the frame count from the video stream
-  int64_t frameCount = ifmt_ctx->streams[videoStreamIndex]->nb_frames;
-
-  return frameCount;
+  AVStream* video_stream = fmt_ctx->streams[video_stream_idx];
+  av_init_packet(&pkt);
+  while (av_read_frame(fmt_ctx, &pkt) >= 0) {
+    if (pkt.stream_index == video_stream_idx) {
+      mFrameCount++;
+    }
+    av_packet_unref(&pkt);
+  }
+  avformat_close_input(&fmt_ctx);
 }
 
 int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
