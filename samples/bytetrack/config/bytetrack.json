@@ -9,5 +9,5 @@
     "shared_object": "../../../build/lib/libbytetrack.so",
     "name": "bytetrack",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 8
 }
