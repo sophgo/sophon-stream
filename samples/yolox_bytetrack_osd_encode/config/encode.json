@@ -7,7 +7,6 @@
     "pix_fmt": "I420"
   },
   "shared_object": "../../../build/lib/libencode.so",
-  "device_id": 0,
   "name": "encode",
   "side": "sophgo",
   "thread_number": 4

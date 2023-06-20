@@ -157,6 +157,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 [
     {
         "graph_id": 0,
+        "device_id": 0,
         "graph_name": "yolox",
         "elements": [
             {
@@ -342,7 +343,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ]
 ```
 
-[osd.json](../yolox_bytetrack_osd_encode/config/osd.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段，例程会将`engine.json`中指定的`element_id`传入。
+[osd.json](../yolox_bytetrack_osd_encode/config/osd.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。
 其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 ```json
 {
@@ -351,7 +352,6 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
     "class_names": "../data/coco.names"
   },
   "shared_object": "../../../build/lib/libosd.so",
-  "device_id": 0,
   "name": "osd",
   "side": "sophgo",
   "thread_number": 1

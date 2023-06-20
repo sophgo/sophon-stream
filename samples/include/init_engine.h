@@ -14,6 +14,7 @@
 #include "engine.h"
 
 constexpr const char* JSON_CONFIG_GRAPH_ID_FILED = "graph_id";
+constexpr const char* JSON_CONFIG_DEVICE_ID_FILED = "device_id";
 constexpr const char* JSON_CONFIG_ELEMENTS_FILED = "elements";
 constexpr const char* JSON_CONFIG_CONNECTION_FILED = "connections";
 constexpr const char* JSON_CONFIG_ELEMENT_CONFIG_FILED = "element_config";
@@ -31,7 +32,7 @@ constexpr const char* JSON_CONFIG_DST_PORT_FILED = "dst_port";
 
 void parse_element_json(
     const nlohmann::detail::iter_impl<nlohmann::json> elements_it,
-    nlohmann::json& elementsConfigure, std::pair<int, int>& src_id_port,
+    nlohmann::json& elementsConfigure, int device_id, std::pair<int, int>& src_id_port,
     std::pair<int, int>& sink_id_port) {
 
   std::ifstream elem_stream;
@@ -43,6 +44,7 @@ void parse_element_json(
     assert(elem_stream.is_open());
     elem_stream >> element;
     element["id"] = element_it.find(JSON_CONFIG_ELEMENT_ID_FILED)->get<int>();
+    element["device_id"] = device_id;
 
     auto ports_it = element_it.find(JSON_CONFIG_PORTS_CONFIG_FILED);
     auto input_it = ports_it->find(JSON_CONFIG_INPUT_CONFIG_FILED);
@@ -105,8 +107,9 @@ void init_engine(
 
     int graph_id = graph_it.find(JSON_CONFIG_GRAPH_ID_FILED)->get<int>();
     graphConfigure["graph_id"] = graph_id;
+    int device_id = graph_it.find(JSON_CONFIG_DEVICE_ID_FILED)->get<int>();
     auto elements_it = graph_it.find(JSON_CONFIG_ELEMENTS_FILED);
-    parse_element_json(elements_it, elementsConfigure, src_id_port,
+    parse_element_json(elements_it, elementsConfigure, device_id, src_id_port,
                        sink_id_port);
     graphConfigure["elements"] = elementsConfigure;
     auto connect_it = graph_it.find(JSON_CONFIG_CONNECTION_FILED);

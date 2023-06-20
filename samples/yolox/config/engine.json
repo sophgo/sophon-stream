@@ -1,6 +1,7 @@
 [
     {
         "graph_id": 0,
+        "device_id": 0,
         "graph_name": "yolox",
         "elements": [
             {

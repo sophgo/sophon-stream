@@ -114,6 +114,9 @@ bytetrack demo中各部分参数位于[config](../bytetrack/config/)目录，结
 ```
 
 其中，[bytetrack_demo.json](../bytetrack/config/bytetrack_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
+
+配置文件中不指定`channel_id`属性的情况，会在demo中对每一路数据的`channel_id`从0开始默认赋值。
+
 ```json
 {
     "num_channels_per_graph": 1,
@@ -130,6 +133,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ```json
 {
     "graph_id": 0,
+    "device_id": 0,
     "graph_name": "bytetrack",
     "elements": [
         {
@@ -261,8 +265,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
     ]
 }
 ```
-[bytetrack.json](../bytetrack/config/bytetrack.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。
-其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
+[bytetrack.json](../bytetrack/config/bytetrack.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 ```json
 {
     "configure": {
@@ -273,8 +276,6 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
         "track_buffer": 30
     },
     "shared_object": "../../../build/lib/libbytetrack.so",
-    "device_id": 0,
-    "id": 0,
     "name": "bytetrack",
     "side": "sophgo",
     "thread_number": 2
