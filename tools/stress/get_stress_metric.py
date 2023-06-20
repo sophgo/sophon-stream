@@ -209,6 +209,9 @@ def parse_tpu(filepath):
 
     | 0 1684X-SOC     SOC      N/A          | 0    N/A     N/A     N/A     N/A  N/A    N/A          8% |
     |   N/A   N/A   N/A   75M    1000M   N/A| N/A        Active   1000M       N/A     0MB/ 9070MB      |
+
+    | 0  1684-SOC     SOC      N/A          | 0    N/A     N/A     N/A     N/A  N/A    N/A          0% |                                                                                                                            
+    |   N/A   N/A   N/A   75M     550M   N/A| N/A        Active    550M       N/A     0MB/ 9135MB      |
     """
     meter_tpu_usage = Meter()
     meter_tpu_memory = Meter()
@@ -220,8 +223,12 @@ def parse_tpu(filepath):
             if '1684-SOC' in l or '1684X-SOC'  in l:
                 p_list = [
                     '\| 0  1684\-SOC     SOC               N/A \| 0    N/A     N/A     N/A     N/A  N/A    N/A         ([\d]{1,})% \|',
+                    
                     '\| 0 1684X\-SOC     SOC      N/A          \| 0    N/A     N/A     N/A     N/A  N/A    N/A         ([\d]{1,})% \|',
                     '\| 0 1684X\-SOC     SOC      N/A          \| 0    N/A     N/A     N/A     N/A  N/A    N/A       ([\d]{1,})%  \|',
+
+                    '\| 0  1684\-SOC     SOC      N/A          \| 0    N/A     N/A     N/A     N/A  N/A    N/A         ([\d]{1,})% \|',
+                    '\| 0  1684\-SOC     SOC      N/A          \| 0    N/A     N/A     N/A     N/A  N/A    N/A       ([\d]{1,})%  \|',
                 ]
                 for p in p_list:
                     re_res = re.search(p, l)
@@ -234,6 +241,7 @@ def parse_tpu(filepath):
                 p_list = [
                     '\|   N/A   N/A   N/A   \d{1,}M     \d{1,}M   N/A\|        N/A Active    550M       N/A([\d ]{5,})MB/ (\d{1,})MB      \|',
                     '\|   N/A   N/A   N/A   \d{1,}M    \d{1,}M   N/A\| N/A        Active   1000M       N/A([\d ]{5,})MB/ (\d{1,})MB      \|',
+                    '\|   N/A   N/A   N/A   \d{1,}M     \d{1,}M   N/A\| N/A        Active    550M       N/A([\d ]{5,})MB/ (\d{1,})MB      \|',
                 ]
                 for p in p_list:
                     re_res = re.search(p, l)
