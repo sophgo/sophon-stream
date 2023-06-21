@@ -234,7 +234,11 @@ common::ErrorCode Element::pushOutputData(
       }
     }
   }
-  return mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data);
+  while(mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) != common::ErrorCode::SUCCESS) { 
+    IVS_DEBUG("DataPipe is full, now sleeping...");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return common::ErrorCode::SUCCESS;
 
   IVS_ERROR(
       "Can not find data handler or data pipe on output port, output port: "

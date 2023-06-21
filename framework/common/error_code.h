@@ -36,6 +36,7 @@ enum class ErrorCode {
   NO_REGISTER_ALGORITHM = 19,
   ALGORITHM_FACTORY_MAKE_FAIL = 20,
   ERR_METADATA_SIZE = 21,
+  DATA_PIPE_FULL = 22,
 
   ERR_FFMPEG_FIND_ENCODER = 1000,      // Can not find encoder
   ERR_FFMPEG_AVCODEC_CTX_ALLOC,        // avcodec context alloc failed
