@@ -59,6 +59,7 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     link_directories("${SOPHON_SDK_SOC}/lib/")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
+    set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio opencv_video)
 
     include_directories(../../../framework)
     include_directories(../../../framework/include)
@@ -72,5 +73,5 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
         src/encode.cc
     )
 
-    target_link_libraries(encode ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(encode ${FFMPEG_LIBS} ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()
