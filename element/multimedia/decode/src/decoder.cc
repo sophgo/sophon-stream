@@ -77,11 +77,13 @@ common::ErrorCode Decoder::init(
     assert(BM_SUCCESS == ret);
 
     decoder.openDec(&m_handle, mUrl.c_str());
-    decoder.mFrameCount(mUrl.c_str(), mFrameCount);
-    if (!mFrameCount) {
-      IVS_ERROR("Decoder init error, mFrameCount: {0}", mFrameCount);
+    if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
+      decoder.mFrameCount(mUrl.c_str(), mFrameCount);
+      if (!mFrameCount) {
+        IVS_ERROR("Decoder init error, mFrameCount: {0}", mFrameCount);
+      }
+      IVS_INFO("Decoder init, mFrameCount: {0}", mFrameCount);
     }
-    IVS_INFO("Decoder init, mFrameCount: {0}", mFrameCount);
 
     if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
       std::vector<std::string> correct_postfixes = {"jpg", "png", "bmp"};
@@ -105,11 +107,9 @@ common::ErrorCode Decoder::process(
     spBmImage = decoder.grab(frame_id, eof);
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
-
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
-
     if (eof) {
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
@@ -127,23 +127,30 @@ common::ErrorCode Decoder::process(
     spBmImage = decoder.grab(frame_id, eof);
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
-
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
-    if (eof) {
+    /* 当mLoopNum > 1，在最后一帧初始化decoder，开始下一个循环 */
+    if (mLoopNum > 1 && (mImgIndex++ == mFrameCount - 1 || eof)) {
+      if (eof) IVS_ERROR("Lose frame in mImgIndex: {0}, eof", mImgIndex);
       --mLoopNum;
-      if (mLoopNum > 0) {
+      mImgIndex = 0;
+      if (spBmImage != nullptr) {
+        objectMetadata->mFrame->mSpData = spBmImage;
+        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+      } else {
         objectMetadata->mFrame->mSpData = lastBmImage;
         bm_image2Frame(objectMetadata->mFrame, *lastBmImage);
-        decoder.closeDec();
-        decoder.openDec(&m_handle, mUrl.c_str());
-      } else {
+      }
+      decoder.closeDec();
+      decoder.openDec(&m_handle, mUrl.c_str());
+    } else {
+      if (eof) {
         objectMetadata->mFrame->mEndOfStream = true;
         errorCode = common::ErrorCode::STREAM_END;
+      } else {
+        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
       }
-    } else {
-      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
 
     if (common::ErrorCode::SUCCESS != errorCode) {
