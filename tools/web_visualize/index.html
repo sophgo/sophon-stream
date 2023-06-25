@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>web visualiza tool</title>
+</head>
+<body>
+</body>
+<img src="" id="capture1" alt="">
+<script>
+  const ws = new WebSocket('ws://172.36.9.101:9003');
+  let video = document.getElementById('capture1')
+
+  ws.addEventListener('open', () => {
+      console.log('server connected!');
+      ws.send("hello server!");
+
+
+  });
+
+  ws.addEventListener('message', ({ data }) => {
+      // console.log(data);
+      video.setAttribute('src',data)
+  });
+</script>
+</html>
