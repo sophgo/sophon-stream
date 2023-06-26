@@ -131,32 +131,23 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
     /* 当mLoopNum > 1，在最后一帧初始化decoder，开始下一个循环 */
-    if (mLoopNum > 1 && (mImgIndex++ == mFrameCount - 1 || eof)) {
-      if (eof) IVS_ERROR("Lose frame in mImgIndex: {0}, eof", mImgIndex);
+    if (mLoopNum > 1 && (mImgIndex++ == mFrameCount - 1)) {
       --mLoopNum;
       mImgIndex = 0;
-      if (spBmImage != nullptr) {
-        objectMetadata->mFrame->mSpData = spBmImage;
-        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
-      } else {
-        objectMetadata->mFrame->mSpData = lastBmImage;
-        bm_image2Frame(objectMetadata->mFrame, *lastBmImage);
-      }
       decoder.closeDec();
       decoder.openDec(&m_handle, mUrl.c_str());
+    }
+
+    if (eof) {
+      objectMetadata->mFrame->mEndOfStream = true;
+      errorCode = common::ErrorCode::STREAM_END;
     } else {
-      if (eof) {
-        objectMetadata->mFrame->mEndOfStream = true;
-        errorCode = common::ErrorCode::STREAM_END;
-      } else {
-        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
-      }
+      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
 
     if (common::ErrorCode::SUCCESS != errorCode) {
       objectMetadata->mErrorCode = errorCode;
     }
-    lastBmImage = spBmImage;
   } else if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
     std::shared_ptr<bm_image> spBmImage = nullptr;
 

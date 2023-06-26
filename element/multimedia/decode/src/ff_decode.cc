@@ -629,7 +629,8 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     }
 
     if (!got_frame) {
-      continue;
+      // continue;
+      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, 0); // TODO
     }
 
     width = video_dec_ctx->width;
@@ -646,7 +647,8 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
              width, height, av_get_pix_fmt_name((AVPixelFormat)pix_fmt),
              frame->width, frame->height,
              av_get_pix_fmt_name((AVPixelFormat)frame->format));
-      continue;
+      // continue;
+      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, 0); // TODO
     }
 
     break;
