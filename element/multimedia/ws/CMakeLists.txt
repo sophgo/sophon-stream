@@ -34,7 +34,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
-    include_directories(../../../3rdparty)
+    include_directories(../../../3rdparty/websocketpp)
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
 
@@ -64,14 +64,14 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
+    include_directories(../../../3rdparty/websocketpp)
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
-    add_library(encode SHARED
-        src/encoder.cc
-        src/encode.cc
+    add_library(ws SHARED
+        src/ws.cc
     )
 
-    target_link_libraries(encode ${FFMPEG_LIBS} ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(ws ${FFMPEG_LIBS} ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()
