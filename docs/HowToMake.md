@@ -8,7 +8,7 @@
 ```bash
 mkdir build
 cd build
-cmake ../ -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=pcie
+cmake ../ -DTARGET_ARCH=pcie
 make -j4
 ```
 
@@ -17,7 +17,7 @@ make -j4
 ```bash
 mkdir build
 cd build
-cmake ../ -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
+cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
 
