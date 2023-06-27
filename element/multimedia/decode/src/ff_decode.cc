@@ -396,6 +396,7 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
     this->rtmp_url = input;
   }
   this->handle = dec_handle;
+  this->dev_id = bm_get_devid(*dec_handle);
   int ret = 0;
   AVDictionary* dict = NULL;
   av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
@@ -630,7 +631,7 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
 
     if (!got_frame) {
       // continue;
-      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, 0); // TODO
+      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id);
     }
 
     width = video_dec_ctx->width;
@@ -648,7 +649,7 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
              frame->width, frame->height,
              av_get_pix_fmt_name((AVPixelFormat)frame->format));
       // continue;
-      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, 0); // TODO
+      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id); 
     }
 
     break;

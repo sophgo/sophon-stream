@@ -116,6 +116,7 @@ class VideoDecFFM {
   AVCodecParameters* video_dec_par;
 
   bm_handle_t* handle;
+  int dev_id;
   std::mutex lock;
   std::queue<bm_image*> queue;
 
