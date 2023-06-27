@@ -14,6 +14,7 @@
 #include <mutex>
 
 #include "common/object_metadata.h"
+#include "common/profiler.h"
 #include "element.h"
 
 namespace sophon_stream {
@@ -32,11 +33,13 @@ class Osd : public ::sophon_stream::framework::Element {
   common::ErrorCode doWork(int dataPipeId) override;
 
   static constexpr const char* CONFIG_INTERNAL_OSD_TYPE_FIELD = "osd_type";
-  static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD = "class_names";
+  static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD =
+      "class_names";
 
  private:
   std::vector<std::string> mClassNames;
   OsdType mOsdType;
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
   void draw(std::shared_ptr<common::ObjectMetadata> objectMetadata);
 };
 
