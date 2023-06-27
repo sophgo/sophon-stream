@@ -19,94 +19,114 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
+#include "../../encode/include/encode.h"
 #include "common/logger.h"
 #include "element_factory.h"
-#include "../../encode/include/encode.h"
 
 namespace sophon_stream {
 namespace element {
 namespace osd {
 
 const std::vector<std::vector<int>> colors = {
-    {220, 20, 60},   {119, 11, 32},   {0, 0, 142},     {0, 0, 230},
-    {106, 0, 228},   {0, 60, 100},    {0, 80, 100},    {0, 0, 70},
-    {0, 0, 192},     {250, 170, 30},  {100, 170, 30},  {220, 220, 0},
-    {175, 116, 175}, {250, 0, 30},    {165, 42, 42},   {255, 77, 255},
-    {0, 226, 252},   {182, 182, 255}, {0, 82, 0},      {120, 166, 157},
-    {110, 76, 0},    {174, 57, 255},  {199, 100, 0},   {72, 0, 118},
-    {255, 179, 240}, {0, 125, 92},    {209, 0, 151},   {188, 208, 182},
-    {0, 220, 176},   {255, 99, 164},  {92, 0, 73},     {133, 129, 255},
-    {78, 180, 255},  {0, 228, 0},     {174, 255, 243}, {45, 89, 255},
-    {134, 134, 103}, {145, 148, 174}, {255, 208, 186}, {197, 226, 255},
-    {171, 134, 1},   {109, 63, 54},   {207, 138, 255}, {151, 0, 95},
-    {9, 80, 61},     {84, 105, 51},   {74, 65, 105},   {166, 196, 102},
-    {208, 195, 210}, {255, 109, 65},  {0, 143, 149},   {179, 0, 194},
-    {209, 99, 106},  {5, 121, 0},     {227, 255, 205}, {147, 186, 208},
-    {153, 69, 1},    {3, 95, 161},    {163, 255, 0},   {119, 0, 170},
-    {0, 182, 199},   {0, 165, 120},   {183, 130, 88},  {95, 32, 0},
-    {130, 114, 135}, {110, 129, 133}, {166, 74, 118},  {219, 142, 185},
-    {79, 210, 114},  {178, 90, 62},   {65, 70, 15},    {127, 167, 115},
-    {59, 105, 106},  {142, 108, 45},  {196, 172, 0},   {95, 54, 80},
-    {128, 76, 255},  {201, 57, 1},    {246, 0, 122},   {191, 162, 208}};
+    {0, 0, 0},    {128, 0, 0},   {0, 128, 0},    {128, 128, 0},
+    {0, 0, 128},  {128, 0, 128}, {0, 128, 128},  {128, 128, 128},
+    {64, 0, 0},   {192, 0, 0},   {64, 128, 0},   {192, 128, 0},
+    {64, 0, 128}, {192, 0, 128}, {64, 128, 128}, {192, 128, 128},
+    {0, 64, 0},   {128, 64, 0},  {0, 192, 0},    {128, 192, 0},
+    {0, 64, 128}};
 
-void draw_det_result(bm_handle_t& handle, int classId,
-                     std::vector<std::string>& class_names, float conf,
-                     int left, int top, int width, int height, bm_image& frame,
-                     bool put_text_flag) {
+void draw_det_result(
+    bm_handle_t& handle,
+    std::vector<std::shared_ptr<common::ObjectMetadata>> subObjectMetadatas,
+    std::vector<std::string>& class_names, bm_image& frame,
+    bool put_text_flag) {
   int colors_num = colors.size();
-  bmcv_rect_t rect;
-  rect.start_x = left;
-  rect.start_y = top;
-  rect.crop_w = width;
-  rect.crop_h = height;
-  std::vector<int> color = colors[classId % colors_num];
-  bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0], color[1],
-                            color[2]);
+  std::map<int, std::vector<bmcv_rect_t>> rectsMap;
+  for (auto subObj : subObjectMetadatas) {
+    bmcv_rect_t rect;
+    rect.start_x = subObj->mDetectedObjectMetadata->mBox.mX;
+    rect.start_y = subObj->mDetectedObjectMetadata->mBox.mY;
+    rect.crop_w = subObj->mDetectedObjectMetadata->mBox.mWidth;
+    rect.crop_h = subObj->mDetectedObjectMetadata->mBox.mHeight;
+    int class_id = subObj->mDetectedObjectMetadata->mClassify;
+    if (!rectsMap.count(class_id % colors_num)) {
+      std::vector<bmcv_rect_t> rects;
+      rects.push_back(rect);
+      rectsMap[class_id % colors_num] = rects;
+    } else {
+      rectsMap[class_id % colors_num].push_back(rect);
+    }
+  }
+  for (auto& rect : rectsMap) {
+    bmcv_image_draw_rectangle(handle, frame, rect.second.size(),
+                              &rect.second[0], 3, colors[rect.first][0],
+                              colors[rect.first][1], colors[rect.first][2]);
+  }
+
   if (put_text_flag) {
-    std::string label = class_names[classId] + ":" + cv::format("%.2f", conf);
-    int org_x = left;
-    int org_y = top;
-    if (org_y<20) org_y += 20;
-    bmcv_point_t org = {org_x, org_y};
-    bmcv_color_t bmcv_color = {255, 0, 0};
-    int thickness = 2;
-    float fontScale = 1;
-    if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
-                                          bmcv_color, fontScale, thickness)) {
-      IVS_ERROR("bmcv put text error !!!");
+    for (auto subObj : subObjectMetadatas) {
+      std::string label = class_names[subObj->mDetectedObjectMetadata->mClassify] + ":" + cv::format("%.2f", subObj->mDetectedObjectMetadata->mScores[0]);
+      int org_x = subObj->mDetectedObjectMetadata->mBox.mX;
+      int org_y = subObj->mDetectedObjectMetadata->mBox.mY;
+      if (org_y < 20) org_y += 20;
+      bmcv_point_t org = {org_x, org_y};
+      bmcv_color_t bmcv_color = {255, 0, 0};
+      int thickness = 2;
+      float fontScale = 1;
+      if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
+                                            bmcv_color, fontScale, thickness)) {
+        IVS_ERROR("bmcv put text error !!!");
+      }
     }
   }
 }
 
-void draw_track_result(bm_handle_t& handle, int track_id, int left, int top,
-                       int width, int height, bm_image& frame,
-                       bool put_text_flag) {
+void draw_track_result(
+    bm_handle_t& handle,
+    std::vector<std::shared_ptr<common::ObjectMetadata>> subObjectMetadatas,
+    std::vector<std::string>& class_names, bm_image& frame,
+    bool put_text_flag) {
   int colors_num = colors.size();
-  bmcv_rect_t rect;
-  rect.start_x = left;
-  rect.start_y = top;
-  rect.crop_w = width;
-  rect.crop_h = height;
-  std::vector<int> color = colors[track_id % colors_num];
-  bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0], color[1],
-                            color[2]);
-  if (put_text_flag) {
-    std::string label = std::to_string(track_id);
+  std::map<int, std::vector<bmcv_rect_t>> rectsMap;
+  for (auto subObj : subObjectMetadatas) {
+    bmcv_rect_t rect;
+    rect.start_x = subObj->mDetectedObjectMetadata->mBox.mX;
+    rect.start_y = subObj->mDetectedObjectMetadata->mBox.mY;
+    rect.crop_w = subObj->mDetectedObjectMetadata->mBox.mWidth;
+    rect.crop_h = subObj->mDetectedObjectMetadata->mBox.mHeight;
+    int track_id = subObj->mTrackedObjectMetadata->mTrackId;
+    if (!rectsMap.count(track_id % colors_num)) {
+      std::vector<bmcv_rect_t> rects;
+      rects.push_back(rect);
+      rectsMap[track_id % colors_num] = rects;
+    } else {
+      rectsMap[track_id % colors_num].push_back(rect);
+    }
+  }
+  for (auto& rect : rectsMap) {
+    bmcv_image_draw_rectangle(handle, frame, rect.second.size(),
+                              &rect.second[0], 3, colors[rect.first][0],
+                              colors[rect.first][1], colors[rect.first][2]);
+  }
 
-    int org_x = left;
-    int org_y = top;
-    if (org_y<20) org_y += 20;
-    bmcv_point_t org = {org_x, org_y};
-    bmcv_color_t bmcv_color = {255,0,0};
-    int thickness = 2;
-    float fontScale = 1;
-    if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
-                                          bmcv_color, fontScale, thickness)) {
-      IVS_ERROR("bmcv put text error !!!");
+  if (put_text_flag) {
+    for (auto subObj : subObjectMetadatas) {
+      std::string label =
+          std::to_string(subObj->mTrackedObjectMetadata->mTrackId);
+      int org_x = subObj->mDetectedObjectMetadata->mBox.mX;
+      int org_y = subObj->mDetectedObjectMetadata->mBox.mY;
+      if (org_y < 20) org_y += 20;
+      bmcv_point_t org = {org_x, org_y};
+      bmcv_color_t bmcv_color = {255, 0, 0};
+      int thickness = 2;
+      float fontScale = 1;
+      if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
+                                            bmcv_color, fontScale, thickness)) {
+        IVS_ERROR("bmcv put text error !!!");
+      }
     }
   }
 }
-
 
 Osd::Osd() {}
 
@@ -121,7 +141,7 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
-
+    mFpsProfiler.config("fps_osd", 100);
     std::string osd_type =
         configure.find(CONFIG_INTERNAL_OSD_TYPE_FIELD)->get<std::string>();
     mOsdType = OsdType::UNKNOWN;
@@ -189,6 +209,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
         "{2:p}",
         getId(), outputPort, static_cast<void*>(objectMetadata.get()));
   }
+  mFpsProfiler.add(1);
 
   return common::ErrorCode::SUCCESS;
 }
@@ -204,32 +225,20 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
                   image.data_type, &(*imageStorage));
   bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
                              &(*imageStorage));
-  for (auto subObj : objectMetadata->mSubObjectMetadatas) {
-    switch (mOsdType) {
-      case OsdType::DET:
+  switch (mOsdType) {
+    case OsdType::DET:
+      draw_det_result(objectMetadata->mFrame->mHandle,
+                      objectMetadata->mSubObjectMetadatas, mClassNames,
+                      *imageStorage, false);
+      break;
 
-        draw_det_result(objectMetadata->mFrame->mHandle,
-                        subObj->mDetectedObjectMetadata->mClassify, mClassNames,
-                        subObj->mDetectedObjectMetadata->mScores[0],
-                        subObj->mDetectedObjectMetadata->mBox.mX,
-                        subObj->mDetectedObjectMetadata->mBox.mY,
-                        subObj->mDetectedObjectMetadata->mBox.mWidth,
-                        subObj->mDetectedObjectMetadata->mBox.mHeight,
-                        *imageStorage, true);
-        break;
-
-      case OsdType::TRACK:
-        draw_track_result(objectMetadata->mFrame->mHandle,
-                          subObj->mTrackedObjectMetadata->mTrackId,
-                          subObj->mDetectedObjectMetadata->mBox.mX,
-                          subObj->mDetectedObjectMetadata->mBox.mY,
-                          subObj->mDetectedObjectMetadata->mBox.mWidth,
-                          subObj->mDetectedObjectMetadata->mBox.mHeight,
-                          *imageStorage, true);
-        break;
-      default:
-        IVS_WARN("osd_type not support");
-    }
+    case OsdType::TRACK:
+      draw_track_result(objectMetadata->mFrame->mHandle,
+                        objectMetadata->mSubObjectMetadatas, mClassNames,
+                        *imageStorage, false);
+      break;
+    default:
+      IVS_WARN("osd_type not support");
   }
   objectMetadata->mFrame->mSpDataOsd = imageStorage;
 }
