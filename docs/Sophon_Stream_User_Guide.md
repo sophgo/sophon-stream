@@ -6,14 +6,14 @@
   - [1. 快速入门](#1-快速入门)
     - [1.1 安装和配置环境](#11-安装和配置环境)
       - [1.1.1 x86/arm PCIe平台](#111-x86arm-pcie平台)
-      - [1.1.2 SoC平台](#112-soc平台)
+    - [1.1.2 SoC平台](#112-soc平台)
     - [1.2 编译命令](#12-编译命令)
-      - [1.2.1 x86/arm PCIe平台](#121-x86arm-pcie平台)
-      - [1.2.2 SoC平台](#122-soc平台)
+    - [1.2.1 x86/arm PCIe平台](#121-x86arm-pcie平台)
+    - [1.2.2 SoC平台](#122-soc平台)
     - [1.3 编译结果](#13-编译结果)
   - [2. 概述](#2-概述)
-    - [2.1 sophon-stream优势](#21-sophon-stream优势)
-    - [2.2 sophon-stream软件栈](#22-sophon-stream软件栈)
+  - [2.1 sophon-stream优势](#21-sophon-stream优势)
+  - [2.2 sophon-stream软件栈](#22-sophon-stream软件栈)
   - [3. 框架](#3-框架)
     - [3.1 Element](#31-element)
     - [3.2 Graph](#32-graph)
@@ -452,7 +452,7 @@ decode的配置文件包括以下内容:
 
  encode一般作为sophon-stream的尾部模块使用，用于将处理后的图像信息编码为各类视频格式。
 
- 目前，decode支持的目标类型包括: 
+ 目前，encode支持的目标类型包括: 
   - RTSP、RTMP、本地视频文件
   - H.264/H.265编码格式
   - I420、NV12等像素格式
