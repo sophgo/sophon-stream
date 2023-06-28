@@ -10,14 +10,13 @@
 #ifndef SOPHON_STREAM_ELEMENT_WS_H_
 #define SOPHON_STREAM_ELEMENT_WS_H_
 
+#include <iostream>
 #include <memory>
 
 #include "common/object_metadata.h"
+#include "common/profiler.h"
 #include "element.h"
-
-#include <iostream>
 #include "wss.h"
-
 
 namespace sophon_stream {
 namespace element {
@@ -39,6 +38,7 @@ class WS : public ::sophon_stream::framework::Element {
   std::map<int, std::shared_ptr<WSS>> mServerMap;
   std::vector<std::thread> mServerThreads;
   std::mutex mServerThreadsMutex;
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
   int mStartPort;
 };
 
