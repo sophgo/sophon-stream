@@ -100,13 +100,26 @@ struct ObjectMetadata {
   std::shared_ptr<DataInformation>
       mSpDataInformation;  // 包含mTransFromFrame和原detect原recognize
   std::shared_ptr<common::Frame> mTransformFrame;
-  std::shared_ptr<common::TrackedObjectMetadata> mTrackedObjectMetadata;
   std::vector<std::shared_ptr<ObjectMetadata>> mSubObjectMetadatas;
 
-  std::shared_ptr<common::DetectedObjectMetadata> mDetectedObjectMetadata;
+  /**
+   * @brief 跟踪结果的vector，一个目标对应一个TrackedObjectMetadata
+   */
+  std::vector<std::shared_ptr<common::TrackedObjectMetadata>>
+      mTrackedObjectMetadatas;
+  /**
+   * @brief 检测结果的vector，一个目标对应一个DetectedObjectMetadata
+   */
+  std::vector<std::shared_ptr<common::DetectedObjectMetadata>>
+      mDetectedObjectMetadatas;
+  /**
+   * @brief 识别结果的vector，一个原始ObjectMetadata通过多个模型，每个模型的结果对应一个RecognizedObjectMetadata
+   */
   std::vector<std::shared_ptr<common::RecognizedObjectMetadata>>
       mRecognizedObjectMetadatas;
-
+  /**
+   * @brief 分割结果的vector，一个原始ObjectMetadata通过多个模型，每个模型的结果对应一个SegmentedObjectMetadata
+   */
   std::vector<std::shared_ptr<common::SegmentedObjectMetadata>>
       mSegmentedObjectMetadatas;
 };

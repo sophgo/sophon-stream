@@ -216,17 +216,15 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
       temp_bbox.x = std::max(int(centerX - temp_bbox.width / 2), 0);
       temp_bbox.y = std::max(int(centerY - temp_bbox.height / 2), 0);
 
-      std::shared_ptr<common::ObjectMetadata> spObjData =
-          std::make_shared<common::ObjectMetadata>();
-      spObjData->mDetectedObjectMetadata =
-          std::make_shared<common::DetectedObjectMetadata>();
-      spObjData->mDetectedObjectMetadata->mBox.mX = temp_bbox.x;
-      spObjData->mDetectedObjectMetadata->mBox.mY = temp_bbox.y;
-      spObjData->mDetectedObjectMetadata->mBox.mWidth = temp_bbox.width;
-      spObjData->mDetectedObjectMetadata->mBox.mHeight = temp_bbox.height;
-      spObjData->mDetectedObjectMetadata->mScores.push_back(temp_bbox.score);
-      spObjData->mDetectedObjectMetadata->mClassify = temp_bbox.class_id;
-      objectMetadatas[i]->mSubObjectMetadatas.push_back(spObjData);
+      std::shared_ptr<common::DetectedObjectMetadata> detData = std::make_shared<common::DetectedObjectMetadata>();
+      detData->mBox.mX = temp_bbox.x;
+      detData->mBox.mY = temp_bbox.y;
+      detData->mBox.mWidth = temp_bbox.width;
+      detData->mBox.mHeight = temp_bbox.height;
+      detData->mScores.push_back(temp_bbox.score);
+      detData->mClassify = temp_bbox.class_id;
+
+      objectMetadatas[i]->mDetectedObjectMetadatas.push_back(detData);
     }
     delete[] tpu_k.output_tensor[i];
     bm_free_device(context->bmContext->handle(), tpu_k.out_dev_mem[i]);
@@ -371,17 +369,15 @@ void Yolov5PostProcess::postProcessCPU(
     NMS(yolobox_vec, context->thresh_nms);
 
     for (auto bbox : yolobox_vec) {
-      std::shared_ptr<common::ObjectMetadata> spObjData =
-          std::make_shared<common::ObjectMetadata>();
-      spObjData->mDetectedObjectMetadata =
-          std::make_shared<common::DetectedObjectMetadata>();
-      spObjData->mDetectedObjectMetadata->mBox.mX = bbox.x;
-      spObjData->mDetectedObjectMetadata->mBox.mY = bbox.y;
-      spObjData->mDetectedObjectMetadata->mBox.mWidth = bbox.width;
-      spObjData->mDetectedObjectMetadata->mBox.mHeight = bbox.height;
-      spObjData->mDetectedObjectMetadata->mScores.push_back(bbox.score);
-      spObjData->mDetectedObjectMetadata->mClassify = bbox.class_id;
-      obj->mSubObjectMetadatas.push_back(spObjData);
+      std::shared_ptr<common::DetectedObjectMetadata> detData = std::make_shared<common::DetectedObjectMetadata>();
+      detData->mBox.mX = bbox.x;
+      detData->mBox.mY = bbox.y;
+      detData->mBox.mWidth = bbox.width;
+      detData->mBox.mHeight = bbox.height;
+      detData->mScores.push_back(bbox.score);
+      detData->mClassify = bbox.class_id;
+
+      obj->mDetectedObjectMetadatas.push_back(detData);
     }
     ++idx;
   }

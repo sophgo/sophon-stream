@@ -49,19 +49,19 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
   std::vector<STrack*> strack_pool;
   std::vector<STrack*> r_tracked_stracks;
 
-  if (objects->mSubObjectMetadatas.size() > 0) {
-    for (auto subObj : objects->mSubObjectMetadatas) {
+  if (objects->mDetectedObjectMetadatas.size() > 0) {
+    for (auto subObj : objects->mDetectedObjectMetadatas) {
       std::vector<float> tlbr_;
       tlbr_.resize(4);
-      tlbr_[0] = subObj->mDetectedObjectMetadata->mBox.mX;
-      tlbr_[1] = subObj->mDetectedObjectMetadata->mBox.mY;
-      tlbr_[2] = subObj->mDetectedObjectMetadata->mBox.mX +
-                 subObj->mDetectedObjectMetadata->mBox.mWidth;
-      tlbr_[3] = subObj->mDetectedObjectMetadata->mBox.mY +
-                 subObj->mDetectedObjectMetadata->mBox.mHeight;
+      tlbr_[0] = subObj->mBox.mX;
+      tlbr_[1] = subObj->mBox.mY;
+      tlbr_[2] = subObj->mBox.mX +
+                 subObj->mBox.mWidth;
+      tlbr_[3] = subObj->mBox.mY +
+                 subObj->mBox.mHeight;
 
-      float score = subObj->mDetectedObjectMetadata->mScores[0];
-      int class_id = subObj->mDetectedObjectMetadata->mClassify;
+      float score = subObj->mScores[0];
+      int class_id = subObj->mClassify;
 
       // IVS_DEBUG(
       //     "bytetrack tlbr_[0]: {0}, tlbr_[1]: {1},tlbr_[2]: {2},tlbr_[3]:
@@ -226,7 +226,9 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
     }
   }
 
-  objects->mSubObjectMetadatas.clear();
+  // objects->mSubObjectMetadatas.clear();
+  objects->mDetectedObjectMetadatas.clear();
+  objects->mTrackedObjectMetadatas.clear();
   for (STrack track_box : output_stracks) {
     std::shared_ptr<common::ObjectMetadata> subOutputMetaData =
         std::make_shared<common::ObjectMetadata>();
@@ -243,10 +245,12 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
     mDetectedObjectMetadata->mScores.push_back(track_box.score);
     mTrackedObjectMetadata->mTrackId = track_box.track_id;
 
-    subOutputMetaData->mDetectedObjectMetadata = mDetectedObjectMetadata;
-    subOutputMetaData->mTrackedObjectMetadata = mTrackedObjectMetadata;
+    // subOutputMetaData->mDetectedObjectMetadata = mDetectedObjectMetadata;
+    // subOutputMetaData->mTrackedObjectMetadata = mTrackedObjectMetadata;
 
-    objects->mSubObjectMetadatas.push_back(subOutputMetaData);
+    // objects->mSubObjectMetadatas.push_back(subOutputMetaData);
+    objects->mDetectedObjectMetadatas.push_back(mDetectedObjectMetadata);
+    objects->mTrackedObjectMetadatas.push_back(mTrackedObjectMetadata);
   }
 }
 

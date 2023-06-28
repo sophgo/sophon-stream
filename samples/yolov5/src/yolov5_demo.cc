@@ -167,16 +167,12 @@ int main() {
                       FORMAT_YUV420P, image.data_type, &imageStorage);
       bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
                                  &imageStorage);
-      for (auto subObj : objectMetadata->mSubObjectMetadatas) {
-        // draw image
-        draw_bmcv(
-            objectMetadata->mFrame->mHandle,
-            subObj->mDetectedObjectMetadata->mClassify, yolov5_json.class_names,
-            subObj->mDetectedObjectMetadata->mScores[0],
-            subObj->mDetectedObjectMetadata->mBox.mX,
-            subObj->mDetectedObjectMetadata->mBox.mY,
-            subObj->mDetectedObjectMetadata->mBox.mWidth,
-            subObj->mDetectedObjectMetadata->mBox.mHeight, imageStorage, true);
+
+      for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
+        draw_bmcv(objectMetadata->mFrame->mHandle, detObj->mClassify,
+                  yolov5_json.class_names, detObj->mScores[0], detObj->mBox.mX,
+                  detObj->mBox.mY, detObj->mBox.mWidth, detObj->mBox.mHeight,
+                  imageStorage, true);
       }
       // save image
       void* jpeg_data = NULL;

@@ -176,18 +176,15 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
 
     for (size_t i = 0; i < picked.size(); i++) {
       auto bbox = yolobox_vec[picked[i]];
-      std::shared_ptr<common::ObjectMetadata> spObjData =
-          std::make_shared<common::ObjectMetadata>();
-      spObjData->mDetectedObjectMetadata =
-          std::make_shared<common::DetectedObjectMetadata>();
+      std::shared_ptr<common::DetectedObjectMetadata> detData = std::make_shared<common::DetectedObjectMetadata>();
+      detData->mBox.mX = bbox.left;
+      detData->mBox.mY = bbox.top;
+      detData->mBox.mWidth = bbox.width;
+      detData->mBox.mHeight = bbox.height;
+      detData->mScores.push_back(bbox.score);
+      detData->mClassify = bbox.class_id;
 
-      spObjData->mDetectedObjectMetadata->mBox.mX = bbox.left;
-      spObjData->mDetectedObjectMetadata->mBox.mY = bbox.top;
-      spObjData->mDetectedObjectMetadata->mBox.mWidth = bbox.width;
-      spObjData->mDetectedObjectMetadata->mBox.mHeight = bbox.height;
-      spObjData->mDetectedObjectMetadata->mScores.push_back(bbox.score);
-      spObjData->mDetectedObjectMetadata->mClassify = bbox.class_id;
-      obj->mSubObjectMetadatas.push_back(spObjData);
+      obj->mDetectedObjectMetadatas.push_back(detData);
     }
   }
 }

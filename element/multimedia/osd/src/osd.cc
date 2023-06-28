@@ -37,18 +37,19 @@ const std::vector<std::vector<int>> colors = {
 
 void draw_det_result(
     bm_handle_t& handle,
-    std::vector<std::shared_ptr<common::ObjectMetadata>> subObjectMetadatas,
+    std::shared_ptr<common::ObjectMetadata> objectMetadata,
     std::vector<std::string>& class_names, bm_image& frame,
     bool put_text_flag) {
   int colors_num = colors.size();
   std::map<int, std::vector<bmcv_rect_t>> rectsMap;
-  for (auto subObj : subObjectMetadatas) {
+
+  for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
     bmcv_rect_t rect;
-    rect.start_x = subObj->mDetectedObjectMetadata->mBox.mX;
-    rect.start_y = subObj->mDetectedObjectMetadata->mBox.mY;
-    rect.crop_w = subObj->mDetectedObjectMetadata->mBox.mWidth;
-    rect.crop_h = subObj->mDetectedObjectMetadata->mBox.mHeight;
-    int class_id = subObj->mDetectedObjectMetadata->mClassify;
+    rect.start_x = detObj->mBox.mX;
+    rect.start_y = detObj->mBox.mY;
+    rect.crop_w = detObj->mBox.mWidth;
+    rect.crop_h = detObj->mBox.mHeight;
+    int class_id = detObj->mClassify;
     if (!rectsMap.count(class_id % colors_num)) {
       std::vector<bmcv_rect_t> rects;
       rects.push_back(rect);
@@ -57,6 +58,7 @@ void draw_det_result(
       rectsMap[class_id % colors_num].push_back(rect);
     }
   }
+
   for (auto& rect : rectsMap) {
     bmcv_image_draw_rectangle(handle, frame, rect.second.size(),
                               &rect.second[0], 3, colors[rect.first][0],
@@ -64,10 +66,11 @@ void draw_det_result(
   }
 
   if (put_text_flag) {
-    for (auto subObj : subObjectMetadatas) {
-      std::string label = class_names[subObj->mDetectedObjectMetadata->mClassify] + ":" + cv::format("%.2f", subObj->mDetectedObjectMetadata->mScores[0]);
-      int org_x = subObj->mDetectedObjectMetadata->mBox.mX;
-      int org_y = subObj->mDetectedObjectMetadata->mBox.mY;
+    for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
+      std::string label = class_names[detObj->mClassify] + ":" +
+                          cv::format("%.2f", detObj->mScores[0]);
+      int org_x = detObj->mBox.mX;
+      int org_y = detObj->mBox.mY;
       if (org_y < 20) org_y += 20;
       bmcv_point_t org = {org_x, org_y};
       bmcv_color_t bmcv_color = {255, 0, 0};
@@ -83,18 +86,19 @@ void draw_det_result(
 
 void draw_track_result(
     bm_handle_t& handle,
-    std::vector<std::shared_ptr<common::ObjectMetadata>> subObjectMetadatas,
+    std::shared_ptr<common::ObjectMetadata> objectMetadata,
     std::vector<std::string>& class_names, bm_image& frame,
     bool put_text_flag) {
   int colors_num = colors.size();
   std::map<int, std::vector<bmcv_rect_t>> rectsMap;
-  for (auto subObj : subObjectMetadatas) {
+  int idx = 0;
+  for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
     bmcv_rect_t rect;
-    rect.start_x = subObj->mDetectedObjectMetadata->mBox.mX;
-    rect.start_y = subObj->mDetectedObjectMetadata->mBox.mY;
-    rect.crop_w = subObj->mDetectedObjectMetadata->mBox.mWidth;
-    rect.crop_h = subObj->mDetectedObjectMetadata->mBox.mHeight;
-    int track_id = subObj->mTrackedObjectMetadata->mTrackId;
+    rect.start_x = detObj->mBox.mX;
+    rect.start_y = detObj->mBox.mY;
+    rect.crop_w = detObj->mBox.mWidth;
+    rect.crop_h = detObj->mBox.mHeight;
+    int track_id = objectMetadata->mTrackedObjectMetadatas[idx]->mTrackId;
     if (!rectsMap.count(track_id % colors_num)) {
       std::vector<bmcv_rect_t> rects;
       rects.push_back(rect);
@@ -102,6 +106,7 @@ void draw_track_result(
     } else {
       rectsMap[track_id % colors_num].push_back(rect);
     }
+    ++idx;
   }
   for (auto& rect : rectsMap) {
     bmcv_image_draw_rectangle(handle, frame, rect.second.size(),
@@ -110,11 +115,12 @@ void draw_track_result(
   }
 
   if (put_text_flag) {
-    for (auto subObj : subObjectMetadatas) {
-      std::string label =
-          std::to_string(subObj->mTrackedObjectMetadata->mTrackId);
-      int org_x = subObj->mDetectedObjectMetadata->mBox.mX;
-      int org_y = subObj->mDetectedObjectMetadata->mBox.mY;
+    idx = 0;
+    for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
+      std::string label = std::to_string(
+          objectMetadata->mTrackedObjectMetadatas[idx]->mTrackId);
+      int org_x = detObj->mBox.mX;
+      int org_y = detObj->mBox.mY;
       if (org_y < 20) org_y += 20;
       bmcv_point_t org = {org_x, org_y};
       bmcv_color_t bmcv_color = {255, 0, 0};
@@ -124,6 +130,7 @@ void draw_track_result(
                                             bmcv_color, fontScale, thickness)) {
         IVS_ERROR("bmcv put text error !!!");
       }
+      ++idx;
     }
   }
 }
@@ -227,15 +234,13 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
                              &(*imageStorage));
   switch (mOsdType) {
     case OsdType::DET:
-      draw_det_result(objectMetadata->mFrame->mHandle,
-                      objectMetadata->mSubObjectMetadatas, mClassNames,
-                      *imageStorage, false);
+      draw_det_result(objectMetadata->mFrame->mHandle, objectMetadata,
+                      mClassNames, *imageStorage, false);
       break;
 
     case OsdType::TRACK:
-      draw_track_result(objectMetadata->mFrame->mHandle,
-                        objectMetadata->mSubObjectMetadatas, mClassNames,
-                        *imageStorage, false);
+      draw_track_result(objectMetadata->mFrame->mHandle, objectMetadata,
+                        mClassNames, *imageStorage, false);
       break;
     default:
       IVS_WARN("osd_type not support");
