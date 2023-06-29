@@ -162,67 +162,78 @@ int main() {
                       FORMAT_YUV420P, image.data_type, &imageStorage);
       bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
                                  &imageStorage);
-      for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+      // for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+      //   // draw image
+      //   draw_tracker_bmcv(objectMetadata->mFrame->mHandle,
+      //                     subObj->mTrackedObjectMetadata->mTrackId,
+      //                     subObj->mDetectedObjectMetadata->mBox.mX,
+      //                     subObj->mDetectedObjectMetadata->mBox.mY,
+      //                     subObj->mDetectedObjectMetadata->mBox.mWidth,
+      //                     subObj->mDetectedObjectMetadata->mBox.mHeight,
+      //                     imageStorage, true);
+      // }
+
+      for (int i = 0; i < objectMetadata->mTrackedObjectMetadatas.size(); i++) {
         // draw image
-        draw_tracker_bmcv(objectMetadata->mFrame->mHandle,
-                          subObj->mTrackedObjectMetadata->mTrackId,
-                          subObj->mDetectedObjectMetadata->mBox.mX,
-                          subObj->mDetectedObjectMetadata->mBox.mY,
-                          subObj->mDetectedObjectMetadata->mBox.mWidth,
-                          subObj->mDetectedObjectMetadata->mBox.mHeight,
-                          imageStorage, true);
+        auto trackObj = objectMetadata->mTrackedObjectMetadatas[i];
+        auto detObj = objectMetadata->mDetectedObjectMetadatas[i];
+        draw_tracker_bmcv(objectMetadata->mFrame->mHandle, trackObj->mTrackId,
+                          detObj->mBox.mX, detObj->mBox.mY, detObj->mBox.mWidth,
+                          detObj->mBox.mHeight, imageStorage, true);
       }
-      // save image
-      void* jpeg_data = NULL;
-      size_t out_size = 0;
-      int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
-                                    &imageStorage, &jpeg_data, &out_size);
-      if (ret == BM_SUCCESS) {
-        std::string img_file =
-            "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
-        FILE* fp = fopen(img_file.c_str(), "wb");
-        fwrite(jpeg_data, out_size, 1, fp);
-        fclose(fp);
+
+        // save image
+        void* jpeg_data = NULL;
+        size_t out_size = 0;
+        int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
+                                      &imageStorage, &jpeg_data, &out_size);
+        if (ret == BM_SUCCESS) {
+          std::string img_file =
+              "./results/" +
+              std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+              std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+          FILE* fp = fopen(img_file.c_str(), "wb");
+          fwrite(jpeg_data, out_size, 1, fp);
+          fclose(fp);
+        }
+        free(jpeg_data);
+        bm_image_destroy(imageStorage);
       }
-      free(jpeg_data);
-      bm_image_destroy(imageStorage);
+      fpsProfiler.add(1);
+    };
+
+    std::map<int, std::pair<int, int>> graph_src_id_port_map;
+    init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
+
+    for (auto graph_id : engine.getGraphIds()) {
+      for (int channel_id = 0;
+           channel_id < bytetrack_json.num_channels_per_graph; ++channel_id) {
+        nlohmann::json channel_config = bytetrack_json.channel_config;
+        channel_config["channel_id"] = channel_id;
+        auto channelTask =
+            std::make_shared<sophon_stream::element::decode::ChannelTask>();
+        channelTask->request.operation = sophon_stream::element::decode::
+            ChannelOperateRequest::ChannelOperate::START;
+        channelTask->request.json = channel_config.dump();
+        std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
+        sophon_stream::common::ErrorCode errorCode = engine.pushSourceData(
+            graph_id, src_id_port.first, src_id_port.second,
+            std::static_pointer_cast<void>(channelTask));
+      }
     }
-    fpsProfiler.add(1);
-  };
 
-  std::map<int, std::pair<int, int>> graph_src_id_port_map;
-  init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
-
-  for (auto graph_id : engine.getGraphIds()) {
-    for (int channel_id = 0; channel_id < bytetrack_json.num_channels_per_graph;
-         ++channel_id) {
-      nlohmann::json channel_config = bytetrack_json.channel_config;
-      channel_config["channel_id"] = channel_id;
-      auto channelTask =
-          std::make_shared<sophon_stream::element::decode::ChannelTask>();
-      channelTask->request.operation = sophon_stream::element::decode::
-          ChannelOperateRequest::ChannelOperate::START;
-      channelTask->request.json = channel_config.dump();
-      std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
-      sophon_stream::common::ErrorCode errorCode =
-          engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
-                                std::static_pointer_cast<void>(channelTask));
+    {
+      std::unique_lock<std::mutex> uq(mtx);
+      cv.wait(uq);
     }
+    for (int i = 0; i < bytetrack_json.num_graphs; i++) {
+      std::cout << "graph stop" << std::endl;
+      engine.stop(i);
+    }
+    long totalCost = clocker.tell_us();
+    std::cout << " total time cost " << totalCost << " us." << std::endl;
+    double fps = static_cast<double>(frameCount) / totalCost;
+    std::cout << "frame count is " << frameCount << " | fps is "
+              << fps * 1000000 << " fps." << std::endl;
+    return 0;
   }
-
-  {
-    std::unique_lock<std::mutex> uq(mtx);
-    cv.wait(uq);
-  }
-  for (int i = 0; i < bytetrack_json.num_graphs; i++) {
-    std::cout << "graph stop" << std::endl;
-    engine.stop(i);
-  }
-  long totalCost = clocker.tell_us();
-  std::cout << " total time cost " << totalCost << " us." << std::endl;
-  double fps = static_cast<double>(frameCount) / totalCost;
-  std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000
-            << " fps." << std::endl;
-  return 0;
-}
