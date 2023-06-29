@@ -1,26 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>web visualiza tool</title>
 </head>
+
 <body>
 </body>
-<img src="" id="capture1" style="width: 960px; height: 540px;" alt="">
+<!-- <img src="" id="capture1" style="width: 960px; height: 540px;" alt=""> -->
+<canvas id="myCanvas" width="960" height="540"></canvas>
 <script>
-  const ws = new WebSocket('ws://172.36.9.101:9002');
-  let video = document.getElementById('capture1')
+    const ws = new WebSocket('ws://172.36.9.101:9002');
 
-  ws.addEventListener('open', () => {
-      console.log('server connected!');
-      ws.send("hello server!");
+    ws.addEventListener('open', () => {
+        console.log('server connected!');
+        ws.send("hello server!");
+    });
 
+    let img = new Image();
+    let fps = 25;
+    let myCanvas = document.getElementById("myCanvas").getContext('2d');
 
-  });
+    ws.addEventListener('message', ({ data }) => {
+        img.src = data;
+    });
 
-  ws.addEventListener('message', ({ data }) => {
-      // console.log(data);
-      video.setAttribute('src',data)
-  });
+    setTimeout(img.onload = () => {
+        myCanvas.drawImage(img, 0, 0, 960, 540);
+    }, 1000 / fps)
+
 </script>
+
 </html>
