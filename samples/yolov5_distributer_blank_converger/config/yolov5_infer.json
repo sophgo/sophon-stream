@@ -1,0 +1,26 @@
+{
+  "configure": {
+    "model_path": "../data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_1b.bmodel",
+    "threshold_conf": 0.5,
+    "threshold_nms": 0.5,
+    "bgr2rgb": true,
+    "mean": [
+      0,
+      0,
+      0
+    ],
+    "std": [
+      1,
+      1,
+      1
+    ],
+    "stage": [
+      "infer"
+    ],
+    "use_tpu_kernel": true
+  },
+  "shared_object": "../../../build/lib/libyolov5.so",
+  "name": "yolov5",
+  "side": "sophgo",
+  "thread_number": 1
+}

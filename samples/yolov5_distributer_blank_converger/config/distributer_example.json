@@ -1,0 +1,38 @@
+{
+    "configure": {
+        "default_port": 0,
+        "rules" : [
+            {
+                "interval": 1, 
+                "routes": [
+                    {
+                        "classes":["car"],
+                        "port": 1
+                    },
+                    {
+                        "classes":["person"],
+                        "port" : 2
+                    }
+                ]
+            },
+            {
+                "interval": 2, 
+                "routes": [
+                    {
+                        "classes":["xxx"],
+                        "port": 3
+                    },
+                    {
+                        "classes":["yyy"],
+                        "port" : 4
+                    }
+                ]
+            }
+        ],
+        "class_names_file" : "../data/coco.names"
+      },
+      "shared_object": "../../../build/lib/libdistributer.so",
+      "name": "distributer",
+      "side": "sophgo",
+      "thread_number": 4
+}

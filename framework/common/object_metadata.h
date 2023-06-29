@@ -53,7 +53,7 @@ typedef struct bmTensors_ {
 } bmTensors;
 
 struct ObjectMetadata {
-  ObjectMetadata() : mErrorCode(common::ErrorCode::SUCCESS), mFilter(false) {}
+  ObjectMetadata() : mErrorCode(common::ErrorCode::SUCCESS), mFilter(false), numBranches(0) {}
 
   int getChannelId() const {
     if (mFrame) {
@@ -101,6 +101,8 @@ struct ObjectMetadata {
       mSpDataInformation;  // 包含mTransFromFrame和原detect原recognize
   std::shared_ptr<common::Frame> mTransformFrame;
   std::vector<std::shared_ptr<ObjectMetadata>> mSubObjectMetadatas;
+
+  int numBranches;
 
   /**
    * @brief 跟踪结果的vector，一个目标对应一个TrackedObjectMetadata
