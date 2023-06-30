@@ -1,7 +1,7 @@
 {
   "num_channels_per_graph": 1,
   "channel": {
-    "url": "../data/videos/test_car_person_1080P.avi",
+    "url": "../data/videos/traffic.mp4",
     "source_type": "VIDEO",
     "loop_num": 1
   },

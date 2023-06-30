@@ -65,6 +65,8 @@ class ResNetClassify {
   // postprocess
   common::ErrorCode post_process(std::shared_ptr<ResNetContext> context,
                                  common::ObjectMetadatas& objectMetadatas);
+
+  int subId = 0;
 };
 }  // namespace resnet
 }  // namespace element

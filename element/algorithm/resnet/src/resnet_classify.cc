@@ -256,16 +256,22 @@ common::ErrorCode ResNetClassify::post_process(
       }
     }
 
-    std::shared_ptr<common::ObjectMetadata> spObjData =
-        std::make_shared<common::ObjectMetadata>();
-    std::shared_ptr<common::RecognizedObjectMetadata>
-        mRecognizedObjectMetadatas =
-            std::make_shared<common::RecognizedObjectMetadata>();
+    std::shared_ptr<common::RecognizedObjectMetadata> RecogObj =
+        std::make_shared<common::RecognizedObjectMetadata>();
 
-    mRecognizedObjectMetadatas->mScores.push_back(max_score);
-    mRecognizedObjectMetadatas->mTopKLabels.push_back(max_idx);
-    spObjData->mRecognizedObjectMetadatas.push_back(mRecognizedObjectMetadatas);
-    obj->mSubObjectMetadatas.push_back(spObjData);
+    RecogObj->mScores.push_back(max_score);
+    RecogObj->mTopKLabels.push_back(max_idx);
+    obj->mRecognizedObjectMetadatas.push_back(RecogObj);
+
+    // std::string filename = std::to_string(obj->mFrame->mChannelId) +
+    //                        "-" +
+    //                        std::to_string(obj->mFrame->mFrameId) +
+    //                        "-car-" + std::to_string(subId) + ".bmp";
+    // bm_image_write_to_bmp(*obj->mFrame->mSpData, filename.c_str());
+    // ++ subId;
+
+    IVS_DEBUG("recognizition succeed, frame_id: {0}, class_id: {1}",
+              obj->mFrame->mFrameId, max_idx);
   }
 
   return common::ErrorCode::SUCCESS;

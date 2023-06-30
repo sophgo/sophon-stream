@@ -35,11 +35,61 @@ const std::vector<std::vector<int>> colors = {
     {0, 64, 0},   {128, 64, 0},  {0, 192, 0},    {128, 192, 0},
     {0, 64, 128}};
 
-void draw_det_result(
-    bm_handle_t& handle,
-    std::shared_ptr<common::ObjectMetadata> objectMetadata,
-    std::vector<std::string>& class_names, bm_image& frame,
-    bool put_text_flag) {
+void draw_rec_result(bm_handle_t& handle,
+                     std::shared_ptr<common::ObjectMetadata> objectMetadata,
+                     std::vector<std::string>& class_names, bm_image& frame,
+                     bool put_text_flag) {
+  int colors_num = colors.size();
+  std::map<int, std::vector<bmcv_rect_t>> rectsMap;
+  if (objectMetadata->mSubObjectMetadatas.size() == 0) return;
+  for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+    int subId = subObj->mSubId;
+    auto detObj = objectMetadata->mDetectedObjectMetadatas[subId];
+    bmcv_rect_t rect;
+    rect.start_x = detObj->mBox.mX;
+    rect.start_y = detObj->mBox.mY;
+    rect.crop_w = detObj->mBox.mWidth;
+    rect.crop_h = detObj->mBox.mHeight;
+    int class_id = subObj->mRecognizedObjectMetadatas[0]->mTopKLabels[0];
+    if (!rectsMap.count(class_id % colors_num)) {
+      std::vector<bmcv_rect_t> rects;
+      rects.push_back(rect);
+      rectsMap[class_id % colors_num] = rects;
+    } else {
+      rectsMap[class_id % colors_num].push_back(rect);
+    }
+    if (put_text_flag) {
+      std::string label = class_names[class_id];
+      int org_x = detObj->mBox.mX;
+      int org_y = detObj->mBox.mY;
+      if (org_y < 20) org_y += 20;
+      bmcv_point_t org = {org_x, org_y};
+      bmcv_color_t bmcv_color = {255, 0, 0};
+      int thickness = 2;
+      float fontScale = 1;
+      if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
+                                            bmcv_color, fontScale, thickness)) {
+        IVS_ERROR("bmcv put text error !!!");
+      }
+    }
+  }
+  for (auto& rect : rectsMap) {
+    bmcv_image_draw_rectangle(handle, frame, rect.second.size(),
+                              &rect.second[0], 3, colors[rect.first][0],
+                              colors[rect.first][1], colors[rect.first][2]);
+  }
+
+  std::string filename =
+      std::to_string(objectMetadata->mFrame->mChannelId) +
+      "-" + std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
+  bm_image_write_to_bmp(frame, filename.c_str());
+  return;
+}
+
+void draw_det_result(bm_handle_t& handle,
+                     std::shared_ptr<common::ObjectMetadata> objectMetadata,
+                     std::vector<std::string>& class_names, bm_image& frame,
+                     bool put_text_flag) {
   int colors_num = colors.size();
   std::map<int, std::vector<bmcv_rect_t>> rectsMap;
 
@@ -84,11 +134,10 @@ void draw_det_result(
   }
 }
 
-void draw_track_result(
-    bm_handle_t& handle,
-    std::shared_ptr<common::ObjectMetadata> objectMetadata,
-    std::vector<std::string>& class_names, bm_image& frame,
-    bool put_text_flag) {
+void draw_track_result(bm_handle_t& handle,
+                       std::shared_ptr<common::ObjectMetadata> objectMetadata,
+                       std::vector<std::string>& class_names, bm_image& frame,
+                       bool put_text_flag) {
   int colors_num = colors.size();
   std::map<int, std::vector<bmcv_rect_t>> rectsMap;
   int idx = 0;
@@ -154,8 +203,9 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
     mOsdType = OsdType::UNKNOWN;
     if (osd_type == "DET") mOsdType = OsdType::DET;
     if (osd_type == "TRACK") mOsdType = OsdType::TRACK;
+    if (osd_type == "REC") mOsdType = OsdType::REC;
 
-    if (mOsdType == OsdType::DET) {
+    if (mOsdType == OsdType::DET || mOsdType == OsdType::REC) {
       std::string class_names_file =
           configure.find(CONFIG_INTERNAL_CLASS_NAMES_FIELD)->get<std::string>();
       std::ifstream istream;
@@ -242,6 +292,10 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
       draw_track_result(objectMetadata->mFrame->mHandle, objectMetadata,
                         mClassNames, *imageStorage, false);
       break;
+
+    case OsdType::REC:
+      draw_rec_result(objectMetadata->mFrame->mHandle, objectMetadata,
+                      mClassNames, *imageStorage, true);
     default:
       IVS_WARN("osd_type not support");
   }

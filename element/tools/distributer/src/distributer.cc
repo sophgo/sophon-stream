@@ -81,7 +81,7 @@ void Distributer::uninitInternal(){};
 void Distributer::makeSubObjectMetadata(
     std::shared_ptr<common::ObjectMetadata> obj,
     std::shared_ptr<common::DetectedObjectMetadata> detObj,
-    std::shared_ptr<common::ObjectMetadata> subObj) {
+    std::shared_ptr<common::ObjectMetadata> subObj, int subId) {
   bmcv_rect_t rect;
   if (detObj != nullptr) {
     rect.start_x = detObj->mBox.mX;
@@ -111,6 +111,13 @@ void Distributer::makeSubObjectMetadata(
                           cropped.get());
 
     subObj->mFrame->mSpData = cropped;
+
+    // std::string filename = "./cropped/" +
+    //                        std::to_string(obj->mFrame->mChannelId) + "-" +
+    //                        std::to_string(obj->mFrame->mFrameId) + "-" +
+    //                        std::to_string(subId) + ".bmp";
+    // bm_image_write_to_bmp(*subObj->mFrame->mSpData, filename.c_str());
+
   } else {
     subObj->mFrame->mSpData = obj->mFrame->mSpData;
   }
@@ -119,6 +126,7 @@ void Distributer::makeSubObjectMetadata(
   subObj->mFrame->mFrameId = obj->mFrame->mFrameId;
   subObj->mFrame->mChannelId = obj->mFrame->mChannelId;
   subObj->mFrame->mChannelIdInternal = obj->mFrame->mChannelIdInternal;
+  subObj->mSubId = subId;
 }
 
 common::ErrorCode Distributer::doWork(int dataPipeId) {
@@ -144,6 +152,7 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
 
   // 判断计时器规则
   float cur_time = clocker.tell_ms() / 1000.0;
+  int subId = 0;
   for (int i = 0; i < last_times.size(); ++i) {
     if (cur_time - last_times[i] > intervals[i]) {
       // 当前interval生效，更新时间
@@ -159,7 +168,7 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
           // 构造SubObjectMetadata
           std::shared_ptr<common::ObjectMetadata> subObj =
               std::make_shared<common::ObjectMetadata>();
-          makeSubObjectMetadata(objectMetadata, detObj, subObj);
+          makeSubObjectMetadata(objectMetadata, detObj, subObj, subId);
           objectMetadata->mSubObjectMetadatas.push_back(subObj);
           ++objectMetadata->numBranches;
           // 发送subObj
@@ -175,16 +184,16 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
                 getId(), target_port, static_cast<void*>(subObj.get()));
           }
         }
+        ++subId;
       }
       if (distrib_rules[intervals[i]].find("full_frame") !=
           distrib_rules[intervals[i]].end()) {
         // full_frame 分发，也是构造一个新的SubObjectMetadata
         std::shared_ptr<common::ObjectMetadata> subObj =
             std::make_shared<common::ObjectMetadata>();
-        makeSubObjectMetadata(objectMetadata, nullptr, subObj);
+        makeSubObjectMetadata(objectMetadata, nullptr, subObj, -1);
         objectMetadata->mSubObjectMetadatas.push_back(subObj);
         ++objectMetadata->numBranches;
-
         int target_port = distrib_rules[intervals[i]]["full_frame"];
         int outDataPipeId =
             channel_id_internal % getOutputConnectorCapacity(target_port);

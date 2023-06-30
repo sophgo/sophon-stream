@@ -41,15 +41,15 @@ common::ErrorCode Blank::doWork(int dataPipeId) {
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
-  if (objectMetadata->mFrame != nullptr &&
-      objectMetadata->mFrame->mSpData != nullptr &&
-      objectMetadata->mFrame->mSubId != -1) {
-    std::string filename =
-        std::to_string(objectMetadata->mFrame->mChannelId) + "-" +
-        std::to_string(objectMetadata->mFrame->mFrameId) + "-" +
-        std::to_string(objectMetadata->mFrame->mSubId) + ".bmp";
-    bm_image_write_to_bmp(*objectMetadata->mFrame->mSpData, filename.c_str());
-  }
+  // if (objectMetadata->mFrame != nullptr &&
+  //     objectMetadata->mFrame->mSpData != nullptr) {
+  //   std::string filename =
+  //       std::to_string(objectMetadata->mFrame->mChannelId) + "-" +
+  //       std::to_string(objectMetadata->mFrame->mFrameId) + "-" +
+  //       std::to_string(subId) + ".bmp";
+  //   bm_image_write_to_bmp(*objectMetadata->mFrame->mSpData, filename.c_str());
+  //   ++ subId;
+  // }
 
   // usleep(10);
 

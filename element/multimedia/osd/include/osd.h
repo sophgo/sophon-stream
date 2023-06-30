@@ -23,7 +23,7 @@ namespace osd {
 
 class Osd : public ::sophon_stream::framework::Element {
  public:
-  enum class OsdType { DET, TRACK, UNKNOWN };
+  enum class OsdType { DET, TRACK, REC, UNKNOWN };
   Osd();
   ~Osd() override;
 

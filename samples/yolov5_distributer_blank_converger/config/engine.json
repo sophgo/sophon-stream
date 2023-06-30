@@ -128,7 +128,7 @@
                     "output": [
                         {
                             "port_id": 0,
-                            "is_sink": true,
+                            "is_sink": false,
                             "is_src": false
                         }
                     ]
@@ -136,7 +136,7 @@
             },
             {
                 "element_id": 5008,
-                "element_config": "../config/blank1.json",
+                "element_config": "../config/resnet_car.json",
                 "ports": {
                     "input": [
                         {
@@ -156,7 +156,7 @@
             },
             {
                 "element_id": 5009,
-                "element_config": "../config/blank2.json",
+                "element_config": "../config/resnet_person.json",
                 "ports": {
                     "input": [
                         {
@@ -169,6 +169,46 @@
                         {
                             "port_id": 0,
                             "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 6001,
+                "element_config": "../config/osd.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 6002,
+                "element_config": "../config/encode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
                             "is_src": false
                         }
                     ]
@@ -229,6 +269,18 @@
                 "src_port": 0,
                 "dst_element_id": 5007,
                 "dst_port": 2
+            },
+            {
+                "src_element_id": 5007,
+                "src_port": 0,
+                "dst_element_id": 6001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 6001,
+                "src_port": 0,
+                "dst_element_id": 6002,
+                "dst_port": 0
             }
         ]
     }

@@ -2,7 +2,8 @@
   "num_channels_per_graph": 1,
   "channel": {
     "url": "../data/images/blue",
-    "source_type": "IMG_DIR"
+    "source_type": "IMG_DIR",
+    "loop_num" : 200
   },
   "engine_config_path": "../config/engine.json"
 }
