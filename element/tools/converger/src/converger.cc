@@ -58,7 +58,8 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
   int frame_id = objectMetadata->mFrame->mFrameId;
   candidates[channel_id][frame_id] = objectMetadata;
   // branches[channel_id][frame_id] = objectMetadata->numBranches;
-  IVS_DEBUG("data recognized, channel_id = {0}, frame_id = {1}", channel_id, frame_id);
+  IVS_DEBUG("data recognized, channel_id = {0}, frame_id = {1}", channel_id,
+            frame_id);
 
   // 非default_port，取出来之后更新分支数的记录
   for (int inputPort : inputPorts) {
@@ -73,14 +74,11 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     auto subObj = std::static_pointer_cast<common::ObjectMetadata>(subdata);
     int sub_channel_id = subObj->mFrame->mChannelId;
     int sub_frame_id = subObj->mFrame->mFrameId;
-    IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {0}", sub_channel_id, sub_frame_id);
-    // 更新map时，判断一下是否存在
-    if (branches.find(sub_channel_id) != branches.end() &&
-        branches[sub_channel_id].find(sub_frame_id) !=
-            branches[sub_channel_id].end()) {
-      branches[sub_channel_id][sub_frame_id]++;
-      IVS_DEBUG("data updated, channel_id = {0}, frame_id = {1}", channel_id, frame_id);
-    }
+    IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {0}",
+              sub_channel_id, sub_frame_id);
+    branches[sub_channel_id][sub_frame_id]++;
+    IVS_DEBUG("data updated, channel_id = {0}, frame_id = {1}", channel_id,
+              frame_id);
   }
 
   // 遍历map，能弹出去的都弹出去
@@ -93,8 +91,10 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
       // 第二层：遍历当前channel下的所有frame，有序
       int frame_id = frame_it->first;
       // 如果可以弹出，则弹出并循环至下一个
-      if (branches[channel_id_internal][frame_id] == candidates[channel_id_internal][frame_id]->numBranches) {
-        IVS_DEBUG("Data converged! Now pop... channel_id = {0}, frame_id = {1}", channel_id_internal, frame_id);
+      if (branches[channel_id_internal][frame_id] ==
+          candidates[channel_id_internal][frame_id]->numBranches) {
+        IVS_DEBUG("Data converged! Now pop... channel_id = {0}, frame_id = {1}",
+                  channel_id_internal, frame_id);
         auto obj = candidates[channel_id_internal][frame_id];
         int outDataPipeId = getSinkElementFlag()
                                 ? 0
@@ -109,7 +109,8 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
               getId(), outputPort, static_cast<void*>(obj.get()));
         }
         candidates[channel_id_internal].erase(frame_it++);
-        // branches[channel_id_internal][frame_id] 应该也需要删除，否则内存越积越多？
+        // branches[channel_id_internal][frame_id]
+        // 应该也需要删除，否则内存越积越多？
       } else {
         // 当前帧不可以弹出，为了保证时序性，后续帧也不弹出
         break;

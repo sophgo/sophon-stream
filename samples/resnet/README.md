@@ -1,0 +1,193 @@
+# ResNet Demo
+
+## 1. 简介
+
+本例程用于说明如何使用sophon-stream快速构建视频目标分类应用。
+
+深度残差网络（Deep residual network, ResNet）是由于Kaiming He等在2015提出的深度神经网络结构，它利用残差学习来解决深度神经网络训练退化的问题。
+
+在此非常感谢Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun等人的贡献。
+
+**论文** (https://arxiv.org/abs/1512.03385)
+
+## 2. 特性
+
+* 支持BM1684X(x86 PCIe、SoC)和BM1684(x86 PCIe、SoC、arm PCIe)
+* 支持FP32、FP16(BM1684X)、INT8模型编译和推理
+* 支持多路视频流
+* 支持多线程
+
+## 3. 准备模型与数据
+
+​在`scripts`目录下提供了相关模型和数据的下载脚本 [download.sh](./scripts/download.sh)。
+
+```bash
+# 安装unzip，若已安装请跳过，非ubuntu系统视情况使用yum或其他方式安装
+sudo apt install unzip
+chmod -R +x scripts/
+./scripts/download.sh
+```
+
+下载的模型包括：
+
+```bash
+./models/
+├── BM1684
+│   ├── resnet_vehicle_color_fp32_1b.bmodel    # 用于BM1684的FP32 BModel，batch_size=1
+│   ├── resnet_vehicle_color_fp32_4b.bmodel    # 用于BM1684的FP32 BModel，batch_size=4
+│   ├── resnet_vehicle_color_int8_1b.bmodel    # 用于BM1684的INT8 BModel，batch_size=1
+│   └── resnet_vehicle_color_int8_4b.bmodel    # 用于BM1684的INT8 BModel，batch_size=4
+└── BM1684X
+    ├── resnet_vehicle_color_fp32_1b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=1
+    ├── resnet_vehicle_color_fp32_4b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=4
+    ├── resnet_vehicle_color_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1
+    └── resnet_vehicle_color_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4
+```
+
+## 4. 环境准备
+
+### 4.1 x86/arm PCIe平台
+
+如果您在x86/arm平台安装了PCIe加速卡（如SC系列加速卡），可以直接使用它作为开发环境和运行环境。您需要安装libsophon、sophon-opencv和sophon-ffmpeg，具体步骤可参考[x86-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建)或[arm-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建)。
+
+### 4.2 SoC平台
+
+如果您使用SoC平台（如SE、SM系列边缘设备），刷机后在`/opt/sophon/`下已经预装了相应的libsophon、sophon-opencv和sophon-ffmpeg运行库包，可直接使用它作为运行环境。通常还需要一台x86主机作为开发环境，用于交叉编译C++程序。
+
+## 5. 程序编译
+
+### 5.1 x86/arm PCIe平台
+可以直接在PCIe平台上编译程序，具体请参考[sophon-stream编译](../../docs/HowToMake.md)
+
+### 5.2 SoC平台
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](../../docs/HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
+
+## 6. 程序运行
+
+### 6.1 Json配置说明
+
+yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所示：
+
+```bash
+./config
+├── decode.json             # 解码配置
+├── engine.json             # sophon-stream graph配置
+├── resnet_demo.json        # resnet demo配置
+└── resnet_classify.json    # resnet 插件配置
+```
+
+其中，[resnet_demo.json](./config/resnet_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
+
+配置文件不中指定`channel_id`属性的情况，会在demo中对每一路数据的`channel_id`从0开始默认赋值。
+
+```json
+{
+  "num_channels_per_graph": 1,
+  "channel": {
+    "url": "../data/images/blue",
+    "source_type": "IMG_DIR"
+  },
+  "engine_config_path": "../config/engine.json"
+}
+```
+
+[engine.json](./config/engine.json) 包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
+
+这里摘取配置文件的一部分作为示例：在该文件内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
+connection是所有element之间的连接方式，通过element_id和port_id确定。
+
+```json
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "resnet",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../config/resnet.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            }
+        ]
+    }
+]
+```
+
+### 6.2 运行
+
+对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的动态链接库、可执行文件、所需的模型和测试数据拷贝到SoC平台中测试。测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
+
+运行可执行文件
+```bash
+./resnet_demo
+```
+
+2路视频流运行结果如下
+```bash
+ total time cost 412834 us.
+frame count is 159 | fps is 385.143 fps.
+```
+
+>**注意：**
+
+soc环境运行时如果报错
+```bash
+./resnet_demo: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
+```
+
+需要设置环境变量
+```bash
+export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
+```
+
+## 7. 性能测试
+
+目前，resnet例程支持在BM1684、BM1684X的PCIE、SOC模式下进行推理。
+
+> **测试说明**：
+1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
+2. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；
+

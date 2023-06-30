@@ -32,18 +32,18 @@ common::ErrorCode WS::initInternal(const std::string& json) {
       IVS_ERROR("json parse failed! json:{0}", json);
       break;
     }
-
-     auto startPortIt = configure.find(CONFIG_INTERNAL_START_PORT_FIELD);
-      if (configure.end() != startPortIt) {
-        mStartPort = startPortIt->get<int>();
-      } else {
-        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-        IVS_ERROR(
-            "Can not find {0} with string type in worker json configure, json: "
-            "{1}",
-            CONFIG_INTERNAL_START_PORT_FIELD, json);
-        break;
-      }
+    mFpsProfiler.config("fps_ws", 100);
+    auto startPortIt = configure.find(CONFIG_INTERNAL_START_PORT_FIELD);
+    if (configure.end() != startPortIt) {
+      mStartPort = startPortIt->get<int>();
+    } else {
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      IVS_ERROR(
+          "Can not find {0} with string type in worker json configure, json: "
+          "{1}",
+          CONFIG_INTERNAL_START_PORT_FIELD, json);
+      break;
+    }
 
   } while (false);
   return errorCode;
@@ -56,6 +56,8 @@ void WS::uninitInternal() {
 }
 
 void create_wss(WSS* wss, int server_port) { wss->init(server_port); }
+
+void send_wss(WSS* wss) { wss->send(); };
 
 common::ErrorCode WS::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -83,14 +85,16 @@ common::ErrorCode WS::doWork(int dataPipeId) {
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
+  auto encodeIt = mServerMap.find(dataPipeId);
   if (!(objectMetadata->mFrame->mEndOfStream)) {
-    auto encodeIt = mServerMap.find(dataPipeId);
     if (mServerMap.end() == encodeIt) {
       int channel_id = objectMetadata->mFrame->mChannelId;
       int server_port = mStartPort + channel_id;
       std::shared_ptr<WSS> wss = std::make_shared<WSS>();
       std::thread t(create_wss, wss.get(), server_port);
+      std::thread s(send_wss, wss.get());
       std::lock_guard<std::mutex> lk(mServerThreadsMutex);
+      mServerThreads.push_back(std::move(s));
       mServerThreads.push_back(std::move(t));
       mServerMap[dataPipeId] = wss;
     } else {
@@ -116,8 +120,13 @@ common::ErrorCode WS::doWork(int dataPipeId) {
       std::string data =
           "data:image/jpeg;base64," +
           websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
-      encodeIt->second->send(data);
+      // base64 img 存入队列
+      encodeIt->second->pushImgDataQueue(data);
+      mFpsProfiler.add(1);
     }
+  } else {
+    // 队列数据停止flag
+    encodeIt->second->pushImgDataQueue(WS_STOP_FLAG);
   }
 
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;

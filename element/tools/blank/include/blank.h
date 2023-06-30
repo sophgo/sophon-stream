@@ -26,6 +26,8 @@ class Blank : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
+  int subId = 0;
+
  private:
 };
 

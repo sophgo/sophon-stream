@@ -103,6 +103,7 @@ struct ObjectMetadata {
   std::vector<std::shared_ptr<ObjectMetadata>> mSubObjectMetadatas;
 
   int numBranches;
+  int mSubId;
 
   /**
    * @brief 跟踪结果的vector，一个目标对应一个TrackedObjectMetadata

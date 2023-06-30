@@ -1,0 +1,10 @@
+{
+  "configure": {
+    "osd_type": "REC",
+    "class_names": "../data/car.attributes"
+  },
+  "shared_object": "../../../build/lib/libosd.so",
+  "name": "osd",
+  "side": "sophgo",
+  "thread_number": 1
+}

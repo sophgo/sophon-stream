@@ -1,0 +1,20 @@
+{
+    "configure": {
+      "model_path": "../data/models/BM1684X/resnet_pedestrian_gender_int8_1b.bmodel",
+      "bgr2rgb": true,
+      "mean": [
+        0,
+        0,
+        0
+      ],
+      "std": [
+        1,
+        1,
+        1
+      ]
+    },
+    "shared_object": "../../../build/lib/libresnet.so",
+    "name": "resnet",
+    "side": "sophgo",
+    "thread_number": 1
+  }
