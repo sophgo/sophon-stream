@@ -7,5 +7,5 @@
       "loop_num": 3
     }
   ],
-  "engine_config_path": "../config/engine_ws_no_osd.json"
+  "engine_config_path": "../config/engine.json"
 }

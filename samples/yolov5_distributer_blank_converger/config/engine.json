@@ -1,0 +1,235 @@
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "yolov5_distrib",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../config/yolov5_pre.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5002,
+                "element_config": "../config/yolov5_infer.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5003,
+                "element_config": "../config/yolov5_post.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5004,
+                "element_config": "../config/distributer.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        },
+                        {
+                            "port_id": 1,
+                            "is_sink": false,
+                            "is_src": false
+                        },
+                        {
+                            "port_id": 2,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5007,
+                "element_config": "../config/converger.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5008,
+                "element_config": "../config/blank1.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5009,
+                "element_config": "../config/blank2.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5002,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5002,
+                "src_port": 0,
+                "dst_element_id": 5003,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5003,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 0,
+                "dst_element_id": 5007,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 1,
+                "dst_element_id": 5008,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 2,
+                "dst_element_id": 5009,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5008,
+                "src_port": 0,
+                "dst_element_id": 5007,
+                "dst_port": 1
+            },
+            {
+                "src_element_id": 5009,
+                "src_port": 0,
+                "dst_element_id": 5007,
+                "dst_port": 2
+            }
+        ]
+    }
+]

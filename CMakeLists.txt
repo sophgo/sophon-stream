@@ -23,6 +23,12 @@ add_subdirectory(element/multimedia/decode)
 add_subdirectory(element/multimedia/osd)
 add_subdirectory(element/multimedia/encode)
 add_subdirectory(element/multimedia/ws)
+add_subdirectory(element/tools/blank)
+add_subdirectory(element/tools/distributer)
+add_subdirectory(element/tools/converger)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/yolov5_distributer_blank_converger/build)
+add_subdirectory(samples/yolov5_distributer_blank_converger)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/yolov5/build)
 add_subdirectory(samples/yolov5)

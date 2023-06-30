@@ -62,10 +62,10 @@ void parse_element_json(
     }
     for (auto& output : *output_it) {
       if (output.find(JSON_CONFIG_ELEMENT_IS_SINK_FILED)->get<bool>()) {
-        if (sink_id_port.first != -1) {
-          IVS_ERROR("Too many sink element");
-          abort();
-        }
+        // if (sink_id_port.first != -1) {
+        //   IVS_ERROR("Too many sink element");
+        //   abort();
+        // }
         sink_id_port = {element["id"],
                         output.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
         element["is_sink"] = true;
