@@ -63,16 +63,17 @@ Decoder::Decoder() {}
 
 Decoder::~Decoder() {}
 
-common::ErrorCode Decoder::init(
-    int deviceId, const std::string& url,
-    const ChannelOperateRequest::SourceType& sourceType, int loopNum) {
+common::ErrorCode Decoder::init(int deviceId,
+                                const ChannelOperateRequest& request) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
-    mUrl = url;
-    mLoopNum = loopNum;
+    mUrl = request.url;
+    mLoopNum = request.loopNum;
+    mSampleInterval = request.sampleInterval;
+    mFps = request.fps;
     int ret = bm_dev_request(&m_handle, deviceId);
     mDeviceId = deviceId;
-    mSourceType = sourceType;
+    mSourceType = request.sourceType;
     mImgIndex = 0;
     assert(BM_SUCCESS == ret);
 
@@ -89,6 +90,7 @@ common::ErrorCode Decoder::init(
       std::vector<std::string> correct_postfixes = {"jpg", "png", "bmp"};
       getAllFiles(mUrl, mImagePaths, correct_postfixes);
       std::sort(mImagePaths.begin(), mImagePaths.end());
+      decoder.setFps(mFps);
     }
   } while (false);
 
@@ -152,7 +154,7 @@ common::ErrorCode Decoder::process(
     std::shared_ptr<bm_image> spBmImage = nullptr;
 
     spBmImage =
-        picDec(m_handle, mImagePaths[mImgIndex % mImagePaths.size()].c_str());
+        decoder.picDec(m_handle, mImagePaths[mImgIndex % mImagePaths.size()].c_str());
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
@@ -175,6 +177,11 @@ common::ErrorCode Decoder::process(
       objectMetadata->mErrorCode = errorCode;
     }
   }
+  objectMetadata->mFilter =
+      (objectMetadata->mFrame->mFrameId % mSampleInterval != 0) ? true : false;
+
+  // if (objectMetadata->mFilter) printf("%d filter \n", objectMetadata->mFrame->mFrameId);
+  // else printf("%d keep \n", objectMetadata->mFrame->mFrameId);
 
   return errorCode;
 }

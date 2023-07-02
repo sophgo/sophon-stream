@@ -29,9 +29,7 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   Decoder();
   ~Decoder();
 
-  common::ErrorCode init(int deviceId, const std::string& url,
-                         const ChannelOperateRequest::SourceType& sourceType,
-                         int loopNum);
+  common::ErrorCode init(int deviceId, const ChannelOperateRequest& request);
   common::ErrorCode process(
       std::shared_ptr<common::ObjectMetadata>& objectMetadata);
   void uninit();
@@ -47,6 +45,8 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   int mFrameCount;
   ChannelOperateRequest::SourceType mSourceType;
   std::vector<std::string> mImagePaths;
+  int mFps;
+  int mSampleInterval;
 };
 }  // namespace decode
 }  // namespace element

@@ -29,6 +29,8 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_URL_FILED = "url";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED =
     "source_type";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED = "loop_num";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED = "fps";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED = "sample_interval";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -53,9 +55,22 @@ demo_config parse_demo_json(std::string& json_path) {
             ->get<std::string>();
 
     channel_json["loop_num"] = 1;
-    auto loop_num_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED);
-    if (channel_it.end()!=loop_num_it)
-        channel_json["loop_num"] = loop_num_it->get<int>();
+    auto loop_num_it =
+        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED);
+    if (channel_it.end() != loop_num_it)
+      channel_json["loop_num"] = loop_num_it->get<int>();
+
+    if (channel_json["source_type"] == "IMG_DIR") {
+      auto fps_it =
+          channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED);
+      if (channel_it.end() != fps_it)
+        channel_json["fps"] = fps_it->get<double>();
+    }
+
+    auto sample_interval_it =
+        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED);
+    if (channel_it.end() != sample_interval_it)
+      channel_json["sample_interval"] = sample_interval_it->get<int>();
 
     config.channel_configs.push_back(channel_json);
   }

@@ -517,6 +517,9 @@ int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
 
   av_dict_free(&opts);
 
+  fps = av_q2d(st->r_frame_rate);
+  frame_interval_time = 1 / fps * 1000;
+
   return 0;
 }
 
@@ -631,7 +634,8 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
 
     if (!got_frame) {
       // continue;
-      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id);
+      frame =
+          cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id);
     }
 
     width = video_dec_ctx->width;
@@ -649,7 +653,8 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
              frame->width, frame->height,
              av_get_pix_fmt_name((AVPixelFormat)frame->format));
       // continue;
-      frame = cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id); 
+      frame =
+          cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id);
     }
 
     break;
@@ -658,6 +663,16 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
 }
 
 std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
+  // 控制帧率
+  gettimeofday(&current_time, NULL);
+  double time_delta =
+      1000 * ((current_time.tv_sec - last_time.tv_sec) +
+              (double)(current_time.tv_usec - last_time.tv_usec) / 1000000.0);
+  int time_to_sleep = frame_interval_time - time_delta;
+  if (time_to_sleep > 0)
+    std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
+  gettimeofday(&last_time, NULL);
+
   std::shared_ptr<bm_image> spBmImage = nullptr;
   AVFrame* avframe = grabFrame(eof);
   frameId = frame_id++;
@@ -695,7 +710,17 @@ bool is_bmp(const char* filename) {
   return (file.good() && header[0] == 'B' && header[1] == 'M');
 }
 
-std::shared_ptr<bm_image> picDec(bm_handle_t& handle, const char* path) {
+std::shared_ptr<bm_image> VideoDecFFM::picDec(bm_handle_t& handle, const char* path) {
+  // 控制帧率
+  gettimeofday(&current_time, NULL);
+  double time_delta =
+      1000 * ((current_time.tv_sec - last_time.tv_sec) +
+              (double)(current_time.tv_usec - last_time.tv_usec) / 1000000.0);
+  int time_to_sleep = frame_interval_time - time_delta;
+  if (time_to_sleep > 0)
+    std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
+  gettimeofday(&last_time, NULL);
+
   string input_name = path;
   if (is_jpg(path)) {
     return jpgDec(handle, input_name);
@@ -1084,4 +1109,9 @@ Func_Exit:
     av_free(bs_buffer);
   }
   return spBmImage;  // TODO
+}
+
+void VideoDecFFM::setFps(int f) {
+  fps = f;
+  frame_interval_time = 1 / fps * 1000;
 }

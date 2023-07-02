@@ -22,6 +22,8 @@ struct ChannelOperateRequest {
   SourceType sourceType;
   ChannelOperate operation;
   std::string json;
+  double fps;
+  int sampleInterval;
 };
 
 struct ChannelOperateResponse {

@@ -175,6 +175,30 @@ common::ErrorCode Decode::parse_channel_task(
       channelTask->request.loopNum =
           loopNumIt->get<int>() == 0 ? 2147483647 : loopNumIt->get<int>();
     }
+
+    if (channelTask->request.sourceType ==
+        ChannelOperateRequest::SourceType::IMG_DIR) {
+      auto fpsIt = configure.find(JSON_FPS);
+      if (configure.end() == fpsIt || !channelIdIt->is_number_integer()) {
+        IVS_WARN(
+            "Can not find {0} with int type in worker json configure, json: "
+            "{1}",
+            JSON_FPS, json);
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        break;
+      }
+      channelTask->request.fps = fpsIt->get<double>();
+    }
+
+    auto sampleIntervalIt = configure.find(JSON_SAMPLE_INTERVAL);
+    if (configure.end() == sampleIntervalIt ||
+        !channelIdIt->is_number_integer()) {
+      channelTask->request.sampleInterval = 1;
+    }
+    else {
+      channelTask->request.sampleInterval = sampleIntervalIt->get<int>();
+    }
+
   } while (false);
 
   return errorCode;
@@ -220,9 +244,8 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
         IVS_INFO("channel info decoder address: {0:p}",
                  static_cast<void*>(channelInfo->mSpDecoder.get()));
 
-        common::ErrorCode ret = channelInfo->mSpDecoder->init(
-            getDeviceId(), channelTask->request.url,
-            channelTask->request.sourceType, channelTask->request.loopNum);
+        common::ErrorCode ret =
+            channelInfo->mSpDecoder->init(getDeviceId(), channelTask->request);
 
         channelTask->response.errorCode = common::ErrorCode::SUCCESS;
         channelInfo->mCv->notify_one();

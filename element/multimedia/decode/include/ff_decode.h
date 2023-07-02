@@ -92,6 +92,12 @@ class VideoDecFFM {
   /* close video decoder */
   void closeDec();
 
+  /* pic dec */ 
+  std::shared_ptr<bm_image> picDec(bm_handle_t& handle, const char* path);
+
+  /* set fps */
+  void setFps(int f);
+
  private:
   bool quit_flag = false;
 
@@ -107,6 +113,10 @@ class VideoDecFFM {
 
   int video_stream_idx;
   int refcount;
+  double fps;
+  double frame_interval_time; // ms
+  struct timeval last_time;
+  struct timeval current_time;
 
   AVFrame* frame;
   AVPacket* pkt;
