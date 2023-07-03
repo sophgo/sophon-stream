@@ -296,6 +296,7 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
     case OsdType::REC:
       draw_rec_result(objectMetadata->mFrame->mHandle, objectMetadata,
                       mClassNames, *imageStorage, true);
+      break;
     default:
       IVS_WARN("osd_type not support");
   }
