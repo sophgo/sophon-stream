@@ -60,12 +60,10 @@ demo_config parse_demo_json(std::string& json_path) {
     if (channel_it.end() != loop_num_it)
       channel_json["loop_num"] = loop_num_it->get<int>();
 
-    if (channel_json["source_type"] == "IMG_DIR") {
-      auto fps_it =
-          channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED);
-      if (channel_it.end() != fps_it)
-        channel_json["fps"] = fps_it->get<double>();
-    }
+    auto fps_it =
+        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED);
+    if (channel_it.end() != fps_it)
+      channel_json["fps"] = fps_it->get<double>();
 
     auto sample_interval_it =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED);

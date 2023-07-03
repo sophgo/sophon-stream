@@ -176,26 +176,18 @@ common::ErrorCode Decode::parse_channel_task(
           loopNumIt->get<int>() == 0 ? 2147483647 : loopNumIt->get<int>();
     }
 
-    if (channelTask->request.sourceType ==
-        ChannelOperateRequest::SourceType::IMG_DIR) {
-      auto fpsIt = configure.find(JSON_FPS);
-      if (configure.end() == fpsIt || !channelIdIt->is_number_integer()) {
-        IVS_WARN(
-            "Can not find {0} with int type in worker json configure, json: "
-            "{1}",
-            JSON_FPS, json);
-        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-        break;
-      }
+    channelTask->request.fps = -1;
+    auto fpsIt = configure.find(JSON_FPS);
+    if (configure.end() == fpsIt || !channelIdIt->is_number_integer()) {
+    } else {
       channelTask->request.fps = fpsIt->get<double>();
     }
 
+    channelTask->request.sampleInterval = 1;
     auto sampleIntervalIt = configure.find(JSON_SAMPLE_INTERVAL);
     if (configure.end() == sampleIntervalIt ||
         !channelIdIt->is_number_integer()) {
-      channelTask->request.sampleInterval = 1;
-    }
-    else {
+    } else {
       channelTask->request.sampleInterval = sampleIntervalIt->get<int>();
     }
 

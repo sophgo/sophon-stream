@@ -72,7 +72,7 @@ sophon-stream解码器插件具有一些可配置的参数，可以根据需求�
 |source_type | 字符串  | 无  | 输入数据类型，"RSTP"代表RTSP视频流，“RTMP”代表RTMP视频流，“VIDEO”代表本地视频，“IMG_DIR”代表图片文件夹 |
 |sample_interval | 整数  | 1  |抽帧数，如设置为5，表示每5帧有1帧会被后续处理，即为ObjectMata mFilter字段为false|
 |loop_num | 整数  | 1  | 循环次数，仅适用于source_type为"VIDEO"和“IMG_DIR”，值为0时无限循环|
-|fps | 浮点数  | 无  | fps，仅适用于source_type为"IMG_DIR"，其他source_type从视频流中读取fps|
+|fps | 浮点数  | -1 | 用于控制视频流的fps，fps=-1表示不控制fps，source_type为"IMG_DIR"时由设置的值决定，其他source_type从视频流读取fps，设置的值不生效|
 
 
 其中，channel_id为输入视频的通道编号，与[编码器](../encode/README.md)输出channel_id相对应。例如，输入channel_id为20，使用编码器保存结果为本地视频时，文件名为20.avi。

@@ -77,7 +77,6 @@ common::ErrorCode Decoder::init(int deviceId,
     mImgIndex = 0;
     assert(BM_SUCCESS == ret);
 
-    decoder.openDec(&m_handle, mUrl.c_str());
     if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
       decoder.mFrameCount(mUrl.c_str(), mFrameCount);
       if (!mFrameCount) {
@@ -90,8 +89,11 @@ common::ErrorCode Decoder::init(int deviceId,
       std::vector<std::string> correct_postfixes = {"jpg", "png", "bmp"};
       getAllFiles(mUrl, mImagePaths, correct_postfixes);
       std::sort(mImagePaths.begin(), mImagePaths.end());
-      decoder.setFps(mFps);
     }
+
+    decoder.setFps(mFps);
+
+    decoder.openDec(&m_handle, mUrl.c_str());
   } while (false);
 
   return errorCode;
