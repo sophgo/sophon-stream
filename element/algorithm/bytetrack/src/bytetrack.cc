@@ -158,8 +158,7 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
       break;
     }
   }
-
-  process(dataPipeId, objectMetadata);
+  if (objectMetadata != nullptr) process(dataPipeId, objectMetadata);
 
   for (auto& obj : pendingObjectMetadatas) {
     int channel_id_internal = obj->mFrame->mChannelIdInternal;
@@ -168,8 +167,8 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
             ? 0
             : (channel_id_internal % getOutputConnectorCapacity(outputPort));
 
-    errorCode = pushOutputData(outputPort, pipeId,
-                               std::static_pointer_cast<void>(obj));
+    errorCode =
+        pushOutputData(outputPort, pipeId, std::static_pointer_cast<void>(obj));
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_WARN(
           "Send data fail, element id: {0:d}, output port: {1:d}, data: "
