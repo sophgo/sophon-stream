@@ -139,29 +139,43 @@ common::ErrorCode Bytetrack::doWork(int dataPipeId) {
     return errorCode;
   }
 
-  auto data = popInputData(inputPort, dataPipeId);
-  if (!data) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    return errorCode;
-  }
+  common::ObjectMetadatas pendingObjectMetadatas;
 
-  auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
+  std::shared_ptr<common::ObjectMetadata> objectMetadata = nullptr;
+
+  while (getThreadStatus() == ThreadStatus::RUN) {
+    auto data = popInputData(inputPort, dataPipeId);
+    if (!data) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      continue;
+    }
+    objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
+    pendingObjectMetadatas.push_back(objectMetadata);
+    if (!objectMetadata->mFilter) {
+      break;
+    }
+    if (objectMetadata->mFrame->mEndOfStream) {
+      break;
+    }
+  }
 
   process(dataPipeId, objectMetadata);
 
-  int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
-  int pipeId =
-      getSinkElementFlag()
-          ? 0
-          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
+  for (auto& obj : pendingObjectMetadatas) {
+    int channel_id_internal = obj->mFrame->mChannelIdInternal;
+    int pipeId =
+        getSinkElementFlag()
+            ? 0
+            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
 
-  errorCode = pushOutputData(outputPort, pipeId,
-                             std::static_pointer_cast<void>(objectMetadata));
-  if (common::ErrorCode::SUCCESS != errorCode) {
-    IVS_WARN(
-        "Send data fail, element id: {0:d}, output port: {1:d}, data: "
-        "{2:p}",
-        getId(), outputPort, static_cast<void*>(objectMetadata.get()));
+    errorCode = pushOutputData(outputPort, pipeId,
+                               std::static_pointer_cast<void>(obj));
+    if (common::ErrorCode::SUCCESS != errorCode) {
+      IVS_WARN(
+          "Send data fail, element id: {0:d}, output port: {1:d}, data: "
+          "{2:p}",
+          getId(), outputPort, static_cast<void*>(obj.get()));
+    }
   }
 
   return common::ErrorCode::SUCCESS;
