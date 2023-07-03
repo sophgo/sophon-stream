@@ -102,6 +102,7 @@ common::ErrorCode ResNetClassify::pre_process(
     } else {
       image1 = image0;
     }
+
     bm_image image_aligned;
     bool need_copy = image1.width & (64 - 1);
     if (need_copy) {
@@ -110,9 +111,9 @@ common::ErrorCode ResNetClassify::pre_process(
       stride2[0] = FFALIGN(stride1[0], 64);
       stride2[1] = FFALIGN(stride1[1], 64);
       stride2[2] = FFALIGN(stride1[2], 64);
-      bm_image_create(context->bmContext->handle(), image1.height, image1.width,
-                      image1.image_format, image1.data_type, &image_aligned,
-                      stride2);
+      bm_image_create(context->bmContext->handle(), image1.height,
+                      image1.width, image1.image_format, image1.data_type,
+                      &image_aligned, stride2);
 
       bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
       bmcv_copy_to_atrr_t copyToAttr;
@@ -156,13 +157,28 @@ common::ErrorCode ResNetClassify::pre_process(
 
     int aligned_net_w = FFALIGN(context->net_w, 64);
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
-    // for (int i = 0; i < context->max_batch; i++) {
+
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
-    auto ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
-                                              image_aligned, &resized_img,
-                                              &padding_attr, &crop_rect);
+    bm_status_t ret = BM_SUCCESS;
+    if (context->roi_predefined) {
+      if (context->roi.start_x > image1.width ||
+          context->roi.start_y > image1.height ||
+          (context->roi.start_x + context->roi.crop_w) > image1.width ||
+          (context->roi.start_y + context->roi.crop_h) > image1.height) {
+        IVS_CRITICAL("ROI AREA OUT OF RANGE");
+        abort();
+      }
+      ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
+                                           image_aligned, &resized_img,
+                                           &padding_attr, &context->roi);
+    } else {
+      ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
+                                           image_aligned, &resized_img,
+                                           &padding_attr, &crop_rect);
+    }
+
     assert(BM_SUCCESS == ret);
 
     if (image0.image_format != FORMAT_BGR_PLANAR) {
