@@ -50,6 +50,9 @@ struct ResNetContext {
   int min_dim;
   int class_num;
   bmcv_convert_to_attr converto_attr;
+
+  bmcv_rect_t roi;
+  bool roi_predefined = false;
 };
 }  // namespace resnet
 }  // namespace element

@@ -111,13 +111,6 @@ void Distributer::makeSubObjectMetadata(
                           cropped.get());
 
     subObj->mFrame->mSpData = cropped;
-
-    // std::string filename = "./cropped/" +
-    //                        std::to_string(obj->mFrame->mChannelId) + "-" +
-    //                        std::to_string(obj->mFrame->mFrameId) + "-" +
-    //                        std::to_string(subId) + ".bmp";
-    // bm_image_write_to_bmp(*subObj->mFrame->mSpData, filename.c_str());
-
   } else {
     subObj->mFrame->mSpData = obj->mFrame->mSpData;
   }

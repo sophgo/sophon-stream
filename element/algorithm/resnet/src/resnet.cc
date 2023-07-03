@@ -82,6 +82,18 @@ common::ErrorCode ResNet::initContext(const std::string& json) {
     mContext->converto_attr.alpha_2 = input_scale / (mContext->stdd[2]);
     mContext->converto_attr.beta_2 = -(mContext->mean[2]) / (mContext->stdd[2]);
 
+    // 5. roi
+    auto roi_it = configure.find(CONFIG_INTERNAL_ROI_FILED);
+    if (roi_it == configure.end()) {
+      mContext->roi_predefined = false;
+    } else {
+      mContext->roi_predefined = true;
+      mContext->roi.start_x = roi_it->find(CONFIG_INTERNAL_LEFT_FILED)->get<int>();
+      mContext->roi.start_y = roi_it->find(CONFIG_INTERNAL_TOP_FILED)->get<int>();
+      mContext->roi.crop_w = roi_it->find(CONFIG_INTERNAL_WIDTH_FILED)->get<int>();
+      mContext->roi.crop_h = roi_it->find(CONFIG_INTERNAL_HEIGHT_FILED)->get<int>();
+    }
+
   } while (false);
   return common::ErrorCode::SUCCESS;
 }
@@ -155,9 +167,8 @@ common::ErrorCode ResNet::doWork(int dataPipeId) {
     auto objectMetadata =
         std::static_pointer_cast<common::ObjectMetadata>(data);
 
-    if(!objectMetadata->mFilter)
-      objectMetadatas.push_back(objectMetadata);
-    
+    if (!objectMetadata->mFilter) objectMetadatas.push_back(objectMetadata);
+
     pendingObjectMetadatas.push_back(objectMetadata);
 
     if (objectMetadata->mFrame->mEndOfStream) {
