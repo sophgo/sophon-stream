@@ -45,7 +45,7 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   int mFrameCount;
   ChannelOperateRequest::SourceType mSourceType;
   std::vector<std::string> mImagePaths;
-  int mFps;
+  double mFps;
   int mSampleInterval;
 };
 }  // namespace decode
