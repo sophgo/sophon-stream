@@ -46,11 +46,11 @@ class Distributer : public ::sophon_stream::framework::Element {
       std::shared_ptr<common::ObjectMetadata> obj,
       std::shared_ptr<common::DetectedObjectMetadata> detObj,
       std::shared_ptr<common::ObjectMetadata> subObj, int subId);
-  std::unordered_map<int, std::unordered_map<std::string, int>> distrib_rules;
-  std::vector<std::string> class_names;
-  int default_port;
-  std::vector<float> intervals;
-  std::vector<float> last_times;
+  std::unordered_map<float, std::unordered_map<std::string, int>> mDistribRules;
+  std::vector<std::string> mClassNames;
+  int mDefaultPort;
+  std::vector<float> mIntervals;
+  std::vector<float> mLastTimes;
 
   sophon_stream::common::Clocker clocker;
 };

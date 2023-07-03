@@ -31,7 +31,7 @@ common::ErrorCode Converger::initInternal(const std::string& json) {
     }
     int _default_port =
         configure.find(CONFIG_INTERNAL_DEFAULT_PORT_FILED)->get<int>();
-    default_port = _default_port;
+    mDefaultPort = _default_port;
   } while (false);
   return errorCode;
 }
@@ -46,24 +46,24 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
 
   // 从所有inputPort中取出数据，并且做判断
   // default_port中取出的数据，放到map里
-  auto data = popInputData(default_port, dataPipeId);
+  auto data = popInputData(mDefaultPort, dataPipeId);
   while (!data && (getThreadStatus() == ThreadStatus::RUN)) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    data = popInputData(default_port, dataPipeId);
+    data = popInputData(mDefaultPort, dataPipeId);
   }
   if (data == nullptr) return common::ErrorCode::SUCCESS;
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
   int channel_id = objectMetadata->mFrame->mChannelIdInternal;
   int frame_id = objectMetadata->mFrame->mFrameId;
-  candidates[channel_id][frame_id] = objectMetadata;
-  // branches[channel_id][frame_id] = objectMetadata->numBranches;
+  mCandidates[channel_id][frame_id] = objectMetadata;
+  // mBranches[channel_id][frame_id] = objectMetadata->numBranches;
   IVS_DEBUG("data recognized, channel_id = {0}, frame_id = {1}", channel_id,
             frame_id);
 
   // 非default_port，取出来之后更新分支数的记录
   for (int inputPort : inputPorts) {
-    if (inputPort == default_port) continue;
+    if (inputPort == mDefaultPort) continue;
     auto subdata = popInputData(inputPort, dataPipeId);
     // 这里不能在while里取，否则会堵住
     // while (!subdata && (getThreadStatus() == ThreadStatus::RUN)) {
@@ -76,26 +76,26 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     int sub_frame_id = subObj->mFrame->mFrameId;
     IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {0}",
               sub_channel_id, sub_frame_id);
-    branches[sub_channel_id][sub_frame_id]++;
+    mBranches[sub_channel_id][sub_frame_id]++;
     IVS_DEBUG("data updated, channel_id = {0}, frame_id = {1}", channel_id,
               frame_id);
   }
 
   // 遍历map，能弹出去的都弹出去
-  for (auto channel_it = candidates.begin(); channel_it != candidates.end();
+  for (auto channel_it = mCandidates.begin(); channel_it != mCandidates.end();
        ++channel_it) {
     // 第一层：遍历所有channel
     int channel_id_internal = channel_it->first;
-    for (auto frame_it = candidates[channel_id_internal].begin();
-         frame_it != candidates[channel_id_internal].end();) {
+    for (auto frame_it = mCandidates[channel_id_internal].begin();
+         frame_it != mCandidates[channel_id_internal].end();) {
       // 第二层：遍历当前channel下的所有frame，有序
       int frame_id = frame_it->first;
       // 如果可以弹出，则弹出并循环至下一个
-      if (branches[channel_id_internal][frame_id] ==
-          candidates[channel_id_internal][frame_id]->numBranches) {
+      if (mBranches[channel_id_internal][frame_id] ==
+          mCandidates[channel_id_internal][frame_id]->numBranches) {
         IVS_DEBUG("Data converged! Now pop... channel_id = {0}, frame_id = {1}",
                   channel_id_internal, frame_id);
-        auto obj = candidates[channel_id_internal][frame_id];
+        auto obj = mCandidates[channel_id_internal][frame_id];
         int outDataPipeId = getSinkElementFlag()
                                 ? 0
                                 : (channel_id_internal %
@@ -108,8 +108,8 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
               "{2:p}",
               getId(), outputPort, static_cast<void*>(obj.get()));
         }
-        candidates[channel_id_internal].erase(frame_it++);
-        // branches[channel_id_internal][frame_id]
+        mCandidates[channel_id_internal].erase(frame_it++);
+        // mBranches[channel_id_internal][frame_id]
         // 应该也需要删除，否则内存越积越多？
       } else {
         // 当前帧不可以弹出，为了保证时序性，后续帧也不弹出

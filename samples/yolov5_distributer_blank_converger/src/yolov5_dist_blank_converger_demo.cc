@@ -22,10 +22,11 @@ const std::vector<std::vector<int>> colors = {
     {0, 64, 0},   {128, 64, 0},  {0, 192, 0},    {128, 192, 0},
     {0, 64, 128}};
 
-void draw_bmcv(bm_handle_t& handle, int classId,
-               std::vector<std::string>& class_names, float conf, int left,
-               int top, int width, int height, bm_image& frame,
-               bool put_text_flag)  // Draw the predicted bounding box
+void draw_all_bmcv(bm_handle_t& handle, int track_id, int left, int top,
+                   int width, int height, bm_image& frame, bool put_text_flag,
+                   std::vector<std::string>& car_color,
+                   std::vector<std::string>& person_gender, bool is_car,
+                   int class_id)  // Draw the predicted bounding box
 {
   int colors_num = colors.size();
   // Draw a rectangle displaying the bounding box
@@ -36,15 +37,21 @@ void draw_bmcv(bm_handle_t& handle, int classId,
   rect.crop_h = height;
   std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
             << rect.crop_h << std::endl;
-  std::vector<int> color = colors[classId % colors_num];
+  std::vector<int> color = colors[track_id % colors_num];
   bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0], color[1],
                             color[2]);
   if (put_text_flag) {
-    std::string label = class_names[classId] + ":" + cv::format("%.2f", conf);
-    bmcv_point_t org = {left, top};
+    std::string label = std::to_string(track_id);
+    label += "-";
+    if (is_car) {
+      label += car_color[class_id];
+    } else {
+      label += person_gender[class_id];
+    }
+    bmcv_point_t org = {left, top - 10};
     bmcv_color_t bmcv_color = {color[0], color[1], color[2]};
     int thickness = 2;
-    float fontScale = 2;
+    float fontScale = 1.5;
     if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
                                           bmcv_color, fontScale, thickness)) {
       std::cout << "bmcv put text error !!!" << std::endl;
@@ -59,6 +66,8 @@ typedef struct demo_config_ {
   bool download_image;
   std::string engine_config_file;
   std::vector<std::string> class_names;
+  std::vector<std::string> car_attr;
+  std::vector<std::string> person_attr;
 } demo_config;
 
 constexpr const char* JSON_CONFIG_NUM_CHANNELS_PER_GRAPH_FILED =
@@ -68,6 +77,8 @@ constexpr const char* JSON_CONFIG_ENGINE_CONFIG_PATH_FILED =
     "engine_config_path";
 constexpr const char* JSON_CONFIG_CLASS_NAMES_FILED = "class_names";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FILED = "channel";
+constexpr const char* JSON_CONFIG_CAR_ATTRIBUTES_FILED = "car_attributes";
+constexpr const char* JSON_CONFIG_PERSON_ATTRIBUTES_FILED = "person_attributes";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -91,6 +102,10 @@ demo_config parse_demo_json(std::string& json_path) {
       demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)->get<std::string>();
   std::string class_names_file =
       demo_json.find(JSON_CONFIG_CLASS_NAMES_FILED)->get<std::string>();
+  std::string car_attr_file =
+      demo_json.find(JSON_CONFIG_CAR_ATTRIBUTES_FILED)->get<std::string>();
+  std::string person_attr_file =
+      demo_json.find(JSON_CONFIG_PERSON_ATTRIBUTES_FILED)->get<std::string>();
 
   if (config.download_image) {
     const char* dir_path = "./results";
@@ -110,6 +125,22 @@ demo_config parse_demo_json(std::string& json_path) {
     while (std::getline(istream, line)) {
       line = line.substr(0, line.length() - 1);
       config.class_names.push_back(line);
+    }
+    istream.close();
+
+    istream.open(car_attr_file);
+    assert(istream.is_open());
+    while (std::getline(istream, line)) {
+      line = line.substr(0, line.length() - 1);
+      config.car_attr.push_back(line);
+    }
+    istream.close();
+
+    istream.open(person_attr_file);
+    assert(istream.is_open());
+    while (std::getline(istream, line)) {
+      line = line.substr(0, line.length() - 1);
+      config.person_attr.push_back(line);
     }
     istream.close();
   }
@@ -162,89 +193,34 @@ int main() {
       int width = objectMetadata->mFrame->mWidth;
       int height = objectMetadata->mFrame->mHeight;
       bm_image image = *objectMetadata->mFrame->mSpData;
-      bm_image imageStorage;
-
-      int subId = 0;
-      for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
-        if (detObj->mClassify == 0) {
-          // person
+      if (objectMetadata->mSubObjectMetadatas.size() > 0) {
+        bm_image imageStorage;
+        bm_image_create(objectMetadata->mFrame->mHandle, height, width,
+                        FORMAT_YUV420P, image.data_type, &imageStorage);
+        bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
+                                   &imageStorage);
+        for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+          int subId = subObj->mSubId;
+          auto detObj = objectMetadata->mDetectedObjectMetadatas[subId];
+          auto trackObj = objectMetadata->mTrackedObjectMetadatas[subId];
           bmcv_rect_t rect;
           rect.start_x = detObj->mBox.mX;
           rect.start_y = detObj->mBox.mY;
           rect.crop_w = detObj->mBox.mWidth;
           rect.crop_h = detObj->mBox.mHeight;
-
-          bm_image cropped;
-          bm_image_format_info_t info;
-          bm_image_get_format_info(&image, &info);
-          bm_image_create(objectMetadata->mFrame->mHandle, rect.crop_h,
-                          rect.crop_w, info.image_format, info.data_type,
-                          &cropped);
-          bmcv_image_crop(objectMetadata->mFrame->mHandle, 1, &rect, image,
-                          &cropped);
-          std::string filename =
-              "./cropped/person/" +
-              std::to_string(objectMetadata->mFrame->mChannelId) + "-" +
-              std::to_string(objectMetadata->mFrame->mFrameId) + "-" +
-              std::to_string(subId) + ".bmp";
-          bm_image_write_to_bmp(cropped, filename.c_str());
-
-          ++subId;
-          bm_image_destroy(cropped);
-        } else if(detObj->mClassify == 2) {
-          // car
-          bmcv_rect_t rect;
-          rect.start_x = detObj->mBox.mX;
-          rect.start_y = detObj->mBox.mY;
-          rect.crop_w = detObj->mBox.mWidth;
-          rect.crop_h = detObj->mBox.mHeight;
-
-          bm_image cropped;
-          bm_image_format_info_t info;
-          bm_image_get_format_info(&image, &info);
-          bm_image_create(objectMetadata->mFrame->mHandle, rect.crop_h,
-                          rect.crop_w, info.image_format, info.data_type,
-                          &cropped);
-          bmcv_image_crop(objectMetadata->mFrame->mHandle, 1, &rect, image,
-                          &cropped);
-          std::string filename =
-              "./cropped/car/" +
-              std::to_string(objectMetadata->mFrame->mChannelId) + "-" +
-              std::to_string(objectMetadata->mFrame->mFrameId) + "-" +
-              std::to_string(subId) + ".bmp";
-          bm_image_write_to_bmp(cropped, filename.c_str());
-          ++subId;
-          bm_image_destroy(cropped);
+          int class_id = subObj->mRecognizedObjectMetadatas[0]->mTopKLabels[0];
+          draw_all_bmcv(objectMetadata->mFrame->mHandle, trackObj->mTrackId,
+                        rect.start_x, rect.start_y, rect.crop_w, rect.crop_h,
+                        imageStorage, true, yolov5_json.car_attr,
+                        yolov5_json.person_attr, (detObj->mClassify == 2),
+                        class_id);
         }
+        std::string filename =
+            "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
+            "-" + std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
+        bm_image_write_to_bmp(imageStorage, filename.c_str());
+        bm_image_destroy(imageStorage);
       }
-
-      // bm_image_create(objectMetadata->mFrame->mHandle, height, width,
-      //                 FORMAT_YUV420P, image.data_type, &imageStorage);
-      // bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
-      //                            &imageStorage);
-
-      // for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
-      //   draw_bmcv(objectMetadata->mFrame->mHandle, detObj->mClassify,
-      //             yolov5_json.class_names, detObj->mScores[0],
-      //             detObj->mBox.mX, detObj->mBox.mY, detObj->mBox.mWidth,
-      //             detObj->mBox.mHeight, imageStorage, true);
-      // }
-      // // save image
-      // void* jpeg_data = NULL;
-      // size_t out_size = 0;
-      // int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
-      //                               &imageStorage, &jpeg_data, &out_size);
-      // if (ret == BM_SUCCESS) {
-      //   std::string img_file =
-      //       "./results/" + std::to_string(objectMetadata->mFrame->mChannelId)
-      //       +
-      //       "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
-      //   FILE* fp = fopen(img_file.c_str(), "wb");
-      //   fwrite(jpeg_data, out_size, 1, fp);
-      //   fclose(fp);
-      // }
-      // free(jpeg_data);
-      bm_image_destroy(imageStorage);
     }
     fpsProfiler.add(1);
   };

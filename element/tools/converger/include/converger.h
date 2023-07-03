@@ -34,17 +34,17 @@ class Converger : public ::sophon_stream::framework::Element {
       "default_port";
 
  private:
-  int default_port;
+  int mDefaultPort;
   /**
    * @brief key: channel_id, value: map<frame_id, objectMetadata>
    */
   std::unordered_map<int,
                      std::map<int, std::shared_ptr<common::ObjectMetadata>>>
-      candidates;
+      mCandidates;
   /**
    * @brief recored number of branches for every ObjectMetadata in default_port
    */
-  std::unordered_map<int, std::unordered_map<int, int>> branches;
+  std::unordered_map<int, std::unordered_map<int, int>> mBranches;
 };
 
 }  // namespace converger

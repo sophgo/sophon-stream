@@ -32,7 +32,7 @@ common::ErrorCode Distributer::initInternal(const std::string& json) {
     }
     int _default_port =
         configure.find(CONFIG_INTERNAL_DEFAULT_PORT_FILED)->get<int>();
-    default_port = _default_port;
+    mDefaultPort = _default_port;
 
     auto class_names_file =
         configure.find(CONFIG_INTERNAL_CLASS_NAMES_FILES_FILED)
@@ -43,15 +43,15 @@ common::ErrorCode Distributer::initInternal(const std::string& json) {
     std::string line;
     while (std::getline(istream, line)) {
       line = line.substr(0, line.length() - 1);
-      class_names.push_back(line);
+      mClassNames.push_back(line);
     }
     istream.close();
 
     auto rules = configure.find(CONFIG_INTERNAL_RULES_FILED);
     for (auto& rule : *rules) {
-      int interval = rule.find(CONFIG_INTERNAL_INTERVAL_FILED)->get<float>();
-      intervals.push_back(interval);
-      last_times.push_back(0.0);
+      float interval = rule.find(CONFIG_INTERNAL_INTERVAL_FILED)->get<float>();
+      mIntervals.push_back(interval);
+      mLastTimes.push_back(0.0);
 
       auto routes = rule.find(CONFIG_INTERNAL_ROUTES_FILED);
       for (auto& route : *routes) {
@@ -62,10 +62,10 @@ common::ErrorCode Distributer::initInternal(const std::string& json) {
                 ->get<std::vector<std::string>>();
         if (class_names_route.size() == 0) {
           // 没有配置class_names，则认为是full frame
-          distrib_rules[interval]["full_frame"] = port_id;
+          mDistribRules[interval]["full_frame"] = port_id;
         }
         for (auto& class_name : class_names_route) {
-          distrib_rules[interval][class_name] = port_id;
+          mDistribRules[interval][class_name] = port_id;
         }
       }
     }
@@ -140,24 +140,24 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
   // 先把ObjectMetadata发给默认的汇聚节点
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outDataPipeId =
-      channel_id_internal % getOutputConnectorCapacity(default_port);
-  errorCode = pushOutputData(default_port, outDataPipeId, data);
+      channel_id_internal % getOutputConnectorCapacity(mDefaultPort);
+  errorCode = pushOutputData(mDefaultPort, outDataPipeId, data);
 
   // 判断计时器规则
   float cur_time = clocker.tell_ms() / 1000.0;
   int subId = 0;
-  for (int i = 0; i < last_times.size(); ++i) {
-    if (cur_time - last_times[i] > intervals[i]) {
+  for (int i = 0; i < mLastTimes.size(); ++i) {
+    if (cur_time - mLastTimes[i] > mIntervals[i]) {
       // 当前interval生效，更新时间
-      last_times[i] = cur_time;
+      mLastTimes[i] = cur_time;
       // 按照distrib_rules[interval]记录的route分发
       for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
         // box分发
         int class_id = detObj->mClassify;
-        std::string class_name = class_names[class_id];
+        std::string class_name = mClassNames[class_id];
         // 当前box需要发送到下游
-        if (distrib_rules[intervals[i]].find(class_name) !=
-            distrib_rules[intervals[i]].end()) {
+        if (mDistribRules[mIntervals[i]].find(class_name) !=
+            mDistribRules[mIntervals[i]].end()) {
           // 构造SubObjectMetadata
           std::shared_ptr<common::ObjectMetadata> subObj =
               std::make_shared<common::ObjectMetadata>();
@@ -165,7 +165,7 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
           objectMetadata->mSubObjectMetadatas.push_back(subObj);
           ++objectMetadata->numBranches;
           // 发送subObj
-          int target_port = distrib_rules[intervals[i]][class_name];
+          int target_port = mDistribRules[mIntervals[i]][class_name];
           int outDataPipeId =
               channel_id_internal % getOutputConnectorCapacity(target_port);
           errorCode = pushOutputData(target_port, outDataPipeId,
@@ -179,15 +179,15 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
         }
         ++subId;
       }
-      if (distrib_rules[intervals[i]].find("full_frame") !=
-          distrib_rules[intervals[i]].end()) {
+      if (mDistribRules[mIntervals[i]].find("full_frame") !=
+          mDistribRules[mIntervals[i]].end()) {
         // full_frame 分发，也是构造一个新的SubObjectMetadata
         std::shared_ptr<common::ObjectMetadata> subObj =
             std::make_shared<common::ObjectMetadata>();
         makeSubObjectMetadata(objectMetadata, nullptr, subObj, -1);
         objectMetadata->mSubObjectMetadatas.push_back(subObj);
         ++objectMetadata->numBranches;
-        int target_port = distrib_rules[intervals[i]]["full_frame"];
+        int target_port = mDistribRules[mIntervals[i]]["full_frame"];
         int outDataPipeId =
             channel_id_internal % getOutputConnectorCapacity(target_port);
         errorCode = pushOutputData(target_port, outDataPipeId,
