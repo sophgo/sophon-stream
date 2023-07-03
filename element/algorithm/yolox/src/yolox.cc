@@ -34,7 +34,37 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
     auto modelPathIt = configure.find(CONFIG_INTERNAL_MODEL_PATH_FIELD);
 
     auto threshConfIt = configure.find(CONFIG_INTERNAL_THRESHOLD_CONF_FIELD);
-    mContext->thresh_conf = threshConfIt->get<float>();
+    if (threshConfIt->is_number_float()) {
+      mContext->thresh_conf_min = threshConfIt->get<float>();
+    } else {
+      mContext->thresh_conf =
+          threshConfIt->get<std::unordered_map<std::string, float>>();
+    }
+
+    auto classNamesFileIt =
+        configure.find(CONFIG_INTERNAL_CLASS_NAMES_FILE_FIELD);
+    if (classNamesFileIt->is_string()) {
+      std::string class_names_file = classNamesFileIt->get<std::string>();
+      std::ifstream istream;
+      istream.open(class_names_file);
+      assert(istream.is_open());
+      std::string line;
+      while (std::getline(istream, line)) {
+        line = line.substr(0, line.length() - 1);
+        mContext->class_names.push_back(line);
+        if (mContext->thresh_conf_min != -1) {
+          mContext->thresh_conf.insert({line, mContext->thresh_conf_min});
+        }
+      }
+      istream.close();
+    }
+
+    for (auto thresh_it = mContext->thresh_conf.begin();
+         thresh_it != mContext->thresh_conf.end(); ++thresh_it) {
+      mContext->thresh_conf_min = mContext->thresh_conf_min < thresh_it->second
+                                      ? mContext->thresh_conf_min
+                                      : thresh_it->second;
+    }
 
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
     mContext->thresh_nms = threshNmsIt->get<float>();
@@ -69,6 +99,15 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
     mContext->output_num = mContext->bmNetwork->outputTensorNum();
     mContext->class_num =
         mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2] - 4 - 1;  //
+
+    if (mContext->class_num != mContext->class_names.size() ||
+        mContext->class_num != mContext->thresh_conf.size() ||
+        mContext->thresh_conf.size() != mContext->class_names.size()) {
+      IVS_CRITICAL(
+          "Class Number Does Not Match The Model! Please Check The Json "
+          "File.");
+      abort();
+    }
 
     float input_scale = inputTensor->get_scale();
     // yolox原始模型输入是0-255,scale=1.0意味着不需要做缩放
@@ -204,9 +243,8 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
     auto objectMetadata =
         std::static_pointer_cast<common::ObjectMetadata>(data);
 
-    if(!objectMetadata->mFilter)
-      objectMetadatas.push_back(objectMetadata);
-    
+    if (!objectMetadata->mFilter) objectMetadatas.push_back(objectMetadata);
+
     pendingObjectMetadatas.push_back(objectMetadata);
 
     if (objectMetadata->mFrame->mEndOfStream) {

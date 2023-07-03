@@ -10,6 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOV5_H_
 #define SOPHON_STREAM_ELEMENT_YOLOV5_H_
 
+#include <fstream>
 #include <memory>
 #include <mutex>
 
@@ -49,6 +50,8 @@ class Yolov5 : public ::sophon_stream::framework::Element {
       "bgr2rgb";
   static constexpr const char* CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD = "mean";
   static constexpr const char* CONFIG_INTERNAL_THRESHOLD_STD_FIELD = "std";
+  static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FILE_FIELD =
+      "class_names_file";
 
  private:
   std::shared_ptr<Yolov5Context> mContext;          // context对象

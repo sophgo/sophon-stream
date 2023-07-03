@@ -13,6 +13,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "bmcv_api.h"
@@ -39,8 +40,10 @@ struct YoloxContext {
   std::vector<float> stdd;  // 前处理方差， 长度为3，顺序为rgb
   bool bgr2rgb;             // 是否将bgr图像转成rgb推理
 
-  float thresh_conf;  // 置信度阈值
-  float thresh_nms;   // nms iou阈值
+  float thresh_conf_min = -1;
+  std::unordered_map<std::string, float> thresh_conf; // 置信度阈值
+  float thresh_nms;  // nms iou阈值
+  std::vector<std::string> class_names;
 
   int class_num = 80;
   int net_h;

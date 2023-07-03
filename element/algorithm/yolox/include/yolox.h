@@ -10,6 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOX_H_
 #define SOPHON_STREAM_ELEMENT_YOLOX_H_
 
+#include <fstream>
 #include <memory>
 
 #include "common/profiler.h"
@@ -39,12 +40,12 @@ class Yolox : public ::sophon_stream::framework::Element {
       "threshold_conf";
   static constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD =
       "threshold_nms";
-  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD = "bgr2rgb";
-  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD =
-      "mean";
-  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_STD_FIELD =
-      "std";
-
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD =
+      "bgr2rgb";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD = "mean";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_STD_FIELD = "std";
+  static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FILE_FIELD =
+      "class_names_file";
 
  private:
   std::shared_ptr<YoloxContext> mContext;          // context对象

@@ -85,6 +85,26 @@
                 }
             },
             {
+                "element_id": 6001,
+                "element_config": "../config/bytetrack.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
                 "element_id": 5004,
                 "element_config": "../config/distributer.json",
                 "ports": {
@@ -128,7 +148,7 @@
                     "output": [
                         {
                             "port_id": 0,
-                            "is_sink": false,
+                            "is_sink": true,
                             "is_src": false
                         }
                     ]
@@ -173,46 +193,6 @@
                         }
                     ]
                 }
-            },
-            {
-                "element_id": 6001,
-                "element_config": "../config/osd.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
-            },
-            {
-                "element_id": 6002,
-                "element_config": "../config/encode.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": true,
-                            "is_src": false
-                        }
-                    ]
-                }
             }
         ],
         "connections": [
@@ -236,6 +216,12 @@
             },
             {
                 "src_element_id": 5003,
+                "src_port": 0,
+                "dst_element_id": 6001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 6001,
                 "src_port": 0,
                 "dst_element_id": 5004,
                 "dst_port": 0
@@ -269,18 +255,6 @@
                 "src_port": 0,
                 "dst_element_id": 5007,
                 "dst_port": 2
-            },
-            {
-                "src_element_id": 5007,
-                "src_port": 0,
-                "dst_element_id": 6001,
-                "dst_port": 0
-            },
-            {
-                "src_element_id": 6001,
-                "src_port": 0,
-                "dst_element_id": 6002,
-                "dst_port": 0
             }
         ]
     }

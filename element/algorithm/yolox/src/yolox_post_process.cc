@@ -129,10 +129,10 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
     for (size_t i = 0; i < m_box_num; ++i) {
       // 取出物体置信度
       float box_objectness = tensor[i * numDim3 + 4];
-      if (box_objectness < context->thresh_conf) continue;
+      if (box_objectness < context->thresh_conf_min) continue;
       int max_class_idx = argmax(&tensor[i * numDim3 + 5], context->class_num);
       float box_prob = box_objectness * tensor[i * numDim3 + 5 + max_class_idx];
-      if (box_prob > context->thresh_conf) {
+      if (box_prob > context->thresh_conf[context->class_names[max_class_idx]]) {
         float center_x =
             (tensor[i * numDim3 + 0] + m_grids_x[i]) * m_expanded_strides[i];
         float center_y =

@@ -140,7 +140,7 @@ void Yolov5PostProcess::setTpuKernelMem(
     tpu_k.api[batch_idx].nms_threshold =
         0.1 > context->thresh_nms ? 0.1 : context->thresh_nms;
     tpu_k.api[batch_idx].confidence_threshold =
-        0.1 > context->thresh_conf ? 0.1 : context->thresh_conf;
+        0.1 > context->thresh_conf_min ? 0.1 : context->thresh_conf_min;
     auto it = tpu_k.api[batch_idx].bias;
     for (const auto& subvector2 : anchors) {
       for (const auto& subvector1 : subvector2) {
@@ -322,10 +322,10 @@ void Yolov5PostProcess::postProcessCPU(
           float* ptr = tensor_data + anchor_idx * feature_size;
           for (int i = 0; i < area; i++) {
             float score = sigmoid(ptr[4]);
-            if (score >= context->thresh_conf) {
+            if (score >= context->thresh_conf_min) {
               int class_id = argmax(&ptr[5], context->class_num);
               float confidence = sigmoid(ptr[class_id + 5]);
-              if (confidence * score >= context->thresh_conf) {
+              if (confidence * score >= context->thresh_conf[context->class_names[class_id]]) {
                 dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w *
                          context->net_w;
                 dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h *

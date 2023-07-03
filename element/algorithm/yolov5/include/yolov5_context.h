@@ -13,6 +13,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "bmcv_api.h"
@@ -71,8 +72,10 @@ struct Yolov5Context {
   float* output_tensor[MAX_BATCH];
   int32_t detect_num[MAX_BATCH];
 
-  float thresh_conf;  // 置信度阈值
-  float thresh_nms;   // nms iou阈值
+  float thresh_conf_min = -1;
+  std::unordered_map<std::string, float> thresh_conf;  // 置信度阈值
+  float thresh_nms;                                    // nms iou阈值
+  std::vector<std::string> class_names;
 
   int class_num = 80;  // default is coco names
   int m_frame_h, m_frame_w;

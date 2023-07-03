@@ -3,9 +3,12 @@
   "channel": {
     "url": "../data/videos/traffic.mp4",
     "source_type": "VIDEO",
-    "loop_num": 1
+    "loop_num": 1,
+    "fps": 25
   },
   "class_names": "../data/coco.names",
-  "download_image": false,
+  "car_attributes": "../data/car.attributes",
+  "person_attributes": "../data/person.attributes",
+  "download_image": true,
   "engine_config_path": "../config/engine.json"
 }
