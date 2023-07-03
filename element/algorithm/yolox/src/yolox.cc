@@ -190,6 +190,8 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
     int outputPort = outputPorts[0];
   }
 
+  common::ObjectMetadatas pendingObjectMetadatas;
+
   while (objectMetadatas.size() < mBatch &&
          (getThreadStatus() == ThreadStatus::RUN)) {
     // 如果队列为空则等待
@@ -202,7 +204,10 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
     auto objectMetadata =
         std::static_pointer_cast<common::ObjectMetadata>(data);
 
-    objectMetadatas.push_back(objectMetadata);
+    if(!objectMetadata->mFilter)
+      objectMetadatas.push_back(objectMetadata);
+    
+    pendingObjectMetadatas.push_back(objectMetadata);
 
     if (objectMetadata->mFrame->mEndOfStream) {
       break;
@@ -210,7 +215,7 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
   }
   process(objectMetadatas);
 
-  for (auto& objectMetadata : objectMetadatas) {
+  for (auto& objectMetadata : pendingObjectMetadatas) {
     int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
     int outDataPipeId =
         getSinkElementFlag()
