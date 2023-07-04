@@ -41,29 +41,37 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
           threshConfIt->get<std::unordered_map<std::string, float>>();
     }
 
-    auto classNamesFileIt =
-        configure.find(CONFIG_INTERNAL_CLASS_NAMES_FILE_FIELD);
-    if (classNamesFileIt->is_string()) {
-      std::string class_names_file = classNamesFileIt->get<std::string>();
-      std::ifstream istream;
-      istream.open(class_names_file);
-      assert(istream.is_open());
-      std::string line;
-      while (std::getline(istream, line)) {
-        line = line.substr(0, line.length() - 1);
-        mContext->class_names.push_back(line);
-        if (mContext->thresh_conf_min != -1) {
-          mContext->thresh_conf.insert({line, mContext->thresh_conf_min});
+    if (threshConfIt->is_number_float()) {
+      mContext->class_thresh_valid = false;
+    } else {
+      auto classNamesFileIt =
+          configure.find(CONFIG_INTERNAL_CLASS_NAMES_FILE_FIELD);
+      if (classNamesFileIt->is_string()) {
+        mContext->class_thresh_valid = true;
+        std::string class_names_file = classNamesFileIt->get<std::string>();
+        std::ifstream istream;
+        istream.open(class_names_file);
+        assert(istream.is_open());
+        std::string line;
+        while (std::getline(istream, line)) {
+          line = line.substr(0, line.length() - 1);
+          mContext->class_names.push_back(line);
+          if (mContext->thresh_conf_min != -1) {
+            mContext->thresh_conf.insert({line, mContext->thresh_conf_min});
+          }
         }
+        istream.close();
       }
-      istream.close();
     }
 
-    for (auto thresh_it = mContext->thresh_conf.begin();
-         thresh_it != mContext->thresh_conf.end(); ++thresh_it) {
-      mContext->thresh_conf_min = mContext->thresh_conf_min < thresh_it->second
-                                      ? mContext->thresh_conf_min
-                                      : thresh_it->second;
+    if (mContext->class_thresh_valid) {
+      for (auto thresh_it = mContext->thresh_conf.begin();
+           thresh_it != mContext->thresh_conf.end(); ++thresh_it) {
+        mContext->thresh_conf_min =
+            mContext->thresh_conf_min < thresh_it->second
+                ? mContext->thresh_conf_min
+                : thresh_it->second;
+      }
     }
 
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
@@ -99,14 +107,15 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
     mContext->output_num = mContext->bmNetwork->outputTensorNum();
     mContext->class_num =
         mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2] - 4 - 1;  //
-
-    if (mContext->class_num != mContext->class_names.size() ||
-        mContext->class_num != mContext->thresh_conf.size() ||
-        mContext->thresh_conf.size() != mContext->class_names.size()) {
-      IVS_CRITICAL(
-          "Class Number Does Not Match The Model! Please Check The Json "
-          "File.");
-      abort();
+    if (mContext->class_thresh_valid) {
+      if (mContext->class_num != mContext->class_names.size() ||
+          mContext->class_num != mContext->thresh_conf.size() ||
+          mContext->thresh_conf.size() != mContext->class_names.size()) {
+        IVS_CRITICAL(
+            "Class Number Does Not Match The Model! Please Check The Json "
+            "File.");
+        abort();
+      }
     }
 
     float input_scale = inputTensor->get_scale();

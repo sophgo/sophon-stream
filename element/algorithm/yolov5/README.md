@@ -43,16 +43,17 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
 |      参数名    |    类型    | 默认值 | 说明 |
 |:-------------:| :-------: | :------------------:| :------------------------:|
 |  model_path  |   字符串   | "../data/models/yolov5s_tpukernel_int8_4b.bmodel" | yolov5模型路径 |
-|  threshold_conf   |   浮点数   | 0.5 | 目标检测物体置信度阈值 |
+|  threshold_conf   |   浮点数或map   | 0.5 | 目标检测物体置信度阈值，设置为浮点数时，所有类别共用同一个阈值；设置为map时，不同类别可以使用不同阈值，此时还需要正确设置class_names_file |
 |  threshold_nms  |   浮点数   | 0.5 | 目标检测NMS IOU阈值 |
 |  bgr2rgb  |   bool   | true | 解码器解出来的图像默认是bgr格式，是否需要将图像转换成rgb格式 |
 |  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  stage    |   列表   | ["pre"]  | 标志前处理、推理、后处理三个阶段 |
 |  use_tpu_kernel  |   布尔值    |  true | 是否启用tpu_kernel后处理 |
+| class_names_file | 字符串 | 无 | threshold_conf为浮点数时不生效，可以不设置；当threshold_conf为map时启用，class name文件的路径 |
 |  shared_object |   字符串   |  "../../../build/lib/libyolov5.so"  | libyolov5 动态库路径 |
 |     id      |    整数       | 0  | element id |
-|  device_id  |    整数       |  0 | tpu 设备号 |s
+|  device_id  |    整数       |  0 | tpu 设备号 |
 |     name    |    字符串     | "yolov5" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
 | thread_number |    整数     | 1 | 启动线程数 |

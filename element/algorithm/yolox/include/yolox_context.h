@@ -44,6 +44,7 @@ struct YoloxContext {
   std::unordered_map<std::string, float> thresh_conf; // 置信度阈值
   float thresh_nms;  // nms iou阈值
   std::vector<std::string> class_names;
+  bool class_thresh_valid = false;
 
   int class_num = 80;
   int net_h;

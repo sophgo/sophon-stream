@@ -132,7 +132,11 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
       if (box_objectness < context->thresh_conf_min) continue;
       int max_class_idx = argmax(&tensor[i * numDim3 + 5], context->class_num);
       float box_prob = box_objectness * tensor[i * numDim3 + 5 + max_class_idx];
-      if (box_prob > context->thresh_conf[context->class_names[max_class_idx]]) {
+      float cur_class_thresh =
+          context->class_thresh_valid
+              ? context->thresh_conf[context->class_names[max_class_idx]]
+              : context->thresh_conf_min;
+      if (box_prob > cur_class_thresh) {
         float center_x =
             (tensor[i * numDim3 + 0] + m_grids_x[i]) * m_expanded_strides[i];
         float center_y =
@@ -169,14 +173,14 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
 
     std::sort(
         yolobox_vec.begin(), yolobox_vec.end(),
-        [](const YoloxBox& a, const YoloxBox& b) { return a.score > b.score;
-        });
+        [](const YoloxBox& a, const YoloxBox& b) { return a.score > b.score; });
     std::vector<int> picked;
     nms_sorted_bboxes(yolobox_vec, picked, context->thresh_nms);
 
     for (size_t i = 0; i < picked.size(); i++) {
       auto bbox = yolobox_vec[picked[i]];
-      std::shared_ptr<common::DetectedObjectMetadata> detData = std::make_shared<common::DetectedObjectMetadata>();
+      std::shared_ptr<common::DetectedObjectMetadata> detData =
+          std::make_shared<common::DetectedObjectMetadata>();
       detData->mBox.mX = bbox.left;
       detData->mBox.mY = bbox.top;
       detData->mBox.mWidth = bbox.width;

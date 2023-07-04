@@ -91,7 +91,7 @@ void Yolov5PostProcess::setTpuKernelMem(
     std::shared_ptr<Yolov5Context> context,
     common::ObjectMetadatas& objectMetadatas, tpu_kernel& tpu_k) {
   int out_len_max = 25200 * 7;
-  if(objectMetadatas[0]->mFrame->mEndOfStream) return;
+  if (objectMetadatas[0]->mFrame->mEndOfStream) return;
   int input_num = objectMetadatas[0]->mOutputBMtensors->tensors.size();  // 3
   int batch_num = 1;  // 4b has bug, now only for 1b.
   tpu_k.func_id = context->func_id;
@@ -216,7 +216,8 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
       temp_bbox.x = std::max(int(centerX - temp_bbox.width / 2), 0);
       temp_bbox.y = std::max(int(centerY - temp_bbox.height / 2), 0);
 
-      std::shared_ptr<common::DetectedObjectMetadata> detData = std::make_shared<common::DetectedObjectMetadata>();
+      std::shared_ptr<common::DetectedObjectMetadata> detData =
+          std::make_shared<common::DetectedObjectMetadata>();
       detData->mBox.mX = temp_bbox.x;
       detData->mBox.mY = temp_bbox.y;
       detData->mBox.mWidth = temp_bbox.width;
@@ -325,7 +326,11 @@ void Yolov5PostProcess::postProcessCPU(
             if (score >= context->thresh_conf_min) {
               int class_id = argmax(&ptr[5], context->class_num);
               float confidence = sigmoid(ptr[class_id + 5]);
-              if (confidence * score >= context->thresh_conf[context->class_names[class_id]]) {
+              float cur_class_thresh =
+                  context->class_thresh_valid
+                      ? context->thresh_conf[context->class_names[class_id]]
+                      : context->thresh_conf_min;
+              if (confidence * score >= cur_class_thresh) {
                 dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w *
                          context->net_w;
                 dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h *
@@ -369,7 +374,8 @@ void Yolov5PostProcess::postProcessCPU(
     NMS(yolobox_vec, context->thresh_nms);
 
     for (auto bbox : yolobox_vec) {
-      std::shared_ptr<common::DetectedObjectMetadata> detData = std::make_shared<common::DetectedObjectMetadata>();
+      std::shared_ptr<common::DetectedObjectMetadata> detData =
+          std::make_shared<common::DetectedObjectMetadata>();
       detData->mBox.mX = bbox.x;
       detData->mBox.mY = bbox.y;
       detData->mBox.mWidth = bbox.width;
