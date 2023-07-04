@@ -49,26 +49,78 @@ common::ErrorCode Distributer::initInternal(const std::string& json) {
 
     auto rules = configure.find(CONFIG_INTERNAL_RULES_FILED);
     for (auto& rule : *rules) {
-      float interval = rule.find(CONFIG_INTERNAL_INTERVAL_FILED)->get<float>();
-      mIntervals.push_back(interval);
-      mLastTimes.push_back(0.0);
-
       auto routes = rule.find(CONFIG_INTERNAL_ROUTES_FILED);
-      for (auto& route : *routes) {
-        // 初始化当前interval下的每条路线
-        int port_id = route.find(CONFIG_INTERNAL_PORT_FILED)->get<int>();
-        std::vector<std::string> class_names_route =
-            route.find(CONFIG_INTERNAL_CLASS_NAMES_FILED)
-                ->get<std::vector<std::string>>();
-        if (class_names_route.size() == 0) {
-          // 没有配置class_names，则认为是full frame
-          mDistribRules[interval]["full_frame"] = port_id;
+      auto time_interval_it = rule.find(CONFIG_INTERNAL_TIME_INTERVAL_FILED);
+      if (time_interval_it != rule.end() && time_interval_it->is_number()) {
+        float time_interval = time_interval_it->get<float>();
+        mTimeIntervals.push_back(time_interval);
+        for (auto& route : *routes) {
+          // 初始化当前interval下的每条路线
+          int port_id = route.find(CONFIG_INTERNAL_PORT_FILED)->get<int>();
+          std::vector<std::string> class_names_route =
+              route.find(CONFIG_INTERNAL_CLASS_NAMES_FILED)
+                  ->get<std::vector<std::string>>();
+          if (class_names_route.size() == 0) {
+            // 没有配置class_names，则认为是full frame
+            mTimeDistribRules[time_interval]["full_frame"] = port_id;
+          }
+          for (auto& class_name : class_names_route) {
+            mTimeDistribRules[time_interval][class_name] = port_id;
+          }
         }
-        for (auto& class_name : class_names_route) {
-          mDistribRules[interval][class_name] = port_id;
+      }
+      auto frame_interval_it = rule.find(CONFIG_INTERNAL_FRAME_INTERVAL_FILED);
+      if (frame_interval_it != rule.end() &&
+          frame_interval_it->is_number_integer()) {
+        int frame_interval = frame_interval_it->get<int>();
+        mFrameIntervals.push_back(frame_interval);
+        for (auto& route : *routes) {
+          // 初始化当前interval下的每条路线
+          int port_id = route.find(CONFIG_INTERNAL_PORT_FILED)->get<int>();
+          std::vector<std::string> class_names_route =
+              route.find(CONFIG_INTERNAL_CLASS_NAMES_FILED)
+                  ->get<std::vector<std::string>>();
+          if (class_names_route.size() == 0) {
+            // 没有配置class_names，则认为是full frame
+            mFrameDistribRules[frame_interval]["full_frame"] = port_id;
+          }
+          for (auto& class_name : class_names_route) {
+            mFrameDistribRules[frame_interval][class_name] = port_id;
+          }
+        }
+      }
+      if (time_interval_it == rule.end() && frame_interval_it == rule.end()) {
+        // 用户不配置time_interval和frame_interval，则视为对每一帧做分发，放在frame_interval相关规则里
+        int curFrameInterval = 1;
+        mFrameIntervals.push_back(curFrameInterval);
+        for (auto& route : *routes) {
+          // 初始化当前interval下的每条路线
+          int port_id = route.find(CONFIG_INTERNAL_PORT_FILED)->get<int>();
+          std::vector<std::string> class_names_route =
+              route.find(CONFIG_INTERNAL_CLASS_NAMES_FILED)
+                  ->get<std::vector<std::string>>();
+          if (class_names_route.size() == 0) {
+            // 没有配置class_names，则认为是full frame
+            mFrameDistribRules[curFrameInterval]["full_frame"] = port_id;
+          }
+          for (auto& class_name : class_names_route) {
+            mFrameDistribRules[curFrameInterval][class_name] = port_id;
+          }
         }
       }
     }
+    if (mTimeIntervals.size() > 1) {
+      std::sort(mTimeIntervals.begin(), mTimeIntervals.end());
+      mTimeIntervals.erase(
+          std::unique(mTimeIntervals.begin(), mTimeIntervals.end()), mTimeIntervals.end());
+    }
+    mLastTimes = std::vector<float>(mTimeIntervals.size(), -99.0);
+    if (mFrameIntervals.size() > 1) {
+      std::sort(mFrameIntervals.begin(), mFrameIntervals.end());
+      mFrameIntervals.erase(
+          std::unique(mFrameIntervals.begin(), mFrameIntervals.end()), mFrameIntervals.end());
+    }
+
   } while (false);
 
   clocker.reset();
@@ -100,13 +152,14 @@ void Distributer::makeSubObjectMetadata(
       delete p;
       p = nullptr;
     });
-    bm_image_format_info_t info;
-    bm_status_t ret =
-        bm_image_get_format_info(obj->mFrame->mSpData.get(), &info);
-    auto image_format = info.image_format;
-    auto data_format = info.data_type;
-    ret = bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
-                          image_format, data_format, cropped.get());
+    // bm_image_format_info_t info;
+    // bm_status_t ret =
+    //     bm_image_get_format_info(obj->mFrame->mSpData.get(), &info);
+    // auto image_format = info.image_format;
+    // auto data_format = info.data_type;
+    bm_status_t ret = bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
+                          obj->mFrame->mSpData->image_format,
+                          obj->mFrame->mSpData->data_type, cropped.get());
     ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect, *obj->mFrame->mSpData,
                           cropped.get());
 
@@ -146,26 +199,43 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
   // 判断计时器规则
   float cur_time = clocker.tell_ms() / 1000.0;
   int subId = 0;
+  std::unordered_map<std::string, std::unordered_set<int>> class2ports;
   for (int i = 0; i < mLastTimes.size(); ++i) {
-    if (cur_time - mLastTimes[i] > mIntervals[i]) {
-      // 当前interval生效，更新时间
+    if (cur_time - mLastTimes[i] > mTimeIntervals[i]) {
+      // IVS_DEBUG("meet time interval rules, frame id = {0}",
+      // objectMetadata->mFrame->mFrameId);
       mLastTimes[i] = cur_time;
-      // 按照distrib_rules[interval]记录的route分发
-      for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
-        // box分发
-        int class_id = detObj->mClassify;
-        std::string class_name = mClassNames[class_id];
-        // 当前box需要发送到下游
-        if (mDistribRules[mIntervals[i]].find(class_name) !=
-            mDistribRules[mIntervals[i]].end()) {
+      for (auto class_port_it = mTimeDistribRules[mTimeIntervals[i]].begin();
+           class_port_it != mTimeDistribRules[mTimeIntervals[i]].end();
+           ++class_port_it) {
+        class2ports[class_port_it->first].insert(class_port_it->second);
+      }
+    }
+  }
+  // 判断跳帧规则
+  for (int i = 0; i < mFrameIntervals.size(); ++i) {
+    if (objectMetadata->mFrame->mFrameId % mFrameIntervals[i] == 0) {
+      for (auto class_port_it = mFrameDistribRules[mFrameIntervals[i]].begin();
+           class_port_it != mFrameDistribRules[mFrameIntervals[i]].end();
+           ++class_port_it) {
+        class2ports[class_port_it->first].insert(class_port_it->second);
+      }
+    }
+  }
+  if (class2ports.size() > 0) {
+    for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
+      int class_id = detObj->mClassify;
+      std::string class_name = mClassNames[class_id];
+      if (class2ports.find(class_name) != class2ports.end()) {
+        for (auto port_it = class2ports[class_name].begin();
+             port_it != class2ports[class_name].end(); ++port_it) {
+          int target_port = *port_it;
           // 构造SubObjectMetadata
           std::shared_ptr<common::ObjectMetadata> subObj =
               std::make_shared<common::ObjectMetadata>();
           makeSubObjectMetadata(objectMetadata, detObj, subObj, subId);
           objectMetadata->mSubObjectMetadatas.push_back(subObj);
           ++objectMetadata->numBranches;
-          // 发送subObj
-          int target_port = mDistribRules[mIntervals[i]][class_name];
           int outDataPipeId =
               channel_id_internal % getOutputConnectorCapacity(target_port);
           errorCode = pushOutputData(target_port, outDataPipeId,
@@ -176,18 +246,20 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
                 "{2:p}",
                 getId(), target_port, static_cast<void*>(subObj.get()));
           }
+          ++subId;
         }
-        ++subId;
       }
-      if (mDistribRules[mIntervals[i]].find("full_frame") !=
-          mDistribRules[mIntervals[i]].end()) {
+    }
+    if (class2ports.find("full_frame") != class2ports.end()) {
+      for (auto port_it = class2ports["full_frame"].begin();
+           port_it != class2ports["full_frame"].end(); ++port_it) {
         // full_frame 分发，也是构造一个新的SubObjectMetadata
         std::shared_ptr<common::ObjectMetadata> subObj =
             std::make_shared<common::ObjectMetadata>();
         makeSubObjectMetadata(objectMetadata, nullptr, subObj, -1);
         objectMetadata->mSubObjectMetadatas.push_back(subObj);
         ++objectMetadata->numBranches;
-        int target_port = mDistribRules[mIntervals[i]]["full_frame"];
+        int target_port = *port_it;
         int outDataPipeId =
             channel_id_internal % getOutputConnectorCapacity(target_port);
         errorCode = pushOutputData(target_port, outDataPipeId,

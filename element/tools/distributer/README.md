@@ -3,8 +3,10 @@
 sophon-stream distributer element是sophon-stream框架中的一个插件，是一个专用作数据分发功能的工具。
 
 ## 1. 特性
+* 必须与converger element配合使用
 * 支持按类别分发
-* 支持按时间分发
+* 支持按时间间隔分发
+* 支持按帧间隔分发
 
 ## 2. 配置参数
 sophon-stream distributer插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
@@ -15,7 +17,7 @@ sophon-stream distributer插件具有一些可配置的参数，可以根据需�
         "default_port": 0,
         "rules" : [
             {
-                "interval": 1, 
+                "time_interval": 1, 
                 "routes": [
                     {
                         "classes":["car"],
@@ -28,7 +30,7 @@ sophon-stream distributer插件具有一些可配置的参数，可以根据需�
                 ]
             },
             {
-                "interval": 2, 
+                "frame_interval": 10, 
                 "routes": [
                     {
                         "classes":["cat"],
@@ -54,7 +56,8 @@ sophon-stream distributer插件具有一些可配置的参数，可以根据需�
 | ------ | ---- | ---- | -----|
 | default_port | int | 0 | 发往数据汇聚element的端口 |
 | rules | vector | [] | 当前element的所有分发逻辑 |
-| interval | float | 1.0 | 分发的时间间隔 |
+| time_interval | float | 1.0 | 分发的时间间隔，单位：秒 |
+| frame_interval | int | 10 | 分发的帧间隔 |
 | routes | vector | [] | 当前interval下的分发路径 |
 | classes | vector | [] | 一组类别 |
 | port | int | 1 | 当前classes对应的分发端口 |
@@ -65,8 +68,10 @@ sophon-stream distributer插件具有一些可配置的参数，可以根据需�
 | thread_number | int | 1 | 启动线程数 |
 
 > **注意**：
-1. 如果分发涉及crop功能，interval参数一般不建议设置太小，可能造成阻塞。
-2. 向`default_port`分发时，不涉及interval参数。该端口连接到converger element，起到将分支数据汇聚起来的作用。
-3. 若分发规则中不涉及时间间隔，需要将`interval`设置为0。
-4. 当`classes`项不为空时，默认对当前类别做crop后分发。若为空，则认为分发当前大图。
-5. distributer element支持复杂的分发策略，例如不同的时间间隔、不同的分发路径等。对于一个分发路径，其classes可以是多个类别组成的vector。
+1. 由于分发涉及crop功能，`time_interval`或`frame_interval`参数一般不建议设置太小，否则可能造成阻塞。
+2. 向`default_port`分发时，不涉及`interval`参数。该端口连接到converger element，起到将分支数据汇聚起来的作用。
+3. `classes`可以配置一组类别，此种情况下，该参数中的所有类别都发送往对应的端口。例如对所有动物，如`cat`和`dog`，统一做颜色分类。
+4. 当`classes`项不为空时，默认对每个类别做crop后分发。若为空，则认为分发当前大图。
+5. 分发规则视业务需求而定，可以单独配置时间间隔、也可以单独配置帧间隔，亦可二者结合，形成复杂的分发规则。
+6. 设计上，当用户不填写`time_interval`或`frame_interval`参数时，会视为对每一帧都按照`routes`进行分发，即相当于`frame_interval == 1`的情况。但需要注意，同【注意事项1】，如此设置可能会造成阻塞。
+7. distributer element必须搭配converger element使用。
