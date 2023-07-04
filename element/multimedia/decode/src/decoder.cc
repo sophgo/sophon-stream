@@ -86,7 +86,8 @@ common::ErrorCode Decoder::init(int deviceId,
     }
 
     if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
-      std::vector<std::string> correct_postfixes = {"jpg", "png", "bmp"};
+      std::vector<std::string> correct_postfixes = {"jpg", "JPEG", "png",
+                                                    "bmp"};
       getAllFiles(mUrl, mImagePaths, correct_postfixes);
       std::sort(mImagePaths.begin(), mImagePaths.end());
     }
@@ -155,8 +156,8 @@ common::ErrorCode Decoder::process(
   } else if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
     std::shared_ptr<bm_image> spBmImage = nullptr;
 
-    spBmImage =
-        decoder.picDec(m_handle, mImagePaths[mImgIndex % mImagePaths.size()].c_str());
+    spBmImage = decoder.picDec(
+        m_handle, mImagePaths[mImgIndex % mImagePaths.size()].c_str());
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
@@ -182,8 +183,9 @@ common::ErrorCode Decoder::process(
   objectMetadata->mFilter =
       (objectMetadata->mFrame->mFrameId % mSampleInterval != 0) ? true : false;
 
-  // if (objectMetadata->mFilter) printf("%d filter \n", objectMetadata->mFrame->mFrameId);
-  // else printf("%d keep \n", objectMetadata->mFrame->mFrameId);
+  // if (objectMetadata->mFilter) printf("%d filter \n",
+  // objectMetadata->mFrame->mFrameId); else printf("%d keep \n",
+  // objectMetadata->mFrame->mFrameId);
 
   return errorCode;
 }

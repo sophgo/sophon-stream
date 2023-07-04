@@ -124,7 +124,7 @@ def generate_rows(d_list):
 # generate table
 def generate_table(d_list):
     # d_cpu_usage, d_tpu_usage, d_system_memory, d_system_memory_peak, d_tpu_memory, d_tpu_memory_peak, d_peak_fps, d_avg_fps,
-    # d_vpp_used, d_vpp_rate, d_vpp_peak, 
+    # d_vpp_used, d_vpp_rate, d_vpp_peak,
     # d_npu_used, d_npu_rate, d_npu_peak,
     # d_vpu_used, d_vpu_rate, d_vpu_peak,
     # d_extra
@@ -153,7 +153,7 @@ def generate_table(d_list):
         ]
     head_str = generate_markdown_table_head(table_head_list)
     s_list.append(head_str)
-    
+
     rows = generate_rows(d_list)
 
 
@@ -190,7 +190,7 @@ def parser_top(filepath):
         cpu_list = []
         for i, l in enumerate(f):
             ls = l.split()
-            if len(ls) != 2: 
+            if len(ls) != 2:
                 break
             res_list.append(float(ls[1])/1000)
             cpu_list.append(float(ls[0]))
@@ -210,7 +210,7 @@ def parse_tpu(filepath):
     | 0 1684X-SOC     SOC      N/A          | 0    N/A     N/A     N/A     N/A  N/A    N/A          8% |
     |   N/A   N/A   N/A   75M    1000M   N/A| N/A        Active   1000M       N/A     0MB/ 9070MB      |
 
-    | 0  1684-SOC     SOC      N/A          | 0    N/A     N/A     N/A     N/A  N/A    N/A          0% |                                                                                                                            
+    | 0  1684-SOC     SOC      N/A          | 0    N/A     N/A     N/A     N/A  N/A    N/A          0% |
     |   N/A   N/A   N/A   75M     550M   N/A| N/A        Active    550M       N/A     0MB/ 9135MB      |
     """
     meter_tpu_usage = Meter()
@@ -223,7 +223,7 @@ def parse_tpu(filepath):
             if '1684-SOC' in l or '1684X-SOC'  in l:
                 p_list = [
                     '\| 0  1684\-SOC     SOC               N/A \| 0    N/A     N/A     N/A     N/A  N/A    N/A         ([\d]{1,})% \|',
-                    
+
                     '\| 0 1684X\-SOC     SOC      N/A          \| 0    N/A     N/A     N/A     N/A  N/A    N/A         ([\d]{1,})% \|',
                     '\| 0 1684X\-SOC     SOC      N/A          \| 0    N/A     N/A     N/A     N/A  N/A    N/A       ([\d]{1,})%  \|',
 
@@ -242,6 +242,7 @@ def parse_tpu(filepath):
                     '\|   N/A   N/A   N/A   \d{1,}M     \d{1,}M   N/A\|        N/A Active    550M       N/A([\d ]{5,})MB/ (\d{1,})MB      \|',
                     '\|   N/A   N/A   N/A   \d{1,}M    \d{1,}M   N/A\| N/A        Active   1000M       N/A([\d ]{5,})MB/ (\d{1,})MB      \|',
                     '\|   N/A   N/A   N/A   \d{1,}M     \d{1,}M   N/A\| N/A        Active    550M       N/A([\d ]{5,})MB/ (\d{1,})MB      \|',
+                    '\|   N/A   N/A   N/A   \d{1,}M     \d{1,}M   N/A\| N/A        Active    330M       N/A([\d ]{5,})MB/ (\d{1,})MB      \|'
                 ]
                 for p in p_list:
                     re_res = re.search(p, l)
@@ -253,7 +254,7 @@ def parse_tpu(filepath):
                             if tpu_memory > tpu_memory_max:
                                 tpu_memory_max = tpu_memory
                             break
-                    
+
     return meter_tpu_usage.avg(), meter_tpu_memory.avg(), tpu_memory_max
 
 
@@ -315,7 +316,7 @@ def main():
     args = parse_args()
 
     eval_list = [
-                [args.alg_log, args.host_log, args.tpu_log, args.dev_log, (args.channel_combination), ''], # 
+                [args.alg_log, args.host_log, args.tpu_log, args.dev_log, (args.channel_combination), ''], #
               ]
 
     d_cpu_usage, d_system_memory = {}, {}
@@ -356,8 +357,8 @@ def main():
         d_vpu_peak[k] = vpu_peak
 
     d_list = [
-        d_cpu_usage, d_tpu_usage, d_system_memory, d_system_memory_peak, d_tpu_memory, d_tpu_memory_peak, d_peak_fps, d_avg_fps, 
-        d_vpp_used, d_vpp_rate, d_vpp_peak, 
+        d_cpu_usage, d_tpu_usage, d_system_memory, d_system_memory_peak, d_tpu_memory, d_tpu_memory_peak, d_peak_fps, d_avg_fps,
+        d_vpp_used, d_vpp_rate, d_vpp_peak,
         d_npu_used, d_npu_rate, d_npu_peak,
         d_vpu_used, d_vpu_rate, d_vpu_peak,
         d_extra

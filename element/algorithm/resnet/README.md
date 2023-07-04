@@ -12,17 +12,17 @@ sophon-stream resnet插件具有一些可配置的参数，可以根据需求进
 ```json
 {
   "configure": {
-    "model_path": "../data/models/BM1684X/resnet_car_int8_4b.bmodel",
+    "model_path": "../data/models/BM1684X/resnet50_int8_4b.bmodel",
     "bgr2rgb": true,
     "mean": [
-      0,
-      0,
-      0
+      0.229,
+      0.224,
+      0.225
     ],
     "std": [
-      1,
-      1,
-      1
+      0.485,
+      0.456,
+      0.406
     ]
   },
   "shared_object": "../../../build/lib/libresnet.so",
