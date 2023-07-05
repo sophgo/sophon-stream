@@ -66,7 +66,12 @@ class Distributor : public ::sophon_stream::framework::Element {
   int mDefaultPort;
   std::vector<float> mTimeIntervals;
   std::vector<int> mFrameIntervals;
-  std::vector<float> mLastTimes;
+  /**
+   * @brief 每一路数据上一次分发的时间，key：channel_id_internal，value：上次分发的时间
+   * 虽然channel_id_internal从0开始有序增长，但由于
+   * 不同channel首次进入doWork的时间先后不能确定，因此采用unordered_map而不是vector
+   */
+  std::unordered_map<int, std::vector<float>> mChannelLastTimes;
 
   sophon_stream::common::Clocker clocker;
 };
