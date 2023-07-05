@@ -18,12 +18,12 @@ class HTTP_Interact_Mgr {
   static void listen_thread();
   static HTTP_Interact_Mgr* GetInstance();
 
- public:
+ private:
   httplib::Server server_;
   int port_;
 
   std::thread listen_thread_;
-  bool is_inited = false;
+  bool is_inited_ = false;
 };
 
 #endif  // HTTP_INTERACT_MGR_H_

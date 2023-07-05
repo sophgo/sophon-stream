@@ -16,7 +16,7 @@ void HTTP_Interact_Mgr::init(int port) {
   if (!server_.is_valid()) {
     return;
   }
-  if (is_inited) {
+  if (is_inited_) {
     if (port == port_)
       return;
     else
@@ -27,14 +27,14 @@ void HTTP_Interact_Mgr::init(int port) {
   server_.Get("/pipeline-list", HTTP_Interact_Mgr::handler);
   server_.Post("/run", HTTP_Interact_Mgr::handler);
   listen_thread_ = std::thread(&HTTP_Interact_Mgr::listen_thread);
-  is_inited = true;
+  is_inited_ = true;
 }
 
 void HTTP_Interact_Mgr::stop() {
   server_.stop();
   listen_thread_.join();
 
-  is_inited = false;
+  is_inited_ = false;
 }
 
 void HTTP_Interact_Mgr::handler(const httplib::Request& request,
