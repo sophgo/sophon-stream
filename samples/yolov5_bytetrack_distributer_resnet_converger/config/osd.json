@@ -1,7 +1,6 @@
 {
   "configure": {
-    "osd_type": "REC",
-    "class_names": "../data/car.attributes"
+    "osd_type": "TRACK"
   },
   "shared_object": "../../../build/lib/libosd.so",
   "name": "osd",
