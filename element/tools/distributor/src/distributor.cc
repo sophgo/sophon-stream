@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "distributer.h"
+#include "distributor.h"
 
 #include <chrono>
 #include <fstream>
@@ -18,11 +18,11 @@
 
 namespace sophon_stream {
 namespace element {
-namespace distributer {
-Distributer::Distributer() {}
-Distributer::~Distributer() {}
+namespace distributor {
+Distributor::Distributor() {}
+Distributor::~Distributor() {}
 
-common::ErrorCode Distributer::initInternal(const std::string& json) {
+common::ErrorCode Distributor::initInternal(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
     auto configure = nlohmann::json::parse(json, nullptr, false);
@@ -128,9 +128,9 @@ common::ErrorCode Distributer::initInternal(const std::string& json) {
   return errorCode;
 }
 
-void Distributer::uninitInternal(){};
+void Distributor::uninitInternal(){};
 
-void Distributer::makeSubObjectMetadata(
+void Distributor::makeSubObjectMetadata(
     std::shared_ptr<common::ObjectMetadata> obj,
     std::shared_ptr<common::DetectedObjectMetadata> detObj,
     std::shared_ptr<common::ObjectMetadata> subObj, int subId) {
@@ -175,7 +175,7 @@ void Distributer::makeSubObjectMetadata(
   subObj->mSubId = subId;
 }
 
-common::ErrorCode Distributer::doWork(int dataPipeId) {
+common::ErrorCode Distributor::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   // 从队列中取出一个数据，判断detection结果，如果需要发送到下游，则做crop并且发送
   std::vector<int> inputPorts = getInputPorts();
@@ -270,8 +270,8 @@ common::ErrorCode Distributer::doWork(int dataPipeId) {
   return errorCode;
 }
 
-REGISTER_WORKER("distributer", Distributer)
+REGISTER_WORKER("distributor", Distributor)
 
-}  // namespace distributer
+}  // namespace distributor
 }  // namespace element
 }  // namespace sophon_stream

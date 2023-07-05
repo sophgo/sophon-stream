@@ -3,23 +3,19 @@
         "default_port": 0,
         "rules": [
             {
-                "frame_interval": 5,
+                "time_interval": 1,
                 "routes": [
                     {
-                        "classes":["car"],
+                        "classes":[],
                         "port": 1
-                    },
-                    {
-                        "classes":["person"],
-                        "port" : 2
                     }
                 ]
             }
         ],
         "class_names_file": "../data/coco.names"
     },
-    "shared_object": "../../../build/lib/libdistributer.so",
-    "name": "distributer",
+    "shared_object": "../../../build/lib/libdistributor.so",
+    "name": "distributor",
     "side": "sophgo",
     "thread_number": 1
 }

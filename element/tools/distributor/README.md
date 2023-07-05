@@ -1,6 +1,6 @@
-# sophon-stream distributer element
+# sophon-stream distributor element
 
-sophon-stream distributer element是sophon-stream框架中的一个插件，是一个专用作数据分发功能的工具。
+sophon-stream distributor element是sophon-stream框架中的一个插件，是一个专用作数据分发功能的工具。
 
 ## 1. 特性
 * 必须与converger element配合使用
@@ -9,7 +9,7 @@ sophon-stream distributer element是sophon-stream框架中的一个插件，是�
 * 支持按帧间隔分发
 
 ## 2. 配置参数
-sophon-stream distributer插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
+sophon-stream distributor插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
 
 ```json
 {
@@ -45,8 +45,8 @@ sophon-stream distributer插件具有一些可配置的参数，可以根据需�
         ],
         "class_names_file" : "../data/coco.names"
       },
-      "shared_object": "../../../build/lib/libdistributer.so",
-      "name": "distributer",
+      "shared_object": "../../../build/lib/libdistributor.so",
+      "name": "distributor",
       "side": "sophgo",
       "thread_number": 4
 }
@@ -62,8 +62,8 @@ sophon-stream distributer插件具有一些可配置的参数，可以根据需�
 | classes | vector | [] | 一组类别 |
 | port | int | 1 | 当前classes对应的分发端口 |
 | class_names_file | string | "" | 存放所有类别名称的文件目录 |
-| shared_object | string | "../../../build/lib/libdistributer.so" | libdistributer动态库路径 |
-| name | string | "distributer" | element名称 |
+| shared_object | string | "../../../build/lib/libdistributor.so" | libdistributor动态库路径 |
+| name | string | "distributor" | element名称 |
 | side | string | "sophgo" | 设备类型 |
 | thread_number | int | 1 | 启动线程数 |
 
@@ -74,4 +74,4 @@ sophon-stream distributer插件具有一些可配置的参数，可以根据需�
 4. 当`classes`项不为空时，默认对每个类别做crop后分发。若为空，则认为分发当前大图。
 5. 分发规则视业务需求而定，可以单独配置时间间隔、也可以单独配置帧间隔，亦可二者结合，形成复杂的分发规则。
 6. 设计上，当用户不填写`time_interval`或`frame_interval`参数时，会视为对每一帧都按照`routes`进行分发，即相当于`frame_interval == 1`的情况。但需要注意，同【注意事项1】，如此设置可能会造成阻塞。
-7. distributer element必须搭配converger element使用。
+7. distributor element必须搭配converger element使用。

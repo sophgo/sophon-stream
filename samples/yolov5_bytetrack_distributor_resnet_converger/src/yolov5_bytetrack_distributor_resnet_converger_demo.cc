@@ -162,7 +162,7 @@ int main() {
 
   std::ifstream istream;
   nlohmann::json engine_json;
-  std::string yolov5_config_file = "../config/yolov5_bytetrack_distributer_resnet_converger_demo.json";
+  std::string yolov5_config_file = "../config/yolov5_bytetrack_distributor_resnet_converger_demo.json";
   demo_config yolov5_json = parse_demo_json(yolov5_config_file);
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置

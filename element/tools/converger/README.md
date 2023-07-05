@@ -3,7 +3,7 @@
 sophon-stream converger element是sophon-stream框架中的一个插件，是一个专用作数据汇聚功能的工具。
 
 ## 1. 特性
-* 必须与distributer element配合使用
+* 必须与distributor element配合使用
 * 保证输出的ObjectMetadata具有正确的时间顺序
 
 ## 2. 配置参数
@@ -32,4 +32,4 @@ sophon-stream converger插件具有一些可配置的参数，可以根据需求
 > **注意**
 1. converger element从`default_port`接收到ObjectMetadata之后，会等待其所有的分支都更新完成，才会向后续element发送。
 2. 发送前，将所有数据依序保存；发送时，将所有已经完成更新的数据依序发送。
-3. converger element必须搭配distributer element使用。
+3. converger element必须搭配distributor element使用。

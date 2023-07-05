@@ -38,11 +38,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
-    add_library(distributer SHARED
-        src/distributer.cc
+    add_library(distributor SHARED
+        src/distributor.cc
     )
 
-    target_link_libraries(distributer ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
+    target_link_libraries(distributor ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
@@ -65,8 +65,8 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
-    add_library(distributer SHARED
-        src/distributer.cc
+    add_library(distributor SHARED
+        src/distributor.cc
     )
-    target_link_libraries(distributer ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(distributor ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()

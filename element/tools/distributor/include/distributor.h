@@ -20,12 +20,12 @@
 
 namespace sophon_stream {
 namespace element {
-namespace distributer {
+namespace distributor {
 
-class Distributer : public ::sophon_stream::framework::Element {
+class Distributor : public ::sophon_stream::framework::Element {
  public:
-  Distributer();
-  ~Distributer() override;
+  Distributor();
+  ~Distributor() override;
 
   common::ErrorCode initInternal(const std::string& json) override;
   void uninitInternal() override;
@@ -71,7 +71,7 @@ class Distributer : public ::sophon_stream::framework::Element {
   sophon_stream::common::Clocker clocker;
 };
 
-}  // namespace distributer
+}  // namespace distributor
 }  // namespace element
 }  // namespace sophon_stream
 
