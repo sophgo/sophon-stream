@@ -112,13 +112,15 @@ common::ErrorCode Distributor::initInternal(const std::string& json) {
     if (mTimeIntervals.size() > 1) {
       std::sort(mTimeIntervals.begin(), mTimeIntervals.end());
       mTimeIntervals.erase(
-          std::unique(mTimeIntervals.begin(), mTimeIntervals.end()), mTimeIntervals.end());
+          std::unique(mTimeIntervals.begin(), mTimeIntervals.end()),
+          mTimeIntervals.end());
     }
-    mLastTimes = std::vector<float>(mTimeIntervals.size(), -99.0);
+    // mLastTimes = std::vector<float>(mTimeIntervals.size(), -99.0);
     if (mFrameIntervals.size() > 1) {
       std::sort(mFrameIntervals.begin(), mFrameIntervals.end());
       mFrameIntervals.erase(
-          std::unique(mFrameIntervals.begin(), mFrameIntervals.end()), mFrameIntervals.end());
+          std::unique(mFrameIntervals.begin(), mFrameIntervals.end()),
+          mFrameIntervals.end());
     }
 
   } while (false);
@@ -152,14 +154,10 @@ void Distributor::makeSubObjectMetadata(
       delete p;
       p = nullptr;
     });
-    // bm_image_format_info_t info;
-    // bm_status_t ret =
-    //     bm_image_get_format_info(obj->mFrame->mSpData.get(), &info);
-    // auto image_format = info.image_format;
-    // auto data_format = info.data_type;
-    bm_status_t ret = bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
-                          obj->mFrame->mSpData->image_format,
-                          obj->mFrame->mSpData->data_type, cropped.get());
+    bm_status_t ret =
+        bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
+                        obj->mFrame->mSpData->image_format,
+                        obj->mFrame->mSpData->data_type, cropped.get());
     ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect, *obj->mFrame->mSpData,
                           cropped.get());
 
@@ -196,15 +194,18 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
       channel_id_internal % getOutputConnectorCapacity(mDefaultPort);
   errorCode = pushOutputData(mDefaultPort, outDataPipeId, data);
 
+  if(mChannelLastTimes.find(channel_id_internal) == mChannelLastTimes.end()) {
+    mChannelLastTimes[channel_id_internal] = std::vector<float>(mTimeIntervals.size(), -99.0);
+  }
   // 判断计时器规则
   float cur_time = clocker.tell_ms() / 1000.0;
   int subId = 0;
   std::unordered_map<std::string, std::unordered_set<int>> class2ports;
-  for (int i = 0; i < mLastTimes.size(); ++i) {
-    if (cur_time - mLastTimes[i] > mTimeIntervals[i]) {
+  for (int i = 0; i < mChannelLastTimes[channel_id_internal].size(); ++i) {
+    if (cur_time - mChannelLastTimes[channel_id_internal][i] > mTimeIntervals[i]) {
       // IVS_DEBUG("meet time interval rules, frame id = {0}",
       // objectMetadata->mFrame->mFrameId);
-      mLastTimes[i] = cur_time;
+      mChannelLastTimes[channel_id_internal][i] = cur_time;
       for (auto class_port_it = mTimeDistribRules[mTimeIntervals[i]].begin();
            class_port_it != mTimeDistribRules[mTimeIntervals[i]].end();
            ++class_port_it) {
