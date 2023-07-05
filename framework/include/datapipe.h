@@ -33,15 +33,22 @@ class DataPipe : public ::sophon_stream::common::NoCopyable {
 
   ~DataPipe();
 
+  /**
+   * @brief 从队首弹出数据
+   * @return std::shared_ptr<void> 若队列非空则弹出队首，队列为空返回nullptr
+   */
   std::shared_ptr<void> popData();
 
+  /**
+   * @brief 向队列末尾push数据
+   * @return common::ErrorCode
+   * 成功返回common::ErrorCode::SUCCESS，失败返回common::ErrorCode::DATA_PIPE_FULL
+   */
   common::ErrorCode pushData(std::shared_ptr<void> data);
 
  private:
   std::deque<std::shared_ptr<void> > mDataQueue;
   mutable std::mutex mDataQueueMutex;
-  std::condition_variable mDataQueueCond;
-  PushHandler mPushHandler;
   std::size_t mCapacity;
 
   const std::chrono::milliseconds timeout{200};

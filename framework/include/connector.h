@@ -22,6 +22,10 @@ class Connector : public ::sophon_stream::common::NoCopyable {
 
   std::shared_ptr<void> popData(int id);
   common::ErrorCode pushData(int id, std::shared_ptr<void> data);
+  /**
+   * @brief 获取Connector中dataPipe的数量
+   * @return int 当前Connector中dataPipe数量
+   */
   int getCapacity() const;
 
  private:

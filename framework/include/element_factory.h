@@ -27,9 +27,21 @@ class ElementFactory : public ::sophon_stream::common::NoCopyable {
  public:
   using ElementMaker = std::function<std::shared_ptr<framework::Element>()>;
 
+  /**
+   * @brief 添加一个名为elementName的ElementMaker
+   * @param elementName element名，需要和注册的名称一致
+   * @param elementMaker 类型同ElementMaker的函数对象
+   * @return common::ErrorCode
+   * 成功返回common::ErrorCode::SUCCESS，element名称重复返回common::ErrorCode::REPEATED_WORKER_NAME
+   */
   common::ErrorCode addElementMaker(const std::string& elementName,
                                     ElementMaker elementMaker);
 
+  /**
+   * @brief 根据elementName查找并调用对应的ElementMaker，生产element
+   * @param elementName element名，需要和注册的名称一致
+   * @return std::shared_ptr<framework::Element> element智能指针
+   */
   std::shared_ptr<framework::Element> make(const std::string& elementName);
 
   friend class common::Singleton<ElementFactory>;
@@ -43,6 +55,9 @@ class ElementFactory : public ::sophon_stream::common::NoCopyable {
 
 using SingletonElementFactory = common::Singleton<ElementFactory>;
 
+/**
+ * @brief 向工厂中注册element
+ */
 #define REGISTER_WORKER(elementName, ElementClass)                            \
   struct ElementClass##Register {                                             \
     ElementClass##Register() {                                                \
