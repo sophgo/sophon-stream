@@ -4,7 +4,8 @@
     "url": "../data/videos/traffic.mp4",
     "source_type": "VIDEO",
     "loop_num": 1,
-    "fps": 25
+    "fps": 25,
+    "channel_id": 0
   },
   "class_names": "../data/coco.names",
   "car_attributes": "../data/car.attributes",

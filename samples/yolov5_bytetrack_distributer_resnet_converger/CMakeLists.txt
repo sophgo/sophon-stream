@@ -44,7 +44,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     include_directories(../include)
     set(demo_src
-        src/yolov5_dist_blank_converger_demo.cc
+        src/yolov5_bytetrack_distributer_resnet_converger_demo.cc
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
@@ -90,7 +90,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
 
     include_directories(../include)
     set(demo_src
-        src/yolov5_dist_blank_converger_demo.cc
+        src/yolov5_bytetrack_distributer_resnet_converger_demo.cc
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
