@@ -1,13 +1,14 @@
 # Distribution / packaging
-**/build
-**/build_soc
-**/data
+build/
+build_soc/
+data/
+images/
 
 *.zip
 *.tar
 *.tar.gz
 
-# model file
+# Model file
 *.mlir
 *.onnx
 *.pt
@@ -22,4 +23,4 @@
 
 # OSX dir files
 .DS_Store
-
+__MACOSX/

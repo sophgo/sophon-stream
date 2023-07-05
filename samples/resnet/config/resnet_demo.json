@@ -1,9 +1,9 @@
 {
   "num_channels_per_graph": 1,
   "channel": {
-    "url": "../data/blue",
+    "url": "../data/images/imagenet_val_1k",
     "source_type": "IMG_DIR",
-    "loop_num" : 1,
+    "loop_num": 1,
     "sample_interval": 1,
     "fps": -1
   },

@@ -31,17 +31,47 @@ chmod -R +x scripts/
 下载的模型包括：
 
 ```bash
-./models/
+models/
 ├── BM1684
-│   ├── resnet_vehicle_color_fp32_1b.bmodel    # 用于BM1684的FP32 BModel，batch_size=1
-│   ├── resnet_vehicle_color_fp32_4b.bmodel    # 用于BM1684的FP32 BModel，batch_size=4
-│   ├── resnet_vehicle_color_int8_1b.bmodel    # 用于BM1684的INT8 BModel，batch_size=1
-│   └── resnet_vehicle_color_int8_4b.bmodel    # 用于BM1684的INT8 BModel，batch_size=4
+│   ├── resnet_pedestrian_gender_fp32_1b.bmodel    # 用于BM1684的FP32 BModel，batch_size=1
+│   ├── resnet_pedestrian_gender_fp32_4b.bmodel    # 用于BM1684的FP32 BModel，batch_size=4
+│   ├── resnet_pedestrian_gender_int8_1b.bmodel    # 用于BM1684的INT8 BModel，batch_size=1
+│   ├── resnet_pedestrian_gender_int8_4b.bmodel    # 用于BM1684的INT8 BModel，batch_size=4
+│   ├── resnet_vehicle_color_fp32_1b.bmodel        # 用于BM1684的FP32 BModel，batch_size=1
+│   ├── resnet_vehicle_color_fp32_4b.bmodel        # 用于BM1684的FP32 BModel，batch_size=4
+│   ├── resnet_vehicle_color_int8_1b.bmodel        # 用于BM1684的INT8 BModel，batch_size=1
+│   ├── resnet_vehicle_color_int8_4b.bmodel        # 用于BM1684的INT8 BModel，batch_size=4
+│   ├── resnet50_fp32_1b.bmodel                    # 用于BM1684的FP32 BModel，batch_size=1
+│   ├── resnet50_fp32_4b.bmodel                    # 用于BM1684的FP32 BModel，batch_size=4
+│   ├── resnet50_int8_1b.bmodel                    # 用于BM1684的INT8 BModel，batch_size=1
+│   └── resnet50_int8_4b.bmodel                    # 用于BM1684的INT8 BModel，batch_size=4
 └── BM1684X
-    ├── resnet_vehicle_color_fp32_1b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=1
-    ├── resnet_vehicle_color_fp32_4b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=4
-    ├── resnet_vehicle_color_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1
-    └── resnet_vehicle_color_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4
+    ├── resnet_pedestrian_gender_fp32_1b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=1
+    ├── resnet_pedestrian_gender_fp32_4b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=4
+    ├── resnet_pedestrian_gender_fp16_1b.bmodel    # 用于BM1684X的FP16 BModel，batch_size=1
+    ├── resnet_pedestrian_gender_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1
+    ├── resnet_pedestrian_gender_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4
+    ├── resnet_vehicle_color_fp32_1b.bmodel        # 用于BM1684X的FP32 BModel，batch_size=1
+    ├── resnet_vehicle_color_fp32_4b.bmodel        # 用于BM1684X的FP32 BModel，batch_size=4
+    ├── resnet_vehicle_color_fp16_1b.bmodel        # 用于BM1684X的FP16 BModel，batch_size=1
+    ├── resnet_vehicle_color_int8_1b.bmodel        # 用于BM1684X的INT8 BModel，batch_size=1
+    └── resnet_vehicle_color_int8_4b.bmodel        # 用于BM1684X的INT8 BModel，batch_size=4
+    ├── resnet50_fp32_1b.bmodel                    # 用于BM1684X的FP32 BModel，batch_size=1
+    ├── resnet50_fp32_4b.bmodel                    # 用于BM1684X的FP32 BModel，batch_size=4
+    ├── resnet50_fp16_1b.bmodel                    # 用于BM1684X的FP16 BModel，batch_size=1
+    ├── resnet50_int8_1b.bmodel                    # 用于BM1684X的INT8 BModel，batch_size=1
+    └── resnet50_int8_4b.bmodel                    # 用于BM1684X的INT8 BModel，batch_size=4
+```
+
+下载的数据包括：
+```bash
+data/
+├── images
+│   ├── imagenet_val_1k                    # imagenet测试图片, 共1000张
+│   ├── pedestrian_gender                  # 行人性别分类测试图片
+│   └── vehicle_color                      # 车辆颜色分类测试图片
+└── video
+    └── test_vehicle_color.mp4             # 车辆颜色分类测试视频
 ```
 
 ## 4. 环境准备
@@ -73,6 +103,7 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
 ├── decode.json             # 解码配置
 ├── engine.json             # sophon-stream graph配置
 ├── resnet_demo.json        # resnet demo配置
+├── resnet_roi.json         # resnet roi配置
 └── resnet_classify.json    # resnet 插件配置
 ```
 
@@ -84,8 +115,11 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
 {
   "num_channels_per_graph": 1,
   "channel": {
-    "url": "../data/images/blue",
-    "source_type": "IMG_DIR"
+    "url": "../data/images/imagenet_val_1k",
+    "source_type": "IMG_DIR",
+    "loop_num": 1,
+    "sample_interval": 1,
+    "fps": -1
   },
   "engine_config_path": "../config/engine.json"
 }
@@ -167,8 +201,8 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 
 2路视频流运行结果如下
 ```bash
- total time cost 412834 us.
-frame count is 159 | fps is 385.143 fps.
+ total time cost 1986302 us.
+frame count is 1000 | fps is 803.448 fps.
 ```
 
 >**注意：**
@@ -187,7 +221,13 @@ export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
 
 目前，resnet例程支持在BM1684、BM1684X的PCIE、SOC模式下进行推理。
 
+测试视频`videos/test_vehicle_color.mp4`，编译选项为Release模式，结果如下:
+
+|设备|路数|算法线程数|CPU利用率(%)|系统内存(M)|系统内存峰值(M)|TPU利用率(%)|设备内存(M)|设备内存峰值(M)|平均FPS|峰值FPS|
+|----|----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+|SE5-16|8| 8 |199.64|19.10|20.05|99.17|27.57|33.00|1842.86|2011.04|
+|SE5-8|6| 3 |113.17|17.74|18.58|89.98|17.80|20.00|1181.70|1238.34|
+
 > **测试说明**：
 1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
 2. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；
-
