@@ -106,7 +106,7 @@
             },
             {
                 "element_id": 5004,
-                "element_config": "../config/distributer_frame.json",
+                "element_config": "../config/distributor_time_class.json",
                 "ports": {
                     "input": [
                         {

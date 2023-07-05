@@ -1,9 +1,0 @@
-{
-  "configure": {
-    "osd_type": "TRACK"
-  },
-  "shared_object": "../../../build/lib/libosd.so",
-  "name": "osd",
-  "side": "sophgo",
-  "thread_number": 1
-}

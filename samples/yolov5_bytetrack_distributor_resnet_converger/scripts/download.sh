@@ -13,9 +13,9 @@ unzip BM1684X.zip
 rm -rf BM1684X.zip
 mv ./BM1684X ../data/models/BM1684X
 
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/ztg24PfhU
-unzip BM1684.zip
-rm -rf BM1684.zip
+python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/T5LZRfQiD
+unzip BM1684_.zip
+rm -rf BM1684_.zip
 mv ./BM1684 ../data/models/BM1684
 
 python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/QVAqwwdDK
