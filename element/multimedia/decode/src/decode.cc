@@ -1,3 +1,12 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
 #include "decode.h"
 
 #include <dlfcn.h>
@@ -150,11 +159,31 @@ common::ErrorCode Decode::parse_channel_task(
       IVS_INFO("Source type is {0}", sourceType);
       channelTask->request.sourceType =
           ChannelOperateRequest::SourceType::IMG_DIR;
+    } else if (sourceType == "BASE64") {
+      IVS_INFO("Source type is {0}", sourceType);
+      channelTask->request.sourceType =
+          ChannelOperateRequest::SourceType::BASE64;
     } else {
-      IVS_ERROR("{0} error, please input RTSP, RTMP VIDEO or IMG_DIR",
+      IVS_ERROR("{0} error, please input RTSP, RTMP, VIDEO, IMG_DIR or BASE64",
                 JSON_SOURCE_TYPE);
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
+    }
+
+    channelTask->request.base64Port = 12348;
+    if (channelTask->request.sourceType ==
+        ChannelOperateRequest::SourceType::BASE64) {
+      auto base64PortIt = configure.find(JSON_BASE64_PORT);
+      if (configure.end() == base64PortIt ||
+          !channelIdIt->is_number_integer()) {
+        IVS_WARN(
+            "Can not find {0} with int type in worker json configure, json: "
+            "{1}",
+            JSON_LOOP_NUM, json);
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        break;
+      }
+      channelTask->request.base64Port = base64PortIt->get<int>();
     }
 
     channelTask->request.loopNum = 1;

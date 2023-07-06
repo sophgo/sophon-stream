@@ -1,11 +1,17 @@
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
 #include "decoder.h"
 
+#include <cstdint>
 #include <nlohmann/json.hpp>
 
-#include "bmcv_api.h"
-#include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
-#include "bmruntime_interface.h"
 #include "common/logger.h"
 
 namespace sophon_stream {
@@ -80,9 +86,9 @@ common::ErrorCode Decoder::init(int deviceId,
     if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
       decoder.mFrameCount(mUrl.c_str(), mFrameCount);
       if (!mFrameCount) {
-        IVS_ERROR("Decoder init error, mFrameCount: {0}", mFrameCount);
+        IVS_ERROR("Decoder::init error, mFrameCount: {0}", mFrameCount);
       }
-      IVS_INFO("Decoder init, mFrameCount: {0}", mFrameCount);
+      IVS_INFO("Decoder::init, mFrameCount: {0}", mFrameCount);
     }
 
     if (mSourceType == ChannelOperateRequest::SourceType::IMG_DIR) {
@@ -92,9 +98,15 @@ common::ErrorCode Decoder::init(int deviceId,
       std::sort(mImagePaths.begin(), mImagePaths.end());
     }
 
-    decoder.setFps(mFps);
+    if (mSourceType == ChannelOperateRequest::SourceType::BASE64) {
+      mgr = HTTP_Base64_Mgr::GetInstance();
+      mgr->init(request.base64Port, mUrl);
+      IVS_DEBUG("Decoder::init, base64Port: {0}", request.base64Port);
+    } else {
+      decoder.setFps(mFps);
+      decoder.openDec(&m_handle, mUrl.c_str());
+    }
 
-    decoder.openDec(&m_handle, mUrl.c_str());
   } while (false);
 
   return errorCode;
@@ -176,6 +188,19 @@ common::ErrorCode Decoder::process(
       bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
 
+    if (common::ErrorCode::SUCCESS != errorCode) {
+      objectMetadata->mErrorCode = errorCode;
+    }
+  } else if (mSourceType == ChannelOperateRequest::SourceType::BASE64) {
+    std::shared_ptr<bm_image> spBmImage = nullptr;
+
+    spBmImage = mgr->grab(m_handle);
+    objectMetadata = std::make_shared<common::ObjectMetadata>();
+    objectMetadata->mFrame = std::make_shared<common::Frame>();
+    objectMetadata->mFrame->mHandle = m_handle;
+    objectMetadata->mFrame->mFrameId = mImgIndex++;
+    objectMetadata->mFrame->mSpData = spBmImage;
+    bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     if (common::ErrorCode::SUCCESS != errorCode) {
       objectMetadata->mErrorCode = errorCode;
     }
