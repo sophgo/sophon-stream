@@ -177,13 +177,13 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
     int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO
     bool isAlignWidth = false;
-    float ratio = context->roi_predefined
-                      ? get_aspect_scaled_ratio(
-                            context->roi.crop_w, context->roi.crop_h,
-                            context->net_w, context->net_h, &isAlignWidth)
-                      : get_aspect_scaled_ratio(image.width, image.height,
-                                                context->net_w, context->net_h,
-                                                &isAlignWidth);
+    float ratio =
+        context->roi_predefined
+            ? get_aspect_scaled_ratio(context->roi.crop_w, context->roi.crop_h,
+                                      context->net_w, context->net_h,
+                                      &isAlignWidth)
+            : get_aspect_scaled_ratio(image.width, image.height, context->net_w,
+                                      context->net_h, &isAlignWidth);
     if (isAlignWidth) {
       ty1 = (int)((context->net_h -
                    (int)((context->roi_predefined ? context->roi.crop_h
@@ -217,6 +217,9 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
         continue;
       }
       temp_bbox.score = *(tpu_k.output_tensor[i] + 7 * bid + 2);
+      if (temp_bbox.score <
+          context->thresh_conf[context->class_names[temp_bbox.class_id]])
+        continue;
       float centerX =
           (*(tpu_k.output_tensor[i] + 7 * bid + 3) + 1 - tx1) / ratio - 1;
       float centerY =
