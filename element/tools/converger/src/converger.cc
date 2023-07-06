@@ -109,8 +109,10 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
               getId(), outputPort, static_cast<void*>(obj.get()));
         }
         mCandidates[channel_id_internal].erase(frame_it++);
-        // mBranches[channel_id_internal][frame_id]
-        // 应该也需要删除，否则内存越积越多？
+        // delete mBranches[channel_id_internal][frame_id]
+        auto branchChannelIt = mBranches.find(channel_id_internal);
+        auto channelFrameIt = branchChannelIt->second.find(frame_id);
+        branchChannelIt->second.erase(channelFrameIt);
       } else {
         // 当前帧不可以弹出，为了保证时序性，后续帧也不弹出
         break;
