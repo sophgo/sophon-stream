@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "common/object_metadata.h"
+#include "common/profiler.h"
 #include "element.h"
 #include "encoder.h"
 
@@ -47,6 +48,8 @@ class Encode : public ::sophon_stream::framework::Element {
   std::string mRtmpPort;
   std::string encFmt;
   std::string pixFmt;
+
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 
 }  // namespace encode

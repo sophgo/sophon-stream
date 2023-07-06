@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/no_copyable.h"
+#include "common/profiler.h"
 #include "decoder.h"
 #include "element.h"
 
@@ -156,6 +157,8 @@ class Decode : public ::sophon_stream::framework::Element {
 
   common::ErrorCode parse_channel_task(
       std::shared_ptr<ChannelTask>& channelTask);
+
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 
 }  // namespace decode

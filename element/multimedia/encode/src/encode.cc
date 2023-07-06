@@ -115,6 +115,8 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
           std::make_shared<Encoder>(m_handle, encFmt, pixFmt, enParams);
     }
 
+    mFpsProfiler.config("fps_encode", 100);
+
   } while (false);
   return errorCode;
 }
@@ -185,7 +187,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
       }
     }
   }
-
+  mFpsProfiler.add(1);
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outDataPipeId =
       getSinkElementFlag()

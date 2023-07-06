@@ -28,6 +28,7 @@ common::ErrorCode Decode::initInternal(const std::string& json) {
       break;
     }
     mChannelCount = 0;
+    mFpsProfiler.config("fps_decode", 100);
   } while (false);
 
   return errorCode;
@@ -322,6 +323,7 @@ common::ErrorCode Decode::process(
     const std::shared_ptr<ChannelInfo>& channelInfo) {
   std::shared_ptr<common::ObjectMetadata> objectMetadata;
   common::ErrorCode ret = channelInfo->mSpDecoder->process(objectMetadata);
+  mFpsProfiler.add(1);
   if (ret == common::ErrorCode::STREAM_END) {
     // end of stream , detach thread and erase in mThreadsPool,
     std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
