@@ -118,6 +118,7 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
       }
     }
 
+    // 4. converto
     float input_scale = inputTensor->get_scale();
     // yolox原始模型输入是0-255,scale=1.0意味着不需要做缩放
     // input_scale /= 255;
@@ -127,6 +128,19 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
     mContext->converto_attr.beta_1 = -(mContext->mean[1]) / (mContext->stdd[1]);
     mContext->converto_attr.alpha_2 = input_scale / (mContext->stdd[2]);
     mContext->converto_attr.beta_2 = -(mContext->mean[2]) / (mContext->stdd[2]);
+
+    // 5. roi
+    auto roi_it = configure.find(CONFIG_INTERNAL_ROI_FILED);
+    if(roi_it == configure.end()) {
+      mContext->roi_predefined = false;
+    } else {
+      mContext->roi_predefined = true;
+      mContext->roi.start_x = roi_it->find(CONFIG_INTERNAL_LEFT_FILED)->get<int>();
+      mContext->roi.start_y = roi_it->find(CONFIG_INTERNAL_TOP_FILED)->get<int>();
+      mContext->roi.crop_w = roi_it->find(CONFIG_INTERNAL_WIDTH_FILED)->get<int>();
+      mContext->roi.crop_h = roi_it->find(CONFIG_INTERNAL_HEIGHT_FILED)->get<int>();
+    }
+
   } while (false);
 
   return common::ErrorCode::SUCCESS;

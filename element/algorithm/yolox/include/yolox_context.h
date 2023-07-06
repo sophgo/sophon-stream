@@ -41,8 +41,8 @@ struct YoloxContext {
   bool bgr2rgb;             // 是否将bgr图像转成rgb推理
 
   float thresh_conf_min = -1;
-  std::unordered_map<std::string, float> thresh_conf; // 置信度阈值
-  float thresh_nms;  // nms iou阈值
+  std::unordered_map<std::string, float> thresh_conf;  // 置信度阈值
+  float thresh_nms;                                    // nms iou阈值
   std::vector<std::string> class_names;
   bool class_thresh_valid = false;
 
@@ -53,6 +53,9 @@ struct YoloxContext {
   int input_num;
   int output_num;
   bmcv_convert_to_attr converto_attr;
+
+  bmcv_rect_t roi;
+  bool roi_predefined = false;
 };
 }  // namespace yolox
 }  // namespace element

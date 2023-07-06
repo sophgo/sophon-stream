@@ -97,18 +97,26 @@ common::ErrorCode YoloxPreProcess::preProcess(
         image_aligned = image1;
       }
 
-      float scale_w = float(context->net_w) / image_aligned.width;
-      float scale_h = float(context->net_h) / image_aligned.height;
+      float scale_w =
+          float(context->net_w) /
+          (context->roi_predefined ? context->roi.crop_w : image_aligned.width);
+      float scale_h = float(context->net_h) / (context->roi_predefined
+                                                   ? context->roi.crop_h
+                                                   : image_aligned.height);
 
       int pad_w = context->net_w;
       int pad_h = context->net_h;
 
       float scale_min = scale_h;
       if (scale_w < scale_h) {
-        pad_h = image_aligned.height * scale_w;
+        pad_h = (context->roi_predefined ? context->roi.crop_h
+                                         : image_aligned.height) *
+                scale_w;
         scale_min = scale_w;
       } else {
-        pad_w = image_aligned.width * scale_h;
+        pad_w = (context->roi_predefined ? context->roi.crop_w
+                                         : image_aligned.width) *
+                scale_h;
       }
       bmcv_padding_atrr_t padding_attr;
       memset(&padding_attr, 0, sizeof(padding_attr));
@@ -129,9 +137,23 @@ common::ErrorCode YoloxPreProcess::preProcess(
       bm_image_alloc_dev_mem(resized_img, BMCV_IMAGE_FOR_IN);
 
       bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
-      auto ret = bmcv_image_vpp_convert_padding(context->handle, 1,
-                                                image_aligned, &resized_img,
-                                                &padding_attr, &crop_rect);
+      bm_status_t ret = BM_SUCCESS;
+      if (context->roi_predefined) {
+        if (context->roi.start_x > image1.width ||
+            context->roi.start_y > image1.height ||
+            (context->roi.start_x + context->roi.crop_w) > image1.width ||
+            (context->roi.start_y + context->roi.crop_h) > image1.height) {
+          IVS_CRITICAL("ROI AREA OUT OF RANGE");
+          abort();
+        }
+        ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
+                                             image_aligned, &resized_img,
+                                             &padding_attr, &context->roi);
+      } else {
+        ret = bmcv_image_vpp_convert_padding(context->handle, 1, image_aligned,
+                                             &resized_img, &padding_attr,
+                                             &crop_rect);
+      }
       assert(BM_SUCCESS == ret);
 
       if (image0.image_format != FORMAT_BGR_PLANAR) {

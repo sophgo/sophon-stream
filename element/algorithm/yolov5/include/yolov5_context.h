@@ -86,6 +86,9 @@ struct Yolov5Context {
   int output_num;
   int min_dim;
   bmcv_convert_to_attr converto_attr;
+
+  bmcv_rect_t roi;
+  bool roi_predefined = false;
 };
 }  // namespace yolov5
 }  // namespace element

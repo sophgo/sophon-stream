@@ -52,6 +52,11 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_THRESHOLD_STD_FIELD = "std";
   static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FILE_FIELD =
       "class_names_file";
+  static constexpr const char* CONFIG_INTERNAL_ROI_FILED = "roi";
+  static constexpr const char* CONFIG_INTERNAL_LEFT_FILED = "left";
+  static constexpr const char* CONFIG_INTERNAL_TOP_FILED = "top";
+  static constexpr const char* CONFIG_INTERNAL_WIDTH_FILED = "width";
+  static constexpr const char* CONFIG_INTERNAL_HEIGHT_FILED = "height";
 
  private:
   std::shared_ptr<Yolov5Context> mContext;          // context对象

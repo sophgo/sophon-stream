@@ -110,8 +110,10 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
     int net_w = context->net_w;
     int net_h = context->net_h;
 
-    float scale_w = float(net_w) / frame_width;
-    float scale_h = float(net_h) / frame_height;
+    float scale_w = float(net_w) / (context->roi_predefined ? context->roi.crop_w
+                                                           : frame_width);
+    float scale_h = float(net_h) / (context->roi_predefined ? context->roi.crop_h
+                                                           : frame_height);
     float scale = 1.0 / (scale_h < scale_w ? scale_h : scale_w);
 
     std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
@@ -187,7 +189,10 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
       detData->mBox.mHeight = bbox.height;
       detData->mScores.push_back(bbox.score);
       detData->mClassify = bbox.class_id;
-
+      if (context->roi_predefined) {
+        detData->mBox.mX += context->roi.start_x;
+        detData->mBox.mY += context->roi.start_y;
+      }
       obj->mDetectedObjectMetadatas.push_back(detData);
     }
   }

@@ -112,9 +112,13 @@ common::ErrorCode Yolov5PreProcess::preProcess(
     }
     // #ifdef USE_ASPECT_RATIO
     bool isAlignWidth = false;
-    float ratio =
-        get_aspect_scaled_ratio(image0.width, image0.height, context->net_w,
-                                context->net_h, &isAlignWidth);
+    float ratio = context->roi_predefined
+                      ? get_aspect_scaled_ratio(
+                            context->roi.crop_w, context->roi.crop_h,
+                            context->net_w, context->net_h, &isAlignWidth)
+                      : get_aspect_scaled_ratio(image0.width, image0.height,
+                                                context->net_w, context->net_h,
+                                                &isAlignWidth);
     bmcv_padding_atrr_t padding_attr;
     memset(&padding_attr, 0, sizeof(padding_attr));
     padding_attr.dst_crop_sty = 0;
@@ -124,7 +128,9 @@ common::ErrorCode Yolov5PreProcess::preProcess(
     padding_attr.padding_r = 114;
     padding_attr.if_memset = 1;
     if (isAlignWidth) {
-      padding_attr.dst_crop_h = image0.height * ratio;
+      padding_attr.dst_crop_h = context->roi_predefined
+                                    ? (context->roi.crop_h * ratio)
+                                    : (image0.height * ratio);
       padding_attr.dst_crop_w = context->net_w;
 
       int ty1 = (int)((context->net_h - padding_attr.dst_crop_h) / 2);
@@ -132,7 +138,9 @@ common::ErrorCode Yolov5PreProcess::preProcess(
       padding_attr.dst_crop_stx = 0;
     } else {
       padding_attr.dst_crop_h = context->net_h;
-      padding_attr.dst_crop_w = image0.width * ratio;
+      padding_attr.dst_crop_w = context->roi_predefined
+                                    ? (context->roi.crop_w * ratio)
+                                    : (image0.width * ratio);
 
       int tx1 = (int)((context->net_w - padding_attr.dst_crop_w) / 2);
       padding_attr.dst_crop_sty = 0;
@@ -141,13 +149,26 @@ common::ErrorCode Yolov5PreProcess::preProcess(
 
     int aligned_net_w = FFALIGN(context->net_w, 64);
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
-    // for (int i = 0; i < context->max_batch; i++) {
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
-    auto ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
-                                              image_aligned, &resized_img,
-                                              &padding_attr, &crop_rect);
+    bm_status_t ret = BM_SUCCESS;
+    if (context->roi_predefined) {
+      if (context->roi.start_x > image1.width ||
+          context->roi.start_y > image1.height ||
+          (context->roi.start_x + context->roi.crop_w) > image1.width ||
+          (context->roi.start_y + context->roi.crop_h) > image1.height) {
+        IVS_CRITICAL("ROI AREA OUT OF RANGE");
+        abort();
+      }
+      ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
+                                           image_aligned, &resized_img,
+                                           &padding_attr, &context->roi);
+    } else {
+      ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
+                                           image_aligned, &resized_img,
+                                           &padding_attr, &crop_rect);
+    }
     assert(BM_SUCCESS == ret);
 
     if (image0.image_format != FORMAT_BGR_PLANAR) {

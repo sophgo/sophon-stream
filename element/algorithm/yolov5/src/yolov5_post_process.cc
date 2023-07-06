@@ -177,13 +177,25 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
     int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO
     bool isAlignWidth = false;
-    float ratio =
-        get_aspect_scaled_ratio(image.width, image.height, context->net_w,
-                                context->net_h, &isAlignWidth);
+    float ratio = context->roi_predefined
+                      ? get_aspect_scaled_ratio(
+                            context->roi.crop_w, context->roi.crop_h,
+                            context->net_w, context->net_h, &isAlignWidth)
+                      : get_aspect_scaled_ratio(image.width, image.height,
+                                                context->net_w, context->net_h,
+                                                &isAlignWidth);
     if (isAlignWidth) {
-      ty1 = (int)((context->net_h - (int)(image.height * ratio)) / 2);
+      ty1 = (int)((context->net_h -
+                   (int)((context->roi_predefined ? context->roi.crop_h
+                                                  : image.height) *
+                         ratio)) /
+                  2);
     } else {
-      tx1 = (int)((context->net_w - (int)(image.width * ratio)) / 2);
+      tx1 = (int)((context->net_w -
+                   (int)((context->roi_predefined ? context->roi.crop_w
+                                                  : image.width) *
+                         ratio)) /
+                  2);
     }
 #endif
 
@@ -224,7 +236,10 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
       detData->mBox.mHeight = temp_bbox.height;
       detData->mScores.push_back(temp_bbox.score);
       detData->mClassify = temp_bbox.class_id;
-
+      if (context->roi_predefined) {
+        detData->mBox.mX += context->roi.start_x;
+        detData->mBox.mY += context->roi.start_y;
+      }
       objectMetadatas[i]->mDetectedObjectMetadatas.push_back(detData);
     }
     delete[] tpu_k.output_tensor[i];
@@ -258,12 +273,24 @@ void Yolov5PostProcess::postProcessCPU(
 #ifdef USE_ASPECT_RATIO
     bool isAlignWidth = false;
     float ratio =
-        get_aspect_scaled_ratio(frame_width, frame_height, context->net_w,
-                                context->net_h, &isAlignWidth);
+        context->roi_predefined
+            ? get_aspect_scaled_ratio(context->roi.crop_w, context->roi.crop_h,
+                                      context->net_w, context->net_h,
+                                      &isAlignWidth)
+            : get_aspect_scaled_ratio(frame_width, frame_height, context->net_w,
+                                      context->net_h, &isAlignWidth);
     if (isAlignWidth) {
-      ty1 = (int)((context->net_h - (int)(frame_height * ratio)) / 2);
+      ty1 = (int)((context->net_h -
+                   (int)((context->roi_predefined ? context->roi.crop_h
+                                                  : frame_height) *
+                         ratio)) /
+                  2);
     } else {
-      tx1 = (int)((context->net_w - (int)(frame_width * ratio)) / 2);
+      tx1 = (int)((context->net_w -
+                   (int)((context->roi_predefined ? context->roi.crop_w
+                                                  : frame_width) *
+                         ratio)) /
+                  2);
     }
 #endif
     int min_idx = 0;
@@ -382,6 +409,11 @@ void Yolov5PostProcess::postProcessCPU(
       detData->mBox.mHeight = bbox.height;
       detData->mScores.push_back(bbox.score);
       detData->mClassify = bbox.class_id;
+
+      if (context->roi_predefined) {
+        detData->mBox.mX += context->roi.start_x;
+        detData->mBox.mY += context->roi.start_y;
+      }
 
       obj->mDetectedObjectMetadatas.push_back(detData);
     }
