@@ -28,7 +28,13 @@ sophon-stream yolox插件具有一些可配置的参数，可以根据需求进�
     ],
     "stage": [
       "pre"
-    ]
+    ],
+    "roi": {
+      "left": 600,
+      "top": 400,
+      "width": 800,
+      "height": 600
+    }
   },
   "shared_object": "../../../build/lib/libyolox.so",
   "id": 0,
@@ -48,6 +54,7 @@ sophon-stream yolox插件具有一些可配置的参数，可以根据需求进�
 |  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  stage    |   列表   | ["pre"]  | 标志前处理、推理、后处理三个阶段 |
+| roi | map | 无 | 预设的ROI，配置了此参数时，只会对ROI框取的区域进行处理 |
 | class_names_file | 字符串 | 无 | threshold_conf为浮点数时不生效，可以不设置；当threshold_conf为map时启用，class name文件的路径 |
 |  shared_object |   字符串   |  "../../../build/lib/libyolox.so"  | libyolox 动态库路径 |
 |     id      |    整数       | 0  | element id |
