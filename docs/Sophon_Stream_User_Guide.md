@@ -6,14 +6,14 @@
   - [1. 快速入门](#1-快速入门)
     - [1.1 安装和配置环境](#11-安装和配置环境)
       - [1.1.1 x86/arm PCIe平台](#111-x86arm-pcie平台)
-    - [1.1.2 SoC平台](#112-soc平台)
+      - [1.1.2 SoC平台](#112-soc平台)
     - [1.2 编译命令](#12-编译命令)
-    - [1.2.1 x86/arm PCIe平台](#121-x86arm-pcie平台)
-    - [1.2.2 SoC平台](#122-soc平台)
+      - [1.2.1 x86/arm PCIe平台](#121-x86arm-pcie平台)
+      - [1.2.2 SoC平台](#122-soc平台)
     - [1.3 编译结果](#13-编译结果)
   - [2. 概述](#2-概述)
-  - [2.1 sophon-stream优势](#21-sophon-stream优势)
-  - [2.2 sophon-stream软件栈](#22-sophon-stream软件栈)
+    - [2.1 sophon-stream优势](#21-sophon-stream优势)
+    - [2.2 sophon-stream软件栈](#22-sophon-stream软件栈)
   - [3. 框架](#3-框架)
     - [3.1 Element](#31-element)
     - [3.2 Graph](#32-graph)
@@ -31,6 +31,10 @@
       - [4.2.1 decode](#421-decode)
       - [4.2.2 encode](#422-encode)
       - [4.2.3 osd](#423-osd)
+    - [4.3 tools](#43-tools)
+      - [4.3.1 distributor](#431-distributor)
+      - [4.3.2 converger](#432-converger)
+      - [4.3.3 blank](#433-blank)
   - [5. 应用程序](#5-应用程序)
     - [5.1 例程概述](#51-例程概述)
     - [5.2 配置文件](#52-配置文件)
@@ -45,7 +49,7 @@
 
 如果您在x86/arm平台安装了PCIe加速卡（如SC系列加速卡），可以直接使用它作为开发环境和运行环境。您需要安装libsophon、sophon-opencv和sophon-ffmpeg，具体步骤可参考[x86-pcie平台的开发和运行环境搭建](EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建)或[arm-pcie平台的开发和运行环境搭建](EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建)。
 
-### 1.1.2 SoC平台
+#### 1.1.2 SoC平台
 
 如果您使用SoC平台（如SE、SM系列边缘设备），刷机后在`/opt/sophon/`下已经预装了相应的libsophon、sophon-opencv和sophon-ffmpeg运行库包，可直接使用它作为运行环境。通常还需要一台x86主机作为开发环境，用于交叉编译C++程序。
 
@@ -53,7 +57,7 @@
 
 完成环境配置后，用户可以参考 [sophon-stream编译指南](./HowToMake.md)，使用如下命令编译。
 
-### 1.2.1 x86/arm PCIe平台
+#### 1.2.1 x86/arm PCIe平台
 
 ```bash
 mkdir build
@@ -62,7 +66,7 @@ cmake ../ -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=pcie
 make -j
 ```
 
-### 1.2.2 SoC平台
+#### 1.2.2 SoC平台
 
 通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中，具体请参考[sophon-stream编译](./HowToMake.md)。本例程主要依赖libsophon、sophon-opencv和sophon-ffmpeg运行库包。
 
@@ -97,7 +101,7 @@ samples中的源文件，其编译结果是可执行程序。例如，yolox例�
 
 sophon-stream是面向算丰开发平台的数据流处理工具。本软件基于插件化的思想，使用C++11开发了一套支持多路数据流并发处理的流水线框架。基于现有的接口，sophon-stream对用户具有易使用、易二次开发的优点，可以大大简化用户配置工程或添加插件的复杂度。sophon-stream基于SophonSDK，可以充分发挥算丰硬件的编解码能力及人工智能算法的推理能力，从而获得较高的性能。
 
-## 2.1 sophon-stream优势
+### 2.1 sophon-stream优势
 
 sophon-stream具有以下优点：
   
@@ -106,7 +110,7 @@ sophon-stream具有以下优点：
  - 丰富的算法库。sophon-stream支持多种目标检测及跟踪算法，例如yolox、yolov5、bytetrack等。
  - 便于部署。sophon-stream适用于算丰BM1684、BM1684X芯片，可以在PCIE、SOC模式下灵活部署。
 
-## 2.2 sophon-stream软件栈
+### 2.2 sophon-stream软件栈
 
 sophon-stream基于SophonSDK设计。SophonSDK是算能科技基于自主研发的 AI 芯片所定制的深度学习SDK，涵盖了神经网络推理阶段所需的模型优化、高效运行时支持等能力，为深度学习应用开发和部署提供易用、高效的全栈式解决方案。
 
@@ -273,9 +277,11 @@ std::shared_ptr<bm_image> mSpDataOsd;   // 存放osd插件绘图之后的bm_imag
 
 sophon-stream中，所有算法或多媒体功能都以插件的形式存放于 sophon_stream/element/ 目录中。
 
-sophon-stream/element/algorithm 目录是算法插件的集合，目前包括yolox、yolov5、bytetrack算法。
+sophon-stream/element/algorithm 目录是算法插件的集合，目前包括yolox、yolov5、bytetrack、resnet算法。
 
 sophon-stream/element/multimedia 目录是多媒体插件的集合，目前包括编解码和OSD(On-Screen Display)功能。
+
+sophon-stream/element/tools 目录是功能性插件的集合，目前包括数据分发、数据汇聚element，以及一个供用户进行调试的空白element。
 
 ### 4.1 algorithm
 
@@ -503,6 +509,70 @@ osd插件的配置文件包括:
 其中，"osd_type" 字段标识了算法类型，可以设置为 "DET" 或 "TRACK" 
 
 配置参数的详细介绍请参见 [osd介绍](../element/multimedia/osd/README.md)
+
+### 4.3 tools
+
+#### 4.3.1 distributor
+
+distributor插件是数据分发插件，可以实现将检测到的不同类别目标分发到不同的下游分支的功能。目前，distributor支持的分发规则包括按时间间隔分发和按帧间隔分发两种，在配置具体的分发规则时，可以将上述两种方式搭配使用。
+
+distributor的配置文件包括：
+
+```json
+{
+    "configure": {
+        "default_port": 0,
+        "rules": [
+            {
+                "time_interval": 1,
+                "routes": [
+                    {
+                        "classes":["car"],
+                        "port": 1
+                    },
+                    {
+                        "classes":["person"],
+                        "port" : 2
+                    }
+                ]
+            }
+        ],
+        "class_names_file": "../data/coco.names"
+    },
+    "shared_object": "../../../build/lib/libdistributor.so",
+    "name": "distributor",
+    "side": "sophgo",
+    "thread_number": 1
+}
+```
+
+distributor插件必须搭配converger插件使用，详细说明请参考[distributor介绍](../element/tools/distributor/README.md)
+
+#### 4.3.2 converger
+
+converger是数据汇聚插件，可以将经由distributor延伸的各分支element传来的数据进行汇总，然后输出到下游element。
+
+converger的配置文件包括：
+
+```json
+{
+    "configure": {
+        "default_port": 0
+    },
+    "shared_object": "../../../build/lib/libconverger.so",
+    "name": "converger",
+    "side": "sophgo",
+    "thread_number": 1
+}
+```
+
+converger插件必须搭配distributor插件使用，详细说明请参考[converger介绍](../element/tools/converger/README.md)
+
+#### 4.3.3 blank
+
+blank是一个空白插件，可以连接在任意两个element之间，不会对pipeline有任何影响。
+
+该插件提供了一个完整的插件模板，但没有实现任何配置参数或工作逻辑。用户可以自行编写相关代码，以起到调试等作用。
 
 ## 5. 应用程序
 
