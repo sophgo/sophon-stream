@@ -40,17 +40,18 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
+    include_directories(../../../3rdparty/websocketpp)
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
-    
     include_directories(include)
     add_library(decode SHARED
         src/decoder.cc
         src/decode.cc
         src/ff_decode.cc
+        src/http_base64_mgr.cc
         )
 
-    target_link_libraries(decode ${FFMPEG_LIBS} 
+    target_link_libraries(decode ${FFMPEG_LIBS}
         ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
 
 
@@ -71,7 +72,8 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
 
     include_directories(../../../framework)
     include_directories(../../../framework/include)
-    
+
+    include_directories(../../../3rdparty/websocketpp)
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
 
@@ -80,8 +82,9 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
         src/decoder.cc
         src/decode.cc
         src/ff_decode.cc
+        src/http_base64_mgr.cc
         )
-    target_link_libraries(decode ${FFMPEG_LIBS} 
+    target_link_libraries(decode ${FFMPEG_LIBS}
         ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 
 

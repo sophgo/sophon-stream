@@ -1,4 +1,14 @@
-#pragma once
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODE_H_
+#define SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODE_H_
 
 #include "common/no_copyable.h"
 #include "common/profiler.h"
@@ -137,6 +147,7 @@ class Decode : public ::sophon_stream::framework::Element {
   static constexpr const char* JSON_LOOP_NUM = "loop_num";
   static constexpr const char* JSON_FPS = "fps";
   static constexpr const char* JSON_SAMPLE_INTERVAL = "sample_interval";
+  static constexpr const char* JSON_BASE64_PORT = "base64_port";
 
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
@@ -164,3 +175,5 @@ class Decode : public ::sophon_stream::framework::Element {
 }  // namespace decode
 }  // namespace element
 }  // namespace sophon_stream
+
+#endif // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODE_H_

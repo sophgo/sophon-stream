@@ -1,8 +1,19 @@
-#pragma once
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODER_H_
+#define SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODER_H_
 
 #include <dirent.h>
 
 #include <memory>
+#include <opencv2/opencv.hpp>
 #include <regex>
 #include <string>
 #include <unordered_map>
@@ -19,6 +30,7 @@
 #include "common/no_copyable.h"
 #include "common/object_metadata.h"
 #include "ff_decode.h"
+#include "http_base64_mgr.h"
 
 namespace sophon_stream {
 namespace element {
@@ -45,9 +57,13 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   int mFrameCount;
   ChannelOperateRequest::SourceType mSourceType;
   std::vector<std::string> mImagePaths;
+  HTTP_Base64_Mgr* mgr;
+
   double mFps;
   int mSampleInterval;
 };
 }  // namespace decode
 }  // namespace element
 }  // namespace sophon_stream
+
+#endif  // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODER_H_
