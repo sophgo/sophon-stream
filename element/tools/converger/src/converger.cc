@@ -58,8 +58,8 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
   int frame_id = objectMetadata->mFrame->mFrameId;
   mCandidates[channel_id][frame_id] = objectMetadata;
   // mBranches[channel_id][frame_id] = objectMetadata->numBranches;
-  IVS_DEBUG("data recognized, channel_id = {0}, frame_id = {1}", channel_id,
-            frame_id);
+  IVS_DEBUG("data recognized, channel_id = {0}, frame_id = {1}, num_branches = {2}", channel_id,
+            frame_id, objectMetadata->numBranches);
 
   // 非default_port，取出来之后更新分支数的记录
   for (int inputPort : inputPorts) {
@@ -74,11 +74,11 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     auto subObj = std::static_pointer_cast<common::ObjectMetadata>(subdata);
     int sub_channel_id = subObj->mFrame->mChannelId;
     int sub_frame_id = subObj->mFrame->mFrameId;
-    IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {0}",
+    IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {1}",
               sub_channel_id, sub_frame_id);
     mBranches[sub_channel_id][sub_frame_id]++;
-    IVS_DEBUG("data updated, channel_id = {0}, frame_id = {1}", channel_id,
-              frame_id);
+    IVS_DEBUG("data updated, channel_id = {0}, frame_id = {1}, current num_branches = {2}", channel_id,
+              frame_id, mBranches[sub_channel_id][sub_frame_id]);
   }
 
   // 遍历map，能弹出去的都弹出去
