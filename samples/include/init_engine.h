@@ -32,9 +32,8 @@ constexpr const char* JSON_CONFIG_DST_PORT_FILED = "dst_port";
 
 void parse_element_json(
     const nlohmann::detail::iter_impl<nlohmann::json> elements_it,
-    nlohmann::json& elementsConfigure, int device_id, std::pair<int, int>& src_id_port,
-    std::pair<int, int>& sink_id_port) {
-
+    nlohmann::json& elementsConfigure, int device_id,
+    std::pair<int, int>& src_id_port, std::pair<int, int>& sink_id_port) {
   std::ifstream elem_stream;
   for (auto& element_it : *elements_it) {
     nlohmann::json element;
@@ -47,33 +46,40 @@ void parse_element_json(
     element["device_id"] = device_id;
 
     auto ports_it = element_it.find(JSON_CONFIG_PORTS_CONFIG_FILED);
-    auto input_it = ports_it->find(JSON_CONFIG_INPUT_CONFIG_FILED);
-    auto output_it = ports_it->find(JSON_CONFIG_OUTPUT_CONFIG_FILED);
+    if (ports_it != element_it.end()) {
+      auto input_it = ports_it->find(JSON_CONFIG_INPUT_CONFIG_FILED);
+      auto output_it = ports_it->find(JSON_CONFIG_OUTPUT_CONFIG_FILED);
 
-    for (auto& input : *input_it) {
-      if (input.find(JSON_CONFIG_ELEMENT_IS_SRC_FILED)->get<bool>()) {
-        if (src_id_port.first != -1) {
-          IVS_ERROR("Too many src element");
-          abort();
+      if (input_it != ports_it->end()) {
+        for (auto& input : *input_it) {
+          if (input.find(JSON_CONFIG_ELEMENT_IS_SRC_FILED)->get<bool>()) {
+            if (src_id_port.first != -1) {
+              IVS_ERROR("Too many src element");
+              abort();
+            }
+            src_id_port = {element["id"],
+                           input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
+          }
         }
-        src_id_port = {element["id"],
-                       input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
+      }
+      if (output_it != ports_it->end()) {
+        for (auto& output : *output_it) {
+          if (output.find(JSON_CONFIG_ELEMENT_IS_SINK_FILED)->get<bool>()) {
+            sink_id_port = {element["id"],
+                            output.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
+            element["is_sink"] = true;
+          }
+        }
       }
     }
-    for (auto& output : *output_it) {
-      if (output.find(JSON_CONFIG_ELEMENT_IS_SINK_FILED)->get<bool>()) {
-        // if (sink_id_port.first != -1) {
-        //   IVS_ERROR("Too many sink element");
-        //   abort();
-        // }
-        sink_id_port = {element["id"],
-                        output.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
-        element["is_sink"] = true;
-      }
-    }
-
     elementsConfigure.push_back(element);
     elem_stream.close();
+  }
+  if (src_id_port.first == -1 || sink_id_port.first == -1) {
+    IVS_ERROR(
+        "THERE MUST BE ONE SRC PORT AND AT LEAST ONE SINK PORT IN GRAPH! CHECK "
+        "YOUR ENGINE.JSON.");
+    abort();
   }
 }
 

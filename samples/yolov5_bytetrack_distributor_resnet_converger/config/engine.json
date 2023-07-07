@@ -14,137 +14,33 @@
                             "is_sink": false,
                             "is_src": true
                         }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
                     ]
                 }
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolov5_pre.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../config/yolov5_pre.json"
             },
             {
                 "element_id": 5002,
-                "element_config": "../config/yolov5_infer.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../config/yolov5_infer.json"
             },
             {
                 "element_id": 5003,
-                "element_config": "../config/yolov5_post.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../config/yolov5_post.json"
             },
             {
                 "element_id": 6001,
-                "element_config": "../config/bytetrack.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../config/bytetrack.json"
             },
             {
                 "element_id": 5004,
-                "element_config": "../config/distributor_time_class.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        },
-                        {
-                            "port_id": 1,
-                            "is_sink": false,
-                            "is_src": false
-                        },
-                        {
-                            "port_id": 2,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../config/distributor_time_class.json"
             },
             {
                 "element_id": 5007,
                 "element_config": "../config/converger.json",
                 "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
                     "output": [
                         {
                             "port_id": 0,
@@ -156,43 +52,11 @@
             },
             {
                 "element_id": 5008,
-                "element_config": "../config/resnet_car.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../config/resnet_car.json"
             },
             {
                 "element_id": 5009,
-                "element_config": "../config/resnet_person.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../config/resnet_person.json"
             }
         ],
         "connections": [
