@@ -192,17 +192,19 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outDataPipeId =
       channel_id_internal % getOutputConnectorCapacity(mDefaultPort);
-  errorCode = pushOutputData(mDefaultPort, outDataPipeId, data);
+  
 
-  if(mChannelLastTimes.find(channel_id_internal) == mChannelLastTimes.end()) {
-    mChannelLastTimes[channel_id_internal] = std::vector<float>(mTimeIntervals.size(), -99.0);
+  if (mChannelLastTimes.find(channel_id_internal) == mChannelLastTimes.end()) {
+    mChannelLastTimes[channel_id_internal] =
+        std::vector<float>(mTimeIntervals.size(), -99.0);
   }
   // 判断计时器规则
   float cur_time = clocker.tell_ms() / 1000.0;
   int subId = 0;
   std::unordered_map<std::string, std::unordered_set<int>> class2ports;
   for (int i = 0; i < mChannelLastTimes[channel_id_internal].size(); ++i) {
-    if (cur_time - mChannelLastTimes[channel_id_internal][i] > mTimeIntervals[i]) {
+    if (cur_time - mChannelLastTimes[channel_id_internal][i] >
+        mTimeIntervals[i]) {
       // IVS_DEBUG("meet time interval rules, frame id = {0}",
       // objectMetadata->mFrame->mFrameId);
       mChannelLastTimes[channel_id_internal][i] = cur_time;
@@ -241,6 +243,10 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
               channel_id_internal % getOutputConnectorCapacity(target_port);
           errorCode = pushOutputData(target_port, outDataPipeId,
                                      std::static_pointer_cast<void>(subObj));
+          IVS_DEBUG(
+              "Sub ObjectMetadata is sent to branch, channel_id = {0}, "
+              "frame_id = {1}, subId = {2}",
+              channel_id_internal, subObj->mFrame->mFrameId, subId);
           if (common::ErrorCode::SUCCESS != errorCode) {
             IVS_WARN(
                 "Send data fail, element id: {0:d}, output port: {1:d}, data: "
@@ -268,6 +274,14 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
       }
     }
   }
+  
+  errorCode = pushOutputData(mDefaultPort, outDataPipeId, data);
+  IVS_DEBUG(
+      "Main ObjectMetadata is sent to Converger, channel_id = {0}, frame_id = "
+      "{1}, numBranches = {2}",
+      channel_id_internal, objectMetadata->mFrame->mFrameId, objectMetadata->numBranches);
+  
+  
   return errorCode;
 }
 
