@@ -101,6 +101,7 @@ common::ErrorCode Decoder::init(int deviceId,
     if (mSourceType == ChannelOperateRequest::SourceType::BASE64) {
       mgr = HTTP_Base64_Mgr::GetInstance();
       mgr->init(request.base64Port, mUrl);
+      mgr->setFps(mFps);
       IVS_DEBUG("Decoder::init, base64Port: {0}", request.base64Port);
     } else {
       decoder.setFps(mFps);

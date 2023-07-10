@@ -73,6 +73,18 @@ std::string HTTP_Base64_Mgr::handler_Base64(const std::string& request_str) {
 }
 
 std::shared_ptr<bm_image> HTTP_Base64_Mgr::grab(bm_handle_t& handle) {
+  // 控制帧率
+  if (fps != -1) {
+    gettimeofday(&current_time, NULL);
+    double time_delta =
+        1000 * ((current_time.tv_sec - last_time.tv_sec) +
+                (double)(current_time.tv_usec - last_time.tv_usec) / 1000000.0);
+    int time_to_sleep = frame_interval_time - time_delta;
+    if (time_to_sleep > 0)
+      std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
+    gettimeofday(&last_time, NULL);
+  }
+
   std::shared_ptr<bm_image> spBmImage = nullptr;
   spBmImage.reset(new bm_image, [](bm_image* p) {
     bm_image_destroy(*p);
@@ -112,6 +124,11 @@ void HTTP_Base64_Mgr::listen_thread() {
   HTTP_Base64_Mgr* mgr = HTTP_Base64_Mgr::GetInstance();
   mgr->server_.listen("0.0.0.0", mgr->port_);
   return;
+}
+
+void HTTP_Base64_Mgr::setFps(int f) {
+  fps = f;
+  frame_interval_time = 1 / fps * 1000;
 }
 
 }  // namespace decode

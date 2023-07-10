@@ -36,6 +36,8 @@ class HTTP_Base64_Mgr {
 
   void init(int port, std::string url);
   void stop();
+  /* set fps */
+  void setFps(int f);
 
   static void handler(const httplib::Request& request,
                       httplib::Response& response);
@@ -46,6 +48,10 @@ class HTTP_Base64_Mgr {
   static HTTP_Base64_Mgr* GetInstance();
 
  private:
+  double fps;
+  double frame_interval_time;  // ms
+  struct timeval last_time;
+  struct timeval current_time;
   httplib::Server server_;
   int port_;
   std::queue<std::string> base64_queue_;
@@ -75,4 +81,4 @@ class HTTP_Base64_Mgr {
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_HTTP_BASE64_MGR_H_
+#endif  // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_HTTP_BASE64_MGR_H_
