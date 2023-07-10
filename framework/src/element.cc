@@ -32,7 +32,7 @@ Element::Element()
       mThreadNumber(1),
       mThreadStatus(ThreadStatus::STOP) {}
 
-Element::~Element() {}
+Element::~Element() { uninit(); }
 
 common::ErrorCode Element::init(const std::string& json) {
   IVS_INFO("Init start, json: {0}", json);
@@ -220,8 +220,8 @@ void Element::setSinkHandler(int outputPort, SinkHandler dataHandler) {
   if (mSinkElementFlag) mSinkHandlerMap[outputPort] = dataHandler;
 }
 
-common::ErrorCode Element::pushOutputData(
-    int outputPort, int dataPipeId, std::shared_ptr<void> data) {
+common::ErrorCode Element::pushOutputData(int outputPort, int dataPipeId,
+                                          std::shared_ptr<void> data) {
   IVS_DEBUG("send data, element id: {0:d}, output port: {1:d}, data:{2:p}", mId,
             outputPort, data.get());
   if (mSinkElementFlag) {
@@ -234,7 +234,8 @@ common::ErrorCode Element::pushOutputData(
       }
     }
   }
-  while(mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) != common::ErrorCode::SUCCESS) { 
+  while (mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) !=
+         common::ErrorCode::SUCCESS) {
     IVS_DEBUG("DataPipe is full, now sleeping...");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }

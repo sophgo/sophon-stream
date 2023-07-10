@@ -40,6 +40,8 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       if (encodeType == "RTMP") mEncodeType = EncodeType::RTMP;
       if (encodeType == "VIDEO") mEncodeType = EncodeType::VIDEO;
       if (encodeType == "IMG_DIR") mEncodeType = EncodeType::IMG_DIR;
+      if (encodeType == "WS") mEncodeType = EncodeType::WS;
+      IVS_DEBUG("EncodeType is {0}", encodeType);
     } else {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       IVS_ERROR(
@@ -55,7 +57,8 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       } else {
         errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
         IVS_ERROR(
-            "Can not find {0} with string type in worker json configure, json: "
+            "Can not find {0} with string type in worker json configure, "
+            "json: "
             "{1}",
             CONFIG_INTERNAL_RTSP_PORT_FIELD, json);
         break;
@@ -68,7 +71,8 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       } else {
         errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
         IVS_ERROR(
-            "Can not find {0} with string type in worker json configure, json: "
+            "Can not find {0} with string type in worker json configure, "
+            "json: "
             "{1}",
             CONFIG_INTERNAL_RTMP_PORT_FIELD, json);
         break;
@@ -85,7 +89,8 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       } else {
         errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
         IVS_ERROR(
-            "Can not find {0} with string type in worker json configure, json: "
+            "Can not find {0} with string type in worker json configure, "
+            "json: "
             "{1}",
             CONFIG_INTERNAL_ENC_FMT_FIELD, json);
         break;
@@ -99,7 +104,8 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       } else {
         errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
         IVS_ERROR(
-            "Can not find {0} with string type in worker json configure, json: "
+            "Can not find {0} with string type in worker json configure, "
+            "json: "
             "{1}",
             CONFIG_INTERNAL_PIX_FMT_FIELD, json);
         break;
@@ -126,6 +132,19 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
           IVS_INFO("Error creating directory.");
         }
       }
+    } else if (mEncodeType == EncodeType::WS) {
+      auto wssPortIt = configure.find(CONFIG_INTERNAL_WSS_PORT_FIELD);
+      if (configure.end() != wssPortIt) {
+        mWSSPort = wssPortIt->get<std::string>();
+      } else {
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        IVS_ERROR(
+            "Can not find {0} with string type in worker json configure, "
+            "json: "
+            "{1}",
+            CONFIG_INTERNAL_WSS_PORT_FIELD, json);
+        break;
+      }
     }
 
     mFpsProfiler.config("fps_encode", 100);
@@ -134,9 +153,19 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
 }
 
 void Encode::uninitInternal() {
-  for (auto it = mEncoderMap.begin(); it != mEncoderMap.end(); ++it)
-    it->second->release();
+  if (mEncodeType != EncodeType::WS) {
+    for (auto it = mEncoderMap.begin(); it != mEncoderMap.end(); ++it)
+      it->second->release();
+  } else {
+    for (auto it = mWSSMap.begin(); it != mWSSMap.end(); ++it)
+      it->second->stop();
+    for (auto& thread : mWSSThreads) thread.join();
+  }
 }
+
+void create_wss(WSS* wss, int server_port) { wss->init(server_port); }
+
+void send_wss(WSS* wss) { wss->send(); };
 
 common::ErrorCode Encode::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -201,7 +230,9 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
         }
       }
     } else if (mEncodeType == EncodeType::IMG_DIR) {
-      const char* dir_path = ("./results/" + std::to_string(objectMetadata->mFrame->mChannelId)).c_str();
+      const char* dir_path =
+          ("./results/" + std::to_string(objectMetadata->mFrame->mChannelId))
+              .c_str();
       struct stat info;
       if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
         IVS_INFO("Directory already exists.");
@@ -237,6 +268,51 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
       }
       free(jpeg_data);
       bm_image_destroy(imageStorage);
+    } else if (mEncodeType == EncodeType::WS) {
+      auto serverIt = mWSSMap.find(dataPipeId);
+      if (mWSSMap.end() == serverIt) {
+        int channel_id = objectMetadata->mFrame->mChannelId;
+        int server_port = std::stoi(mWSSPort) + channel_id;
+        std::shared_ptr<WSS> wss = std::make_shared<WSS>();
+        std::thread t(create_wss, wss.get(), server_port);
+        std::thread s(send_wss, wss.get());
+        std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
+        mWSSThreads.push_back(std::move(s));
+        mWSSThreads.push_back(std::move(t));
+        mWSSMap[dataPipeId] = wss;
+        serverIt = mWSSMap.find(dataPipeId);
+      }
+      void* jpeg_data = NULL;
+      size_t out_size = 0;
+      std::shared_ptr<bm_image> img = objectMetadata->mFrame->mSpDataOsd
+                                          ? objectMetadata->mFrame->mSpDataOsd
+                                          : objectMetadata->mFrame->mSpData;
+      std::shared_ptr<bm_image> img_to_enc = img;
+      if (img->image_format != FORMAT_YUV420P) {
+        img_to_enc.reset(new bm_image,
+                         [&](bm_image* img) { bm_image_destroy(*img); });
+        bm_image image = *(objectMetadata->mFrame->mSpData);
+        bm_image_create(objectMetadata->mFrame->mHandle,
+                        objectMetadata->mFrame->mHeight,
+                        objectMetadata->mFrame->mWidth, FORMAT_YUV420P,
+                        image.data_type, &(*img_to_enc));
+        bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1,
+                                   img.get(), img_to_enc.get());
+      }
+      bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
+                          &jpeg_data, &out_size);
+      std::string data =
+          "data:image/jpeg;base64," +
+          websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
+      // base64 img 存入队列
+      serverIt->second->pushImgDataQueue(data);
+    }
+  } else {
+    if (mEncodeType == EncodeType::WS) {
+      // 从map中获取wss对象
+      auto serverIt = mWSSMap.find(dataPipeId);
+      // 队列数据停止flag
+      serverIt->second->pushImgDataQueue(WS_STOP_FLAG);
     }
   }
   mFpsProfiler.add(1);

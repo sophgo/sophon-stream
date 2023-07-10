@@ -16,6 +16,7 @@
 #include "common/profiler.h"
 #include "element.h"
 #include "encoder.h"
+#include "wss.h"
 
 namespace sophon_stream {
 namespace element {
@@ -37,17 +38,23 @@ class Encode : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_RTMP_PORT_FIELD = "rtmp_port";
   static constexpr const char* CONFIG_INTERNAL_ENC_FMT_FIELD = "enc_fmt";
   static constexpr const char* CONFIG_INTERNAL_PIX_FMT_FIELD = "pix_fmt";
+  static constexpr const char* CONFIG_INTERNAL_WSS_PORT_FIELD = "wss_port";
 
  private:
   std::map<int, std::shared_ptr<Encoder>> mEncoderMap;
   bm_handle_t m_handle;
   std::map<int, std::string> mChannelOutputPath;
-  enum class EncodeType { RTSP, RTMP, VIDEO, IMG_DIR, UNKNOWN };
+  enum class EncodeType { RTSP, RTMP, VIDEO, IMG_DIR, WS, UNKNOWN };
   EncodeType mEncodeType;
   std::string mRtspPort;
   std::string mRtmpPort;
   std::string encFmt;
   std::string pixFmt;
+
+  std::map<int, std::shared_ptr<WSS>> mWSSMap;
+  std::vector<std::thread> mWSSThreads;
+  std::mutex mWSSThreadsMutex;
+  std::string mWSSPort;
 
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };

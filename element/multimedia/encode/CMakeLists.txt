@@ -34,6 +34,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
+    include_directories(../../../3rdparty/websocketpp)
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
 
@@ -64,6 +65,7 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
+    include_directories(../../../3rdparty/websocketpp)
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
 

@@ -10,8 +10,6 @@
 #ifndef SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_HTTP_BASE64_MGR_H_
 #define SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_HTTP_BASE64_MGR_H_
 
-#include <../../../3rdparty/httplib/httplib.h>
-
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -22,6 +20,7 @@
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
 #include "common/logger.h"
+#include "httplib.h"
 
 namespace sophon_stream {
 namespace element {
