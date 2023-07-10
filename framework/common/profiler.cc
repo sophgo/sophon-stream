@@ -21,6 +21,10 @@ FpsProfiler::~FpsProfiler() {}
 void FpsProfiler::config(const std::string& name, int summary_cond_cnts) {
   name_ = name;
   summary_cond_cnts_ = summary_cond_cnts;
+  tmp_fps_ = 0;
+  avg_fps_ = 0;
+  cnts_ = 0;
+  start_ts_ = cv::getTickCount() / cv::getTickFrequency();
 }
 
 void FpsProfiler::add(int cnts) {
