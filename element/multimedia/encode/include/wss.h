@@ -37,9 +37,9 @@ static const std::string WS_STOP_FLAG = "ws_stop_flag";
 
 class WSS {
  public:
-  WSS() {}
+  WSS();
 
-  ~WSS() {}
+  ~WSS();
 
   void on_open(connection_hdl hdl);
 
