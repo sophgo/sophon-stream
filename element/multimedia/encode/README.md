@@ -11,7 +11,8 @@ sophon-stream encode element是sophon-stream框架中的一个插件，用于将
   - [4. rtmp使用说明](#4-rtmp使用说明)
   - [5. 输出本地视频文件](#5-输出本地视频文件)
   - [6. 输出本地图片文件夹](#6-输出本地图片文件夹)
-  - [7. 推流服务器](#7-推流服务器)
+  - [7. WebSocket使用说明](#7-websocket使用说明)
+  - [8. 推流服务器](#8-推流服务器)
 
 ## 1. 特性
 * 支持多种输出格式，如RTSP、RTMP、本地视频文件、本地图片文件夹等。
@@ -30,6 +31,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
     "encode_type": "RTSP",
     "rtsp_port": "8554",
     "rtmp_port": "1935",
+    "wss_port": "9000",
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420"
   },
@@ -44,9 +46,10 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 
 |      参数名    |    类型    | 默认值 | 说明 |
 |:-------------:| :-------: | :------------------:| :------------------------:|
-|  encode_type |    字符串     | "RTSP" |编码格式，包括 “RTSP”、“RTMP”、“VIDEO”、“IMG_DIR”|
+|  encode_type |    字符串     | "RTSP" |编码格式，包括 “RTSP”、“RTMP”、“VIDEO”、“IMG_DIR”、 "WS"|
 |  rtsp_port   |   字符串    | "8554" | rtsp 端口 |
 |  rtmp_port   |   字符串    |  "1935" | rtmp 端口 |
+|  wss_port   |   字符串    |  "9000" | websocket server起始端口 |
 |  enc_fmt    |   字符串    |  "h264_bm"| 编码格式，包括 "h264_bm"，“h265_bm” |
 |  pix_fmt    |   字符串    |  "I420"| 像素格式，包括 "I420"，"NV12"|
 |  shared_object |   字符串   |  "../../../build/lib/libencode.so"  | libencode 动态库路径 |
@@ -106,7 +109,19 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 
 假设channel_id为0, mFrameId为0，此时文件名为`0_0.jpg`
 
-## 7. 推流服务器
+## 7. WebSocket使用说明
+
+在`encode.json`中做出以下设置
+```json
+"encode_type": “WS”,
+"wss_port": "9000"
+```
+
+输出websocket URL格式为：`ws://{host_ip}:{ws_port+channel_id}`
+
+wss_port为9000，host_ip为127.0.0.1, channel_id为2，此时URL为`ws://127.0.0.1:9002`
+
+## 8. 推流服务器
 可以使用`rtsp-simple-server`作为推流服务器，启动步骤如下
 
 首先去[官网](https://github.com/bluenviron/mediamtx/releases)下载对应的软件包然后解压

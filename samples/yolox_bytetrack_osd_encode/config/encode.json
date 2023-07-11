@@ -3,6 +3,7 @@
     "encode_type": "RTSP",
     "rtsp_port": "8554",
     "rtmp_port": "1935",
+    "wss_port": "9000",
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420"
   },

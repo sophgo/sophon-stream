@@ -19,7 +19,6 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
-#include "../../encode/include/encode.h"
 #include "common/logger.h"
 #include "element_factory.h"
 
