@@ -50,7 +50,7 @@ first_char="${name:0:1}"
 remaining="${name:1}"
 first_char_upper=$(echo "$first_char" | tr '[:lower:]' '[:upper:]')
 Name="$first_char_upper$remaining"
-NAME=$(echo "name" | tr '[:lower:]' '[:upper:]')
+NAME=$(echo "$name" | tr '[:lower:]' '[:upper:]')
 # echo "$Name"
 # echo "$NAME"
 
