@@ -56,6 +56,18 @@ class Encode : public ::sophon_stream::framework::Element {
   std::mutex mWSSThreadsMutex;
   std::string mWSSPort;
 
+  // 处理RTSP、RTMP、VIDEO
+  void processVideoStream(
+      int dataPipeId, std::shared_ptr<common::ObjectMetadata> objectMetadata);
+  // 处理IMG_DIR
+  void processImgDir(int dataPipeId,
+                     std::shared_ptr<common::ObjectMetadata> objectMetadata);
+  // 处理WS
+  void processWS(int dataPipeId,
+                 std::shared_ptr<common::ObjectMetadata> objectMetadata);
+  // WS发送停止标识
+  void stopWS(int dataPipeId);
+
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 

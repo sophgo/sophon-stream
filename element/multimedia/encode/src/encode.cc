@@ -199,128 +199,20 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
                 getId()) == objectMetadata->mSkipElements.end()) {
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
-      auto encodeIt = mEncoderMap.find(dataPipeId);
-      if (mEncoderMap.end() != encodeIt) {
-        int channel_id = objectMetadata->mFrame->mChannelId;
-        if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
-          std::string output_path;
-          switch (mEncodeType) {
-            case EncodeType::RTSP:
-              output_path = "rtsp://localhost:" + mRtspPort + "/" +
-                            std::to_string(channel_id);
-              break;
-            case EncodeType::RTMP:
-              output_path = "rtmp://localhost:" + mRtmpPort + "/" +
-                            std::to_string(channel_id);
-              break;
-            case EncodeType::VIDEO:
-              output_path = std::to_string(channel_id) + ".avi";
-              break;
-            default:
-              IVS_ERROR("Encode type error, please input RTSP, RTMP or VIDEO");
-          }
-          if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
-            mChannelOutputPath[channel_id] = output_path;
-            encodeIt->second->set_output_path(output_path);
-            encodeIt->second->set_enc_params_width(
-                objectMetadata->mFrame->mWidth);
-            encodeIt->second->set_enc_params_height(
-                objectMetadata->mFrame->mHeight);
-            encodeIt->second->init_writer();
-          }
-        }
-        if (objectMetadata->mFrame->mSpDataOsd) {
-          encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
-        } else {
-          encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData));
-        }
-      }
+      processVideoStream(dataPipeId, objectMetadata);
     } else if (mEncodeType == EncodeType::IMG_DIR) {
-      const char* dir_path =
-          ("./results/" + std::to_string(objectMetadata->mFrame->mChannelId))
-              .c_str();
-      struct stat info;
-      if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
-        IVS_INFO("Directory already exists.");
-      } else {
-        if (mkdir(dir_path, 0777) == 0) {
-          IVS_INFO("Directory created successfully.");
-        } else {
-          IVS_INFO("Error creating directory.");
-        }
-      }
-      int width = objectMetadata->mFrame->mWidth;
-      int height = objectMetadata->mFrame->mHeight;
-      bm_image image = objectMetadata->mFrame->mSpDataOsd
-                           ? *objectMetadata->mFrame->mSpDataOsd
-                           : *objectMetadata->mFrame->mSpData;
-      bm_image imageStorage;
-      bm_image_create(objectMetadata->mFrame->mHandle, height, width,
-                      FORMAT_YUV420P, image.data_type, &imageStorage);
-      bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
-                                 &imageStorage);
-      // save image
-      void* jpeg_data = NULL;
-      size_t out_size = 0;
-      int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
-                                    &imageStorage, &jpeg_data, &out_size);
-      if (ret == BM_SUCCESS) {
-        std::string img_file =
-            "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-            "/" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
-        FILE* fp = fopen(img_file.c_str(), "wb");
-        fwrite(jpeg_data, out_size, 1, fp);
-        fclose(fp);
-      }
-      free(jpeg_data);
-      bm_image_destroy(imageStorage);
+      processImgDir(dataPipeId, objectMetadata);
     } else if (mEncodeType == EncodeType::WS) {
-      auto serverIt = mWSSMap.find(dataPipeId);
-      if (mWSSMap.end() == serverIt) {
-        int channel_id = objectMetadata->mFrame->mChannelId;
-        int server_port = std::stoi(mWSSPort) + channel_id;
-        std::shared_ptr<WSS> wss = std::make_shared<WSS>();
-        std::thread t(create_wss, wss.get(), server_port);
-        std::thread s(send_wss, wss.get());
-        std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
-        mWSSThreads.push_back(std::move(s));
-        mWSSThreads.push_back(std::move(t));
-        mWSSMap[dataPipeId] = wss;
-        serverIt = mWSSMap.find(dataPipeId);
-      }
-      void* jpeg_data = NULL;
-      size_t out_size = 0;
-      std::shared_ptr<bm_image> img = objectMetadata->mFrame->mSpDataOsd
-                                          ? objectMetadata->mFrame->mSpDataOsd
-                                          : objectMetadata->mFrame->mSpData;
-      std::shared_ptr<bm_image> img_to_enc = img;
-      if (img->image_format != FORMAT_YUV420P) {
-        img_to_enc.reset(new bm_image,
-                         [&](bm_image* img) { bm_image_destroy(*img); });
-        bm_image image = *(objectMetadata->mFrame->mSpData);
-        bm_image_create(objectMetadata->mFrame->mHandle,
-                        objectMetadata->mFrame->mHeight,
-                        objectMetadata->mFrame->mWidth, FORMAT_YUV420P,
-                        image.data_type, &(*img_to_enc));
-        bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1,
-                                   img.get(), img_to_enc.get());
-      }
-      bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
-                          &jpeg_data, &out_size);
-      std::string data =
-          "data:image/jpeg;base64," +
-          websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
-      // base64 img 存入队列
-      serverIt->second->pushImgDataQueue(data);
+      processWS(dataPipeId, objectMetadata);
+    } else {
     }
   } else {
+    // WS发送停止标识
     if (mEncodeType == EncodeType::WS) {
-      // 从map中获取wss对象
-      auto serverIt = mWSSMap.find(dataPipeId);
-      // 队列数据停止flag
-      serverIt->second->pushImgDataQueue(WS_STOP_FLAG);
+      stopWS(dataPipeId);
     }
   }
+
   mFpsProfiler.add(1);
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outDataPipeId =
@@ -336,6 +228,139 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   }
 
   return common::ErrorCode::SUCCESS;
+}
+
+// 处理RTSP、RTMP、VIDEO
+void Encode::processVideoStream(
+    int dataPipeId, std::shared_ptr<common::ObjectMetadata> objectMetadata) {
+  auto encodeIt = mEncoderMap.find(dataPipeId);
+  if (mEncoderMap.end() != encodeIt) {
+    int channel_id = objectMetadata->mFrame->mChannelId;
+    if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
+      std::string output_path;
+      switch (mEncodeType) {
+        case EncodeType::RTSP:
+          output_path = "rtsp://localhost:" + mRtspPort + "/" +
+                        std::to_string(channel_id);
+          break;
+        case EncodeType::RTMP:
+          output_path = "rtmp://localhost:" + mRtmpPort + "/" +
+                        std::to_string(channel_id);
+          break;
+        case EncodeType::VIDEO:
+          output_path = std::to_string(channel_id) + ".avi";
+          break;
+        default:
+          IVS_ERROR("Encode type error, please input RTSP, RTMP or VIDEO");
+      }
+      if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
+        mChannelOutputPath[channel_id] = output_path;
+        encodeIt->second->set_output_path(output_path);
+        encodeIt->second->set_enc_params_width(objectMetadata->mFrame->mWidth);
+        encodeIt->second->set_enc_params_height(
+            objectMetadata->mFrame->mHeight);
+        encodeIt->second->init_writer();
+      }
+    }
+    if (objectMetadata->mFrame->mSpDataOsd) {
+      encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
+    } else {
+      encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData));
+    }
+  }
+}
+
+// 处理IMG_DIR
+void Encode::processImgDir(
+    int dataPipeId, std::shared_ptr<common::ObjectMetadata> objectMetadata) {
+  const char* dir_path =
+      ("./results/" + std::to_string(objectMetadata->mFrame->mChannelId))
+          .c_str();
+  struct stat info;
+  if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
+    IVS_INFO("Directory already exists.");
+  } else {
+    if (mkdir(dir_path, 0777) == 0) {
+      IVS_INFO("Directory created successfully.");
+    } else {
+      IVS_INFO("Error creating directory.");
+    }
+  }
+  int width = objectMetadata->mFrame->mWidth;
+  int height = objectMetadata->mFrame->mHeight;
+  bm_image image = objectMetadata->mFrame->mSpDataOsd
+                       ? *objectMetadata->mFrame->mSpDataOsd
+                       : *objectMetadata->mFrame->mSpData;
+  bm_image imageStorage;
+  bm_image_create(objectMetadata->mFrame->mHandle, height, width,
+                  FORMAT_YUV420P, image.data_type, &imageStorage);
+  bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
+                             &imageStorage);
+  // save image
+  void* jpeg_data = NULL;
+  size_t out_size = 0;
+  int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
+                                &imageStorage, &jpeg_data, &out_size);
+  if (ret == BM_SUCCESS) {
+    std::string img_file =
+        "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
+        "/" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+    FILE* fp = fopen(img_file.c_str(), "wb");
+    fwrite(jpeg_data, out_size, 1, fp);
+    fclose(fp);
+  }
+  free(jpeg_data);
+  bm_image_destroy(imageStorage);
+}
+
+// 处理WS
+void Encode::processWS(int dataPipeId,
+                       std::shared_ptr<common::ObjectMetadata> objectMetadata) {
+  auto serverIt = mWSSMap.find(dataPipeId);
+  if (mWSSMap.end() == serverIt) {
+    int channel_id = objectMetadata->mFrame->mChannelId;
+    int server_port = std::stoi(mWSSPort) + channel_id;
+    std::shared_ptr<WSS> wss = std::make_shared<WSS>();
+    std::thread t(create_wss, wss.get(), server_port);
+    std::thread s(send_wss, wss.get());
+    std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
+    mWSSThreads.push_back(std::move(s));
+    mWSSThreads.push_back(std::move(t));
+    mWSSMap[dataPipeId] = wss;
+    serverIt = mWSSMap.find(dataPipeId);
+  }
+  void* jpeg_data = NULL;
+  size_t out_size = 0;
+  std::shared_ptr<bm_image> img = objectMetadata->mFrame->mSpDataOsd
+                                      ? objectMetadata->mFrame->mSpDataOsd
+                                      : objectMetadata->mFrame->mSpData;
+  std::shared_ptr<bm_image> img_to_enc = img;
+  if (img->image_format != FORMAT_YUV420P) {
+    img_to_enc.reset(new bm_image,
+                     [&](bm_image* img) { bm_image_destroy(*img); });
+    bm_image image = *(objectMetadata->mFrame->mSpData);
+    bm_image_create(objectMetadata->mFrame->mHandle,
+                    objectMetadata->mFrame->mHeight,
+                    objectMetadata->mFrame->mWidth, FORMAT_YUV420P,
+                    image.data_type, &(*img_to_enc));
+    bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, img.get(),
+                               img_to_enc.get());
+  }
+  bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
+                      &jpeg_data, &out_size);
+  std::string data =
+      "data:image/jpeg;base64," +
+      websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
+  // base64 img 存入队列
+  serverIt->second->pushImgDataQueue(data);
+}
+
+// WS发送停止标识
+void Encode::stopWS(int dataPipeId) {
+  // 从map中获取wss对象
+  auto serverIt = mWSSMap.find(dataPipeId);
+  // 队列数据停止flag
+  serverIt->second->pushImgDataQueue(WS_STOP_FLAG);
 }
 
 REGISTER_WORKER("encode", Encode)
