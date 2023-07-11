@@ -1,4 +1,14 @@
-#pragma once
+//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_CHANNEL_H_
+#define SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_CHANNEL_H_
 
 #include <string>
 #include <vector>
@@ -16,7 +26,7 @@ struct ChannelOperateRequest {
     PAUSE,
     RESUME,
   };
-  enum class SourceType { RTSP, RTMP, VIDEO, IMG_DIR, UNKNOWN };
+  enum class SourceType { RTSP, RTMP, VIDEO, IMG_DIR, BASE64, UNKNOWN };
   int channelId;
   int loopNum;
   std::string url;
@@ -25,6 +35,7 @@ struct ChannelOperateRequest {
   std::string json;
   double fps;
   int sampleInterval;
+  int base64Port;
   std::vector<int> skip_element;
 };
 
@@ -41,3 +52,5 @@ struct ChannelTask {
 }  // namespace decode
 }  // namespace element
 }  // namespace sophon_stream
+
+#endif  // SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_CHANNEL_H_

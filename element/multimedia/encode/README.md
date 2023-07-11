@@ -10,10 +10,11 @@ sophon-stream encode element是sophon-stream框架中的一个插件，用于将
   - [3. rtsp使用说明](#3-rtsp使用说明)
   - [4. rtmp使用说明](#4-rtmp使用说明)
   - [5. 输出本地视频文件](#5-输出本地视频文件)
-  - [6. 推流服务器](#6-推流服务器)
+  - [6. 输出本地图片文件夹](#6-输出本地图片文件夹)
+  - [7. 推流服务器](#7-推流服务器)
 
 ## 1. 特性
-* 支持多种输出格式，如RTSP、RTMP、本地视频文件等。
+* 支持多种输出格式，如RTSP、RTMP、本地视频文件、本地图片文件夹等。
 * 支持多种视频编码格式，如H.264、H.265等。
 * 支持多种像素格式，如I420、NV12等。
 * 支持多路视频流高性能编码，支持硬件加速。
@@ -43,7 +44,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 
 |      参数名    |    类型    | 默认值 | 说明 |
 |:-------------:| :-------: | :------------------:| :------------------------:|
-|  encode_type |    字符串     | "RTSP" |编码格式，包括 “RTSP”、“RTMP”、“VIDEO”|
+|  encode_type |    字符串     | "RTSP" |编码格式，包括 “RTSP”、“RTMP”、“VIDEO”、“IMG_DIR”|
 |  rtsp_port   |   字符串    | "8554" | rtsp 端口 |
 |  rtmp_port   |   字符串    |  "1935" | rtmp 端口 |
 |  enc_fmt    |   字符串    |  "h264_bm"| 编码格式，包括 "h264_bm"，“h265_bm” |
@@ -58,6 +59,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 > **注意**：
 1. 需要保证插件线程数和处理码流数一致
 2. encode_type为RTSP时，需保证rtsp_port不为空，encode_type为RTMP时，需保证rtmp_port不为空
+3. encode_type为VIDEO和IMG_DIR时，文件保存路径为`./results`
 
 ## 3. rtsp使用说明
 需要本地启动推流服务器，具体用法见[6. 推流服务器](#6-推流服务器)
@@ -94,7 +96,17 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 
 假设channel_id为0, 此时文件名为`0.avi`
 
-## 6. 推流服务器
+## 6. 输出本地图片文件夹
+在`encode.json`中做出以下设置
+```json
+"encode_type": "IMG_DIR",
+```
+
+输出图片文件名为：`{channel_id}_{mFrameId}.jpg`
+
+假设channel_id为0, mFrameId为0，此时文件名为`0_0.jpg`
+
+## 7. 推流服务器
 可以使用`rtsp-simple-server`作为推流服务器，启动步骤如下
 
 首先去[官网](https://github.com/bluenviron/mediamtx/releases)下载对应的软件包然后解压
