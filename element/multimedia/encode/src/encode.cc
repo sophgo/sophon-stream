@@ -197,34 +197,37 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
       std::find(objectMetadata->mSkipElements.begin(),
                 objectMetadata->mSkipElements.end(),
                 getId()) == objectMetadata->mSkipElements.end()) {
-    auto encodeIt = mEncoderMap.find(dataPipeId);
-    if (mEncoderMap.end() != encodeIt) {
-      int channel_id = objectMetadata->mFrame->mChannelId;
-      std::string output_path;
-      if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
-        switch (mEncodeType) {
-          case EncodeType::RTSP:
-            output_path = "rtsp://localhost:" + mRtspPort + "/" +
-                          std::to_string(channel_id);
-            break;
-          case EncodeType::RTMP:
-            output_path = "rtmp://localhost:" + mRtmpPort + "/" +
-                          std::to_string(channel_id);
-            break;
-          case EncodeType::VIDEO:
-            output_path = std::to_string(channel_id) + ".avi";
-            break;
-          default:
-            IVS_ERROR("Encode type error, please input RTSP, RTMP or VIDEO");
-        }
+    if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
+        mEncodeType == EncodeType::VIDEO) {
+      auto encodeIt = mEncoderMap.find(dataPipeId);
+      if (mEncoderMap.end() != encodeIt) {
+        int channel_id = objectMetadata->mFrame->mChannelId;
         if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
-          mChannelOutputPath[channel_id] = output_path;
-          encodeIt->second->set_output_path(output_path);
-          encodeIt->second->set_enc_params_width(
-              objectMetadata->mFrame->mWidth);
-          encodeIt->second->set_enc_params_height(
-              objectMetadata->mFrame->mHeight);
-          encodeIt->second->init_writer();
+          std::string output_path;
+          switch (mEncodeType) {
+            case EncodeType::RTSP:
+              output_path = "rtsp://localhost:" + mRtspPort + "/" +
+                            std::to_string(channel_id);
+              break;
+            case EncodeType::RTMP:
+              output_path = "rtmp://localhost:" + mRtmpPort + "/" +
+                            std::to_string(channel_id);
+              break;
+            case EncodeType::VIDEO:
+              output_path = std::to_string(channel_id) + ".avi";
+              break;
+            default:
+              IVS_ERROR("Encode type error, please input RTSP, RTMP or VIDEO");
+          }
+          if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
+            mChannelOutputPath[channel_id] = output_path;
+            encodeIt->second->set_output_path(output_path);
+            encodeIt->second->set_enc_params_width(
+                objectMetadata->mFrame->mWidth);
+            encodeIt->second->set_enc_params_height(
+                objectMetadata->mFrame->mHeight);
+            encodeIt->second->init_writer();
+          }
         }
         if (objectMetadata->mFrame->mSpDataOsd) {
           encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
