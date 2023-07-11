@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "common/error_code.h"
 
@@ -24,6 +25,7 @@ struct ChannelOperateRequest {
   std::string json;
   double fps;
   int sampleInterval;
+  std::vector<int> skip_element;
 };
 
 struct ChannelOperateResponse {

@@ -18,8 +18,6 @@ namespace sophon_stream {
 namespace element {
 namespace encode {
 
-
-
 Encode::Encode() {}
 
 Encode::~Encode() {}
@@ -152,7 +150,10 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
-  if (!(objectMetadata->mFrame->mEndOfStream)) {
+  if (!(objectMetadata->mFrame->mEndOfStream) &&
+      std::find(objectMetadata->mSkipElements.begin(),
+                objectMetadata->mSkipElements.end(),
+                getId()) == objectMetadata->mSkipElements.end()) {
     auto encodeIt = mEncoderMap.find(dataPipeId);
     if (mEncoderMap.end() != encodeIt) {
       int channel_id = objectMetadata->mFrame->mChannelId;

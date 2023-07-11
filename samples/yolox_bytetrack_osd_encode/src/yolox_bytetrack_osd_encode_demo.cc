@@ -31,6 +31,7 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED =
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED = "loop_num";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED = "fps";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED = "sample_interval";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED = "skip_element";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -69,6 +70,11 @@ demo_config parse_demo_json(std::string& json_path) {
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED);
     if (channel_it.end() != sample_interval_it)
       channel_json["sample_interval"] = sample_interval_it->get<int>();
+    
+    auto skip_element_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED);
+    if(skip_element_it != channel_it.end()) {
+      channel_json["skip_element"] = skip_element_it->get<std::vector<int>>();
+    }
 
     config.channel_configs.push_back(channel_json);
   }

@@ -115,6 +115,13 @@ common::ErrorCode Decode::parse_channel_task(
     }
     channelTask->request.channelId = channelIdIt->get<int>();
 
+    auto skipElementIt = configure.find(JSON_SKIP_ELEMENT);
+    if (configure.end() != skipElementIt && skipElementIt->is_array()) {
+      // 不填写skip_element，视为不跳过
+      channelTask->request.skip_element =
+          skipElementIt->get<std::vector<int>>();
+    }
+
     auto sourceTypeIdIt = configure.find(JSON_SOURCE_TYPE);
     if (configure.end() == sourceTypeIdIt || !sourceTypeIdIt->is_string()) {
       IVS_ERROR(
@@ -336,6 +343,8 @@ common::ErrorCode Decode::process(
     }
   }
   int channel_id = channelTask->request.channelId;
+  std::vector<int> skip_elements = channelTask->request.skip_element;
+  objectMetadata->mSkipElements = skip_elements;
   objectMetadata->mFrame->mChannelId = channel_id;
   objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternal[channel_id];
 

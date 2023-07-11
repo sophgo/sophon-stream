@@ -80,8 +80,8 @@ void draw_rec_result(bm_handle_t& handle,
   }
 
   std::string filename =
-      std::to_string(objectMetadata->mFrame->mChannelId) +
-      "-" + std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
+      std::to_string(objectMetadata->mFrame->mChannelId) + "-" +
+      std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
   bm_image_write_to_bmp(frame, filename.c_str());
   return;
 }
@@ -250,7 +250,10 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
   if (!data) return common::ErrorCode::SUCCESS;
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
-  if (!(objectMetadata->mFrame->mEndOfStream)) {
+  if (!(objectMetadata->mFrame->mEndOfStream) &&
+      std::find(objectMetadata->mSkipElements.begin(),
+                objectMetadata->mSkipElements.end(),
+                getId()) == objectMetadata->mSkipElements.end()) {
     draw(objectMetadata);
   }
 

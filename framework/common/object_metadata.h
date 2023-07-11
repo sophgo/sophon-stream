@@ -93,6 +93,11 @@ struct ObjectMetadata {
 
   bool mFilter;
 
+  /**
+   * @brief 跳过的element，由channelTask配置，可以实现不同channel经过不同的pipeline
+   */
+  std::vector<int> mSkipElements;
+
   std::shared_ptr<bmTensors> mInputBMtensors;
   std::shared_ptr<bmTensors> mOutputBMtensors;
 
