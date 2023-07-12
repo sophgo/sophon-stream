@@ -110,7 +110,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
             CONFIG_INTERNAL_PIX_FMT_FIELD, json);
         break;
       }
-      std::string enParams = "gop=32:gop_preset=3:framerate=25:bitrate=2000";
+      std::string enParams = "gop=32:gop_preset=3:framerate=30:bitrate=2000";
 
       int dev_id = getDeviceId();
       bm_dev_request(&m_handle, dev_id);
@@ -169,7 +169,6 @@ void send_wss(WSS* wss) { wss->send(); };
 
 common::ErrorCode Encode::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
-
   common::ObjectMetadatas objectMetadatas;
   std::vector<int> inputPorts = getInputPorts();
   int inputPort = inputPorts[0];
@@ -193,6 +192,11 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
+  if (objectMetadata->mFrame->mEndOfStream) {
+    auto encodeIt = mEncoderMap.find(dataPipeId);
+    encodeIt->second->isRunning = false;
+  }
+
   if (!(objectMetadata->mFrame->mEndOfStream) &&
       std::find(objectMetadata->mSkipElements.begin(),
                 objectMetadata->mSkipElements.end(),
@@ -206,6 +210,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
       processWS(dataPipeId, objectMetadata);
     } else {
     }
+    mFpsProfiler.add(1);
   } else {
     // WS发送停止标识
     if (mEncodeType == EncodeType::WS) {
@@ -213,7 +218,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
     }
   }
 
-  mFpsProfiler.add(1);
+  // mFpsProfiler.add(1);
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outDataPipeId =
       getSinkElementFlag()
@@ -263,9 +268,13 @@ void Encode::processVideoStream(
       }
     }
     if (objectMetadata->mFrame->mSpDataOsd) {
-      encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
+      encodeIt->second->isRunning = true;
+      encodeIt->second->pushQueue(objectMetadata->mFrame->mSpDataOsd);
+      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
     } else {
-      encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData));
+      encodeIt->second->isRunning = true;
+      encodeIt->second->pushQueue(objectMetadata->mFrame->mSpData);
+      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData));
     }
   }
 }

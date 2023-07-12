@@ -386,6 +386,7 @@ void VideoDecFFM::mFrameCount(const char* video_file, int& mFrameCount) {
 }
 
 int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
+  gettimeofday(&last_time, NULL);
   frame = av_frame_alloc();
   frame_id = 0;
   if (strstr(input, "rtsp://")) {

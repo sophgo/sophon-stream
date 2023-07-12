@@ -24,6 +24,23 @@ typedef struct {
   uint8_t* buf2;
 } transcode_t;
 
+bool Encoder::pushQueue(std::shared_ptr<bm_image> p) {
+  std::lock_guard<std::mutex> lock(mQueueMtx);
+  encodeQueue.push(p);
+  return true;
+}
+
+std::shared_ptr<bm_image> Encoder::popQueue() {
+  std::lock_guard<std::mutex> lock(mQueueMtx);
+  std::shared_ptr<bm_image> p = nullptr;
+  // printf("encode queue popping! queue size is %d\n", encodeQueue.size());
+  if (!encodeQueue.empty()) {
+    p = encodeQueue.front();
+    encodeQueue.pop();
+  }
+  return p;
+}
+
 void bmBufferDeviceMemFree(void* opaque, uint8_t* data) {
   if (opaque == NULL) {
   }
@@ -102,21 +119,45 @@ Encoder::Encoder() : _impl(new Encoder_CC()) {}
 
 Encoder::Encoder(bm_handle_t& handle, const std::string& enc_fmt,
                  const std::string& pix_fmt, const std::string& enc_params)
-    : _impl(new Encoder_CC(handle, enc_fmt, pix_fmt, enc_params)) {}
+    : _impl(new Encoder_CC(handle, enc_fmt, pix_fmt, enc_params)) {
+  // video_write_(func_video_write_);
+  mFpsProfiler.config("encoder", 100);
+  video_write_ = std::thread(&Encoder::func_video_write_, this);
+}
 
-Encoder::~Encoder() { delete _impl; }
+Encoder::~Encoder() {
+  delete _impl;
+  video_write_.join();
+}
 
 bool Encoder::is_opened() { return _impl->is_opened(); }
 
 int Encoder::video_write(bm_image& image) { return _impl->video_write(image); }
+
+void Encoder::func_video_write_() {
+  while (isRunning) {
+    auto p = popQueue();
+    if (p == nullptr) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
+      continue;
+    }
+    mFpsProfiler.add(1);
+    _impl->video_write(*p);
+  }
+}
+
 void Encoder::set_output_path(const std::string& output_path) {
   return _impl->set_output_path(output_path);
 }
 
 void Encoder::release() { return _impl->release(); }
 void Encoder::init_writer() { return _impl->init_writer(); }
-void Encoder::set_enc_params_width(int width) { return _impl->set_enc_params_width(width); }
-void Encoder::set_enc_params_height(int height) { return _impl->set_enc_params_height(height); }
+void Encoder::set_enc_params_width(int width) {
+  return _impl->set_enc_params_width(width);
+}
+void Encoder::set_enc_params_height(int height) {
+  return _impl->set_enc_params_height(height);
+}
 
 int Encoder::Encoder_CC::map_bmformat_to_avformat(int bmformat) {
   int format = 0;
@@ -333,46 +374,63 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
 
     bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
     bmcv_rect_t crop_rect = {0, 0, image->width, image->height};
-    int ret = bmcv_image_vpp_convert(handle, 1, *image, yuv_image, &crop_rect);
+    timeval tv1, tv2;
+    // gettimeofday(&tv1, NULL);
+    // int ret = bmcv_image_vpp_convert(handle, 1, *image, yuv_image,
+    // &crop_rect);
+    int ret = 1;
+    // gettimeofday(&tv2, NULL);
+    // int time_interval1 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
+    // (tv2.tv_usec-tv1.tv_usec); printf("vpp_ret: %d, vpp_convert cost:
+    // %lld\n", ret, time_interval1);
     if (BM_SUCCESS != ret) {
+      gettimeofday(&tv1, NULL);
       ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
+      gettimeofday(&tv2, NULL);
+      int time_interval2 =
+          (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
+      printf("storage_convert_ret: %d, vpp_convert cost: %lld\n", ret,
+             time_interval2);
       if (BM_SUCCESS != ret) {
         return ret;
       }
     }
   }
 
-  if (is_jpeg_) {
-    plane = 3;
-    if (image->image_format == FORMAT_NV12) {
-      int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride / 2};
-      bm_image_create(handle, image->height, image->width, FORMAT_YUV420P,
-                      DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
-      int ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
-      if (BM_SUCCESS != ret) {
-        return ret;
-      }
-    }
+  // if (is_jpeg_) {
+  //   plane = 3;
+  //   if (image->image_format == FORMAT_NV12) {
+  //     int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride /
+  //     2}; bm_image_create(handle, image->height, image->width,
+  //     FORMAT_YUV420P,
+  //                     DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
+  //     int ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
+  //     if (BM_SUCCESS != ret) {
+  //       return ret;
+  //     }
+  //   }
 
-    else if (image->image_format == FORMAT_RGB_PLANAR ||
-             image->image_format == FORMAT_BGR_PLANAR ||
-             image->image_format == FORMAT_RGB_PACKED ||
-             image->image_format == FORMAT_BGR_PACKED) {
-      int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride / 2};
-      bm_image_create(handle, image->height, image->width, FORMAT_YUV420P,
-                      DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
-      int ret = bmcv_image_vpp_csc_matrix_convert(handle, 1, *image, yuv_image,
-                                                  CSC_RGB2YPbPr_BT601);
-      if (BM_SUCCESS != ret) {
-        ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
-        if (BM_SUCCESS != ret) {
-          return ret;
-        }
-      }
-    } else {
-      yuv_image = image;
-    }
-  }
+  //   else if (image->image_format == FORMAT_RGB_PLANAR ||
+  //            image->image_format == FORMAT_BGR_PLANAR ||
+  //            image->image_format == FORMAT_RGB_PACKED ||
+  //            image->image_format == FORMAT_BGR_PACKED) {
+  //     int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride /
+  //     2}; bm_image_create(handle, image->height, image->width,
+  //     FORMAT_YUV420P,
+  //                     DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
+  //     int ret = bmcv_image_vpp_csc_matrix_convert(handle, 1, *image,
+  //     yuv_image,
+  //                                                 CSC_RGB2YPbPr_BT601);
+  //     if (BM_SUCCESS != ret) {
+  //       ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
+  //       if (BM_SUCCESS != ret) {
+  //         return ret;
+  //       }
+  //     }
+  //   } else {
+  //     yuv_image = image;
+  //   }
+  // }
 
   transcode_t* ImgOut = NULL;
   ImgOut = (transcode_t*)malloc(sizeof(transcode_t));
@@ -452,13 +510,23 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     int got_output = 0;
     int64_t start_time = 0;
     frame_ = av_frame_alloc();
+    // timeval tv1, tv2;
+    // gettimeofday(&tv1, NULL);
     ret = bm_image_to_avframe(handle_, &image, frame_);
+    // gettimeofday(&tv2, NULL);
+    // int time_interval1 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
+    // (tv2.tv_usec-tv1.tv_usec); printf("1 cost: %lld\n", time_interval1);
     if (ret < 0) return -1;
     AVPacket test_enc_pkt;
     test_enc_pkt.data = NULL;
     test_enc_pkt.size = 0;
     av_init_packet(&test_enc_pkt);
+
+    // gettimeofday(&tv1, NULL);
     ret = avcodec_encode_video2(enc_ctx_, &test_enc_pkt, frame_, &got_output);
+    // gettimeofday(&tv2, NULL);
+    // int time_interval2 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
+    // (tv2.tv_usec-tv1.tv_usec); printf("2 cost: %lld\n", time_interval2);
 
     if (ret < 0) return ret;
     if (got_output == 0) {
@@ -466,7 +534,12 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     }
     av_packet_rescale_ts(&test_enc_pkt, enc_ctx_->time_base,
                          out_stream_->time_base);
+    // gettimeofday(&tv1, NULL);
     ret = av_interleaved_write_frame(enc_format_ctx_, &test_enc_pkt);
+    // gettimeofday(&tv2, NULL);
+    // int time_interval3 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
+    // (tv2.tv_usec-tv1.tv_usec); printf("3 cost: %lld\n", time_interval3);
+
     av_frame_unref(frame_);
     av_frame_free(&frame_);
     if (is_rtsp_) {
@@ -475,6 +548,7 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
                             std::chrono::system_clock::now().time_since_epoch())
                             .count();
       int64_t diff = push_ok - push_start_time;
+      // printf("encode diff time is %lld\n", diff);
       if (diff < frame_interval && diff > 0) av_usleep(frame_interval - diff);
     }
     return ret;

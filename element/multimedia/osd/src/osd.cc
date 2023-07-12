@@ -254,6 +254,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
                 objectMetadata->mSkipElements.end(),
                 getId()) == objectMetadata->mSkipElements.end()) {
     draw(objectMetadata);
+    mFpsProfiler.add(1);
   }
 
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
@@ -268,7 +269,6 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
         "{2:p}",
         getId(), outputPort, static_cast<void*>(objectMetadata.get()));
   }
-  mFpsProfiler.add(1);
 
   return common::ErrorCode::SUCCESS;
 }

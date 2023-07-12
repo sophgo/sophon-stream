@@ -13,11 +13,16 @@
 #include <unistd.h>
 
 #include <csignal>
+#include <mutex>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 #include <regex>
+#include <thread>
+#include <queue>
+
+#include "common/profiler.h"
 
 #include "bmcv_api.h"
 #include "bmcv_api_ext.h"
@@ -45,12 +50,28 @@ class Encoder {
   void set_enc_params_height(int height);
   void init_writer();
   bool is_opened();
+
+  std::thread video_write_;
+
+  void func_video_write_();
+
+  std::shared_ptr<bm_image> popQueue();
+
   int video_write(bm_image& image);
   void release();
 
+  bool pushQueue(std::shared_ptr<bm_image> p);
+
+  bool isRunning = true;
+
  private:
+  std::queue<std::shared_ptr<bm_image>> encodeQueue;
+  mutable std::mutex mQueueMtx;
+
   class Encoder_CC;
   class Encoder_CC* const _impl;
+
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 }  // namespace encode
 }  // namespace element

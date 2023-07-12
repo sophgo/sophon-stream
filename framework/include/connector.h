@@ -28,9 +28,11 @@ class Connector : public ::sophon_stream::common::NoCopyable {
    */
   int getCapacity() const;
 
+  std::shared_ptr<DataPipe> getDataPipe(int id) const;
+
+
  private:
   std::vector<std::shared_ptr<DataPipe>> mDataPipes;
-  std::shared_ptr<DataPipe> getDataPipe(int id) const;
   int mCapacity = 0;
 };
 

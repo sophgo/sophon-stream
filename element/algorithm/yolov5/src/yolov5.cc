@@ -162,14 +162,18 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
 
     // 7. roi
     auto roi_it = configure.find(CONFIG_INTERNAL_ROI_FILED);
-    if(roi_it == configure.end()) {
+    if (roi_it == configure.end()) {
       mContext->roi_predefined = false;
     } else {
       mContext->roi_predefined = true;
-      mContext->roi.start_x = roi_it->find(CONFIG_INTERNAL_LEFT_FILED)->get<int>();
-      mContext->roi.start_y = roi_it->find(CONFIG_INTERNAL_TOP_FILED)->get<int>();
-      mContext->roi.crop_w = roi_it->find(CONFIG_INTERNAL_WIDTH_FILED)->get<int>();
-      mContext->roi.crop_h = roi_it->find(CONFIG_INTERNAL_HEIGHT_FILED)->get<int>();
+      mContext->roi.start_x =
+          roi_it->find(CONFIG_INTERNAL_LEFT_FILED)->get<int>();
+      mContext->roi.start_y =
+          roi_it->find(CONFIG_INTERNAL_TOP_FILED)->get<int>();
+      mContext->roi.crop_w =
+          roi_it->find(CONFIG_INTERNAL_WIDTH_FILED)->get<int>();
+      mContext->roi.crop_h =
+          roi_it->find(CONFIG_INTERNAL_HEIGHT_FILED)->get<int>();
     }
   } while (false);
   return common::ErrorCode::SUCCESS;

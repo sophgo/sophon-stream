@@ -252,6 +252,10 @@ int Element::getOutputConnectorCapacity(int outputPort) {
   return mOutputConnectorMap[outputPort].lock()->getCapacity();
 }
 
+int Element::getInputConnectorCapacity(int inputPort) {
+  return mInputConnectorMap[inputPort]->getCapacity();
+}
+
 void Element::addInputPort(int port) { mInputPorts.push_back(port); }
 void Element::addOutputPort(int port) { mOutputPorts.push_back(port); }
 

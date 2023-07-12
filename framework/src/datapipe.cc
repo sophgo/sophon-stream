@@ -39,5 +39,11 @@ std::shared_ptr<void> DataPipe::popData()
   return data;
 }
 
+int DataPipe::getSize() {
+  std::lock_guard<std::mutex> lock(mDataQueueMutex);
+  int sz = mDataQueue.size();
+  return sz;
+}
+
 }  // namespace framework
 }  // namespace sophon_stream

@@ -35,12 +35,12 @@ class Element : public ::sophon_stream::common::NoCopyable {
  public:
   /**
    * @brief sink element的数据处理函数
-  */
+   */
   using SinkHandler = std::function<void(std::shared_ptr<void>)>;
 
   /**
    * @brief 线程工作状态
-  */
+   */
   enum class ThreadStatus {
     STOP,
     RUN,
@@ -48,12 +48,13 @@ class Element : public ::sophon_stream::common::NoCopyable {
   };
 
   /**
-   * @brief 连接两个element，初始化connector并填入srcElement的mOutputConnectorMap
+   * @brief
+   * 连接两个element，初始化connector并填入srcElement的mOutputConnectorMap
    * @param[in,out] srcElement : Source element
    * @param[in] srcElementPort : Output port of source element
    * @param[in,out] dstElement : Destination element
    * @param[in] dstElementPort : Input port of destination element
-  */
+   */
   static void connect(Element& srcElement, int srcElementPort,
                       Element& dstElement, int dstElementPort);
 
@@ -65,7 +66,7 @@ class Element : public ::sophon_stream::common::NoCopyable {
    * @brief 从配置文件初始化element的通用属性
    * @param[in] json : json格式的配置文件
    * @return 如果解析失败，会返回error，否则返回common::ErrorCode::SUCCESS
-  */
+   */
   common::ErrorCode init(const std::string& json);
 
   void uninit();
@@ -77,17 +78,17 @@ class Element : public ::sophon_stream::common::NoCopyable {
   common::ErrorCode pause();
 
   common::ErrorCode resume();
-  
+
   /**
    * @brief 从指定inputPort的指定dataPipe中弹出数据，用于数据处理阶段
    * @brief 若队列为空，返回nullptr
-  */
+   */
   std::shared_ptr<void> popInputData(int inputPort, int dataPipeId);
 
   /**
    * @brief 向指定inputPort的指定dataPipe推入数据，用于启动解码任务
    * @param[in] data : sophon_stream::element::decode::ChannelTask结构体指针
-  */
+   */
   common::ErrorCode pushInputData(int inputPort, int dataPipeId,
                                   std::shared_ptr<void> data);
 
@@ -96,7 +97,7 @@ class Element : public ::sophon_stream::common::NoCopyable {
   /**
    * @brief 向指定outputPort的指定dataPipe推入数据，将数据传递给下一个element
    * @brief 如果当前element是sink element，那么改为使用sinkHandler处理数据
-  */
+   */
   common::ErrorCode pushOutputData(int outputPort, int dataPipeId,
                                    std::shared_ptr<void> data);
 
@@ -114,6 +115,13 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   bool getSinkElementFlag() const { return mSinkElementFlag; }
 
+  std::weak_ptr<framework::Connector> getOutputConnector(int outputPort) {
+    return mOutputConnectorMap[outputPort];
+  };
+  std::weak_ptr<framework::Connector> getInputConnector(int inputPort) {
+    return mInputConnectorMap[inputPort];
+  };
+
   static constexpr const char* JSON_ID_FIELD = "id";
   static constexpr const char* JSON_SIDE_FIELD = "side";
   static constexpr const char* JSON_DEVICE_ID_FIELD = "device_id";
@@ -122,12 +130,11 @@ class Element : public ::sophon_stream::common::NoCopyable {
   static constexpr const char* JSON_IS_SINK_FILED = "is_sink";
 
  protected:
-  
   /**
    * @brief 从配置文件初始化某个派生element的特有属性
    * @param[in] json : json格式的配置文件
    * @return 如果解析失败，会返回error，否则返回common::ErrorCode::SUCCESS
-  */
+   */
   virtual common::ErrorCode initInternal(const std::string& json) = 0;
   virtual void uninitInternal() = 0;
 
@@ -136,13 +143,14 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   /**
    * @brief 线程函数，循环调用doWork()，分配CPU时间片资源
-   * @param[in] dataPipeId : 每个线程都与一个datapipe绑定，只处理来自该datapipe的数据
-  */
+   * @param[in] dataPipeId :
+   * 每个线程都与一个datapipe绑定，只处理来自该datapipe的数据
+   */
   void run(int dataPipeId);
 
   /**
    * @brief 派生element中实现自身功能
-  */
+   */
   virtual common::ErrorCode doWork(int dataPipeId) = 0;
 
   std::vector<int> getInputPorts();
@@ -150,8 +158,10 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   /**
    * @brief 获取指定outputPort对应的Connector中datapipe的数量
-  */
+   */
   int getOutputConnectorCapacity(int outputPort);
+
+  int getInputConnectorCapacity(int inputPort);
 
  private:
   int mId;
@@ -169,17 +179,17 @@ class Element : public ::sophon_stream::common::NoCopyable {
   /**
    * @brief inputPort到inputConnector的映射
    * @brief inputConnector的生命周期由当前element管理
-  */
+   */
   std::map<int, std::shared_ptr<framework::Connector>> mInputConnectorMap;
   /**
    * @brief outputPort到outputConnector的映射
    * @brief outputConnector的生命周期由下一个element管理
-  */
+   */
   std::map<int, std::weak_ptr<framework::Connector>> mOutputConnectorMap;
 
   /**
    * @brief outputPort到sinkHandler的映射
-  */
+   */
   std::map<int, SinkHandler> mSinkHandlerMap;
 
   std::vector<int> mInputPorts;

@@ -357,6 +357,7 @@ common::ErrorCode Decode::resumeTask(
 common::ErrorCode Decode::process(
     const std::shared_ptr<ChannelTask>& channelTask,
     const std::shared_ptr<ChannelInfo>& channelInfo) {
+
   std::shared_ptr<common::ObjectMetadata> objectMetadata;
   common::ErrorCode ret = channelInfo->mSpDecoder->process(objectMetadata);
   mFpsProfiler.add(1);

@@ -5,11 +5,11 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 
+#include "channel.h"
 #include "common/clocker.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
-#include "channel.h"
 #include "engine.h"
 #include "init_engine.h"
 
@@ -30,8 +30,10 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SOURCE_TYPE_FILED =
     "source_type";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_LOOP_NUM_FILED = "loop_num";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED = "fps";
-constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED = "sample_interval";
-constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED = "skip_element";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED =
+    "sample_interval";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED =
+    "skip_element";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -61,18 +63,17 @@ demo_config parse_demo_json(std::string& json_path) {
     if (channel_it.end() != loop_num_it)
       channel_json["loop_num"] = loop_num_it->get<int>();
 
-    auto fps_it =
-        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED);
-    if (channel_it.end() != fps_it)
-      channel_json["fps"] = fps_it->get<double>();
+    auto fps_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED);
+    if (channel_it.end() != fps_it) channel_json["fps"] = fps_it->get<double>();
 
     auto sample_interval_it =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED);
     if (channel_it.end() != sample_interval_it)
       channel_json["sample_interval"] = sample_interval_it->get<int>();
-    
-    auto skip_element_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED);
-    if(skip_element_it != channel_it.end()) {
+
+    auto skip_element_it =
+        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED);
+    if (skip_element_it != channel_it.end()) {
       channel_json["skip_element"] = skip_element_it->get<std::vector<int>>();
     }
 
@@ -117,7 +118,7 @@ int main() {
     auto objectMetadata =
         std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
     if (objectMetadata == nullptr) return;
-    frameCount++;
+    if (!objectMetadata->mFilter) frameCount++;
     if (objectMetadata->mFrame->mEndOfStream) {
       printf("meet a eof\n");
       finishedChannelCount++;
