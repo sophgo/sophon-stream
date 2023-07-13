@@ -76,6 +76,7 @@ chmod -R +x scripts/
 ```bash
 videos/
 ├── carvana_video.mp4   # 测试视频
+├── elevator-1080p-25fps-4000kbps.h264
 ├── mot17_01_frcnn.mp4
 ├── mot17_03_frcnn.mp4
 ├── mot17_06_frcnn.mp4
@@ -122,7 +123,7 @@ yolov5 demo中各部分参数位于 [config](./config/) 目录，结构如下所
 └── yolov5_pre.json             # yolov5 前处理配置
 ```
 
-其中，[yolov5_demo.json](./config/yolov5_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
+其中，[yolov5_demo.json](./config/yolov5_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，sample_interval设置跳帧数，loop_num设置循环播放次数，channel中包含码流url等信息。
 
 配置文件中不指定`channel_id`属性的情况，会在demo中对每一路数据的`channel_id`从0开始默认赋值。
 
@@ -131,7 +132,10 @@ yolov5 demo中各部分参数位于 [config](./config/) 目录，结构如下所
   "num_channels_per_graph": 3,
   "channel": {
     "url": "../data/videos/test_car_person_1080P.avi",
-    "source_type": "VIDEO"
+    "source_type": "VIDEO",
+    "sample_interval": 1,
+    "loop_num": 1
+
   },
   "class_names": "../data/coco.names",
   "download_image": false,
