@@ -23,7 +23,20 @@ fi
 mkdir -p $result_dir
 
 cp -r framework $result_dir
-cp -r element $result_dir
+
+mkdir $result_dir/element
+cp -r element/multimedia $result_dir/element
+
+mkdir $result_dir/element/algorithm
+cp -r element/algorithm/bytetrack $result_dir/element/algorithm
+cp -r element/algorithm/resnet $result_dir/element/algorithm
+cp -r element/algorithm/yolov5 $result_dir/element/algorithm
+cp -r element/algorithm/yolox $result_dir/element/algorithm
+
+mkdir $result_dir/element/tools
+cp -r element/tools/converger $result_dir/element/tools
+cp -r element/tools/distributor $result_dir/element/tools
+
 cp -r 3rdparty $result_dir
 cp -r samples $result_dir
 cp -r CMakeLists.txt $result_dir

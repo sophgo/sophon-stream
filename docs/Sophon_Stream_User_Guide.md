@@ -494,8 +494,8 @@ osd插件的配置文件包括:
 ```json
 {
   "configure": {
-    "osd_type": "track",
-    "class_names": "../data/coco.names"
+    "osd_type": "TRACK",
+    "class_names_file": "../data/coco.names"
   },
   "shared_object": "../../../build/lib/libosd.so",
   "id": 0,
