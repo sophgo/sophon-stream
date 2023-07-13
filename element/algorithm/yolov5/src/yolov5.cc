@@ -262,8 +262,6 @@ void Yolov5::process(common::ObjectMetadatas& objectMetadatas) {
   if (use_post) mPostProcess->postProcess(mContext, objectMetadatas);
 }
 
-void Yolov5::uninitInternal() {}
-
 common::ErrorCode Yolov5::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 

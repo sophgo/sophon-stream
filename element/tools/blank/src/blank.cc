@@ -21,7 +21,6 @@ Blank::~Blank() {}
 common::ErrorCode Blank::initInternal(const std::string& json) {
   return common::ErrorCode::SUCCESS;
 }
-void Blank::uninitInternal() {}
 
 common::ErrorCode Blank::doWork(int dataPipeId) {
   std::vector<int> inputPorts = getInputPorts();
@@ -47,7 +46,8 @@ common::ErrorCode Blank::doWork(int dataPipeId) {
   //       std::to_string(objectMetadata->mFrame->mChannelId) + "-" +
   //       std::to_string(objectMetadata->mFrame->mFrameId) + "-" +
   //       std::to_string(subId) + ".bmp";
-  //   bm_image_write_to_bmp(*objectMetadata->mFrame->mSpData, filename.c_str());
+  //   bm_image_write_to_bmp(*objectMetadata->mFrame->mSpData,
+  //   filename.c_str());
   //   ++ subId;
   // }
 

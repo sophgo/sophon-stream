@@ -222,8 +222,6 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
   return errorCode;
 }
 
-void Osd::uninitInternal() {}
-
 common::ErrorCode Osd::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 

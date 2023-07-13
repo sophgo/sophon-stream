@@ -25,7 +25,13 @@ namespace decode {
 
 Decode::Decode() {}
 
-Decode::~Decode() {}
+Decode::~Decode() {
+  std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
+  for (auto& channelInfo : mThreadsPool) {
+    channelInfo.second->mThreadWrapper->stop();
+  }
+  mThreadsPool.clear();
+}
 
 common::ErrorCode Decode::initInternal(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -41,14 +47,6 @@ common::ErrorCode Decode::initInternal(const std::string& json) {
   } while (false);
 
   return errorCode;
-}
-
-void Decode::uninitInternal() {
-  std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
-  for (auto& channelInfo : mThreadsPool) {
-    channelInfo.second->mThreadWrapper->stop();
-  }
-  mThreadsPool.clear();
 }
 
 void Decode::onStart() { IVS_INFO("Decode start..."); }
@@ -357,7 +355,6 @@ common::ErrorCode Decode::resumeTask(
 common::ErrorCode Decode::process(
     const std::shared_ptr<ChannelTask>& channelTask,
     const std::shared_ptr<ChannelInfo>& channelInfo) {
-
   std::shared_ptr<common::ObjectMetadata> objectMetadata;
   common::ErrorCode ret = channelInfo->mSpDecoder->process(objectMetadata);
   mFpsProfiler.add(1);

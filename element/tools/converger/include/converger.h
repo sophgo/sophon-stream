@@ -26,7 +26,6 @@ class Converger : public ::sophon_stream::framework::Element {
   ~Converger() override;
 
   common::ErrorCode initInternal(const std::string& json) override;
-  void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
 

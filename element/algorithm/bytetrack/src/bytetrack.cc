@@ -115,10 +115,6 @@ void Bytetrack::process(
     }
   }
 }
-/**
- * 资源释放函数
- */
-void Bytetrack::uninitInternal() {}
 
 /**
   运行

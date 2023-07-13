@@ -28,7 +28,6 @@ class Encode : public ::sophon_stream::framework::Element {
   ~Encode() override;
 
   common::ErrorCode initInternal(const std::string& json) override;
-  void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
 
@@ -39,6 +38,7 @@ class Encode : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_ENC_FMT_FIELD = "enc_fmt";
   static constexpr const char* CONFIG_INTERNAL_PIX_FMT_FIELD = "pix_fmt";
   static constexpr const char* CONFIG_INTERNAL_WSS_PORT_FIELD = "wss_port";
+  static constexpr const char* CONFIG_INTERNAL_FPS_FIELD = "fps";
 
  private:
   std::map<int, std::shared_ptr<Encoder>> mEncoderMap;
@@ -50,6 +50,7 @@ class Encode : public ::sophon_stream::framework::Element {
   std::string mRtmpPort;
   std::string encFmt;
   std::string pixFmt;
+  double mFps;
 
   std::map<int, std::shared_ptr<WSS>> mWSSMap;
   std::vector<std::thread> mWSSThreads;
