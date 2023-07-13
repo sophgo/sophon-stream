@@ -111,9 +111,9 @@ common::ErrorCode ResNetClassify::pre_process(
       stride2[0] = FFALIGN(stride1[0], 64);
       stride2[1] = FFALIGN(stride1[1], 64);
       stride2[2] = FFALIGN(stride1[2], 64);
-      bm_image_create(context->bmContext->handle(), image1.height,
-                      image1.width, image1.image_format, image1.data_type,
-                      &image_aligned, stride2);
+      bm_image_create(context->bmContext->handle(), image1.height, image1.width,
+                      image1.image_format, image1.data_type, &image_aligned,
+                      stride2);
 
       bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
       bmcv_copy_to_atrr_t copyToAttr;
@@ -128,9 +128,13 @@ common::ErrorCode ResNetClassify::pre_process(
     }
     // #ifdef USE_ASPECT_RATIO
     bool isAlignWidth = false;
-    float ratio =
-        get_aspect_scaled_ratio(image0.width, image0.height, context->net_w,
-                                context->net_h, &isAlignWidth);
+    float ratio = context->roi_predefined
+                      ? get_aspect_scaled_ratio(
+                            context->roi.crop_w, context->roi.crop_h,
+                            context->net_w, context->net_h, &isAlignWidth)
+                      : get_aspect_scaled_ratio(image0.width, image0.height,
+                                                context->net_w, context->net_h,
+                                                &isAlignWidth);
     bmcv_padding_atrr_t padding_attr;
     memset(&padding_attr, 0, sizeof(padding_attr));
     padding_attr.dst_crop_sty = 0;
@@ -140,7 +144,9 @@ common::ErrorCode ResNetClassify::pre_process(
     padding_attr.padding_r = 114;
     padding_attr.if_memset = 1;
     if (isAlignWidth) {
-      padding_attr.dst_crop_h = image0.height * ratio;
+      padding_attr.dst_crop_h =
+          (context->roi_predefined ? context->roi.crop_h : image0.height) *
+          ratio;
       padding_attr.dst_crop_w = context->net_w;
 
       int ty1 = (int)((context->net_h - padding_attr.dst_crop_h) / 2);
@@ -148,7 +154,9 @@ common::ErrorCode ResNetClassify::pre_process(
       padding_attr.dst_crop_stx = 0;
     } else {
       padding_attr.dst_crop_h = context->net_h;
-      padding_attr.dst_crop_w = image0.width * ratio;
+      padding_attr.dst_crop_w =
+          (context->roi_predefined ? context->roi.crop_w : image0.width) *
+          ratio;
 
       int tx1 = (int)((context->net_w - padding_attr.dst_crop_w) / 2);
       padding_attr.dst_crop_sty = 0;
