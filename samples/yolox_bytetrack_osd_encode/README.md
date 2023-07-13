@@ -385,7 +385,7 @@ soc环境运行时如果报错
 
 需要设置环境变量
 ```bash
-export LD_LIBRARY_PATH=path-to/framework/build/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
 ```
 
 ## 7. 性能测试
