@@ -36,15 +36,26 @@ class Engine : public ::sophon_stream::common::NoCopyable {
 
   common::ErrorCode resume(int graphId);
 
+  /**
+   * @brief 从配置文件初始化一个有向无环图，并将线程状态设置为RUN
+   */
   common::ErrorCode addGraph(const std::string& json);
 
   void removeGraph(int graphId);
 
   bool graphExist(int graphId);
 
+  /**
+   * @brief 向指定graph的指定element推入数据，用于向decode
+   * element发送启动任务的信号
+   */
   common::ErrorCode pushSourceData(int graphId, int elementId, int inputPort,
-                                  std::shared_ptr<void> data);
-
+                                   std::shared_ptr<void> data);
+  /**
+   * @brief
+   * 为指定graph的指定element设置sinkHandler，sinkHandler当且仅当指定element是sink
+   * element时才生效
+   */
   void setSinkHandler(int graphId, int elementId, int outputPort,
                       SinkHandler sinkHandler);
 
@@ -61,8 +72,7 @@ class Engine : public ::sophon_stream::common::NoCopyable {
 
   ~Engine();
 
-  std::map<int /* graphId */, std::shared_ptr<framework::Graph> >
-      mGraphMap;
+  std::map<int /* graphId */, std::shared_ptr<framework::Graph> > mGraphMap;
   std::mutex mGraphMapLock;
 
   std::vector<int> mGraphIds;

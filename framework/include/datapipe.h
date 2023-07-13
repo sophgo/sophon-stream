@@ -45,7 +45,10 @@ class DataPipe : public ::sophon_stream::common::NoCopyable {
    * 成功返回common::ErrorCode::SUCCESS，失败返回common::ErrorCode::DATA_PIPE_FULL
    */
   common::ErrorCode pushData(std::shared_ptr<void> data);
-
+  /**
+   * @brief 获取当前队列中元素的数量
+   * @return mDataQueue中元素数量
+   */
   int getSize();
 
  private:

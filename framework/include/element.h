@@ -160,7 +160,9 @@ class Element : public ::sophon_stream::common::NoCopyable {
    * @brief 获取指定outputPort对应的Connector中datapipe的数量
    */
   int getOutputConnectorCapacity(int outputPort);
-
+  /**
+   * @brief 获取指定inputPort对应的Connector中datapipe的数量
+   */
   int getInputConnectorCapacity(int inputPort);
 
  private:

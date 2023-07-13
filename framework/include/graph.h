@@ -33,6 +33,9 @@ class Graph : public ::sophon_stream::common::NoCopyable {
 
   ~Graph();
 
+  /**
+   * @brief 从配置文件初始化所有element和element之间的连接状态
+   */
   common::ErrorCode init(const std::string& json);
 
   void uninit();
@@ -45,9 +48,18 @@ class Graph : public ::sophon_stream::common::NoCopyable {
 
   common::ErrorCode resume();
 
+  /**
+   * @brief 向指定element推入数据，用于向decode
+   * element发送启动任务的信号
+   */
   common::ErrorCode pushSourceData(int elementId, int inputPort,
-                                  std::shared_ptr<void> data);
+                                   std::shared_ptr<void> data);
 
+  /**
+   * @brief
+   * 为指定element设置sinkHandler，sinkHandler当且仅当指定element是sink
+   * element时才生效
+   */
   void setSinkHandler(int elementId, int outputPort, SinkHandler sinkHandler);
 
   std::pair<std::string, int> getSideAndDeviceId(int elementId);
