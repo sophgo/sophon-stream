@@ -41,7 +41,7 @@ class Encoder {
  public:
   Encoder();
   Encoder(bm_handle_t& handle, const std::string& enc_fmt,
-          const std::string& pix_fmt, const std::string& enc_params);
+          const std::string& pix_fmt, const std::map<std::string, int>& enc_params);
 
   ~Encoder();
 

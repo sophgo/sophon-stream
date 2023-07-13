@@ -34,7 +34,6 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   ~Yolov5() override;
 
   common::ErrorCode initInternal(const std::string& json) override;
-  void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
 

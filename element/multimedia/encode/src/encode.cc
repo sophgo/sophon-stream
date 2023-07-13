@@ -20,7 +20,18 @@ namespace encode {
 
 Encode::Encode() {}
 
-Encode::~Encode() {}
+Encode::~Encode() {
+  if (mEncodeType != EncodeType::WS) {
+    for (auto it = mEncoderMap.begin(); it != mEncoderMap.end(); ++it) {
+      IVS_CRITICAL("release encoder");
+      it->second->release();
+    }
+  } else {
+    for (auto it = mWSSMap.begin(); it != mWSSMap.end(); ++it)
+      it->second->stop();
+    for (auto& thread : mWSSThreads) thread.join();
+  }
+}
 
 common::ErrorCode Encode::initInternal(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -50,6 +61,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
           CONFIG_INTERNAL_ENCODE_TYPE_FIELD, json);
       break;
     }
+
     if (mEncodeType == EncodeType::RTSP) {
       auto rtspPortIt = configure.find(CONFIG_INTERNAL_RTSP_PORT_FIELD);
       if (configure.end() != rtspPortIt) {
@@ -110,7 +122,21 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
             CONFIG_INTERNAL_PIX_FMT_FIELD, json);
         break;
       }
-      std::string enParams = "gop=32:gop_preset=3:framerate=30:bitrate=2000";
+
+      mFps = 25;
+      auto fpsIt = configure.find(CONFIG_INTERNAL_FPS_FIELD);
+      if (configure.end() != fpsIt) {
+        mFps = fpsIt->get<double>();
+        IVS_DEBUG("mFps is {0}", mFps);
+      } else {
+        IVS_ERROR(
+            "Can not find {0} in encode json configure, "
+            "json:{1}, set default 25 fps",
+            CONFIG_INTERNAL_FPS_FIELD, json);
+      }
+      std::map<std::string, int> mEncodeParams;
+
+      mEncodeParams["framerate"] = mFps;
 
       int dev_id = getDeviceId();
       bm_dev_request(&m_handle, dev_id);
@@ -118,7 +144,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       int threadNumber = getThreadNumber();
       for (int i = 0; i < threadNumber; ++i) {
         mEncoderMap[i] =
-            std::make_shared<Encoder>(m_handle, encFmt, pixFmt, enParams);
+            std::make_shared<Encoder>(m_handle, encFmt, pixFmt, mEncodeParams);
       }
     } else if (mEncodeType == EncodeType::IMG_DIR) {
       const char* dir_path = "./results";
@@ -150,17 +176,6 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
     mFpsProfiler.config("fps_encode", 100);
   } while (false);
   return errorCode;
-}
-
-void Encode::uninitInternal() {
-  if (mEncodeType != EncodeType::WS) {
-    for (auto it = mEncoderMap.begin(); it != mEncoderMap.end(); ++it)
-      it->second->release();
-  } else {
-    for (auto it = mWSSMap.begin(); it != mWSSMap.end(); ++it)
-      it->second->stop();
-    for (auto& thread : mWSSThreads) thread.join();
-  }
 }
 
 void create_wss(WSS* wss, int server_port) { wss->init(server_port); }
@@ -195,6 +210,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   if (objectMetadata->mFrame->mEndOfStream) {
     auto encodeIt = mEncoderMap.find(dataPipeId);
     encodeIt->second->isRunning = false;
+    IVS_CRITICAL("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
   }
 
   if (!(objectMetadata->mFrame->mEndOfStream) &&

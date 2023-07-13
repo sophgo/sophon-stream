@@ -69,8 +69,6 @@ class Element : public ::sophon_stream::common::NoCopyable {
    */
   common::ErrorCode init(const std::string& json);
 
-  void uninit();
-
   common::ErrorCode start();
 
   common::ErrorCode stop();
@@ -136,7 +134,6 @@ class Element : public ::sophon_stream::common::NoCopyable {
    * @return 如果解析失败，会返回error，否则返回common::ErrorCode::SUCCESS
    */
   virtual common::ErrorCode initInternal(const std::string& json) = 0;
-  virtual void uninitInternal() = 0;
 
   virtual void onStart() {}
   virtual void onStop() {}

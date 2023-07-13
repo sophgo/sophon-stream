@@ -38,7 +38,6 @@ namespace template {
      * 成功返回common::ErrorCode::SUCCESS，失败返回common::ErrorCode::PARSE_CONFIGURE_FAIL
      */
     common::ErrorCode initInternal(const std::string& json) override;
-    void uninitInternal() override;
 
     /**
      * @brief

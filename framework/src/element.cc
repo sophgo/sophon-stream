@@ -32,7 +32,7 @@ Element::Element()
       mThreadNumber(1),
       mThreadStatus(ThreadStatus::STOP) {}
 
-Element::~Element() { uninit(); }
+Element::~Element() {}
 
 common::ErrorCode Element::init(const std::string& json) {
   IVS_INFO("Init start, json: {0}", json);
@@ -94,25 +94,10 @@ common::ErrorCode Element::init(const std::string& json) {
 
   } while (false);
 
-  if (common::ErrorCode::SUCCESS != errorCode) {
-    uninit();
-  }
-
   IVS_INFO("Init finish, json: {0}", json);
   return errorCode;
 }
 
-void Element::uninit() {
-  int id = mId;
-  IVS_INFO("Uninit start, element id: {0:d}", id);
-
-  uninitInternal();
-
-  mId = -1;
-  mDeviceId = -1;
-  mThreadNumber = 1;
-  IVS_INFO("Uninit finish, element id: {0:d}", id);
-}
 
 common::ErrorCode Element::start() {
   IVS_INFO("Start element thread start, element id: {0:d}", mId);

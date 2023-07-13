@@ -130,8 +130,6 @@ common::ErrorCode Distributor::initInternal(const std::string& json) {
   return errorCode;
 }
 
-void Distributor::uninitInternal(){};
-
 void Distributor::makeSubObjectMetadata(
     std::shared_ptr<common::ObjectMetadata> obj,
     std::shared_ptr<common::DetectedObjectMetadata> detObj,
@@ -192,7 +190,6 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outDataPipeId =
       channel_id_internal % getOutputConnectorCapacity(mDefaultPort);
-  
 
   if (mChannelLastTimes.find(channel_id_internal) == mChannelLastTimes.end()) {
     mChannelLastTimes[channel_id_internal] =
@@ -274,14 +271,14 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
       }
     }
   }
-  
+
   errorCode = pushOutputData(mDefaultPort, outDataPipeId, data);
   IVS_DEBUG(
       "Main ObjectMetadata is sent to Converger, channel_id = {0}, frame_id = "
       "{1}, numBranches = {2}",
-      channel_id_internal, objectMetadata->mFrame->mFrameId, objectMetadata->numBranches);
-  
-  
+      channel_id_internal, objectMetadata->mFrame->mFrameId,
+      objectMetadata->numBranches);
+
   return errorCode;
 }
 

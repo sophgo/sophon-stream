@@ -137,7 +137,6 @@ class Decode : public ::sophon_stream::framework::Element {
   ~Decode() override;
 
   common::ErrorCode initInternal(const std::string& json) override;
-  void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipe) override;
 

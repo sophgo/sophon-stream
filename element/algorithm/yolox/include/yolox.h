@@ -30,7 +30,6 @@ class Yolox : public ::sophon_stream::framework::Element {
   ~Yolox() override;
 
   common::ErrorCode initInternal(const std::string& json) override;
-  void uninitInternal() override;
 
   common::ErrorCode doWork(int dataPipeId) override;
 

@@ -64,7 +64,8 @@ class Encoder::Encoder_CC {
  public:
   Encoder_CC();
   Encoder_CC(bm_handle_t& handle, const std::string& enc_fmt,
-             const std::string& pix_fmt, const std::string& enc_params);
+             const std::string& pix_fmt,
+             const std::map<std::string, int>& enc_params);
 
   ~Encoder_CC();
 
@@ -82,7 +83,7 @@ class Encoder::Encoder_CC {
   bm_handle_t handle_;
   std::string output_path_;
   std::string enc_fmt_;
-  std::string enc_params_;
+  std::map<std::string, int> enc_params_;
   std::map<std::string, int> params_map_;
   FILE* fp;
 
@@ -118,7 +119,8 @@ class Encoder::Encoder_CC {
 Encoder::Encoder() : _impl(new Encoder_CC()) {}
 
 Encoder::Encoder(bm_handle_t& handle, const std::string& enc_fmt,
-                 const std::string& pix_fmt, const std::string& enc_params)
+                 const std::string& pix_fmt,
+                 const std::map<std::string, int>& enc_params)
     : _impl(new Encoder_CC(handle, enc_fmt, pix_fmt, enc_params)) {
   // video_write_(func_video_write_);
   mFpsProfiler.config("encoder", 100);
@@ -194,8 +196,11 @@ void Encoder::Encoder_CC::enc_params_prase() {
   // params_map_.insert(std::pair<std::string, int>("width", 1920));
   // params_map_.insert(std::pair<std::string, int>("height", 1080));
   params_map_.insert(std::pair<std::string, int>("framerate", 25));
+  // bitrate用于控制视频的压缩率和质量。较高的比特率会导致更高的数据传输速率和更好的图像质量，但会占用更多的存储空间和带宽。较低的比特率则会减小数据传输速率和存储空间，但会导致图像质量的损失。
   params_map_.insert(std::pair<std::string, int>("bitrate", 2000));
+  // 设置适当的gop_size值可以影响视频的压缩效率、编码质量和随机访问性能。较小的gop_size值会增加编码的压缩效率，但也会增加解码的计算复杂度。较大的gop_size值则会提供更好的随机访问性能，但可能会影响压缩效率。
   params_map_.insert(std::pair<std::string, int>("gop", 32));
+  // gop_preset参数允许你选择不同的预设类型，以快速设置GOP相关参数，gop_preset=3对应的是veryfast预设类型。
   params_map_.insert(std::pair<std::string, int>("gop_preset", 3));
   params_map_.insert(std::pair<std::string, int>("mb_rc", 0));
   params_map_.insert(std::pair<std::string, int>("qp", -1));
@@ -203,35 +208,16 @@ void Encoder::Encoder_CC::enc_params_prase() {
   params_map_.insert(std::pair<std::string, int>("nr", 0));
   params_map_.insert(std::pair<std::string, int>("weightp", 0));
 
-  std::string s1;
-  s1.append(1, ':');
-  std::regex reg1(s1);
-
-  std::string s2;
-  s2.append(1, '=');
-  std::regex reg2(s2);
-
-  std::vector<std::string> elems(
-      std::sregex_token_iterator(enc_params_.begin(), enc_params_.end(), reg1,
-                                 -1),
-      std::sregex_token_iterator());
-  for (auto param : elems) {
-    std::vector<std::string> key_value_(
-        std::sregex_token_iterator(param.begin(), param.end(), reg2, -1),
-        std::sregex_token_iterator());
-
-    std::string temp_key = key_value_[0];
-    std::string temp_value = key_value_[1];
-
-    params_map_[temp_key] = std::stoi(temp_value);
-  }
+  // 遍历enc_params_，并将它的键值对插入到params_map_中
+  for (auto it = enc_params_.begin(); it != enc_params_.end(); ++it)
+    params_map_[it->first] = it->second;
 }
 
 Encoder::Encoder_CC::Encoder_CC() {}
 
 Encoder::Encoder_CC::Encoder_CC(bm_handle_t& handle, const std::string& enc_fmt,
                                 const std::string& pix_fmt,
-                                const std::string& enc_params)
+                                const std::map<std::string, int>& enc_params)
     : index(0),
       handle_(handle),
       is_jpeg_(false),
@@ -256,17 +242,21 @@ Encoder::Encoder_CC::Encoder_CC(bm_handle_t& handle, const std::string& enc_fmt,
 void Encoder::Encoder_CC::init_writer() {
   if (output_path_.compare(0, 7, "rtmp://") == 0) {
     is_rtmp_ = true;
+    std::string enParams =
+        "gop=" + std::to_string(params_map_["gop"]) +
+        ":gop_preset=" + std::to_string(params_map_["gop_preset"]) +
+        ":bitrate=" + std::to_string(params_map_["bitrate"]);
     if (enc_fmt_ == "h264_bm") {
       writer.open(output_path_, cv::VideoWriter::fourcc('H', '2', '6', '4'),
                   params_map_["framerate"],
                   cv::Size(params_map_["width"], params_map_["height"]),
-                  enc_params_, true, bm_get_devid(handle_));
+                  enParams, true, bm_get_devid(handle_));
 
     } else if (enc_fmt_ == "h265_bm") {
       writer.open(output_path_, cv::VideoWriter::fourcc('h', 'v', 'c', '1'),
                   params_map_["framerate"],
                   cv::Size(params_map_["width"], params_map_["height"]),
-                  enc_params_, true, bm_get_devid(handle_));
+                  enParams, true, bm_get_devid(handle_));
     } else {
     }
     opened_ = true;

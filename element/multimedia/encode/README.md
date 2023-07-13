@@ -33,7 +33,8 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
     "rtmp_port": "1935",
     "wss_port": "9000",
     "enc_fmt": "h264_bm",
-    "pix_fmt": "I420"
+    "pix_fmt": "I420",
+    "fps": 25
   },
   "shared_object": "../../../build/lib/libencode.so",
   "device_id": 0,
@@ -52,6 +53,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 |  wss_port   |   字符串    |  "9000" | websocket server起始端口 |
 |  enc_fmt    |   字符串    |  "h264_bm"| 编码格式，包括 "h264_bm"，“h265_bm” |
 |  pix_fmt    |   字符串    |  "I420"| 像素格式，包括 "I420"，"NV12"|
+|  fps        |   整数      |  25 | RTSP、RTMP、VIDEO帧率 |
 |  shared_object |   字符串   |  "../../../build/lib/libencode.so"  | libencode 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
 |     id      |    整数       | 0  | element id |
