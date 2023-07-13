@@ -93,8 +93,8 @@ chmod -R +x scripts/
 下载的数据包括：
 
 ```bash
-./videos/
-├── carvana_video.mp4         # 测试视频
+./videos/                                           # 测试视频
+├── carvana_video.mp4
 ├── mot17_01_frcnn.mp4
 ├── mot17_03_frcnn.mp4
 ├── mot17_06_frcnn.mp4
@@ -142,7 +142,7 @@ sudo apt install libeigen3-dev
 ./config
 ├── bytetrack.json                                                    # bytetrack跟踪算法配置
 ├── converger.json                                                    # 汇聚element配置
-├── decode.json                                                       # 解码配置 
+├── decode.json                                                       # 解码配置
 ├── distributor_class.json                                            # 每帧按类别分发
 ├── distributor_frame_class.json                                      # 跳帧按类别分发
 ├── distributor_frame.json                                            # 跳帧分发full frame

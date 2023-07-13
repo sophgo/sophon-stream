@@ -21,13 +21,13 @@ sophon-stream converger插件具有一些可配置的参数，可以根据需求
 }
 ```
 
-| 参数名 | 类型 | 默认值 | 说明 |
-| ------ | ---- | ---- | -----|
-| default_port| int | 0 | 从数据分发element接收数据的端口 |
-| shared_object | string | "../../../build/lib/libconverger.so" | libconverger动态库路径 |
-| name | string | "converger" | element名称 |
-| side | string | "sophgo" | 设备类型 |
-| thread_number | int | 1 | 启动线程数 |
+| 参数名        | 类型   | 默认值                               | 说明                            |
+| ------------- | ------ | ------------------------------------ | ------------------------------- |
+| default_port  | int    | 无                                   | 从数据分发element接收数据的端口 |
+| shared_object | string | "../../../build/lib/libconverger.so" | libconverger动态库路径          |
+| name          | string | "converger"                          | element名称                     |
+| side          | string | "sophgo"                             | 设备类型                        |
+| thread_number | int    | 1                                    | 启动线程数                      |
 
 > **注意**
 1. converger element从`default_port`接收到ObjectMetadata之后，会等待其所有的分支都更新完成，才会向后续element发送。

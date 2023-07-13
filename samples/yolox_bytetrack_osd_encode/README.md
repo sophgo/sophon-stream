@@ -73,7 +73,7 @@ chmod -R +x scripts/
 
 下载的数据包括：
 ```bash
-./data/videos
+./data/videos                             # 测试视频
 ├── mot17_01_frcnn.mp4
 ├── mot17_03_frcnn.mp4
 ├── mot17_06_frcnn.mp4
@@ -126,22 +126,26 @@ sudo apt install libeigen3-dev
     {
       "channel_id": 2,
       "url": "../data/videos/mot17_01_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 3,
       "url": "../data/videos/mot17_03_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 20,
       "url": "../data/videos/mot17_06_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 30,
       "url": "../data/videos/mot17_08_frcnn.mp4",
-      "source_type": "VIDEO"
+      "source_type": "VIDEO",
+      "loop_num": 1
     }
   ],
   "engine_config_path": "../config/engine.json"
@@ -158,7 +162,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
     {
         "graph_id": 0,
         "device_id": 0,
-        "graph_name": "yolox",
+        "graph_name": "yolox_osd_encode",
         "elements": [
             {
                 "element_id": 5000,
@@ -371,7 +375,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 total time cost 74520023 us.
 frame count is 3077 | fps is 41.2909 fps.
 ```
-您可以使用vlc软件打开推流地址查看视频算法结果，推流地址可以查看[encode插件文档](../../element/multimedia/encode/README.md)说明。
+如果encode选择RTSP模式，需要启动推流服务器。您可以使用vlc软件打开推流地址查看视频算法结果，详细说明查看[encode插件文档](../../element/multimedia/encode/README.md)说明。
 >**注意：**
 
 soc环境运行时如果报错

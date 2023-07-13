@@ -17,7 +17,7 @@ sophon-stream distributor插件具有一些可配置的参数，可以根据需�
         "default_port": 0,
         "rules" : [
             {
-                "time_interval": 1, 
+                "time_interval": 1,
                 "routes": [
                     {
                         "classes":["car"],
@@ -30,7 +30,7 @@ sophon-stream distributor插件具有一些可配置的参数，可以根据需�
                 ]
             },
             {
-                "frame_interval": 10, 
+                "frame_interval": 10,
                 "routes": [
                     {
                         "classes":["cat"],
@@ -48,24 +48,24 @@ sophon-stream distributor插件具有一些可配置的参数，可以根据需�
       "shared_object": "../../../build/lib/libdistributor.so",
       "name": "distributor",
       "side": "sophgo",
-      "thread_number": 4
+      "thread_number": 1
 }
 ```
 
-| 参数名 | 类型 | 默认值 | 说明 |
-| ------ | ---- | ---- | -----|
-| default_port | int | 0 | 发往数据汇聚element的端口 |
-| rules | vector | [] | 当前element的所有分发逻辑 |
-| time_interval | float | 1.0 | 分发的时间间隔，单位：秒 |
-| frame_interval | int | 10 | 分发的帧间隔 |
-| routes | vector | [] | 当前interval下的分发路径 |
-| classes | vector | [] | 一组类别 |
-| port | int | 1 | 当前classes对应的分发端口 |
-| class_names_file | string | "" | 存放所有类别名称的文件目录 |
-| shared_object | string | "../../../build/lib/libdistributor.so" | libdistributor动态库路径 |
-| name | string | "distributor" | element名称 |
-| side | string | "sophgo" | 设备类型 |
-| thread_number | int | 1 | 启动线程数 |
+| 参数名           | 类型   | 默认值                                 | 说明                       |
+| ---------------- | ------ | -------------------------------------- | -------------------------- |
+| default_port     | int    | 无                                     | 发往数据汇聚element的端口  |
+| rules            | vector | []                                     | 当前element的所有分发逻辑  |
+| time_interval    | float  | 无                                     | 分发的时间间隔，单位：秒   |
+| frame_interval   | int    | 无                                     | 分发的帧间隔               |
+| routes           | vector | []                                     | 当前interval下的分发路径   |
+| classes          | vector | []                                     | 一组类别                   |
+| port             | int    | 1                                      | 当前classes对应的分发端口  |
+| class_names_file | string | ""                                     | 存放所有类别名称的文件目录 |
+| shared_object    | string | "../../../build/lib/libdistributor.so" | libdistributor动态库路径   |
+| name             | string | "distributor"                          | element名称                |
+| side             | string | "sophgo"                               | 设备类型                   |
+| thread_number    | int    | 1                                      | 启动线程数                 |
 
 > **注意**：
 1. 由于分发涉及crop功能，`time_interval`或`frame_interval`参数一般不建议设置太小，否则可能造成阻塞。

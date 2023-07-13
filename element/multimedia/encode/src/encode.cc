@@ -23,7 +23,6 @@ Encode::Encode() {}
 Encode::~Encode() {
   if (mEncodeType != EncodeType::WS) {
     for (auto it = mEncoderMap.begin(); it != mEncoderMap.end(); ++it) {
-      IVS_CRITICAL("release encoder");
       it->second->release();
     }
   } else {
@@ -210,7 +209,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   if (objectMetadata->mFrame->mEndOfStream) {
     auto encodeIt = mEncoderMap.find(dataPipeId);
     encodeIt->second->isRunning = false;
-    IVS_CRITICAL("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
+    IVS_DEBUG("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
   }
 
   if (!(objectMetadata->mFrame->mEndOfStream) &&
