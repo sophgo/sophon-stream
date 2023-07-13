@@ -34,7 +34,7 @@ class Osd : public ::sophon_stream::framework::Element {
 
   static constexpr const char* CONFIG_INTERNAL_OSD_TYPE_FIELD = "osd_type";
   static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD =
-      "class_names";
+      "class_names_file";
 
  private:
   std::vector<std::string> mClassNames;

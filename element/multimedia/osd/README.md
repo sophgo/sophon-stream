@@ -19,7 +19,7 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 {
   "configure": {
     "osd_type": "TRACK",
-    "class_names": "../data/coco.names"
+    "class_names_file": "../data/coco.names"
   },
   "shared_object": "../../../build/lib/libosd.so",
   "device_id": 0,
@@ -32,13 +32,14 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 
 |      参数名    |    类型    | 默认值 | 说明 |
 |:-------------:| :-------: | :------------------:| :----------------------------------------------:|
-|  osd_type |    字符串     | 无 |画图类型，包括 “DET”、“TRACK“|
+|  osd_type |    字符串     | "TRACK" |画图类型，包括 “DET”、“TRACK“|
+|  class_names_file |    字符串     | 无 |class name文件的路径|
 |  shared_object |   字符串   |  "../../../build/lib/libencode.so"  | libencode 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
 |     id      |    整数       | 0  | element id |
-|     name    |    字符串     | "encode" | element 名称 |
+|     name    |    字符串     | "osd" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
 | thread_number |    整数     | 4| 启动线程数，需要保证和处理码流数一致 |
 
 > **注意**：
-1. osd_type为"DET"时，需提供class_names文件地址
+1. osd_type为"DET"时，需提供class_names_file文件地址
