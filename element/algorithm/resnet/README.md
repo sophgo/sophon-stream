@@ -42,8 +42,8 @@ sophon-stream resnet插件具有一些可配置的参数，可以根据需求进
 |:-------------:| :-------: | :------------------:| :------------------------:|
 |  model_path  |   字符串   | "../data/models/BM1684X/resnet_car_int8_4b.bmodel" | resnet模型路径 |
 |  bgr2rgb  |   bool   | true | 解码器解出来的图像默认是bgr格式，是否需要将图像转换成rgb格式 |
-|  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
-|  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
+|  mean  |   浮点数组   | [0.229,0.224,0.225] | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
+|  std  |   浮点数组   | [0.485,0.456,0.406] | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
 | roi | map | 无 | 预设的ROI，配置了此参数时，只会对ROI框取的区域进行处理 |
 |  shared_object |   字符串   |  "../../../build/lib/libresnet.so"  | libresnet 动态库路径 |
 |     id      |    整数       | 0  | element id |

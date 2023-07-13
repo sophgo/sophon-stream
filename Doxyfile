@@ -120,6 +120,7 @@ INPUT                  = framework/include \
                         framework/src \
                         element/algorithm/ \
                         element/multimedia/ \
+                        element/tools/
 
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h \
