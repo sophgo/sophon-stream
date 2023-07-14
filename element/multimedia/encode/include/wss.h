@@ -45,7 +45,7 @@ class WSS {
 
   void on_close(connection_hdl hdl);
 
-  void init(int port);
+  void init(int port, double fps);
 
   // 从队列中取数据发送
   void send();

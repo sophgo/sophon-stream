@@ -21,14 +21,14 @@ namespace encode {
 Encode::Encode() {}
 
 Encode::~Encode() {
-  if (mEncodeType != EncodeType::WS) {
+  if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
+      mEncodeType == EncodeType::VIDEO) {
     for (auto it = mEncoderMap.begin(); it != mEncoderMap.end(); ++it) {
       it->second->release();
     }
-  } else {
-    for (auto it = mWSSMap.begin(); it != mWSSMap.end(); ++it)
-      it->second->stop();
+  } else if (mEncodeType == EncodeType::WS) {
     for (auto& thread : mWSSThreads) thread.join();
+  } else {
   }
 }
 
@@ -89,6 +89,19 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         break;
       }
     }
+
+    mFps = 25;
+    auto fpsIt = configure.find(CONFIG_INTERNAL_FPS_FIELD);
+    if (configure.end() != fpsIt) {
+      mFps = fpsIt->get<double>();
+      IVS_DEBUG("mFps is {0}", mFps);
+    } else {
+      IVS_ERROR(
+          "Can not find {0} in encode json configure, "
+          "json:{1}, set default 25 fps",
+          CONFIG_INTERNAL_FPS_FIELD, json);
+    }
+
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
       auto encFmtIt = configure.find(CONFIG_INTERNAL_ENC_FMT_FIELD);
@@ -122,19 +135,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         break;
       }
 
-      mFps = 25;
-      auto fpsIt = configure.find(CONFIG_INTERNAL_FPS_FIELD);
-      if (configure.end() != fpsIt) {
-        mFps = fpsIt->get<double>();
-        IVS_DEBUG("mFps is {0}", mFps);
-      } else {
-        IVS_ERROR(
-            "Can not find {0} in encode json configure, "
-            "json:{1}, set default 25 fps",
-            CONFIG_INTERNAL_FPS_FIELD, json);
-      }
       std::map<std::string, int> mEncodeParams;
-
       mEncodeParams["framerate"] = mFps;
 
       int dev_id = getDeviceId();
@@ -177,7 +178,9 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
   return errorCode;
 }
 
-void create_wss(WSS* wss, int server_port) { wss->init(server_port); }
+void create_wss(WSS* wss, int server_port, double fps) {
+  wss->init(server_port, fps);
+}
 
 void send_wss(WSS* wss) { wss->send(); };
 
@@ -207,9 +210,12 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
   if (objectMetadata->mFrame->mEndOfStream) {
-    auto encodeIt = mEncoderMap.find(dataPipeId);
-    encodeIt->second->isRunning = false;
-    IVS_DEBUG("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
+    if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
+        mEncodeType == EncodeType::VIDEO) {
+      auto encodeIt = mEncoderMap.find(dataPipeId);
+      encodeIt->second->isRunning = false;
+      IVS_DEBUG("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
+    }
   }
 
   if (!(objectMetadata->mFrame->mEndOfStream) &&
@@ -345,7 +351,7 @@ void Encode::processWS(int dataPipeId,
     int channel_id = objectMetadata->mFrame->mChannelId;
     int server_port = std::stoi(mWSSPort) + channel_id;
     std::shared_ptr<WSS> wss = std::make_shared<WSS>();
-    std::thread t(create_wss, wss.get(), server_port);
+    std::thread t(create_wss, wss.get(), server_port, mFps);
     std::thread s(send_wss, wss.get());
     std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
     mWSSThreads.push_back(std::move(s));
@@ -377,6 +383,7 @@ void Encode::processWS(int dataPipeId,
       websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
   // base64 img 存入队列
   serverIt->second->pushImgDataQueue(data);
+  free(jpeg_data);
 }
 
 // WS发送停止标识

@@ -4,12 +4,7 @@ namespace sophon_stream {
 namespace element {
 namespace encode {
 
-WSS::WSS() {
-  m_fps = 25;
-  m_frame_interval = 1 / m_fps * 1000;  // ms
-  m_last_send_time.tv_sec = 0;
-  m_last_send_time.tv_usec = 0;
-}
+WSS::WSS() {}
 
 WSS::~WSS() {}
 
@@ -17,8 +12,14 @@ void WSS::on_open(connection_hdl hdl) { m_connections.insert(hdl); }
 
 void WSS::on_close(connection_hdl hdl) { m_connections.erase(hdl); }
 
-void WSS::init(int port) {
+void WSS::init(int port, double fps) {
   try {
+    // Get fps
+    m_fps = fps;
+    m_frame_interval = 1 / m_fps * 1000;  // ms
+    m_last_send_time.tv_sec = 0;
+    m_last_send_time.tv_usec = 0;
+
     // Set logging settings
     m_server.set_access_channels(websocketpp::log::alevel::all);
     m_server.clear_access_channels(websocketpp::log::alevel::frame_payload);
@@ -52,9 +53,11 @@ void WSS::send() {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
       continue;
     }
+    IVS_DEBUG("WSS send data, queue size: {}", mImgDataQueue.size());
     auto data = mImgDataQueue.front();
     if (data == WS_STOP_FLAG) {
-      IVS_DEBUG("wss data stop: {0}", WS_STOP_FLAG);
+      IVS_DEBUG("WSS recieve flag: {0}, demo will stop after closing the browser", WS_STOP_FLAG);
+      stop();
       break;
     }
     mImgDataQueue.pop();
@@ -64,7 +67,6 @@ void WSS::send() {
         ((m_current_send_time.tv_sec - m_last_send_time.tv_sec) +
          (double)(m_current_send_time.tv_usec - m_last_send_time.tv_usec) /
              1000000.0);
-    IVS_DEBUG("wss send time_delta: {}ms", time_delta);
     int time_to_sleep = m_frame_interval - time_delta;
     if (time_to_sleep > 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
