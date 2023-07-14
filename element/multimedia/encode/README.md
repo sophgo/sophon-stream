@@ -119,16 +119,16 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 "wss_port": "9000"
 ```
 
-输出websocket URL格式为：`ws://{host_ip}:{ws_port+channel_id}`
+输出websocket URL格式为：`ws://{host_ip}:{wss_port+channel_id}`
 
-wss_port为9000，host_ip为127.0.0.1, channel_id为2，此时URL为`ws://127.0.0.1:9002`
+host_ip为127.0.0.1, wss_port为9000，channel_id为2，此时URL为`ws://127.0.0.1:9002`
 
 ## 8. 推流服务器
-可以使用`rtsp-simple-server`作为推流服务器，启动步骤如下
+可以使用`mediamtx`作为推流服务器，启动步骤如下
 
 首先去[官网](https://github.com/bluenviron/mediamtx/releases)下载对应的软件包然后解压
 
-解压缩后打开`rtsp-simple-server.yml`配置文件，修改readTimeout与writeTimeout这两个参数，保存后退出
+解压缩后打开`mediamtx.yml`配置文件，修改readTimeout与writeTimeout这两个参数，保存后退出
 ```yml
 # timeout of read operations.
 readTimeout: 120s
@@ -136,25 +136,24 @@ readTimeout: 120s
 writeTimeout: 120s
 ```
 
-然后启动rtsp-simple-server
+然后启动mediamtx
 ```bash
-./rtsp-simple-server
+./mediamtx
 ```
 
 此时服务器启动成功
 ```bash
-[0/0] rtsp-simple-server v0.0.0
-[0/0] [RTSP] UDP/RTP listener opened on :8000
-[0/0] [RTSP] UDP/RTCP listener opened on :8001
-[0/0] [RTSP] TCP listener opened on :8554
-[0/0] [RTMP] listener opened on :1935
-[0/0] [HLS] listener opened on :8888
+INF MediaMTX v0.23.7
+INF [RTSP] listener opened on :8554 (TCP), :8000 (UDP/RTP), :8001 (UDP/RTCP)
+INF [RTMP] listener opened on :1935
+INF [HLS] listener opened on :8888
+INF [WebRTC] listener opened on :8889 (HTTP)
 ```
 
-rtsp-sample-server配置中rtsp的默认TCP端口是8554，rtmp默认端口是1935，如果修改端口号，插件配置中相应端口配置也要修改成一致。
+mediamtx.yml中rtsp的默认TCP端口是8554，rtmp默认端口是1935，如果修改端口号，插件配置中相应端口配置也要修改成一致。
 
 github：https://github.com/bluenviron/mediamtx
 
-需要注意的是，rtsp-sample-server是一个示例服务器，并不具备高度的可扩展性和功能完整性。如果您需要构建一个稳定和功能丰富的实际RTSP流媒体服务器，可以选择使用成熟的开源或商业解决方案，如Live555、GStreamer、FFmpeg等，这些工具提供了更广泛和全面的RTSP功能支持。
+需要注意的是，mediamtx是一个示例服务器，并不具备高度的可扩展性和功能完整性。如果您需要构建一个稳定和功能丰富的实际RTSP流媒体服务器，可以选择使用成熟的开源或商业解决方案，如Live555、GStreamer、FFmpeg等，这些工具提供了更广泛和全面的RTSP功能支持。
 
 

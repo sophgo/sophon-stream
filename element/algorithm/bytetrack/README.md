@@ -30,11 +30,11 @@ sophon-stream bytetrack插件具有一些可配置的参数，可以根据需求
 
 |      参数名    |    类型    | 默认值 | 说明 |
 |:-------------:| :-------: | :------------------:| :------------------------:|
-|  track_thresh  |   浮点数   | 0.5 | 目标跟踪检测阈值 |
-|  high_thresh   |   浮点数   | 0.6 | 目标框重新匹配阈值 |
-|  match_thresh  |   浮点数   | 0.7 | 目标跟踪匹配阈值 |
-|  frame_rate    |   浮点数   | 30  | 帧率 |
-|  track_buffer  |   整数    |  30 | 目标跟踪缓存 |
+|  track_thresh  |   浮点数   | 0.5 | 目标跟踪检测阈值，与目标检测阈值相关联。如果目标检测阈值偏低，可以适当调低此参数 |
+|  high_thresh   |   浮点数   | 0.6 | 在暂未匹配的检测目标中初始化新轨迹的阈值，不做重点调整 |
+|  match_thresh  |   浮点数   | 0.7 | 目标跟踪匹配阈值，用于判断检测框的关联性。如果同一目标检测对象容易被匹配为不同目标跟踪的对象，可以适当调高此参数 |
+|  frame_rate    |   浮点数   | 30  | 视频帧率，影响跟踪目标的最大消失时间，超过此时间的目标将被移除，计算方式为(max_time_lost = frame_rate / 30.0 * track_buffer) |
+|  track_buffer  |   整数    |  30 | 目标跟踪缓存，与最大消失时间关联 |
 |  shared_object |   字符串   |  "../../../build/lib/libbytetrack.so"  | libbytetrack 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
 |     id      |    整数       | 0  | element id |
