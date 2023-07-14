@@ -45,32 +45,32 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 }
 ```
 
-|      参数名    |    类型    | 默认值 | 说明 |
-|:-------------:| :-------: | :------------------:| :------------------------:|
-|  encode_type |    字符串     | "RTSP" |编码格式，包括 “RTSP”、“RTMP”、“VIDEO”、“IMG_DIR”、 "WS"|
-|  rtsp_port   |   字符串    | "8554" | rtsp 端口 |
-|  rtmp_port   |   字符串    |  "1935" | rtmp 端口 |
-|  wss_port   |   字符串    |  "9000" | websocket server起始端口 |
-|  enc_fmt    |   字符串    |  "h264_bm"| 编码格式，包括 "h264_bm"，“h265_bm” |
-|  pix_fmt    |   字符串    |  "I420"| 像素格式，包括 "I420"，"NV12"|
-|  fps        |   整数      |  25 | RTSP、RTMP、VIDEO帧率 |
-|  shared_object |   字符串   |  "../../../build/lib/libencode.so"  | libencode 动态库路径 |
-|  device_id  |    整数       |  0 | tpu 设备号 |
-|     id      |    整数       | 0  | element id |
-|     name    |    字符串     | "encode" | element 名称 |
-|     side    |    字符串     | "sophgo"| 设备类型 |
-| thread_number |    整数     | 4| 启动线程数，需要保证和处理码流数一致 |
+|    参数名     |  类型  |              默认值               |                          说明                           |
+| :-----------: | :----: | :-------------------------------: | :-----------------------------------------------------: |
+|  encode_type  | 字符串 |                无                 | 编码格式，包括 “RTSP”、“RTMP”、“VIDEO”、“IMG_DIR”、"WS" |
+|   rtsp_port   | 字符串 |                无                 |                        rtsp 端口                        |
+|   rtmp_port   | 字符串 |                无                 |                        rtmp 端口                        |
+|   wss_port    | 字符串 |                无                 |                websocket server起始端口                 |
+|    enc_fmt    | 字符串 |                无                 |           编码格式，包括 "h264_bm"，“h265_bm”           |
+|    pix_fmt    | 字符串 |                无                 |              像素格式，包括 "I420"，"NV12"              |
+|      fps      |  整数  |                25                 |                  RTSP、RTMP、VIDEO帧率                  |
+| shared_object | 字符串 | "../../../build/lib/libencode.so" |                  libencode 动态库路径                   |
+|   device_id   |  整数  |                 0                 |                       tpu 设备号                        |
+|      id       |  整数  |                 0                 |                       element id                        |
+|     name      | 字符串 |             "encode"              |                      element 名称                       |
+|     side      | 字符串 |             "sophgo"              |                        设备类型                         |
+| thread_number |  整数  |                 1                 |          启动线程数，需要保证和处理码流数一致           |
 
 > **注意**：
 1. 需要保证插件线程数和处理码流数一致
-2. encode_type为RTSP时，需保证rtsp_port不为空，encode_type为RTMP时，需保证rtmp_port不为空
+2. encode_type为RTSP时，需保证rtsp_port不为空，encode_type为RTMP时，需保证rtmp_port不为空，encode_type为WS时，需保证wss_port不为空。
 3. encode_type为VIDEO和IMG_DIR时，文件保存路径为`./results`
 
 ## 3. rtsp使用说明
 需要本地启动推流服务器，具体用法见[6. 推流服务器](#6-推流服务器)
 在`encode.json`中做出以下设置
 ```json
-"encode_type": “RTSP”,
+"encode_type": "RTSP",
 "rtsp_port": "8554"
 ```
 
@@ -83,7 +83,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 
 在`encode.json`中做出以下设置
 ```json
-"encode_type": “RTMP”,
+"encode_type": "RTMP",
 "rtmp_port": "1935"
 ```
 
@@ -115,7 +115,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 
 在`encode.json`中做出以下设置
 ```json
-"encode_type": “WS”,
+"encode_type": "WS",
 "wss_port": "9000"
 ```
 
