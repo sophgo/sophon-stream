@@ -17,8 +17,7 @@ void WSS::init(int port, double fps) {
     // Get fps
     m_fps = fps;
     m_frame_interval = 1 / m_fps * 1000;  // ms
-    m_last_send_time.tv_sec = 0;
-    m_last_send_time.tv_usec = 0;
+    m_last_send_time = {0, 0};
 
     // Set logging settings
     m_server.set_access_channels(websocketpp::log::alevel::all);

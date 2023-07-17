@@ -38,6 +38,7 @@ void HTTP_Base64_Mgr::init(int port, std::string url) {
   server_.Post(base64_url_, HTTP_Base64_Mgr::handler);
   listen_thread_ = std::thread(&HTTP_Base64_Mgr::listen_thread);
   is_inited_ = true;
+  last_time = {0, 0};
 }
 
 void HTTP_Base64_Mgr::stop() {
