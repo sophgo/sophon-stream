@@ -52,14 +52,14 @@ void WSS::send() {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
       continue;
     }
-    IVS_DEBUG("WSS send data, queue size: {}", mImgDataQueue.size());
-    auto data = mImgDataQueue.front();
-    if (data == WS_STOP_FLAG) {
-      IVS_DEBUG("WSS recieve flag: {0}, demo will stop after closing the browser", WS_STOP_FLAG);
+    auto data = popImgDataQueue();
+    if (WS_STOP_FLAG == data) {
+      IVS_DEBUG(
+          "WSS recieve flag: {0}, demo will stop after closing the browser",
+          WS_STOP_FLAG);
       stop();
       break;
     }
-    mImgDataQueue.pop();
     gettimeofday(&m_current_send_time, NULL);
     double time_delta =
         1000 *
@@ -79,7 +79,16 @@ void WSS::send() {
 void WSS::stop() { m_server.stop_listening(); }
 
 void WSS::pushImgDataQueue(const std::string& data) {
-  this->mImgDataQueue.push(data);
+  std::lock_guard<std::mutex> lock(mQueueMtx);
+  mImgDataQueue.push(data);
+}
+
+std::string WSS::popImgDataQueue() {
+  IVS_DEBUG("WSS::popImgDataQueue, queue size: {}", mImgDataQueue.size());
+  std::lock_guard<std::mutex> lock(mQueueMtx);
+  auto data = mImgDataQueue.front();
+  mImgDataQueue.pop();
+  return data;
 }
 
 }  // namespace encode

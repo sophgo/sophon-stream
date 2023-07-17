@@ -54,6 +54,8 @@ class WSS {
 
   void pushImgDataQueue(const std::string& data);
 
+  std::string popImgDataQueue();
+
  private:
   server m_server;
   con_list m_connections;
@@ -62,6 +64,7 @@ class WSS {
   double m_fps;
   double m_frame_interval;
   std::queue<std::string> mImgDataQueue;
+  std::mutex mQueueMtx;
 };
 
 }  // namespace encode
