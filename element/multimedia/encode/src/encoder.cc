@@ -24,23 +24,6 @@ typedef struct {
   uint8_t* buf2;
 } transcode_t;
 
-bool Encoder::pushQueue(std::shared_ptr<bm_image> p) {
-  std::lock_guard<std::mutex> lock(mQueueMtx);
-  encodeQueue.push(p);
-  return true;
-}
-
-std::shared_ptr<bm_image> Encoder::popQueue() {
-  std::lock_guard<std::mutex> lock(mQueueMtx);
-  std::shared_ptr<bm_image> p = nullptr;
-  // printf("encode queue popping! queue size is %d\n", encodeQueue.size());
-  if (!encodeQueue.empty()) {
-    p = encodeQueue.front();
-    encodeQueue.pop();
-  }
-  return p;
-}
-
 void bmBufferDeviceMemFree(void* opaque, uint8_t* data) {
   if (opaque == NULL) {
   }
@@ -100,7 +83,7 @@ class Encoder::Encoder_CC {
   cv::VideoWriter writer;
 
   AVPixelFormat pix_fmt_;
-  AVFrame* frame_;
+  // AVFrame* frame_;
   AVCodec* encoder_;
   AVDictionary* enc_dict_;
   AVIOContext* avio_ctx_;
@@ -114,6 +97,16 @@ class Encoder::Encoder_CC {
   int map_bmformat_to_avformat(int bmformat);
   int bm_image_to_avframe(bm_handle_t& handle, bm_image* image, AVFrame* frame);
   int flush_encoder();
+
+  std::queue<std::shared_ptr<AVPacket>> encoderQueue;
+  bool pushQueue(std::shared_ptr<AVPacket> p);
+  std::shared_ptr<AVPacket> popQueue();
+  int getSize();
+  std::mutex mQueueMtx;
+  void flowControlFunc();
+  std::thread flow_control;
+  bool isRunning = true;
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 
 Encoder::Encoder() : _impl(new Encoder_CC()) {}
@@ -122,31 +115,15 @@ Encoder::Encoder(bm_handle_t& handle, const std::string& enc_fmt,
                  const std::string& pix_fmt,
                  const std::map<std::string, int>& enc_params)
     : _impl(new Encoder_CC(handle, enc_fmt, pix_fmt, enc_params)) {
-  // video_write_(func_video_write_);
-  mFpsProfiler.config("encoder", 100);
-  video_write_ = std::thread(&Encoder::func_video_write_, this);
 }
 
 Encoder::~Encoder() {
   delete _impl;
-  video_write_.join();
 }
 
 bool Encoder::is_opened() { return _impl->is_opened(); }
 
 int Encoder::video_write(bm_image& image) { return _impl->video_write(image); }
-
-void Encoder::func_video_write_() {
-  while (isRunning) {
-    auto p = popQueue();
-    if (p == nullptr) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(5));
-      continue;
-    }
-    mFpsProfiler.add(1);
-    _impl->video_write(*p);
-  }
-}
 
 void Encoder::set_output_path(const std::string& output_path) {
   return _impl->set_output_path(output_path);
@@ -237,6 +214,8 @@ Encoder::Encoder_CC::Encoder_CC(bm_handle_t& handle, const std::string& enc_fmt,
     pix_fmt_ = AV_PIX_FMT_NV12;
   } else {
   }
+  mFpsProfiler.config("encoder", 100);
+  flow_control = std::thread(&Encoder::Encoder_CC::flowControlFunc, this);
 }
 
 void Encoder::Encoder_CC::init_writer() {
@@ -490,6 +469,62 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
 
 bool Encoder::Encoder_CC::is_opened() { return opened_; }
 
+bool Encoder::Encoder_CC::pushQueue(std::shared_ptr<AVPacket> p) {
+  std::lock_guard<std::mutex> lock(mQueueMtx);
+  encoderQueue.push(p);
+  return true;
+}
+
+std::shared_ptr<AVPacket> Encoder::Encoder_CC::popQueue() {
+  std::lock_guard<std::mutex> lock(mQueueMtx);
+  std::shared_ptr<AVPacket> p = nullptr;
+  printf("encode queue popping! queue size is %d\n", encoderQueue.size());
+  if (!encoderQueue.empty()) {
+    p = encoderQueue.front();
+    encoderQueue.pop();
+  }
+  return p;
+}
+
+int Encoder::Encoder_CC::getSize() {
+  std::lock_guard<std::mutex> lock(mQueueMtx);
+  return encoderQueue.size();
+}
+
+void Encoder::Encoder_CC::flowControlFunc() {
+  while (isRunning) {
+    if (getSize() < 15) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
+      continue;
+    }
+    auto p = popQueue();
+    if (p == nullptr) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
+      continue;
+    }
+    int64_t push_start_time =
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::system_clock::now().time_since_epoch())
+            .count();
+
+    auto ret = av_interleaved_write_frame(enc_format_ctx_, p.get());
+
+    if (is_rtsp_) {
+      float tmp_fps = mFpsProfiler.getTmpFps();
+      int64_t frame_interval = 1 * 1000 * 1000 / tmp_fps == 0
+                                   ? params_map_["framerate"]
+                                   : tmp_fps;
+      int64_t push_ok = std::chrono::duration_cast<std::chrono::microseconds>(
+                            std::chrono::system_clock::now().time_since_epoch())
+                            .count();
+      int64_t diff = push_ok - push_start_time;
+      // printf("encode diff time is %lld\n", diff);
+      if (diff < frame_interval && diff > 0) av_usleep(frame_interval - diff);
+    }
+  }
+  return;
+}
+
 int Encoder::Encoder_CC::video_write(bm_image& image) {
   int64_t push_start_time =
       std::chrono::duration_cast<std::chrono::microseconds>(
@@ -499,48 +534,38 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     int ret = 0;
     int got_output = 0;
     int64_t start_time = 0;
-    frame_ = av_frame_alloc();
+    std::shared_ptr<AVFrame> frame_ = nullptr;
+    frame_.reset(av_frame_alloc(), [](AVFrame* p) {
+      if (p != nullptr) {
+        av_frame_unref(p);
+        av_frame_free(&p);
+      }
+    });
     // timeval tv1, tv2;
     // gettimeofday(&tv1, NULL);
-    ret = bm_image_to_avframe(handle_, &image, frame_);
+    std::shared_ptr<AVPacket> test_enc_pkt(new AVPacket);
+
+    ret = bm_image_to_avframe(handle_, &image, frame_.get());
     // gettimeofday(&tv2, NULL);
     // int time_interval1 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
     // (tv2.tv_usec-tv1.tv_usec); printf("1 cost: %lld\n", time_interval1);
     if (ret < 0) return -1;
-    AVPacket test_enc_pkt;
-    test_enc_pkt.data = NULL;
-    test_enc_pkt.size = 0;
-    av_init_packet(&test_enc_pkt);
+    test_enc_pkt->data = NULL;
+    test_enc_pkt->size = 0;
+    av_init_packet(test_enc_pkt.get());
 
-    // gettimeofday(&tv1, NULL);
-    ret = avcodec_encode_video2(enc_ctx_, &test_enc_pkt, frame_, &got_output);
-    // gettimeofday(&tv2, NULL);
-    // int time_interval2 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
-    // (tv2.tv_usec-tv1.tv_usec); printf("2 cost: %lld\n", time_interval2);
+    ret = avcodec_encode_video2(enc_ctx_, test_enc_pkt.get(), frame_.get(),
+                                &got_output);
 
     if (ret < 0) return ret;
     if (got_output == 0) {
       return -1;
     }
-    av_packet_rescale_ts(&test_enc_pkt, enc_ctx_->time_base,
+    av_packet_rescale_ts(test_enc_pkt.get(), enc_ctx_->time_base,
                          out_stream_->time_base);
-    // gettimeofday(&tv1, NULL);
-    ret = av_interleaved_write_frame(enc_format_ctx_, &test_enc_pkt);
-    // gettimeofday(&tv2, NULL);
-    // int time_interval3 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
-    // (tv2.tv_usec-tv1.tv_usec); printf("3 cost: %lld\n", time_interval3);
 
-    av_frame_unref(frame_);
-    av_frame_free(&frame_);
-    if (is_rtsp_) {
-      int64_t frame_interval = 1 * 1000 * 1000 / params_map_["framerate"];
-      int64_t push_ok = std::chrono::duration_cast<std::chrono::microseconds>(
-                            std::chrono::system_clock::now().time_since_epoch())
-                            .count();
-      int64_t diff = push_ok - push_start_time;
-      // printf("encode diff time is %lld\n", diff);
-      if (diff < frame_interval && diff > 0) av_usleep(frame_interval - diff);
-    }
+    mFpsProfiler.add(1);
+    pushQueue(test_enc_pkt);
     return ret;
   }
   if (is_rtmp_) {
@@ -560,7 +585,7 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
 int Encoder::Encoder_CC::flush_encoder() {
   int ret;
   int got_frame = 0;
-  if (!(enc_ctx_->codec->capabilities & AV_CODEC_CAP_DELAY)) return 0;
+  if (!(this->enc_ctx_->codec->capabilities & AV_CODEC_CAP_DELAY)) return 0;
   while (1) {
     av_log(NULL, AV_LOG_INFO, "Flushing video encoder\n");
     AVPacket temp_enc_pkt;
@@ -584,14 +609,17 @@ int Encoder::Encoder_CC::flush_encoder() {
 }
 
 void Encoder::Encoder_CC::release() {
-  flush_encoder();
-  av_write_trailer(enc_format_ctx_);
-  // if(pkt_)
-  //     av_packet_free(&pkt_);
-  if (frame_) av_frame_free(&frame_);
+  isRunning = false;
+  flow_control.join();
+  if (getSize() > 0) {
+    flush_encoder();
+    av_write_trailer(enc_format_ctx_);
+  }
+
   if (enc_dict_) av_dict_free(&enc_dict_);
   if (enc_ctx_) avcodec_free_context(&enc_ctx_);
   opened_ = false;
+  return;
 }
 
 void Encoder::Encoder_CC::set_output_path(const std::string& output_path) {

@@ -17,6 +17,7 @@ class FpsProfiler {
 
   void config(const std::string& name, int summary_cond_times);
   void add(int cnts = 1);
+  float getTmpFps();
 
  private:
   float elapse();

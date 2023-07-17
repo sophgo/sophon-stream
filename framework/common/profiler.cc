@@ -41,6 +41,10 @@ void FpsProfiler::add(int cnts) {
   }
 }
 
+float FpsProfiler::getTmpFps() {
+  return tmp_fps_;
+}
+
 float FpsProfiler::elapse() {
   end_ts_ = cv::getTickCount() / cv::getTickFrequency();
   return end_ts_ - start_ts_;

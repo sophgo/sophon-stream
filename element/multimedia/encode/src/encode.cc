@@ -213,7 +213,8 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
       auto encodeIt = mEncoderMap.find(dataPipeId);
-      encodeIt->second->isRunning = false;
+      // encodeIt->second->isRunning = false;
+      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData), false); // send stop signal to encoder thread
       IVS_DEBUG("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
     }
   }
@@ -289,13 +290,13 @@ void Encode::processVideoStream(
       }
     }
     if (objectMetadata->mFrame->mSpDataOsd) {
-      encodeIt->second->isRunning = true;
-      encodeIt->second->pushQueue(objectMetadata->mFrame->mSpDataOsd);
-      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
+      // encodeIt->second->isRunning = true;
+      // encodeIt->second->pushQueue(objectMetadata->mFrame->mSpDataOsd);
+      encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
     } else {
-      encodeIt->second->isRunning = true;
-      encodeIt->second->pushQueue(objectMetadata->mFrame->mSpData);
-      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData));
+      // encodeIt->second->isRunning = true;
+      // encodeIt->second->pushQueue(objectMetadata->mFrame->mSpData);
+      encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData));
     }
   }
 }

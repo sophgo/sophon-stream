@@ -51,18 +51,8 @@ class Encoder {
   void init_writer();
   bool is_opened();
 
-  std::thread video_write_;
-
-  void func_video_write_();
-
-  std::shared_ptr<bm_image> popQueue();
-
   int video_write(bm_image& image);
   void release();
-
-  bool pushQueue(std::shared_ptr<bm_image> p);
-
-  bool isRunning = true;
 
  private:
   std::queue<std::shared_ptr<bm_image>> encodeQueue;
@@ -71,7 +61,6 @@ class Encoder {
   class Encoder_CC;
   class Encoder_CC* const _impl;
 
-  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 }  // namespace encode
 }  // namespace element
