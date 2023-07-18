@@ -16,6 +16,7 @@
 #include "common/object_metadata.h"
 #include "common/profiler.h"
 #include "element.h"
+#define USE_OPENCV_DRAW_BOX 1
 
 namespace sophon_stream {
 namespace element {
