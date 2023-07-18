@@ -98,7 +98,6 @@ common::ErrorCode Element::init(const std::string& json) {
   return errorCode;
 }
 
-
 common::ErrorCode Element::start() {
   IVS_INFO("Start element thread start, element id: {0:d}", mId);
 
@@ -189,7 +188,12 @@ common::ErrorCode Element::pushInputData(int inputPort, int dataPipeId,
         "{2}",
         mId, inputPort, mThreadNumber);
   }
-  return mInputConnectorMap[inputPort]->pushData(dataPipeId, data);
+  // return mInputConnectorMap[inputPort]->pushData(dataPipeId, data);
+  while(mInputConnectorMap[inputPort]->pushData(dataPipeId, data) != common::ErrorCode::SUCCESS) {
+    IVS_DEBUG("Input DataPipe is full, now sleeping...");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return common::ErrorCode::SUCCESS;
 }
 
 std::shared_ptr<void> Element::popInputData(int inputPort, int dataPipeId) {
