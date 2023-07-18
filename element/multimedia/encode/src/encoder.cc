@@ -99,6 +99,7 @@ class Encoder::Encoder_CC {
   int flush_encoder();
 
   std::queue<std::shared_ptr<AVPacket>> encoderQueue;
+  static constexpr int queueMinSize = 5;
   bool pushQueue(std::shared_ptr<AVPacket> p);
   std::shared_ptr<AVPacket> popQueue();
   int getSize();
@@ -114,12 +115,9 @@ Encoder::Encoder() : _impl(new Encoder_CC()) {}
 Encoder::Encoder(bm_handle_t& handle, const std::string& enc_fmt,
                  const std::string& pix_fmt,
                  const std::map<std::string, int>& enc_params)
-    : _impl(new Encoder_CC(handle, enc_fmt, pix_fmt, enc_params)) {
-}
+    : _impl(new Encoder_CC(handle, enc_fmt, pix_fmt, enc_params)) {}
 
-Encoder::~Encoder() {
-  delete _impl;
-}
+Encoder::~Encoder() { delete _impl; }
 
 bool Encoder::is_opened() { return _impl->is_opened(); }
 
@@ -492,11 +490,10 @@ int Encoder::Encoder_CC::getSize() {
 }
 
 void Encoder::Encoder_CC::flowControlFunc() {
+  while (isRunning && getSize() < queueMinSize) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  }
   while (isRunning) {
-    if (getSize() < 15) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(5));
-      continue;
-    }
     auto p = popQueue();
     if (p == nullptr) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -511,9 +508,8 @@ void Encoder::Encoder_CC::flowControlFunc() {
 
     if (is_rtsp_) {
       float tmp_fps = mFpsProfiler.getTmpFps();
-      int64_t frame_interval = 1 * 1000 * 1000 / tmp_fps == 0
-                                   ? params_map_["framerate"]
-                                   : tmp_fps;
+      int64_t frame_interval =
+          1 * 1000 * 1000 / tmp_fps == 0 ? params_map_["framerate"] : tmp_fps;
       int64_t push_ok = std::chrono::duration_cast<std::chrono::microseconds>(
                             std::chrono::system_clock::now().time_since_epoch())
                             .count();

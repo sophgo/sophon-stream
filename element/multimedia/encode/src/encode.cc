@@ -192,7 +192,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   int outputPort = 0;
   if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
-    int outputPort = outputPorts[0];
+    outputPort = outputPorts[0];
   }
 
   std::shared_ptr<void> data;
