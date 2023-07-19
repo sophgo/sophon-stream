@@ -49,9 +49,9 @@ Yolov5Inference::mergeInputDeviceMem(std::shared_ptr<Yolov5Context> context,
     if (BM_FLOAT32 == context->bmNetwork->m_netinfo->input_dtypes[0])
       input_bytes *= 4;
     // malloc空间
-    auto ret = bm_malloc_device_byte(inputTensors->handle,
+    auto ret = bm_malloc_device_byte_heap(inputTensors->handle,
                                      &inputTensors->tensors[i]->device_mem,
-                                     input_bytes);
+                                     0, input_bytes);
     // d2d
     for (int j = 0; j < objectMetadatas.size(); ++j) {
       if (objectMetadatas[j]->mFrame->mEndOfStream) break;
@@ -101,8 +101,8 @@ Yolov5Inference::getOutputDeviceMem(std::shared_ptr<Yolov5Context> context) {
       max_size *= 4;
     // malloc空间
     auto ret =
-        bm_malloc_device_byte(outputTensors->handle,
-                              &outputTensors->tensors[i]->device_mem, max_size);
+        bm_malloc_device_byte_heap(outputTensors->handle,
+                              &outputTensors->tensors[i]->device_mem, 0, max_size);
   }
   return outputTensors;
 }
@@ -149,10 +149,10 @@ void Yolov5Inference::splitOutputMemIntoObjectMetadatas(
       if (BM_FLOAT32 == context->bmNetwork->m_netinfo->output_dtypes[j])
         max_size *= 4;
       max_size /= context->max_batch;
-      auto ret = bm_malloc_device_byte(
+      auto ret = bm_malloc_device_byte_heap(
           objectMetadatas[i]->mOutputBMtensors->handle,
           &objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem,
-          max_size);
+          0, max_size);
       assert(BM_SUCCESS == ret);
       bm_memcpy_d2d_byte(
           context->handle,

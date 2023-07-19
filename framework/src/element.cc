@@ -168,6 +168,8 @@ common::ErrorCode Element::resume() {
 void Element::run(int dataPipeId) {
   onStart();
   prctl(PR_SET_NAME, std::to_string(mId).c_str());
+  // IVS_CRITICAL("create thread, mID = {0}, threadNumber = {1}, tid = {2}", mId,
+  //              dataPipeId, gettid());
   while (ThreadStatus::RUN == mThreadStatus) {
     doWork(dataPipeId);
     std::this_thread::yield();
@@ -188,10 +190,10 @@ common::ErrorCode Element::pushInputData(int inputPort, int dataPipeId,
         "{2}",
         mId, inputPort, mThreadNumber);
   }
-  // return mInputConnectorMap[inputPort]->pushData(dataPipeId, data);
-  while(mInputConnectorMap[inputPort]->pushData(dataPipeId, data) != common::ErrorCode::SUCCESS) {
+  while (mInputConnectorMap[inputPort]->pushData(dataPipeId, data) !=
+         common::ErrorCode::SUCCESS) {
     IVS_DEBUG("Input DataPipe is full, now sleeping...");
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
   return common::ErrorCode::SUCCESS;
 }
@@ -226,7 +228,7 @@ common::ErrorCode Element::pushOutputData(int outputPort, int dataPipeId,
   while (mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) !=
          common::ErrorCode::SUCCESS) {
     IVS_DEBUG("DataPipe is full, now sleeping...");
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
   return common::ErrorCode::SUCCESS;
 

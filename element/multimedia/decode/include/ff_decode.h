@@ -13,6 +13,7 @@
 #include <pthread.h>
 
 #include <iostream>
+#include <thread>
 #include <mutex>
 #include <opencv2/core.hpp>
 #include <queue>
@@ -30,7 +31,7 @@ extern "C" {
 }
 
 #define QUEUE_MAX_SIZE 5
-#define EXTRA_FRAME_BUFFER_NUM 5
+#define EXTRA_FRAME_BUFFER_NUM 2
 #define USEING_MEM_HEAP2 4
 #define USEING_MEM_HEAP1 2
 

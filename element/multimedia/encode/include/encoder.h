@@ -40,7 +40,7 @@ namespace encode {
 class Encoder {
  public:
   Encoder();
-  Encoder(bm_handle_t& handle, const std::string& enc_fmt,
+  Encoder(int dev_id, const std::string& enc_fmt,
           const std::string& pix_fmt, const std::map<std::string, int>& enc_params);
 
   ~Encoder();
