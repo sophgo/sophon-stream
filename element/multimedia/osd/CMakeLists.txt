@@ -52,12 +52,13 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 
+    set(BM_LIBS bmlib bmrt bmcv yuv)
+    set(JPU_LIBS bmjpuapi bmjpulite)
+    set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio opencv_video)
     include_directories("${SOPHON_SDK_SOC}/include/")
     include_directories("${SOPHON_SDK_SOC}/include/opencv4")
     link_directories("${SOPHON_SDK_SOC}/lib/")
-    set(BM_LIBS bmlib bmrt bmcv yuv)
-    set(JPU_LIBS bmjpuapi bmjpulite)
-
+    
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
@@ -68,5 +69,5 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     add_library(osd SHARED
         src/osd.cc
     )
-    target_link_libraries(osd ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(osd ${BM_LIBS} ${OPENCV_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil)
 endif()
