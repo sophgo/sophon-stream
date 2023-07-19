@@ -24,8 +24,8 @@ class STrack {
   ~STrack();
 
   std::vector<float> static tlbr_to_tlwh(std::vector<float>& tlbr);
-  void static multi_predict(std::vector<STrack*>& stracks,
-                            KalmanFilter& kalman_filter);
+  void static multi_predict(std::vector<std::shared_ptr<STrack>>& stracks,
+                            std::shared_ptr<KalmanFilter> kalman_filter);
   void static_tlwh();
   void static_tlbr();
   std::vector<float> tlwh_to_xyah(std::vector<float> tlwh_tmp);
@@ -35,9 +35,12 @@ class STrack {
   int next_id();
   int end_frame();
 
-  void activate(KalmanFilter& kalman_filter, int frame_id);
-  void re_activate(STrack& new_track, int frame_id, bool new_id = false);
-  void update(STrack& new_track, int frame_id);
+  void activate(std::shared_ptr<KalmanFilter> kalman_filter, int frame_id);
+  void re_activate(std::shared_ptr<KalmanFilter> kalman_filter,
+                   std::shared_ptr<STrack> new_track, int frame_id,
+                   bool new_id = false);
+  void update(std::shared_ptr<KalmanFilter> kalman_filter,
+              std::shared_ptr<STrack> new_track, int frame_id);
 
  public:
   bool is_activated;
@@ -51,14 +54,13 @@ class STrack {
   int tracklet_len;
   int start_frame;
 
-  KAL_MEAN mean;
-  KAL_COVA covariance;
+  cv::Mat mean;
+  cv::Mat covariance;
   float score;
   int class_id;
-
- private:
-  KalmanFilter kalman_filter;
 };
+
+using STracks = std::vector<std::shared_ptr<STrack>>;
 
 }  // namespace bytetrack
 }  // namespace element

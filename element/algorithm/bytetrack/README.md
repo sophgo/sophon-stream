@@ -16,6 +16,7 @@ sophon-stream bytetrack插件具有一些可配置的参数，可以根据需求
         "track_thresh": 0.5,
         "high_thresh": 0.6,
         "match_thresh": 0.7,
+        "min_box_area": 10,
         "frame_rate": 30,
         "track_buffer": 30
     },
@@ -24,7 +25,7 @@ sophon-stream bytetrack插件具有一些可配置的参数，可以根据需求
     "id": 0,
     "name": "bytetrack",
     "side": "sophgo",
-    "thread_number": 2
+    "thread_number": 4
 }
 ```
 
@@ -34,13 +35,14 @@ sophon-stream bytetrack插件具有一些可配置的参数，可以根据需求
 |  high_thresh   |   浮点数   | 0.6 | 在暂未匹配的检测目标中初始化新轨迹的阈值，不做重点调整 |
 |  match_thresh  |   浮点数   | 0.7 | 目标跟踪匹配阈值，用于判断检测框的关联性。如果同一目标检测对象容易被匹配为不同目标跟踪的对象，可以适当调高此参数 |
 |  frame_rate    |   浮点数   | 30  | 视频帧率，影响跟踪目标的最大消失时间，超过此时间的目标将被移除，计算方式为(max_time_lost = frame_rate / 30.0 * track_buffer) |
+|  min_box_area  |   整数    |  10 | 过滤掉h*w小于min_box_area的跟踪框 |
 |  track_buffer  |   整数    |  30 | 目标跟踪缓存，与最大消失时间关联 |
 |  shared_object |   字符串   |  "../../../build/lib/libbytetrack.so"  | libbytetrack 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
 |     id      |    整数       | 0  | element id |
 |     name    |    字符串     | "bytetrack" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
-| thread_number |    整数     | 2 | 启动线程数，需要保证和处理码流数一致 |
+| thread_number |    整数     | 无 | 启动线程数，需要保证和处理码流数一致 |
 
 > **注意**：
 需要保证插件线程数和处理码流数一致
