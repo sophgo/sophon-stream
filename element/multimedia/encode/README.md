@@ -157,3 +157,9 @@ github：https://github.com/bluenviron/mediamtx
 需要注意的是，mediamtx是一个示例服务器，并不具备高度的可扩展性和功能完整性。如果您需要构建一个稳定和功能丰富的实际RTSP流媒体服务器，可以选择使用成熟的开源或商业解决方案，如Live555、GStreamer、FFmpeg等，这些工具提供了更广泛和全面的RTSP功能支持。
 
 
+> **注意**:
+ws依赖boost库，如果make阶段在#include<boost/version.hpp>部分报错，请使用如下命令安装该库：
+```bash
+sudo apt-get update 
+sudo apt-get install libboost-all-dev
+```
