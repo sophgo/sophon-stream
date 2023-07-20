@@ -167,7 +167,7 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
   int data_four_denominator = -1;
   int data_five_denominator = -1;
   int data_six_denominator = -1;
-  static int mem_flags = USEING_MEM_HEAP2;
+  static int mem_flags = USEING_MEM_HEAP1;
 
   switch (in->format) {
     case AV_PIX_FMT_RGB24:
@@ -254,16 +254,18 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
     bm_image_attach(cmp_bmimg, input_addr);
     bm_image_create(handle, in->height, in->width, FORMAT_YUV420P,
                     DATA_TYPE_EXT_1N_BYTE, out);
-    if (mem_flags == USEING_MEM_HEAP2 &&
-        bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP2) !=
-            BM_SUCCESS) {
-      mem_flags = USEING_MEM_HEAP1;
-    }
-    if (mem_flags == USEING_MEM_HEAP1 &&
-        bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP1) !=
-            BM_SUCCESS) {
-      printf("bmcv allocate mem failed!!!");
-    }
+    // if (mem_flags == USEING_MEM_HEAP2 &&
+    //     bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP2) !=
+    //         BM_SUCCESS) {
+    //   mem_flags = USEING_MEM_HEAP1;
+    // }
+    // if (mem_flags == USEING_MEM_HEAP1 &&
+    bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP1);
+    //  !=
+    //     BM_SUCCESS)
+    //     {
+    //   printf("bmcv allocate mem failed!!!");
+    // }
 
     bmcv_rect_t crop_rect = {0, 0, in->width, in->height};
     bmcv_image_vpp_convert(handle, 1, cmp_bmimg, out, &crop_rect);
@@ -290,7 +292,7 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
                     DATA_TYPE_EXT_1N_BYTE, &tmp, stride);
     bm_image_create(handle, in->height, in->width, FORMAT_BGR_PACKED,
                     DATA_TYPE_EXT_1N_BYTE, out);
-    bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP2);
+    bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP1);
 
     int size = in->height * stride[0];
     if (data_four_denominator != -1) {
@@ -386,6 +388,7 @@ void VideoDecFFM::mFrameCount(const char* video_file, int& mFrameCount) {
 }
 
 int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
+  printf("openDec, tid = %d\n", gettid());
   gettimeofday(&last_time, NULL);
   frame = av_frame_alloc();
   frame_id = 0;
@@ -676,7 +679,7 @@ std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
       std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
     gettimeofday(&last_time, NULL);
   }
-
+  // printf("grab frame, frameid is %d\n", frame_id);
   std::shared_ptr<bm_image> spBmImage = nullptr;
   AVFrame* avframe = grabFrame(eof);
   frameId = frame_id++;

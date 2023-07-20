@@ -211,7 +211,7 @@ common::ErrorCode Decode::parse_channel_task(
           loopNumIt->get<int>() == 0 ? 2147483647 : loopNumIt->get<int>();
     }
 
-    channelTask->request.fps = -1;
+    channelTask->request.fps = 1;
     auto fpsIt = configure.find(JSON_FPS);
     if (configure.end() == fpsIt || !channelIdIt->is_number_integer()) {
     } else {
@@ -254,7 +254,8 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
       [this, channelInfo, channelTask]() -> common::ErrorCode {
         prctl(PR_SET_NAME,
               std::to_string(channelTask->request.channelId).c_str());
-
+        IVS_DEBUG("Decoder initialized! Channel Id is {0}",
+                  channelTask->request.channelId);
         channelInfo->mSpDecoder = std::make_shared<Decoder>();
         if (!channelInfo->mSpDecoder) {
           channelTask->response.errorCode =
@@ -376,6 +377,9 @@ common::ErrorCode Decode::process(
   objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternal[channel_id];
 
   // push data to next element
+  if (objectMetadata->mFilter && !objectMetadata->mFrame->mEndOfStream) {
+    return common::ErrorCode::SUCCESS;
+  }
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
   int outputPort = 0;
   if (!getSinkElementFlag()) {

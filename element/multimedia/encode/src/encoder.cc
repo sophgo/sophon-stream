@@ -46,7 +46,7 @@ void bmBufferDeviceMemFreeEmpty(void* opaque, uint8_t* data) { return; }
 class Encoder::Encoder_CC {
  public:
   Encoder_CC();
-  Encoder_CC(bm_handle_t& handle, const std::string& enc_fmt,
+  Encoder_CC(int dev_id, const std::string& enc_fmt,
              const std::string& pix_fmt,
              const std::map<std::string, int>& enc_params);
 
@@ -112,10 +112,10 @@ class Encoder::Encoder_CC {
 
 Encoder::Encoder() : _impl(new Encoder_CC()) {}
 
-Encoder::Encoder(bm_handle_t& handle, const std::string& enc_fmt,
+Encoder::Encoder(int dev_id, const std::string& enc_fmt,
                  const std::string& pix_fmt,
                  const std::map<std::string, int>& enc_params)
-    : _impl(new Encoder_CC(handle, enc_fmt, pix_fmt, enc_params)) {}
+    : _impl(new Encoder_CC(dev_id, enc_fmt, pix_fmt, enc_params)) {}
 
 Encoder::~Encoder() { delete _impl; }
 
@@ -190,11 +190,10 @@ void Encoder::Encoder_CC::enc_params_prase() {
 
 Encoder::Encoder_CC::Encoder_CC() {}
 
-Encoder::Encoder_CC::Encoder_CC(bm_handle_t& handle, const std::string& enc_fmt,
+Encoder::Encoder_CC::Encoder_CC(int dev_id, const std::string& enc_fmt,
                                 const std::string& pix_fmt,
                                 const std::map<std::string, int>& enc_params)
     : index(0),
-      handle_(handle),
       is_jpeg_(false),
       is_rtsp_(false),
       is_rtmp_(false),
@@ -205,6 +204,7 @@ Encoder::Encoder_CC::Encoder_CC(bm_handle_t& handle, const std::string& enc_fmt,
       enc_fmt_(enc_fmt),
       enc_params_(enc_params),
       pix_fmt_(AV_PIX_FMT_NONE) {
+  bm_dev_request(&handle_, dev_id);
   enc_params_prase();
   if (pix_fmt == "I420") {
     pix_fmt_ = AV_PIX_FMT_YUV420P;

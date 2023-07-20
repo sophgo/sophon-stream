@@ -42,7 +42,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/osd.cc
     )
 
-    target_link_libraries(osd ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
+    target_link_libraries(osd ${BM_LIBS} ${FFMPEG_LIBS} ${OpenCV_LIBS} ${JPU_LIBS} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)

@@ -144,7 +144,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       int threadNumber = getThreadNumber();
       for (int i = 0; i < threadNumber; ++i) {
         mEncoderMap[i] =
-            std::make_shared<Encoder>(m_handle, encFmt, pixFmt, mEncodeParams);
+            std::make_shared<Encoder>(dev_id, encFmt, pixFmt, mEncodeParams);
       }
     } else if (mEncodeType == EncodeType::IMG_DIR) {
       const char* dir_path = "./results";
@@ -214,7 +214,8 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
         mEncodeType == EncodeType::VIDEO) {
       auto encodeIt = mEncoderMap.find(dataPipeId);
       // encodeIt->second->isRunning = false;
-      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData), false); // send stop signal to encoder thread
+      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData),
+      // false); // send stop signal to encoder thread
       IVS_DEBUG("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
     }
   }
@@ -280,14 +281,12 @@ void Encode::processVideoStream(
         default:
           IVS_ERROR("Encode type error, please input RTSP, RTMP or VIDEO");
       }
-      if (mChannelOutputPath.find(channel_id) == mChannelOutputPath.end()) {
-        mChannelOutputPath[channel_id] = output_path;
-        encodeIt->second->set_output_path(output_path);
-        encodeIt->second->set_enc_params_width(objectMetadata->mFrame->mWidth);
-        encodeIt->second->set_enc_params_height(
-            objectMetadata->mFrame->mHeight);
-        encodeIt->second->init_writer();
-      }
+
+      mChannelOutputPath[channel_id] = output_path;
+      encodeIt->second->set_output_path(output_path);
+      encodeIt->second->set_enc_params_width(objectMetadata->mFrame->mWidth);
+      encodeIt->second->set_enc_params_height(objectMetadata->mFrame->mHeight);
+      encodeIt->second->init_writer();
     }
     if (objectMetadata->mFrame->mSpDataOsd) {
       // encodeIt->second->isRunning = true;

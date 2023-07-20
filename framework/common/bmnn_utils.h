@@ -206,7 +206,7 @@ class BMNNNetwork : public ::sophon_stream::common::NoCopyable {
       }
       if(BM_FLOAT32 == m_netinfo->output_dtypes[i]) max_size *= 4;
       // auto ret =  bm_malloc_device_byte(m_handle, &m_outputTensors[i].device_mem, max_size);
-      auto ret = bm_malloc_device_byte(m_handle, &m_outputTensors[i]->device_mem, max_size);
+      auto ret = bm_malloc_device_byte_heap(m_handle, &m_outputTensors[i]->device_mem, 0, max_size);
 			assert(BM_SUCCESS == ret);
     }
     struct bm_misc_info misc_info;
