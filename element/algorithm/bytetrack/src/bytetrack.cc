@@ -43,6 +43,10 @@ common::ErrorCode Bytetrack::initContext(const std::string& json) {
     mContext->trackBuffer =
         trackBufferIt != configure.end() ? trackBufferIt->get<int>() : 30;
 
+    auto minBoxAreaIt = configure.find(CONFIG_INTERNAL_MIN_BOX_AREA_FIELD);
+    mContext->minBoxArea =
+        minBoxAreaIt != configure.end() ? minBoxAreaIt->get<int>() : 10;
+
     auto trackThreshIt = configure.find(CONFIG_INTERNAL_TRACK_THRESH_FIELD);
     mContext->trackThresh =
         trackThreshIt != configure.end() ? trackThreshIt->get<float>() : 0.5;
@@ -89,9 +93,7 @@ common::ErrorCode Bytetrack::initInternal(const std::string& json) {
 
     // 初始化 tracker
     for (int t = 0; t < threadNumber; ++t) {
-      mByteTrackerMap[t] = std::make_shared<BYTETracker>(
-          mContext->frameRate, mContext->trackBuffer, mContext->trackThresh,
-          mContext->highThresh, mContext->matchThresh);
+      mByteTrackerMap[t] = std::make_shared<BYTETracker>(mContext);
     }
 
   } while (false);

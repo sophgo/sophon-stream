@@ -16,14 +16,6 @@ namespace sophon_stream {
 namespace element {
 namespace bytetrack {
 
-struct BytetrackContext {
-  float trackThresh;
-  float highThresh;
-  float matchThresh;
-  int frameRate;
-  int trackBuffer;
-};
-
 class Bytetrack : public ::sophon_stream::framework::Element {
  public:
   Bytetrack();
@@ -36,6 +28,8 @@ class Bytetrack : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_FRAME_RATE_FIELD = "frame_rate";
   static constexpr const char* CONFIG_INTERNAL_TRACK_BUFFER_FIELD =
       "track_buffer";
+  static constexpr const char* CONFIG_INTERNAL_MIN_BOX_AREA_FIELD =
+      "min_box_area";
   static constexpr const char* CONFIG_INTERNAL_TRACK_THRESH_FIELD =
       "track_thresh";
   static constexpr const char* CONFIG_INTERNAL_HIGH_THRESH_FIELD =

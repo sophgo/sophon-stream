@@ -31,11 +31,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
 
-    # use Eigen
-    find_package(Eigen3 REQUIRED)
-    include_directories(${EIGEN3_INCLUDE_DIRS})
-    link_directories(${EIGEN3_LIB_DIRS})
-
     include_directories(../../../framework/)
     include_directories(../../../framework/include)
 
@@ -66,17 +61,12 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     link_directories("${SOPHON_SDK_SOC}/lib/")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
-    
+
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
-
-    # use Eigen
-    find_package(Eigen3 REQUIRED)
-    include_directories(${EIGEN3_INCLUDE_DIRS})
-    link_directories(${EIGEN3_LIB_DIRS})
 
     include_directories(include)
     add_library(bytetrack SHARED
@@ -86,5 +76,5 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
         src/bytetrack_strack.cc
         src/bytetrack_bytetracker.cc
         )
-    target_link_libraries(bytetrack ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(bytetrack ${BM_LIBS} ${FFMPEG_LIBS} ${OpenCV_LIBS}  ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()

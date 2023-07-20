@@ -14,29 +14,27 @@ namespace element {
 namespace bytetrack {
 
 STrack::STrack(std::vector<float> tlwh_, float score, int class_id) {
-  _tlwh.resize(4);
-  _tlwh.assign(tlwh_.begin(), tlwh_.end());
-
-  is_activated = false;
-  track_id = 0;
-  state = TrackState::New;
-
-  tlwh.resize(4);
-  tlbr.resize(4);
-
-  static_tlwh();
-  static_tlbr();
-  frame_id = 0;
-  tracklet_len = 0;
+  this->frame_id = 0;
+  this->tracklet_len = 0;
   this->score = score;
   this->class_id = class_id;
-  start_frame = 0;
+  this->start_frame = 0;
+  this->is_activated = false;
+  this->track_id = 0;
+  this->state = TrackState::New;
+
+  _tlwh.resize(4);
+  _tlwh.assign(tlwh_.begin(), tlwh_.end());
+  tlwh.resize(4);
+  tlbr.resize(4);
+  static_tlwh();
+  static_tlbr();
 }
 
 STrack::~STrack() {}
 
-void STrack::activate(KalmanFilter& kalman_filter, int frame_id) {
-  this->kalman_filter = kalman_filter;
+void STrack::activate(std::shared_ptr<KalmanFilter> kalman_filter,
+                      int frame_id) {
   this->track_id = this->next_id();
 
   std::vector<float> _tlwh_tmp(4);
@@ -45,14 +43,14 @@ void STrack::activate(KalmanFilter& kalman_filter, int frame_id) {
   _tlwh_tmp[2] = this->_tlwh[2];
   _tlwh_tmp[3] = this->_tlwh[3];
   std::vector<float> xyah = tlwh_to_xyah(_tlwh_tmp);
-  DETECTBOX xyah_box;
-  xyah_box[0] = xyah[0];
-  xyah_box[1] = xyah[1];
-  xyah_box[2] = xyah[2];
-  xyah_box[3] = xyah[3];
-  auto mc = this->kalman_filter.initiate(xyah_box);
-  this->mean = mc.first;
-  this->covariance = mc.second;
+  cv::Mat xyah_box(1, 4, CV_32F);
+  xyah_box.at<float>(0) = xyah[0];
+  xyah_box.at<float>(1) = xyah[1];
+  xyah_box.at<float>(2) = xyah[2];
+  xyah_box.at<float>(3) = xyah[3];
+  auto mc = kalman_filter->initiate(xyah_box);
+  this->mean = mc.first.clone();
+  this->covariance = mc.second.clone();
 
   static_tlwh();
   static_tlbr();
@@ -67,16 +65,18 @@ void STrack::activate(KalmanFilter& kalman_filter, int frame_id) {
   this->start_frame = frame_id;
 }
 
-void STrack::re_activate(STrack& new_track, int frame_id, bool new_id) {
-  std::vector<float> xyah = tlwh_to_xyah(new_track.tlwh);
-  DETECTBOX xyah_box;
-  xyah_box[0] = xyah[0];
-  xyah_box[1] = xyah[1];
-  xyah_box[2] = xyah[2];
-  xyah_box[3] = xyah[3];
-  auto mc = this->kalman_filter.update(this->mean, this->covariance, xyah_box);
-  this->mean = mc.first;
-  this->covariance = mc.second;
+void STrack::re_activate(std::shared_ptr<KalmanFilter> kalman_filter,
+                         std::shared_ptr<STrack> new_track, int frame_id,
+                         bool new_id) {
+  std::vector<float> xyah = tlwh_to_xyah(new_track->tlwh);
+  cv::Mat xyah_box(1, 4, CV_32F);
+  xyah_box.at<float>(0) = xyah[0];
+  xyah_box.at<float>(1) = xyah[1];
+  xyah_box.at<float>(2) = xyah[2];
+  xyah_box.at<float>(3) = xyah[3];
+  auto mc = kalman_filter->update(this->mean, this->covariance, xyah_box);
+  this->mean = mc.first.clone();
+  this->covariance = mc.second.clone();
 
   static_tlwh();
   static_tlbr();
@@ -85,32 +85,32 @@ void STrack::re_activate(STrack& new_track, int frame_id, bool new_id) {
   this->state = TrackState::Tracked;
   this->is_activated = true;
   this->frame_id = frame_id;
-  this->score = new_track.score;
+  this->score = new_track->score;
   if (new_id) this->track_id = next_id();
 }
 
-void STrack::update(STrack& new_track, int frame_id) {
+void STrack::update(std::shared_ptr<KalmanFilter> kalman_filter,
+                    std::shared_ptr<STrack> new_track, int frame_id) {
   this->frame_id = frame_id;
   this->tracklet_len++;
 
-  std::vector<float> xyah = tlwh_to_xyah(new_track.tlwh);
-  DETECTBOX xyah_box;
-  xyah_box[0] = xyah[0];
-  xyah_box[1] = xyah[1];
-  xyah_box[2] = xyah[2];
-  xyah_box[3] = xyah[3];
+  std::vector<float> xyah = tlwh_to_xyah(new_track->tlwh);
+  cv::Mat xyah_box(1, 4, CV_32F);
+  xyah_box.at<float>(0) = xyah[0];
+  xyah_box.at<float>(1) = xyah[1];
+  xyah_box.at<float>(2) = xyah[2];
+  xyah_box.at<float>(3) = xyah[3];
 
-  auto mc = this->kalman_filter.update(this->mean, this->covariance, xyah_box);
-  this->mean = mc.first;
-  this->covariance = mc.second;
+  auto mc = kalman_filter->update(this->mean, this->covariance, xyah_box);
+  this->mean = mc.first.clone();
+  this->covariance = mc.second.clone();
 
   static_tlwh();
   static_tlbr();
 
   this->state = TrackState::Tracked;
   this->is_activated = true;
-
-  this->score = new_track.score;
+  this->score = new_track->score;
 }
 
 void STrack::static_tlwh() {
@@ -122,10 +122,10 @@ void STrack::static_tlwh() {
     return;
   }
 
-  tlwh[0] = mean[0];
-  tlwh[1] = mean[1];
-  tlwh[2] = mean[2];
-  tlwh[3] = mean[3];
+  tlwh[0] = mean.at<float>(0);
+  tlwh[1] = mean.at<float>(1);
+  tlwh[2] = mean.at<float>(2);
+  tlwh[3] = mean.at<float>(3);
 
   tlwh[2] *= tlwh[3];
   tlwh[0] -= tlwh[2] / 2;
@@ -167,13 +167,15 @@ int STrack::next_id() {
 
 int STrack::end_frame() { return this->frame_id; }
 
-void STrack::multi_predict(std::vector<STrack*>& stracks,
-                           KalmanFilter& kalman_filter) {
+void STrack::multi_predict(std::vector<std::shared_ptr<STrack>>& stracks,
+                           std::shared_ptr<KalmanFilter> kalman_filter) {
   for (int i = 0; i < stracks.size(); i++) {
     if (stracks[i]->state != TrackState::Tracked) {
-      stracks[i]->mean[7] = 0;
+      stracks[i]->mean.at<float>(7) = 0;
     }
-    kalman_filter.predict(stracks[i]->mean, stracks[i]->covariance);
+    auto mc = kalman_filter->predict(stracks[i]->mean, stracks[i]->covariance);
+    stracks[i]->mean = mc.first.clone();
+    stracks[i]->covariance = mc.second.clone();
   }
 }
 
