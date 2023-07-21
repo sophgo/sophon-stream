@@ -13,10 +13,10 @@
 #include <pthread.h>
 
 #include <iostream>
-#include <thread>
 #include <mutex>
 #include <opencv2/core.hpp>
 #include <queue>
+#include <thread>
 
 #include "bmcv_api.h"
 #include "bmcv_api_ext.h"
@@ -93,7 +93,7 @@ class VideoDecFFM {
   /* close video decoder */
   void closeDec();
 
-  /* pic dec */ 
+  /* pic dec */
   std::shared_ptr<bm_image> picDec(bm_handle_t& handle, const char* path);
 
   /* set fps */
@@ -115,7 +115,7 @@ class VideoDecFFM {
   int video_stream_idx;
   int refcount;
   double fps;
-  double frame_interval_time; // ms
+  double frame_interval_time;  // ms
   struct timeval last_time;
   struct timeval current_time;
 

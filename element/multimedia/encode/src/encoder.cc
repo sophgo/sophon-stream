@@ -476,7 +476,7 @@ bool Encoder::Encoder_CC::pushQueue(std::shared_ptr<AVPacket> p) {
 std::shared_ptr<AVPacket> Encoder::Encoder_CC::popQueue() {
   std::lock_guard<std::mutex> lock(mQueueMtx);
   std::shared_ptr<AVPacket> p = nullptr;
-  printf("encode queue popping! queue size is %d\n", encoderQueue.size());
+  // printf("encode queue popping! queue size is %d\n", encoderQueue.size());
   if (!encoderQueue.empty()) {
     p = encoderQueue.front();
     encoderQueue.pop();
