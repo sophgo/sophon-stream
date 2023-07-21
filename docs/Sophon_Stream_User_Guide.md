@@ -55,6 +55,13 @@
 
 ### 1.2 编译命令
 
+需要注意，如果您的主机上没有安装boost库，则需要使用如下命令进行安装。
+
+```bash
+sudo apt-get update 
+sudo apt-get install libboost-all-dev
+```
+
 完成环境配置后，用户可以参考 [sophon-stream编译指南](./HowToMake.md)，使用如下命令编译。
 
 #### 1.2.1 x86/arm PCIe平台
