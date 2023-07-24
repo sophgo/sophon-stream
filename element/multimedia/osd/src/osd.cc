@@ -60,6 +60,13 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
       istream.close();
     }
 
+    std::string draw_utils =
+        configure.find(CONFIG_INTERNAL_DRWS_UTILS_FIELD)->get<std::string>();
+    mDrawUtils = DrawUtils::OPENCV;
+    if (draw_utils == "OPENCV") mDrawUtils = DrawUtils::OPENCV;
+    if (draw_utils == "BMCV") mDrawUtils = DrawUtils::BMCV;
+    IVS_DEBUG("Osd::initInternal: osd_type: {0:s}, draw_utils: {1:s}", osd_type,
+              draw_utils);
   } while (false);
   return errorCode;
 }
@@ -119,55 +126,58 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
                      [&](bm_image* img) { bm_image_destroy(*img); });
   bm_image image = *(objectMetadata->mFrame->mSpData);
 
-#if USE_OPENCV_DRAW_BOX
-  cv::Mat frame_to_draw;
-  cv::bmcv::toMAT(&image, frame_to_draw);
-  switch (mOsdType) {
-    case OsdType::DET:
-      draw_opencv_det_result(objectMetadata, mClassNames, frame_to_draw, true);
-      break;
+  if (mDrawUtils == DrawUtils::OPENCV) {
+    cv::Mat frame_to_draw;
+    cv::bmcv::toMAT(&image, frame_to_draw);
+    switch (mOsdType) {
+      case OsdType::DET:
+        draw_opencv_det_result(objectMetadata, mClassNames, frame_to_draw,
+                               true);
+        break;
 
-    case OsdType::TRACK:
-      draw_opencv_track_result(objectMetadata, mClassNames, frame_to_draw,
-                               false);
-      break;
+      case OsdType::TRACK:
+        draw_opencv_track_result(objectMetadata, mClassNames, frame_to_draw,
+                                 false);
+        break;
 
-    default:
-      IVS_WARN("osd_type not support");
-  }
-  cv::bmcv::toBMI(frame_to_draw, &(*imageStorage));
-  if ((*imageStorage).image_format != FORMAT_YUV420P) {
-    bm_image frame;
-    bm_image_create(objectMetadata->mFrame->mHandle, (*imageStorage).height,
-                    (*imageStorage).width, FORMAT_YUV420P,
-                    (*imageStorage).data_type, &frame);
-    bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1,
-                               &(*imageStorage), &frame);
-    bm_image_destroy(*imageStorage);
-    *imageStorage = frame;
-  }
-#else
-  bm_image_create(objectMetadata->mFrame->mHandle,
-                  objectMetadata->mFrame->mHeight,
-                  objectMetadata->mFrame->mWidth, FORMAT_YUV420P,
-                  image.data_type, &(*imageStorage));
-  bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
-                             &(*imageStorage));
-  switch (mOsdType) {
-    case OsdType::DET:
-      draw_bmcv_det_result(objectMetadata->mFrame->mHandle, objectMetadata,
-                           mClassNames, *imageStorage, false);
-      break;
-
-    case OsdType::TRACK:
-      draw_bmcv_track_result(objectMetadata->mFrame->mHandle, objectMetadata,
+      default:
+        IVS_WARN("osd_type not support");
+    }
+    cv::bmcv::toBMI(frame_to_draw, &(*imageStorage));
+    if ((*imageStorage).image_format != FORMAT_YUV420P) {
+      bm_image frame;
+      bm_image_create(objectMetadata->mFrame->mHandle, (*imageStorage).height,
+                      (*imageStorage).width, FORMAT_YUV420P,
+                      (*imageStorage).data_type, &frame);
+      bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1,
+                                 &(*imageStorage), &frame);
+      bm_image_destroy(*imageStorage);
+      *imageStorage = frame;
+    }
+  } else if (mDrawUtils == DrawUtils::BMCV) {
+    bm_image_create(objectMetadata->mFrame->mHandle,
+                    objectMetadata->mFrame->mHeight,
+                    objectMetadata->mFrame->mWidth, FORMAT_YUV420P,
+                    image.data_type, &(*imageStorage));
+    bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
+                               &(*imageStorage));
+    switch (mOsdType) {
+      case OsdType::DET:
+        draw_bmcv_det_result(objectMetadata->mFrame->mHandle, objectMetadata,
                              mClassNames, *imageStorage, false);
-      break;
+        break;
 
-    default:
-      IVS_WARN("osd_type not support");
+      case OsdType::TRACK:
+        draw_bmcv_track_result(objectMetadata->mFrame->mHandle, objectMetadata,
+                               mClassNames, *imageStorage, false);
+        break;
+
+      default:
+        IVS_WARN("osd_type not support");
+    }
+  } else {
   }
-#endif
+
   objectMetadata->mFrame->mSpDataOsd = imageStorage;
 }
 

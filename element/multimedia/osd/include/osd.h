@@ -16,7 +16,6 @@
 #include "common/object_metadata.h"
 #include "common/profiler.h"
 #include "element.h"
-#define USE_OPENCV_DRAW_BOX 1
 
 namespace sophon_stream {
 namespace element {
@@ -25,6 +24,7 @@ namespace osd {
 class Osd : public ::sophon_stream::framework::Element {
  public:
   enum class OsdType { DET, TRACK, REC, UNKNOWN };
+  enum class DrawUtils { OPENCV, BMCV, UNKNOWN };
   Osd();
   ~Osd() override;
 
@@ -35,10 +35,12 @@ class Osd : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_OSD_TYPE_FIELD = "osd_type";
   static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD =
       "class_names_file";
+  static constexpr const char* CONFIG_INTERNAL_DRWS_UTILS_FIELD = "draw_utils";
 
  private:
   std::vector<std::string> mClassNames;
   OsdType mOsdType;
+  DrawUtils mDrawUtils;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
   void draw(std::shared_ptr<common::ObjectMetadata> objectMetadata);
 };

@@ -1,7 +1,8 @@
 {
   "configure": {
     "osd_type": "TRACK",
-    "class_names_file": "../data/coco.names"
+    "class_names_file": "../data/coco.names",
+    "draw_utils": "OPENCV"
   },
   "shared_object": "../../../build/lib/libosd.so",
   "name": "osd",
