@@ -76,5 +76,5 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
         src/bytetrack_strack.cc
         src/bytetrack_bytetracker.cc
         )
-    target_link_libraries(bytetrack ${BM_LIBS} ${FFMPEG_LIBS} ${OpenCV_LIBS}  ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(bytetrack ${BM_LIBS} ${FFMPEG_LIBS} ${OpenCV_LIBS}  ${JPU_LIBS} -lopencv_video -fprofile-arcs -lgcov -lpthread)
 endif()
