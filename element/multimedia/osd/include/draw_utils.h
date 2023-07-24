@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 
+#include <mutex>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -32,13 +33,18 @@ const std::vector<std::vector<int>> colors = {
     {0, 64, 0},   {128, 64, 0},  {0, 192, 0},    {128, 192, 0},
     {0, 64, 128}};
 
+// 抽帧检测时缓存结果
+std::map<int, std::shared_ptr<common::ObjectMetadata>> lastObjectMetadataMap;
+std::mutex mLastObjectMetaDataMtx;
+
 void draw_bmcv_det_result(
     bm_handle_t& handle, std::shared_ptr<common::ObjectMetadata> objectMetadata,
     std::vector<std::string>& class_names, bm_image& frame,
     bool put_text_flag) {
   int colors_num = colors.size();
   std::map<int, std::vector<bmcv_rect_t>> rectsMap;
-
+  int thickness = 2;
+  float fontScale = 1;
   for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
     bmcv_rect_t rect;
     rect.start_x = detObj->mBox.mX;
@@ -57,7 +63,7 @@ void draw_bmcv_det_result(
 
   for (auto& rect : rectsMap) {
     bmcv_image_draw_rectangle(handle, frame, rect.second.size(),
-                              &rect.second[0], 3, colors[rect.first][0],
+                              &rect.second[0], thickness, colors[rect.first][0],
                               colors[rect.first][1], colors[rect.first][2]);
   }
 
@@ -70,8 +76,6 @@ void draw_bmcv_det_result(
       if (org_y < 20) org_y += 20;
       bmcv_point_t org = {org_x, org_y};
       bmcv_color_t bmcv_color = {255, 0, 0};
-      int thickness = 2;
-      float fontScale = 1;
       if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
                                             bmcv_color, fontScale, thickness)) {
         IVS_ERROR("bmcv put text error !!!");
@@ -82,18 +86,30 @@ void draw_bmcv_det_result(
 
 void draw_bmcv_track_result(
     bm_handle_t& handle, std::shared_ptr<common::ObjectMetadata> objectMetadata,
-    std::vector<std::string>& class_names, bm_image& frame,
-    bool put_text_flag) {
+    std::vector<std::string>& class_names, bm_image& frame, bool put_text_flag,
+    bool draw_interval) {
   int colors_num = colors.size();
   std::map<int, std::vector<bmcv_rect_t>> rectsMap;
+  int track_id;
+  int thickness = 2;
+  float fontScale = 1;
   int idx = 0;
-  for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
+  std::shared_ptr<common::ObjectMetadata> objData;
+  {
+    std::lock_guard<std::mutex> lk(mLastObjectMetaDataMtx);
+    objData = (objectMetadata->mFilter && draw_interval)
+                  ? lastObjectMetadataMap[objectMetadata->mFrame->mChannelId]
+                  : objectMetadata;
+    lastObjectMetadataMap[objectMetadata->mFrame->mChannelId] = objData;
+  }
+
+  for (auto detObj : objData->mDetectedObjectMetadatas) {
     bmcv_rect_t rect;
     rect.start_x = detObj->mBox.mX;
     rect.start_y = detObj->mBox.mY;
     rect.crop_w = detObj->mBox.mWidth;
     rect.crop_h = detObj->mBox.mHeight;
-    int track_id = objectMetadata->mTrackedObjectMetadatas[idx]->mTrackId;
+    int track_id = objData->mTrackedObjectMetadatas[idx]->mTrackId;
     if (!rectsMap.count(track_id % colors_num)) {
       std::vector<bmcv_rect_t> rects;
       rects.push_back(rect);
@@ -103,24 +119,23 @@ void draw_bmcv_track_result(
     }
     ++idx;
   }
+
   for (auto& rect : rectsMap) {
     bmcv_image_draw_rectangle(handle, frame, rect.second.size(),
-                              &rect.second[0], 3, colors[rect.first][0],
+                              &rect.second[0], thickness, colors[rect.first][0],
                               colors[rect.first][1], colors[rect.first][2]);
   }
 
   if (put_text_flag) {
     idx = 0;
-    for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
-      std::string label = std::to_string(
-          objectMetadata->mTrackedObjectMetadatas[idx]->mTrackId);
+    for (auto detObj : objData->mDetectedObjectMetadatas) {
+      std::string label =
+          std::to_string(objData->mTrackedObjectMetadatas[idx]->mTrackId);
       int org_x = detObj->mBox.mX;
       int org_y = detObj->mBox.mY;
       if (org_y < 20) org_y += 20;
       bmcv_point_t org = {org_x, org_y};
       bmcv_color_t bmcv_color = {255, 0, 0};
-      int thickness = 2;
-      float fontScale = 1;
       if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
                                             bmcv_color, fontScale, thickness)) {
         IVS_ERROR("bmcv put text error !!!");
@@ -165,14 +180,25 @@ void draw_opencv_det_result(
 
 void draw_opencv_track_result(
     std::shared_ptr<common::ObjectMetadata> objectMetadata,
-    std::vector<std::string>& class_names, cv::Mat& frame, bool put_text_flag) {
+    std::vector<std::string>& class_names, cv::Mat& frame, bool put_text_flag,
+    bool draw_interval) {
   // Draw a rectangle displaying the bounding box
   int colors_num = colors.size();
   int thickness = 2;
   float fontScale = 1;
+  int track_id;
   int idx = 0;
-  for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
-    int track_id = objectMetadata->mTrackedObjectMetadatas[idx]->mTrackId;
+  std::shared_ptr<common::ObjectMetadata> objData;
+  {
+    std::lock_guard<std::mutex> lk(mLastObjectMetaDataMtx);
+    objData = (objectMetadata->mFilter && draw_interval)
+                  ? lastObjectMetadataMap[objectMetadata->mFrame->mChannelId]
+                  : objectMetadata;
+    lastObjectMetadataMap[objectMetadata->mFrame->mChannelId] = objData;
+  }
+
+  for (auto detObj : objData->mDetectedObjectMetadatas) {
+    int track_id = objData->mTrackedObjectMetadatas[idx]->mTrackId;
     cv::Scalar color(colors[track_id % colors_num][0],
                      colors[track_id % colors_num][1],
                      colors[track_id % colors_num][2]);
@@ -182,8 +208,7 @@ void draw_opencv_track_result(
                   color, thickness);
 
     if (put_text_flag) {
-      std::string label = std::to_string(
-          objectMetadata->mTrackedObjectMetadatas[idx]->mTrackId);
+      std::string label = std::to_string(track_id);
       int baseLine;
       cv::Size labelSize =
           getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);

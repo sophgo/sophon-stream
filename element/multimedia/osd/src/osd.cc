@@ -61,12 +61,17 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
     }
 
     std::string draw_utils =
-        configure.find(CONFIG_INTERNAL_DRWS_UTILS_FIELD)->get<std::string>();
+        configure.find(CONFIG_INTERNAL_DRAW_UTILS_FIELD)->get<std::string>();
     mDrawUtils = DrawUtils::OPENCV;
     if (draw_utils == "OPENCV") mDrawUtils = DrawUtils::OPENCV;
     if (draw_utils == "BMCV") mDrawUtils = DrawUtils::BMCV;
-    IVS_DEBUG("Osd::initInternal: osd_type: {0:s}, draw_utils: {1:s}", osd_type,
-              draw_utils);
+
+    mDrawInterval = false;
+    mDrawInterval =
+        configure.find(CONFIG_INTERNAL_DRAW_INTERVAL_FIELD)->get<bool>();
+    IVS_DEBUG("Osd::initInternal: osd_type: {0}, draw_utils: {1}, draw_interval: {2}", osd_type,
+              draw_utils, mDrawInterval);
+
   } while (false);
   return errorCode;
 }
@@ -137,7 +142,7 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
 
       case OsdType::TRACK:
         draw_opencv_track_result(objectMetadata, mClassNames, frame_to_draw,
-                                 false);
+                                 false, mDrawInterval);
         break;
 
       default:
@@ -169,7 +174,7 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
 
       case OsdType::TRACK:
         draw_bmcv_track_result(objectMetadata->mFrame->mHandle, objectMetadata,
-                               mClassNames, *imageStorage, false);
+                               mClassNames, *imageStorage, false, mDrawInterval);
         break;
 
       default:

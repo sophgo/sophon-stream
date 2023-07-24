@@ -35,12 +35,15 @@ class Osd : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_OSD_TYPE_FIELD = "osd_type";
   static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FIELD =
       "class_names_file";
-  static constexpr const char* CONFIG_INTERNAL_DRWS_UTILS_FIELD = "draw_utils";
+  static constexpr const char* CONFIG_INTERNAL_DRAW_UTILS_FIELD = "draw_utils";
+  static constexpr const char* CONFIG_INTERNAL_DRAW_INTERVAL_FIELD =
+      "draw_interval";
 
  private:
   std::vector<std::string> mClassNames;
   OsdType mOsdType;
   DrawUtils mDrawUtils;
+  bool mDrawInterval;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
   void draw(std::shared_ptr<common::ObjectMetadata> objectMetadata);
 };
