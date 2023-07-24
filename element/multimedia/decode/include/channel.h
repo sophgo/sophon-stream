@@ -26,6 +26,10 @@ struct ChannelOperateRequest {
     PAUSE,
     RESUME,
   };
+  enum class SampleStrategy {
+    DROP,
+    SAVE,
+  };
   enum class SourceType { RTSP, RTMP, VIDEO, IMG_DIR, BASE64, UNKNOWN };
   int channelId;
   int loopNum;
@@ -37,6 +41,7 @@ struct ChannelOperateRequest {
   int sampleInterval;
   int base64Port;
   std::vector<int> skip_element;
+  SampleStrategy sampleStrategy;
 };
 
 struct ChannelOperateResponse {

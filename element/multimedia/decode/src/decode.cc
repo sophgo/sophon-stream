@@ -226,6 +226,16 @@ common::ErrorCode Decode::parse_channel_task(
       channelTask->request.sampleInterval = sampleIntervalIt->get<int>();
     }
 
+    channelTask->request.sampleStrategy =
+        ChannelOperateRequest::SampleStrategy::DROP;
+    auto strategyIt = configure.find(JSON_SAMPLE_STRATEGY);
+    if (configure.end() != strategyIt && strategyIt->is_string()) {
+      channelTask->request.sampleStrategy =
+          strategyIt->get<std::string>() == "SAVE"
+              ? ChannelOperateRequest::SampleStrategy::SAVE
+              : ChannelOperateRequest::SampleStrategy::DROP;
+    }
+
   } while (false);
 
   return errorCode;
@@ -377,7 +387,9 @@ common::ErrorCode Decode::process(
   objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternal[channel_id];
 
   // push data to next element
-  if (objectMetadata->mFilter && !objectMetadata->mFrame->mEndOfStream) {
+  if (objectMetadata->mFilter && !objectMetadata->mFrame->mEndOfStream &&
+      channelTask->request.sampleStrategy ==
+          ChannelOperateRequest::SampleStrategy::DROP) {
     return common::ErrorCode::SUCCESS;
   }
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;

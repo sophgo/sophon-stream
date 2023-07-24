@@ -34,6 +34,8 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED =
     "sample_interval";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED =
     "skip_element";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED =
+    "sample_strategy";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -70,6 +72,10 @@ demo_config parse_demo_json(std::string& json_path) {
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED);
     if (channel_it.end() != sample_interval_it)
       channel_json["sample_interval"] = sample_interval_it->get<int>();
+
+    auto sample_strategy_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED);
+    if(channel_it.end() != sample_strategy_it)
+      channel_json["sample_strategy"] = sample_strategy_it->get<std::string>();
 
     auto skip_element_it =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED);

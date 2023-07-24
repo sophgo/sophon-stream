@@ -148,6 +148,7 @@ class Decode : public ::sophon_stream::framework::Element {
   static constexpr const char* JSON_SAMPLE_INTERVAL = "sample_interval";
   static constexpr const char* JSON_BASE64_PORT = "base64_port";
   static constexpr const char* JSON_SKIP_ELEMENT = "skip_element";
+  static constexpr const char* JSON_SAMPLE_STRATEGY = "sample_strategy";
 
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
