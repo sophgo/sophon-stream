@@ -46,8 +46,7 @@ void bmBufferDeviceMemFreeEmpty(void* opaque, uint8_t* data) { return; }
 class Encoder::Encoder_CC {
  public:
   Encoder_CC();
-  Encoder_CC(int dev_id, const std::string& enc_fmt,
-             const std::string& pix_fmt,
+  Encoder_CC(int dev_id, const std::string& enc_fmt, const std::string& pix_fmt,
              const std::map<std::string, int>& enc_params);
 
   ~Encoder_CC();
@@ -98,10 +97,10 @@ class Encoder::Encoder_CC {
   int bm_image_to_avframe(bm_handle_t& handle, bm_image* image, AVFrame* frame);
   int flush_encoder();
 
-  std::queue<std::shared_ptr<AVPacket>> encoderQueue;
+  std::queue<std::shared_ptr<void>> encoderQueue;
   static constexpr int queueMinSize = 5;
-  bool pushQueue(std::shared_ptr<AVPacket> p);
-  std::shared_ptr<AVPacket> popQueue();
+  bool pushQueue(std::shared_ptr<void> p);
+  std::shared_ptr<void> popQueue();
   int getSize();
   std::mutex mQueueMtx;
   void flowControlFunc();
@@ -356,8 +355,8 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
       gettimeofday(&tv2, NULL);
       int time_interval2 =
           (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
-      printf("storage_convert_ret: %d, vpp_convert cost: %lld\n", ret,
-             time_interval2);
+      // printf("storage_convert_ret: %d, vpp_convert cost: %lld\n", ret,
+      //        time_interval2);
       if (BM_SUCCESS != ret) {
         return ret;
       }
@@ -467,15 +466,15 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
 
 bool Encoder::Encoder_CC::is_opened() { return opened_; }
 
-bool Encoder::Encoder_CC::pushQueue(std::shared_ptr<AVPacket> p) {
+bool Encoder::Encoder_CC::pushQueue(std::shared_ptr<void> p) {
   std::lock_guard<std::mutex> lock(mQueueMtx);
   encoderQueue.push(p);
   return true;
 }
 
-std::shared_ptr<AVPacket> Encoder::Encoder_CC::popQueue() {
+std::shared_ptr<void> Encoder::Encoder_CC::popQueue() {
   std::lock_guard<std::mutex> lock(mQueueMtx);
-  std::shared_ptr<AVPacket> p = nullptr;
+  std::shared_ptr<void> p = nullptr;
   // printf("encode queue popping! queue size is %d\n", encoderQueue.size());
   if (!encoderQueue.empty()) {
     p = encoderQueue.front();
@@ -503,20 +502,22 @@ void Encoder::Encoder_CC::flowControlFunc() {
         std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch())
             .count();
-
-    auto ret = av_interleaved_write_frame(enc_format_ctx_, p.get());
-
     if (is_rtsp_) {
-      float tmp_fps = mFpsProfiler.getTmpFps();
-      int64_t frame_interval =
-          1 * 1000 * 1000 / tmp_fps == 0 ? params_map_["framerate"] : tmp_fps;
-      int64_t push_ok = std::chrono::duration_cast<std::chrono::microseconds>(
-                            std::chrono::system_clock::now().time_since_epoch())
-                            .count();
-      int64_t diff = push_ok - push_start_time;
-      // printf("encode diff time is %lld\n", diff);
-      if (diff < frame_interval && diff > 0) av_usleep(frame_interval - diff);
+      std::shared_ptr<AVPacket> pp = std::static_pointer_cast<AVPacket>(p);
+      auto ret = av_interleaved_write_frame(enc_format_ctx_, pp.get());
+    } else if (is_rtmp_) {
+      std::shared_ptr<cv::Mat> pp = std::static_pointer_cast<cv::Mat>(p);
+      writer.write(*pp);
     }
+    float tmp_fps = mFpsProfiler.getTmpFps();
+    int64_t frame_interval =
+        1 * 1000 * 1000 / (tmp_fps == 0 ? params_map_["framerate"] : tmp_fps);
+    int64_t push_ok = std::chrono::duration_cast<std::chrono::microseconds>(
+                          std::chrono::system_clock::now().time_since_epoch())
+                          .count();
+    int64_t diff = push_ok - push_start_time;
+    // printf("encode diff time is %lld\n", diff);
+    if (diff < frame_interval && diff > 0) av_usleep(frame_interval - diff);
   }
   return;
 }
@@ -537,14 +538,9 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
         av_frame_free(&p);
       }
     });
-    // timeval tv1, tv2;
-    // gettimeofday(&tv1, NULL);
     std::shared_ptr<AVPacket> test_enc_pkt(new AVPacket);
 
     ret = bm_image_to_avframe(handle_, &image, frame_.get());
-    // gettimeofday(&tv2, NULL);
-    // int time_interval1 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
-    // (tv2.tv_usec-tv1.tv_usec); printf("1 cost: %lld\n", time_interval1);
     if (ret < 0) return -1;
     test_enc_pkt->data = NULL;
     test_enc_pkt->size = 0;
@@ -552,28 +548,22 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
 
     ret = avcodec_encode_video2(enc_ctx_, test_enc_pkt.get(), frame_.get(),
                                 &got_output);
-
     if (ret < 0) return ret;
     if (got_output == 0) {
       return -1;
     }
     av_packet_rescale_ts(test_enc_pkt.get(), enc_ctx_->time_base,
                          out_stream_->time_base);
-
     mFpsProfiler.add(1);
-    pushQueue(test_enc_pkt);
+    pushQueue(std::static_pointer_cast<void>(test_enc_pkt));
     return ret;
   }
   if (is_rtmp_) {
     cv::Mat write_mat;
     cv::bmcv::toMAT(&image, write_mat, true);
-    writer.write(write_mat);
-    int64_t frame_interval = 1 * 1000 * 1000 / params_map_["framerate"];
-    int64_t push_ok = std::chrono::duration_cast<std::chrono::microseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count();
-    int64_t diff = push_ok - push_start_time;
-    if (diff < frame_interval && diff > 0) av_usleep(frame_interval - diff);
+    mFpsProfiler.add(1);
+    pushQueue(
+        std::static_pointer_cast<void>(std::make_shared<cv::Mat>(write_mat)));
     return 0;
   }
 }
@@ -607,7 +597,7 @@ int Encoder::Encoder_CC::flush_encoder() {
 void Encoder::Encoder_CC::release() {
   isRunning = false;
   flow_control.join();
-  if (getSize() > 0) {
+  if (enc_ctx_) {
     flush_encoder();
     av_write_trailer(enc_format_ctx_);
   }
