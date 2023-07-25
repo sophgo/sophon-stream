@@ -9,8 +9,6 @@
 
 #include "bytetrack_kalmanfilter.h"
 
-#include <eigen3/Eigen/Cholesky>
-
 namespace sophon_stream {
 namespace element {
 namespace bytetrack {

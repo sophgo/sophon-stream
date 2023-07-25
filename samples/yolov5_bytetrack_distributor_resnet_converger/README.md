@@ -110,19 +110,11 @@ chmod -R +x scripts/
 
 如果您在x86/arm平台安装了PCIe加速卡（如SC系列加速卡），可以直接使用它作为开发环境和运行环境。您需要安装libsophon、sophon-opencv和sophon-ffmpeg，具体步骤可参考[x86-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建)或[arm-pcie平台的开发和运行环境搭建](../../docs/EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建)。
 
-本例程依赖Eigen，您需要在编译程序的机器上运行如下命令安装：
-```bash
-sudo apt install libeigen3-dev
-```
 
 ### 4.2 SoC平台
 
 如果您使用SoC平台（如SE、SM系列边缘设备），刷机后在`/opt/sophon/`下已经预装了相应的libsophon、sophon-opencv和sophon-ffmpeg运行库包，可直接使用它作为运行环境。通常还需要一台x86主机作为开发环境，用于交叉编译C++程序。
 
-本例程依赖Eigen，您需要在编译程序的机器上运行如下命令安装：
-```bash
-sudo apt install libeigen3-dev
-```
 
 ## 5. 程序编译
 程序运行前需要编译可执行文件。
