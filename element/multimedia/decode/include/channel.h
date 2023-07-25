@@ -28,7 +28,7 @@ struct ChannelOperateRequest {
   };
   enum class SampleStrategy {
     DROP,
-    SAVE,
+    KEEP,
   };
   enum class SourceType { RTSP, RTMP, VIDEO, IMG_DIR, BASE64, UNKNOWN };
   int channelId;

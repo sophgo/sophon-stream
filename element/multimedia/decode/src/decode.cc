@@ -231,8 +231,8 @@ common::ErrorCode Decode::parse_channel_task(
     auto strategyIt = configure.find(JSON_SAMPLE_STRATEGY);
     if (configure.end() != strategyIt && strategyIt->is_string()) {
       channelTask->request.sampleStrategy =
-          strategyIt->get<std::string>() == "SAVE"
-              ? ChannelOperateRequest::SampleStrategy::SAVE
+          strategyIt->get<std::string>() == "KEEP"
+              ? ChannelOperateRequest::SampleStrategy::KEEP
               : ChannelOperateRequest::SampleStrategy::DROP;
     }
 

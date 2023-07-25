@@ -46,7 +46,7 @@ sophon-stream解码器插件具有一些可配置的参数，可以根据需求�
       "skip_element": [5005, 5006],
       "fps": 1,
       "sample_interval": 5,
-      "sample_strategy": "SAVE"
+      "sample_strategy": "KEEP"
     },
     {
       "channel_id": 3,
@@ -79,7 +79,7 @@ sophon-stream解码器插件具有一些可配置的参数，可以根据需求�
 |fps | 浮点数  | 1 | 用于控制视频流的fps，fps=-1表示不控制fps，source_type为"IMG_DIR"时由设置的值决定，其他source_type从视频流读取fps，设置的值不生效|
 |base64_port | 整数  | 12348 | base64对应http端口 |
 |skip_element| list | 无 | 设置该路数据是否跳过某些element，目前只对osd和encode生效。不设置时，认为不跳过任何element|
-|sample_strategy|字符串|"DROP"|在有抽帧的情况下，设置被抽掉的帧是保留还是直接丢弃。"DROP"表示丢弃，"SAVE"表示保留|
+|sample_strategy|字符串|"DROP"|在有抽帧的情况下，设置被抽掉的帧是保留还是直接丢弃。"DROP"表示丢弃，"KEEP"表示保留|
 
 
 其中，channel_id为输入视频的通道编号，与[编码器](../encode/README.md)输出channel_id相对应。例如，输入channel_id为20，使用编码器保存结果为本地视频时，文件名为20.avi。
