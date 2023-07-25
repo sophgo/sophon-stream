@@ -10,6 +10,7 @@
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
+#include "common/profiler.h"
 #include "engine.h"
 #include "init_engine.h"
 
@@ -73,8 +74,9 @@ demo_config parse_demo_json(std::string& json_path) {
     if (channel_it.end() != sample_interval_it)
       channel_json["sample_interval"] = sample_interval_it->get<int>();
 
-    auto sample_strategy_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED);
-    if(channel_it.end() != sample_strategy_it)
+    auto sample_strategy_it =
+        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED);
+    if (channel_it.end() != sample_strategy_it)
       channel_json["sample_strategy"] = sample_strategy_it->get<std::string>();
 
     auto skip_element_it =
@@ -119,12 +121,21 @@ int main() {
   demo_json.num_channels_per_graph = demo_json.channel_configs.size();
   int num_channels = demo_json.num_channels_per_graph * demo_json.num_graphs;
 
+  std::vector<::sophon_stream::common::FpsProfiler> fpsProfilers(num_channels);
+  for (int i = 0; i < num_channels; ++i) {
+    std::string fpsName = "channel_" + std::to_string(i);
+    fpsProfilers[i].config(fpsName, 100);
+  }
+
   auto sinkHandler = [&](std::shared_ptr<void> data) {
     // write stop data handler here
     auto objectMetadata =
         std::static_pointer_cast<sophon_stream::common::ObjectMetadata>(data);
     if (objectMetadata == nullptr) return;
-    if (!objectMetadata->mFilter) frameCount++;
+    if (!objectMetadata->mFilter) {
+      frameCount++;
+      fpsProfilers[objectMetadata->mFrame->mChannelIdInternal].add(1);
+    }
     if (objectMetadata->mFrame->mEndOfStream) {
       printf("meet a eof\n");
       finishedChannelCount++;
