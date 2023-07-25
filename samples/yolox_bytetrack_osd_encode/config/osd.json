@@ -3,7 +3,8 @@
     "osd_type": "TRACK",
     "class_names_file": "../data/coco.names",
     "draw_utils": "OPENCV",
-    "draw_interval": false
+    "draw_interval": false,
+    "put_text": false
   },
   "shared_object": "../../../build/lib/libosd.so",
   "name": "osd",

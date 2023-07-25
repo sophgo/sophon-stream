@@ -21,7 +21,8 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
     "osd_type": "TRACK",
     "class_names_file": "../data/coco.names",
     "draw_utils": "OPENCV",
-    "draw_interval": false
+    "draw_interval": false,
+    "put_text": false
   },
   "shared_object": "../../../build/lib/libosd.so",
   "device_id": 0,
@@ -38,6 +39,7 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 | class_names_file | 字符串 |                无                 |         class name文件的路径         |
 |    draw_utils    | 字符串 |             "OPENCV"              |   画图工具，包括 "OPENCV"，"BMCV"    |
 |  draw_interval   | 布尔值 |               false               |          是否画出未采样的帧          |
+|     put_text     | 布尔值 |               false               |             是否输出文本             |
 |  shared_object   | 字符串 | "../../../build/lib/libencode.so" |         libencode 动态库路径         |
 |    device_id     |  整数  |                 0                 |              tpu 设备号              |
 |        id        |  整数  |                 0                 |              element id              |
