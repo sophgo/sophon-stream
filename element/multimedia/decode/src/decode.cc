@@ -210,8 +210,7 @@ common::ErrorCode Decode::parse_channel_task(
       channelTask->request.loopNum =
           loopNumIt->get<int>() == 0 ? 2147483647 : loopNumIt->get<int>();
     }
-
-    channelTask->request.fps = 1;
+    channelTask->request.fps = 30;
     auto fpsIt = configure.find(JSON_FPS);
     if (configure.end() == fpsIt || !channelIdIt->is_number_integer()) {
     } else {
