@@ -1,0 +1,240 @@
+[
+    {
+        "pipeline_id": 0,
+        "pipeline_name": "yolov5",
+        "is_running": false,
+        "json_list": [
+            {
+                "json_id": "0",
+                "json_name": "decode.json"
+            },
+            {
+                "json_id": "1",
+                "json_name": "engine.json"
+            },
+            {
+                "json_id": "2",
+                "json_name": "yolov5_demo.json"
+            },
+            {
+                "json_id": "3",
+                "json_name": "yolov5_infer.json"
+            },
+            {
+                "json_id": "4",
+                "json_name": "yolov5_post.json"
+            },
+            {
+                "json_id": "5",
+                "json_name": "yolov5_pre.json"
+            }
+        ]
+    },
+    {
+        "pipeline_id": 1,
+        "pipeline_name": "yolox",
+        "is_running": false,
+        "json_list": [
+            {
+                "json_id": "6",
+                "json_name": "decode.json"
+            },
+            {
+                "json_id": "7",
+                "json_name": "engine.json"
+            },
+            {
+                "json_id": "8",
+                "json_name": "yolox_demo.json"
+            },
+            {
+                "json_id": "9",
+                "json_name": "yolox_infer.json"
+            },
+            {
+                "json_id": "10",
+                "json_name": "yolox_post.json"
+            },
+            {
+                "json_id": "11",
+                "json_name": "yolox_pre.json"
+            }
+        ]
+    },
+    {
+        "pipeline_id": 2,
+        "pipeline_name": "resnet",
+        "is_running": false,
+        "json_list": [
+            {
+                "json_id": "12",
+                "json_name": "decode.json"
+            },
+            {
+                "json_id": "13",
+                "json_name": "engine.json"
+            },
+            {
+                "json_id": "14",
+                "json_name": "resnet_demo.json"
+            },
+            {
+                "json_id": "15",
+                "json_name": "resnet_roi.json"
+            },
+            {
+                "json_id": "16",
+                "json_name": "resnet.json"
+            }
+        ]
+    },
+    {
+        "pipeline_id": 3,
+        "pipeline_name": "bytetrack",
+        "is_running": false,
+        "json_list": [
+            {
+                "json_id": "17",
+                "json_name": "bytetrack_demo.json"
+            },
+            {
+                "json_id": "18",
+                "json_name": "bytetrack.json"
+            },
+            {
+                "json_id": "19",
+                "json_name": "decode.json"
+            },
+            {
+                "json_id": "20",
+                "json_name": "engine.json"
+            },
+            {
+                "json_id": "21",
+                "json_name": "yolox_infer.json"
+            },
+            {
+                "json_id": "22",
+                "json_name": "yolox_post.json"
+            },
+            {
+                "json_id": "23",
+                "json_name": "yolox_pre.json"
+            }
+        ]
+    },
+    {
+        "pipeline_id": 4,
+        "pipeline_name": "yolov5_bytetrack_distributor_resnet_converger",
+        "is_running": false,
+        "json_list": [
+            {
+                "json_id": "24",
+                "json_name": "bytetrack.json"
+            },
+            {
+                "json_id": "25",
+                "json_name": "converger.json"
+            },
+            {
+                "json_id": "26",
+                "json_name": "decode.json"
+            },
+            {
+                "json_id": "27",
+                "json_name": "distributor_class.json"
+            },
+            {
+                "json_id": "28",
+                "json_name": "distributor_frame_class.json"
+            },
+            {
+                "json_id": "29",
+                "json_name": "distributor_frame.json"
+            },
+            {
+                "json_id": "30",
+                "json_name": "distributor_time_class.json"
+            },
+            {
+                "json_id": "31",
+                "json_name": "distributor_time.json"
+            },
+            {
+                "json_id": "32",
+                "json_name": "engine.json"
+            },
+            {
+                "json_id": "33",
+                "json_name": "resnet_car.json"
+            },
+            {
+                "json_id": "34",
+                "json_name": "resnet_person.json"
+            },
+            {
+                "json_id": "35",
+                "json_name": "yolov5_bytetrack_distributor_resnet_converger_demo.json"
+            },
+            {
+                "json_id": "36",
+                "json_name": "yolov5_infer.json"
+            },
+            {
+                "json_id": "37",
+                "json_name": "yolov5_post.json"
+            },
+            {
+                "json_id": "38",
+                "json_name": "yolov5_pre.json"
+            }
+        ]
+    },
+    {
+        "pipeline_id": 5,
+        "pipeline_name": "yolox_bytetrack_osd_encode",
+        "is_running": false,
+        "json_list": [
+            {
+                "json_id": "39",
+                "json_name": "bytetrack.json"
+            },
+            {
+                "json_id": "40",
+                "json_name": "decode.json"
+            },
+            {
+                "json_id": "41",
+                "json_name": "encode.json"
+            },
+            {
+                "json_id": "42",
+                "json_name": "engine.json"
+            },
+            {
+                "json_id": "43",
+                "json_name": "osd.json"
+            },
+            {
+                "json_id": "44",
+                "json_name": "ws.json"
+            },
+            {
+                "json_id": "45",
+                "json_name": "yolox_bytetrack_osd_encode_demo.json"
+            },
+            {
+                "json_id": "46",
+                "json_name": "yolox_infer.json"
+            },
+            {
+                "json_id": "47",
+                "json_name": "yolox_post.json"
+            },
+            {
+                "json_id": "48",
+                "json_name": "yolox_pre.json"
+            }
+        ]
+    }
+]
