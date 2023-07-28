@@ -23,6 +23,7 @@
 #include "recognized_object_metadata.h"
 #include "segmented_object_metadata.h"
 #include "tracked_object_metadata.h"
+#include "posed_object_metadata.h"
 
 namespace sophon_stream {
 namespace common {
@@ -120,6 +121,11 @@ struct ObjectMetadata {
    */
   std::vector<std::shared_ptr<common::DetectedObjectMetadata>>
       mDetectedObjectMetadatas;
+  /**
+   * @brief 姿态结果的vector，一个目标对应一个PosedObjectMetadata
+   */
+  std::vector<std::shared_ptr<common::PosedObjectMetadata>>
+      mPosedObjectMetadatas;
   /**
    * @brief 识别结果的vector，一个原始ObjectMetadata通过多个模型，每个模型的结果对应一个RecognizedObjectMetadata
    */

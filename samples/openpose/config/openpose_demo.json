@@ -1,0 +1,10 @@
+{
+  "num_channels_per_graph": 2,
+  "channel": {
+    "url": "../data/videos/test.mp4",
+    "source_type": "VIDEO",
+    "loop_num": 1
+  },
+  "download_image": false,
+  "engine_config_path": "../config/engine.json"
+}

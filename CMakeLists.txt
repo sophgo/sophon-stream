@@ -19,6 +19,7 @@ add_subdirectory(element/algorithm/yolox)
 add_subdirectory(element/algorithm/yolov5)
 add_subdirectory(element/algorithm/bytetrack)
 add_subdirectory(element/algorithm/resnet)
+add_subdirectory(element/algorithm/openpose)
 add_subdirectory(element/multimedia/decode)
 add_subdirectory(element/multimedia/osd)
 add_subdirectory(element/multimedia/encode)
@@ -40,6 +41,9 @@ add_subdirectory(samples/bytetrack)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/resnet/build)
 add_subdirectory(samples/resnet)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/openpose/build)
+add_subdirectory(samples/openpose)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/yolox_bytetrack_osd_encode/build)
 add_subdirectory(samples/yolox_bytetrack_osd_encode)
