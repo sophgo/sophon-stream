@@ -19,6 +19,7 @@
 #include <opencv2/videoio.hpp>
 
 #include "common/logger.h"
+#include "common/posed_object_metadata.h"
 #include "element_factory.h"
 
 namespace sophon_stream {
@@ -32,6 +33,40 @@ const std::vector<std::vector<int>> colors = {
     {64, 0, 128}, {192, 0, 128}, {64, 128, 128}, {192, 128, 128},
     {0, 64, 0},   {128, 64, 0},  {0, 192, 0},    {128, 192, 0},
     {0, 64, 128}};
+
+const std::vector<float> pose_colors = {
+    255.f, 0.f,   0.f,   255.f, 85.f,  0.f,   255.f, 170.f, 0.f,   255.f, 255.f,
+    0.f,   170.f, 255.f, 0.f,   85.f,  255.f, 0.f,   0.f,   255.f, 0.f,   0.f,
+    255.f, 85.f,  0.f,   255.f, 170.f, 0.f,   255.f, 255.f, 0.f,   170.f, 255.f,
+    0.f,   85.f,  255.f, 0.f,   0.f,   255.f, 85.f,  0.f,   255.f, 170.f, 0.f,
+    255.f, 255.f, 0.f,   255.f, 255.f, 0.f,   170.f, 255.f, 0.f,   85.f,  255.f,
+    0.f,   0.f,   255.f, 0.f,   255.f, 255.f, 85.f,  255.f, 255.f, 170.f, 255.f,
+    255.f, 255.f, 255.f, 170.f, 255.f, 255.f, 85.f,  255.f, 255.f};
+
+std::vector<unsigned int> getPosePairs(
+    common::PosedObjectMetadata::EModelType model_type) {
+  switch (model_type) {
+    case common::PosedObjectMetadata::EModelType::BODY_25:
+      return {1,  8,  1,  2,  1,  5,  2,  3,  3,  4,  5,  6,  6,
+              7,  8,  9,  9,  10, 10, 11, 8,  12, 12, 13, 13, 14,
+              1,  0,  0,  15, 15, 17, 0,  16, 16, 18, 2,  17, 5,
+              18, 14, 19, 19, 20, 14, 21, 11, 22, 22, 23, 11, 24};
+    case common::PosedObjectMetadata::EModelType::COCO_18:
+      return {1, 2,  1,  5,  2,  3,  3,  4,  5,  6,  6,  7, 1,
+              8, 8,  9,  9,  10, 1,  11, 11, 12, 12, 13, 1, 0,
+              0, 14, 14, 16, 0,  15, 15, 17, 2,  16, 5,  17};
+    default:
+      // COCO_18
+      return {1, 2,  1,  5,  2,  3,  3,  4,  5,  6,  6,  7, 1,
+              8, 8,  9,  9,  10, 1,  11, 11, 12, 12, 13, 1, 0,
+              0, 14, 14, 16, 0,  15, 15, 17, 2,  16, 5,  17};
+  }
+}
+
+template <typename T>
+inline int intRound(const T a) {
+  return int(a + 0.5f);
+}
 
 // 抽帧检测时缓存结果
 std::map<int, std::shared_ptr<common::ObjectMetadata>> lastObjectMetadataMap;
@@ -218,6 +253,97 @@ void draw_opencv_track_result(
                   cv::FONT_HERSHEY_SIMPLEX, fontScale, color, thickness);
     }
     ++idx;
+  }
+}
+
+void draw_bmcv_pose_result(
+    bm_handle_t& handle, std::shared_ptr<common::ObjectMetadata> objectMetadata,
+    bm_image& frame, bool draw_interval) {
+  // Parameters
+  const auto numberColors = pose_colors.size();
+  const float threshold = 0.05;
+  const float scale = 1.0;
+  const auto thicknessLine = 2;
+
+  std::shared_ptr<common::ObjectMetadata> objData;
+  {
+    std::lock_guard<std::mutex> lk(mLastObjectMetaDataMtx);
+    objData = (objectMetadata->mFilter && draw_interval)
+                  ? lastObjectMetadataMap[objectMetadata->mFrame->mChannelId]
+                  : objectMetadata;
+    lastObjectMetadataMap[objectMetadata->mFrame->mChannelId] = objData;
+  }
+
+  for (auto poseObj : objData->mPosedObjectMetadatas) {
+    const std::vector<float>& poseKeypoints = poseObj->keypoints;
+    const auto& pairs = getPosePairs(poseObj->modeltype);
+
+    // Draw lines
+    for (auto pair = 0u; pair < pairs.size(); pair += 2) {
+      const auto index1 = (pairs[pair]) * 3;
+      const auto index2 = (pairs[pair + 1]) * 3;
+
+      if (poseKeypoints[index1 + 2] > threshold &&
+          poseKeypoints[index2 + 2] > threshold) {
+        const auto colorIndex = pairs[pair + 1] * 3;
+        bmcv_color_t color = {pose_colors[(colorIndex + 2) % numberColors],
+                              pose_colors[(colorIndex + 1) % numberColors],
+                              pose_colors[(colorIndex + 0) % numberColors]};
+        bmcv_point_t start = {intRound(poseKeypoints[index1] * scale),
+                              intRound(poseKeypoints[index1 + 1] * scale)};
+        bmcv_point_t end = {intRound(poseKeypoints[index2] * scale),
+                            intRound(poseKeypoints[index2 + 1] * scale)};
+
+        if (BM_SUCCESS != bmcv_image_draw_lines(handle, frame, &start, &end, 1,
+                                                color, thicknessLine)) {
+          std::cout << "bmcv draw lines error !!!" << std::endl;
+        }
+      }
+    }
+  }
+}
+
+void draw_opencv_pose_result(
+    bm_handle_t& handle, std::shared_ptr<common::ObjectMetadata> objectMetadata,
+    cv::Mat& frame, bool draw_interval) {
+  // Parameters
+  const auto numberColors = pose_colors.size();
+  const float threshold = 0.05;
+  const float scale = 1.0;
+  const auto thicknessLine = 2;
+
+  std::shared_ptr<common::ObjectMetadata> objData;
+  {
+    std::lock_guard<std::mutex> lk(mLastObjectMetaDataMtx);
+    objData = (objectMetadata->mFilter && draw_interval)
+                  ? lastObjectMetadataMap[objectMetadata->mFrame->mChannelId]
+                  : objectMetadata;
+    lastObjectMetadataMap[objectMetadata->mFrame->mChannelId] = objData;
+  }
+
+  for (auto poseObj : objData->mPosedObjectMetadatas) {
+    const std::vector<float>& poseKeypoints = poseObj->keypoints;
+    const auto& pairs = getPosePairs(poseObj->modeltype);
+
+    // Draw lines
+    for (auto pair = 0u; pair < pairs.size(); pair += 2) {
+      const auto index1 = (pairs[pair]) * 3;
+      const auto index2 = (pairs[pair + 1]) * 3;
+      if (poseKeypoints[index1 + 2] > threshold &&
+          poseKeypoints[index2 + 2] > threshold) {
+        const auto colorIndex =
+            pairs[pair + 1] * 3;
+        const cv::Scalar color{pose_colors[(colorIndex + 2) % numberColors],
+                               pose_colors[(colorIndex + 1) % numberColors],
+                               pose_colors[(colorIndex + 0) % numberColors]};
+        const cv::Point keypoint1{intRound(poseKeypoints[index1] * scale),
+                                  intRound(poseKeypoints[index1 + 1] * scale)};
+
+        const cv::Point keypoint2{intRound(poseKeypoints[index2] * scale),
+                                  intRound(poseKeypoints[index2 + 1] * scale)};
+        cv::line(frame, keypoint1, keypoint2, color, thicknessLine, 8, 0);
+      }
+    }
   }
 }
 

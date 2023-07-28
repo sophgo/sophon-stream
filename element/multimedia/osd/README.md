@@ -33,19 +33,19 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 }
 ```
 
-|      参数名      |  类型  |              默认值               |                 说明                 |
-| :--------------: | :----: | :-------------------------------: | :----------------------------------: |
-|     osd_type     | 字符串 |              "TRACK"              |    画图类型，包括 “DET”、“TRACK“     |
-| class_names_file | 字符串 |                无                 |         class name文件的路径         |
-|    draw_utils    | 字符串 |             "OPENCV"              |   画图工具，包括 "OPENCV"，"BMCV"    |
-|  draw_interval   | 布尔值 |               false               |          是否画出未采样的帧          |
-|     put_text     | 布尔值 |               false               |             是否输出文本             |
-|  shared_object   | 字符串 | "../../../build/lib/libencode.so" |         libencode 动态库路径         |
-|    device_id     |  整数  |                 0                 |              tpu 设备号              |
-|        id        |  整数  |                 0                 |              element id              |
-|       name       | 字符串 |               "osd"               |             element 名称             |
-|       side       | 字符串 |             "sophgo"              |               设备类型               |
-|  thread_number   |  整数  |                 4                 | 启动线程数，需要保证和处理码流数一致 |
+|      参数名      |  类型  |              默认值               |                 说明                  |
+| :--------------: | :----: | :-------------------------------: | :-----------------------------------: |
+|     osd_type     | 字符串 |              "TRACK"              | 画图类型，包括 "DET"、"TRACK"、"POSE" |
+| class_names_file | 字符串 |                无                 |         class name文件的路径          |
+|    draw_utils    | 字符串 |             "OPENCV"              |    画图工具，包括 "OPENCV"，"BMCV"    |
+|  draw_interval   | 布尔值 |               false               |          是否画出未采样的帧           |
+|     put_text     | 布尔值 |               false               |             是否输出文本              |
+|  shared_object   | 字符串 | "../../../build/lib/libencode.so" |         libencode 动态库路径          |
+|    device_id     |  整数  |                 0                 |              tpu 设备号               |
+|        id        |  整数  |                 0                 |              element id               |
+|       name       | 字符串 |               "osd"               |             element 名称              |
+|       side       | 字符串 |             "sophgo"              |               设备类型                |
+|  thread_number   |  整数  |                 4                 | 启动线程数，需要保证和处理码流数一致  |
 
 > **注意**：
 1. osd_type为"DET"时，需提供class_names_file文件地址

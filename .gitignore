@@ -24,3 +24,6 @@ images/
 # OSX dir files
 .DS_Store
 __MACOSX/
+
+# web tools
+node_modules/

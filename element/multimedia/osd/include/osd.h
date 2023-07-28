@@ -23,7 +23,7 @@ namespace osd {
 
 class Osd : public ::sophon_stream::framework::Element {
  public:
-  enum class OsdType { DET, TRACK, REC, UNKNOWN };
+  enum class OsdType { DET, TRACK, REC, POSE, UNKNOWN };
   enum class DrawUtils { OPENCV, BMCV, UNKNOWN };
   Osd();
   ~Osd() override;

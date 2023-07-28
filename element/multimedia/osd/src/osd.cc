@@ -45,6 +45,7 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
     mOsdType = OsdType::TRACK;
     if (osd_type == "DET") mOsdType = OsdType::DET;
     if (osd_type == "TRACK") mOsdType = OsdType::TRACK;
+    if (osd_type == "POSE") mOsdType = OsdType::POSE;
 
     if (mOsdType == OsdType::DET) {
       std::string class_names_file =
@@ -171,6 +172,11 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
                                  mPutText, mDrawInterval);
         break;
 
+      case OsdType::POSE:
+        draw_opencv_pose_result(objectMetadata->mFrame->mHandle, objectMetadata,
+                                frame_to_draw, mDrawInterval);
+        break;
+
       default:
         IVS_WARN("osd_type not support");
     }
@@ -202,6 +208,11 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
         draw_bmcv_track_result(objectMetadata->mFrame->mHandle, objectMetadata,
                                mClassNames, *imageStorage, mPutText,
                                mDrawInterval);
+        break;
+
+      case OsdType::POSE:
+        draw_bmcv_pose_result(objectMetadata->mFrame->mHandle, objectMetadata,
+                              *imageStorage, mDrawInterval);
         break;
 
       default:
