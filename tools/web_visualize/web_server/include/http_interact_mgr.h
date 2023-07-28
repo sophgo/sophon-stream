@@ -39,9 +39,6 @@ class HTTP_Interact_Mgr {
 
   static void listen_thread();
   static HTTP_Interact_Mgr* GetInstance();
-  bool pipeline_is_running = false;
-  std::string running_pipeline_id;
-  std::vector<std::string> pipelines_name_list;
   void run(const std::string& pipeline_id);
   void stop(const std::string& pipeline_id);
 
@@ -50,6 +47,9 @@ class HTTP_Interact_Mgr {
   int port_;
   std::thread listen_thread_;
   bool is_inited_ = false;
+  bool pipeline_is_running = false;
+  std::string running_pipeline_id;
+  std::vector<std::string> pipelines_name_list;
 };
 
 #endif  // HTTP_INTERACT_MGR_H_
