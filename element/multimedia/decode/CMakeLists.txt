@@ -3,11 +3,6 @@ project(multimedia)
 set(CMAKE_CXX_STANDARD 17)
 
 
-if(GPU_VERSION)
-    enable_language(CUDA)
-    set(CMAKE_CUDA_STANDARD 11)
-endif(GPU_VERSION)
-
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)
 endif()
@@ -17,7 +12,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fPIC")
 
     set(FFMPEG_DIR  /opt/sophon/sophon-ffmpeg-latest/lib/cmake)
     find_package(FFMPEG REQUIRED)
