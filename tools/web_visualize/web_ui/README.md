@@ -9,17 +9,27 @@ python3 -m http.server 3000
 
 在浏览器中输入下列网址来打开页面
 ```
-http://127.0.0.1:3000/index.html
+http:/{host-ip}:3000/index.html
 ```
 
+>注意：
+>1.前后端服务默认运行在同一台机器，host-ip为服务器地址，3000为浏览器端口，如有占用可更换
+>2.此方法可无需npm启动web_ui
+>3.如果显示视频画面需要配置encode.json中的"encode_type"为"WS"
+
 ## 2 使用react启动
-输入下列代码启动程序
+如果需要开发调试，需要安装npm
+```bash
+sudo apt install npm
+```
+
+输入以下命令启动程序
 ```bash
 npm install --legacy-peer-deps
 npm start
 ```
 
-注意：使用react启动本项目依赖node(v14.17.0)和npm(v6.14.13)工具
+注意：使用react启动本项目依赖node(v14.17.0)和npm(v6.14.13)工具，react默认使用3000端口
 
 ## 3 Pipeline Json配置说明
 ### 3.1 yolov5参数配置

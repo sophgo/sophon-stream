@@ -379,7 +379,6 @@ void Encode::processWS(int dataPipeId,
   bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
                       &jpeg_data, &out_size);
   std::string data =
-      "data:image/jpeg;base64," +
       websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
   // base64 img 存入队列
   serverIt->second->pushImgDataQueue(data);
