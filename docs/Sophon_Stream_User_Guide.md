@@ -40,6 +40,8 @@
     - [5.2 配置文件](#52-配置文件)
     - [5.3 入口程序](#53-入口程序)
     - [5.4 用户侧信息](#54-用户侧信息)
+  - [6. 工具](#6-工具)
+    - [6.1 web\_visualize](#61-web_visualize)
 
 ## 1. 快速入门
 
@@ -829,3 +831,21 @@ NetName: yolox_s_bmnetp
 total time cost 5286871 us.
 frame count is 1422 | fps is 268.968 fps.
 ```
+
+## 6. 工具
+
+### 6.1 web_visualize
+
+web_visualize是针对sophon-stream项目运行的可视化工具。本工具能够将项目的运行结果在前端可视化，使得用户能够实时了解到项目的推理结果。
+
+目前，web_visualize的后端支持五个核心功能模块，分别是
+
+* 获取所有pipeline的摘要信息
+* 获取指定pipeline的详细信息
+* 对pipeline进行部分更新
+* 获取json数据的详细信息
+* 向服务器更新json数据
+
+其使用方法及输入输出样例详见 [web_server使用手册](../tools/web_visualize/web_server/README.md)。
+
+要使用该工具，还需要启动一个前端页面。前端启动的方法详见 [web_ui使用手册](../tools/web_visualize/web_ui/README.md)。
