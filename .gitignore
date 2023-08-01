@@ -27,3 +27,4 @@ __MACOSX/
 
 # web tools
 node_modules/
+!web_ui/build/
