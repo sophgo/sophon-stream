@@ -45,5 +45,8 @@ cp -r Doxyfile $result_dir
 cp -r README.md $result_dir
 cp -r VERSION $result_dir
 
+
+# build web ui # todo
+
 tar zcvf ${release_file_name}.tar.gz ${release_file_name}
 popd
