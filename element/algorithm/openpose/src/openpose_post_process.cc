@@ -56,7 +56,7 @@ void OpenposePostProcess::postProcess(
                  context->m_model_type, context->nms_threshold);
   }
 }
-int OpenposePostProcess::nms(PoseBlobPtr bottom_blob, PoseBlobPtr top_blob,
+void OpenposePostProcess::nms(PoseBlobPtr bottom_blob, PoseBlobPtr top_blob,
                              float threshold) {
   // maxPeaks就是最大人数，+1是为了第一位存个数
   // 算法，是每个点，如果大于阈值，同时大于上下左右值的时候，则认为是峰值
@@ -462,7 +462,7 @@ void OpenposePostProcess::connectBodyPartsCpu(
   }
 }
 
-int OpenposePostProcess::getKeyPoints(
+void OpenposePostProcess::getKeyPoints(
     std::shared_ptr<BMNNTensor> outputTensorPtr, const bm_image& image,
     std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
     PosedObjectMetadata::EModelType model_type, float nms_threshold) {

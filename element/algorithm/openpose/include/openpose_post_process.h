@@ -62,7 +62,7 @@ class OpenposePostProcess {
                    common::ObjectMetadatas& objectMetadatas);
 
  private:
-  int nms(PoseBlobPtr bottom_blob, PoseBlobPtr top_blob, float threshold);
+  void nms(PoseBlobPtr bottom_blob, PoseBlobPtr top_blob, float threshold);
 
   void connectBodyPartsCpu(
       std::vector<std::shared_ptr<common::PosedObjectMetadata>>& poseKeypoints,
@@ -72,7 +72,7 @@ class OpenposePostProcess {
       const int minSubsetCnt, const float minSubsetScore,
       const float scaleFactor, PosedObjectMetadata::EModelType model_type);
 
-  int getKeyPoints(
+  void getKeyPoints(
       std::shared_ptr<BMNNTensor> tensorPtr, const bm_image& images,
       std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
       PosedObjectMetadata::EModelType model_type, float nms_threshold);
