@@ -45,20 +45,24 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
   // 从所有inputPort中取出数据，并且做判断
   // default_port中取出的数据，放到map里
   auto data = popInputData(mDefaultPort, dataPipeId);
-  while (!data && (getThreadStatus() == ThreadStatus::RUN)) {
+  int retry_times = 0;
+  while (!data && (getThreadStatus() == ThreadStatus::RUN) && retry_times < 5) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     data = popInputData(mDefaultPort, dataPipeId);
+    ++retry_times;
   }
-  if (data == nullptr) return common::ErrorCode::SUCCESS;
-
-  auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
-  int channel_id = objectMetadata->mFrame->mChannelIdInternal;
-  int frame_id = objectMetadata->mFrame->mFrameId;
-  mCandidates[channel_id][frame_id] = objectMetadata;
-  // mBranches[channel_id][frame_id] = objectMetadata->numBranches;
-  IVS_DEBUG(
-      "data recognized, channel_id = {0}, frame_id = {1}, num_branches = {2}",
-      channel_id, frame_id, objectMetadata->numBranches);
+  // if (data == nullptr) return common::ErrorCode::SUCCESS;
+  if (data != nullptr) {
+    auto objectMetadata =
+        std::static_pointer_cast<common::ObjectMetadata>(data);
+    int channel_id = objectMetadata->mFrame->mChannelIdInternal;
+    int frame_id = objectMetadata->mFrame->mFrameId;
+    mCandidates[channel_id][frame_id] = objectMetadata;
+    // mBranches[channel_id][frame_id] = objectMetadata->numBranches;
+    IVS_DEBUG(
+        "data recognized, channel_id = {0}, frame_id = {1}, num_branches = {2}",
+        channel_id, frame_id, objectMetadata->numBranches);
+  }
 
   // 非default_port，取出来之后更新分支数的记录
   for (int inputPort : inputPorts) {
@@ -79,7 +83,7 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     IVS_DEBUG(
         "data updated, channel_id = {0}, frame_id = {1}, current num_branches "
         "= {2}",
-        channel_id, frame_id, mBranches[sub_channel_id][sub_frame_id]);
+        sub_channel_id, sub_frame_id, mBranches[sub_channel_id][sub_frame_id]);
   }
 
   // 遍历map，能弹出去的都弹出去
