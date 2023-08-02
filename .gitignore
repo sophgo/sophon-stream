@@ -29,4 +29,4 @@ __MACOSX/
 node_modules/
 yarn.lock
 package-lock.json
-!tools/web_visualize/web_ui/build/
+!tools/visualize/web_ui/build/
