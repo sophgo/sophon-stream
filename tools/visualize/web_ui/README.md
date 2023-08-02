@@ -29,7 +29,7 @@ npm install --legacy-peer-deps
 npm start
 ```
 
-注意：使用react启动本项目依赖node(v14.17.0)和npm(v6.14.13)工具，react默认使用3000端口
+注意：使用react启动本项目依赖node(>v14.17.0)和npm(>v6.14.13)工具，react默认使用3000端口
 
 ## 3 Pipeline Json配置说明
 ### 3.1 yolov5参数配置

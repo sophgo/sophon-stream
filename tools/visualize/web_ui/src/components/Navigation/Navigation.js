@@ -7,18 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-import React from 'react';
-import MyComponent from './MyComponent';
-const App = () => {
+import React from 'react'
+import './Navigation.css'
+
+function Navigation () {
   return (
-    <div >
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '10vh', backgroundColor: 'blue' }}>
+    <div className='Nav'>
       <h1 style={{ color: 'white' }}>Sophon Stream</h1>
-      </div>
-      <MyComponent />
     </div>
+  )
+}
 
-  );
-};
-
-export default App;
+export default Navigation

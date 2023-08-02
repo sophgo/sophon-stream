@@ -27,4 +27,6 @@ __MACOSX/
 
 # web tools
 node_modules/
-!web_ui/build/
+yarn.lock
+package-lock.json
+!tools/web_visualize/web_ui/build/

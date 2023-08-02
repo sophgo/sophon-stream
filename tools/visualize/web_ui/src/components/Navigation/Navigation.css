@@ -1,0 +1,8 @@
+.Nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10vh;
+  background-color: blue;
+  font-size: 2.2vh;
+}

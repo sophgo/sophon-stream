@@ -1,0 +1,61 @@
+.ConfigPreview {
+  width: 35vw;
+  height: 46vw;
+  margin-top: 3vh;
+  margin-left: 1vw;
+  margin-right: 1vw;
+
+  resize: vertical;
+  overflow-y: auto;
+}
+
+.Select {
+  display: flex;
+  width: 14vw;
+  height: 2vw;
+  margin-left: 2vw;
+  margin-right: 1vw;
+}
+
+.Text {
+  display: flex;
+  width: 33vw;
+  height: 35vw;
+  margin-top: 3vh;
+  margin-left: 1vw;
+  resize: vertical;
+  overflow-y: auto;
+}
+
+.SaveButton {
+  width: 12vw;
+  height: 2vw;
+  margin-right: 3vw;
+  margin-left: 1.5vw;
+  margin-top: 1vh;
+  font-size: 2.5vh;
+  background-color: #007bff;
+  color: #ffffff;
+  border-radius: 25px;
+  :hover {
+    background-color: #2980b9;
+  }
+}
+
+/* Button.css */
+@keyframes click {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.SaveButton:active {
+  /* 鼠标点击时的样式 */
+  animation: click 0.3s;
+}

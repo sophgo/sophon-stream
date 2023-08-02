@@ -1,0 +1,73 @@
+.VideoDisplay {
+  width: 58vw;
+  height: 46vw;
+  margin-top: 3vh;
+  margin-left: 1vw;
+  resize: vertical;
+  overflow-y: auto;
+}
+
+.CanvasContanier {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56vw;
+  height: 35vw;
+  margin-top: 3vh;
+  border: 1px solid black;
+  /* 边框宽度为 2px，颜色为黑色 */
+  padding: 1px;
+  /* 设置 padding 来增加内边距，使边框不紧贴内容 */
+}
+
+.StartButton {
+  width: 10vw;
+  height: 2vw;
+  margin-left: 18vw;
+  font-size: 2vh;
+  background-color: #4CAF50;
+  color: #ffffff;
+  border-radius: 25px;
+}
+
+.StopButton {
+  width: 10vw;
+  height: 2vw;
+  margin-left: 2vw;
+  font-size: 2vh;
+  background-color: #f44336;
+  color: #ffffff;
+  border-radius: 25px;
+}
+
+/* Button.css */
+@keyframes click {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.StartButton:active {
+  /* 鼠标点击时的样式 */
+  animation: click 0.3s;
+}
+
+.StopButton:active {
+  /* 鼠标点击时的样式 */
+  animation: click 0.3s;
+}
+
+
+.ChannelSelector {
+  width: 12vw;
+  height: 2vw;
+  margin-left: 2.5vw;
+}
