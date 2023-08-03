@@ -10,6 +10,7 @@ sophon-stream osd element是sophon-stream框架中的一个插件，负责算法
 
 ## 1. 特点
 * 支持目标检测、目标跟踪算法结果的可视化
+
 ![track.jpg](pics/track.jpg)
 
 ## 2. 配置参数

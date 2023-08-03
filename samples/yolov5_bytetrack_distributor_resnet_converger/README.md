@@ -189,7 +189,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 
 运行结果存放在`./build/results`目录下。本例程默认配置方式为每秒按类别发送到resnet分支，会在结果目录中每秒保存一帧绘制了目标box、track_id和具体属性的图像。
 
-![result.bmp](./pics/result.bmp)
+![result](./pics/result.jpg)
 
 >**注意：**
 
