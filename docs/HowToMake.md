@@ -13,7 +13,7 @@ make -j4
 ```
 
 ## SoC平台
-通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的[文件](http://disk-sophgo-vip.quickconnect.cn/sharing/vmOeAUrI9)。
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的[文件](https://disk.sophgo.vip/sharing/vmOeAUrI9)。
 ```bash
 mkdir build
 cd build

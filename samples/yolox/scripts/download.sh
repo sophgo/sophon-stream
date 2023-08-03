@@ -8,17 +8,17 @@ pushd $scripts_dir
 
 mkdir -p ../data
 
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/a3upUqXGE
+python3 -m dfn --url https://disk.sophgo.vip/sharing/a3upUqXGE
 unzip models.zip
 rm -rf models.zip
 mv ./models ../data/
 
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/MYS5paD3l
+python3 -m dfn --url https://disk.sophgo.vip/sharing/MYS5paD3l
 unzip videos.zip
 rm -rf videos.zip
 mv ./videos ../data/
 
-python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/6DFPVVKsd
+python3 -m dfn --url https://disk.sophgo.vip/sharing/6DFPVVKsd
 mv ./coco.names ../data/
 
 popd

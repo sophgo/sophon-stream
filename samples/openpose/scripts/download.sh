@@ -7,14 +7,14 @@ scripts_dir=$(dirname $(readlink -f "$0"))
 
 pushd $scripts_dir
 # datasets
-if [ ! -d "../data" ]; 
+if [ ! -d "../data" ];
 then
     mkdir -p ../data
-   
+
     # models
-    if [ ! -d "../data/models" ]; 
+    if [ ! -d "../data/models" ];
     then
-        python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/JboKjYqF5
+        python3 -m dfn --url https://disk.sophgo.vip/sharing/JboKjYqF5
         unzip models.zip -d ../data/
         rm models.zip
         echo "models download!"
@@ -22,11 +22,11 @@ then
         echo "models exist!"
     fi
     # models
-    if [ ! -d "../data/videos" ]; 
+    if [ ! -d "../data/videos" ];
     then
         mkdir -p ../data/videos
 
-        python3 -m dfn --url http://disk-sophgo-vip.quickconnect.cn/sharing/8gY6PTREJ
+        python3 -m dfn --url https://disk.sophgo.vip/sharing/8gY6PTREJ
         mv test.mp4 ../data/videos/
         echo "videos download!"
     else
