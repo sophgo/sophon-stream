@@ -45,7 +45,7 @@ MainWindow::~MainWindow() {
   delete ui;
 }
 
-void MainWindow::on_pushButtonStart_2_clicked() {
+void MainWindow::on_pushButtonFlashAll_clicked() {
   getPipelines();
 }
 
@@ -60,7 +60,7 @@ void MainWindow::getPipelines() {
       QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
       QJsonObject jsonObject = jsonDoc.object();
       QJsonArray dataArray = jsonObject.value("data").toArray();
-      this->ui->comboBoxSeletPipline->clear();
+      this->ui->comboBoxSelectPipline->clear();
       //pipeLineFilesMaps.clear();
       pipeLinesMap.clear();
       pipeLinesIdMap.clear();
@@ -70,7 +70,7 @@ void MainWindow::getPipelines() {
         QString pipelineName = pipelineObject.value("pipeline_name").toString();
         QString pipelineId = QString::number(
             pipelineObject.value("pipeline_id").toInt());
-        this->ui->comboBoxSeletPipline->addItem(pipelineName);
+        this->ui->comboBoxSelectPipline->addItem(pipelineName);
         // Associate pipeline_name with json_list
         for (const QJsonValue& jsonValue :
           pipelineObject.value("json_list").toArray()) {
@@ -88,10 +88,10 @@ void MainWindow::getPipelines() {
         qDebug() << "pipeLine: " << key << " innerMap " << innerMap;
       }
       qDebug() << "pipeLinesIdMap " << pipeLinesIdMap;
-      if (this->ui->comboBoxSeletPipline->count() > 0) {
-        this->ui->comboBoxSeletPipline->setCurrentIndex(0);
-        this->ui->comboBoxSeletPipline->currentTextChanged(
-          this->ui->comboBoxSeletPipline->itemText(0));
+      if (this->ui->comboBoxSelectPipline->count() > 0) {
+        this->ui->comboBoxSelectPipline->setCurrentIndex(0);
+        this->ui->comboBoxSelectPipline->currentTextChanged(
+          this->ui->comboBoxSelectPipline->itemText(0));
       }
     }
     else
@@ -106,8 +106,8 @@ QString MainWindow::getConfFile(QString fileName) {
   QEventLoop loop;
   urlStr = QString("http://%1:%2/jsons/%3").arg(
       ui->lineEditIP->text(), QString::number(ui->spinBoxPort->value()),
-      pipeLinesMap.value(ui->comboBoxSeletPipline->currentText()).value(
-        (fileName == QString("NONE")) ? ui->comboBoxSeletFile->currentText() :
+      pipeLinesMap.value(ui->comboBoxSelectPipline->currentText()).value(
+        (fileName == QString("NONE")) ? ui->comboBoxSelectFile->currentText() :
         fileName));
   QUrl url = QUrl(urlStr);
   QNetworkRequest request(url);
@@ -154,8 +154,8 @@ QString MainWindow::putConfFile(QString fileName) {
   QEventLoop loop;
   urlStr = QString("http://%1:%2/jsons/%3").arg(
       ui->lineEditIP->text(), QString::number(ui->spinBoxPort->value()),
-      pipeLinesMap.value(ui->comboBoxSeletPipline->currentText()).value(
-        (fileName == QString("NONE")) ? ui->comboBoxSeletFile->currentText() :
+      pipeLinesMap.value(ui->comboBoxSelectPipline->currentText()).value(
+        (fileName == QString("NONE")) ? ui->comboBoxSelectFile->currentText() :
         fileName));
   QUrl url = QUrl(urlStr);
   QNetworkRequest request(url);
@@ -181,7 +181,7 @@ void MainWindow::sendStartStop(bool flag) {
   QByteArray jsonData = QJsonDocument(jsonObject).toJson();
   QUrl url(QString("http://%1:%2/pipelines/%3").arg(
       ui->lineEditIP->text(), QString::number(ui->spinBoxPort->value()),
-      pipeLinesIdMap.value(ui->comboBoxSeletPipline->currentText())));
+      pipeLinesIdMap.value(ui->comboBoxSelectPipline->currentText())));
   qDebug() << "sendStartStop " << flag << " " << url << " " << jsonData;
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -254,16 +254,16 @@ void MainWindow::closeWebSocket() {
   pThread->wait();
   pThread = nullptr;
 }
-void MainWindow::flashComboBoxSeletFile() {
-  if (ui->comboBoxSeletPipline->count() < 1)
+void MainWindow::flashComboBoxSelectFile() {
+  if (ui->comboBoxSelectPipline->count() < 1)
     return;
-  QString SeletPipline = ui->comboBoxSeletPipline->currentText();
-  const QMap<QString, QString>& innerMap = pipeLinesMap.value(SeletPipline);
+  QString SelectPipline = ui->comboBoxSelectPipline->currentText();
+  const QMap<QString, QString>& innerMap = pipeLinesMap.value(SelectPipline);
   if (innerMap.isEmpty())
     return;
-  ui->comboBoxSeletFile->clear();
+  ui->comboBoxSelectFile->clear();
   for (const QString& key : innerMap.keys())
-    ui->comboBoxSeletFile->addItem(key);
+    ui->comboBoxSelectFile->addItem(key);
 }
 void MainWindow::imagePro(const QString& message, QPixmap* imageOut) {
   /* 这个函数用于将base64转为image，但是其是由websocket通过信号槽触发执行的，并不是很推荐在此进行高负载 */
@@ -280,21 +280,21 @@ void MainWindow::inputLock(bool flag) {
   ui->lineEditIP->setEnabled(!flag);
   ui->spinBoxPort->setEnabled(!flag);
 }
-void MainWindow::on_comboBoxSeletFile_currentTextChanged(const QString& arg1) {
+void MainWindow::on_comboBoxSelectFile_currentTextChanged(const QString& arg1) {
   getConfFile();
 }
-void MainWindow::on_comboBoxSeletPipline_currentTextChanged(
+void MainWindow::on_comboBoxSelectPipline_currentTextChanged(
   const QString& arg1) {
-  flashComboBoxSeletFile();
+  flashComboBoxSelectFile();
 }
 void MainWindow::on_pushButtonStart_clicked() {
   if (isRunning)
     return;
-  if (ui->comboBoxSeletChannel->currentText().isEmpty())
+  if (ui->comboBoxSelectChannel->currentText().isEmpty())
     return;
   closeWebSocket();
   sendStartStop(true);
-  openWebSocket(ui->comboBoxSeletChannel->currentText().toInt());
+  openWebSocket(ui->comboBoxSelectChannel->currentText().toInt());
 }
 void MainWindow::on_pushButtonStop_clicked() {
   closeWebSocket();
@@ -303,7 +303,7 @@ void MainWindow::on_pushButtonStop_clicked() {
 void MainWindow::on_pushButtonFlashChannel_clicked() {
   /* 找到通道 */
   for (const QString& item : pipeLinesMap.value(
-      ui->comboBoxSeletPipline->currentText()).keys()) {
+      ui->comboBoxSelectPipline->currentText()).keys()) {
     if (item.contains("_demo")) {
       QString jsonStr = getConfFile(item);
       if (!jsonStr.isEmpty()) {
@@ -334,7 +334,7 @@ void MainWindow::on_pushButtonFlashChannel_clicked() {
   }
   /* 找到起始端口号 */
   for (const QString& item : pipeLinesMap.value(
-      ui->comboBoxSeletPipline->currentText()).keys()) {
+      ui->comboBoxSelectPipline->currentText()).keys()) {
     if (item.contains("encode")) {
       QString jsonStr = getConfFile(item);
       QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr.toUtf8());
@@ -357,9 +357,9 @@ void MainWindow::on_pushButtonFlashChannel_clicked() {
   }
   if (channelIds.count() < 1)
     return;
-  ui->comboBoxSeletChannel->clear();
+  ui->comboBoxSelectChannel->clear();
   for (const QString& item : channelIds)
-    ui->comboBoxSeletChannel->addItem(QString::number(item.toInt() +
+    ui->comboBoxSelectChannel->addItem(QString::number(item.toInt() +
         wssPort.toInt()));
 }
 

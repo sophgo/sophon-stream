@@ -48,7 +48,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonStart_2">
+       <widget class="QPushButton" name="pushButtonFlashAll">
         <property name="text">
          <string>刷新</string>
         </property>
@@ -72,7 +72,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBoxSeletPipline">
+       <widget class="QComboBox" name="comboBoxSelectPipline">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -95,7 +95,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBoxSeletFile">
+       <widget class="QComboBox" name="comboBoxSelectFile">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -131,7 +131,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBoxSeletChannel">
+       <widget class="QComboBox" name="comboBoxSelectChannel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>

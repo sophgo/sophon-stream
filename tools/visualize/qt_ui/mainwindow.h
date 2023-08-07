@@ -42,11 +42,11 @@ class MainWindow : public QMainWindow {
   ~MainWindow();
 
  private slots:
-  void on_pushButtonStart_2_clicked();
+  void on_pushButtonFlashAll_clicked();
 
-  void on_comboBoxSeletFile_currentTextChanged(const QString& arg1);
+  void on_comboBoxSelectFile_currentTextChanged(const QString& arg1);
 
-  void on_comboBoxSeletPipline_currentTextChanged(const QString& arg1);
+  void on_comboBoxSelectPipline_currentTextChanged(const QString& arg1);
 
   void on_pushButtonStart_clicked();
 
@@ -97,7 +97,7 @@ class MainWindow : public QMainWindow {
   /* 关闭websocket线程 */
   void closeWebSocket(void);
   /* 刷新文件选择下拉框 */
-  void flashComboBoxSeletFile(void);
+  void flashComboBoxSelectFile(void);
   /* 预图片信息处理（轻负载） */
   void imagePro(const QString& message, QPixmap* imageOut);
   /* 用户输入锁 */
