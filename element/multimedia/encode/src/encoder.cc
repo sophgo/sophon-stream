@@ -502,7 +502,7 @@ void Encoder::Encoder_CC::flowControlFunc() {
         std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch())
             .count();
-    if (is_rtsp_) {
+    if (is_rtsp_ || is_video_file_) {
       std::shared_ptr<AVPacket> pp = std::static_pointer_cast<AVPacket>(p);
       auto ret = av_interleaved_write_frame(enc_format_ctx_, pp.get());
     } else if (is_rtmp_) {
