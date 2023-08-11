@@ -368,17 +368,6 @@ total time cost 74520023 us.
 frame count is 3077 | fps is 41.2909 fps.
 ```
 如果encode选择RTSP模式，需要启动推流服务器。您可以使用vlc软件打开推流地址查看视频算法结果，详细说明查看[encode插件文档](../../element/multimedia/encode/README.md)说明。
->**注意：**
-
-soc环境运行时如果报错
-```bash
-./yolox_bytetrack_osd_encode_demo: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
-```
-
-需要设置环境变量
-```bash
-export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
-```
 
 ## 7. 性能测试
 由于Osd插件画图速度慢，本例程暂不提供性能测试结果，如需各模型推理性能，请到对应模型例程查看。

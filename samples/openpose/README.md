@@ -6,14 +6,6 @@
   - [1. 简介](#1-简介)
   - [2. 特性](#2-特性)
   - [3. 准备模型与数据](#3-准备模型与数据)
-  - [4. 环境准备](#4-环境准备)
-    - [4.1 x86/arm PCIe平台](#41-x86arm-pcie平台)
-    - [4.2 SoC平台](#42-soc平台)
-  - [5. 程序编译](#5-程序编译)
-    - [5.1 x86/arm PCIe平台](#51-x86arm-pcie平台)
-    - [5.2 SoC平台](#52-soc平台)
-  - [6. 程序运行](#6-程序运行)
-    - [6.1 Json配置说明](#61-json配置说明)
     - [6.2 运行](#62-运行)
   - [7. 性能测试](#7-性能测试)
 
@@ -218,18 +210,6 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ```bash
  total time cost 29882447 us.
 frame count is 1432 | fps is 47.9211 fps.
-```
-
->**注意：**
-
-soc环境运行时如果报错
-```bash
-./openpose_demo: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
-```
-
-需要设置环境变量
-```bash
-export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
 ```
 
 ## 7. 性能测试

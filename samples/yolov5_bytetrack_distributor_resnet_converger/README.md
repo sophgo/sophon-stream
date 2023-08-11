@@ -191,17 +191,5 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 
 ![result](./pics/result.jpg)
 
->**注意：**
-
-soc环境运行时如果报错
-```bash
-./yolov5_bytetrack_distributor_resnet_converger_demo: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
-```
-
-需要设置环境变量
-```bash
-export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
-```
-
 ## 7. 性能测试
 由于全流程依赖输入视频fps且画图速度慢，本例程暂不提供性能测试结果，如需各模型推理性能，请到对应模型例程查看。

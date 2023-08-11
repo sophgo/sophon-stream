@@ -288,18 +288,6 @@ total time cost 5246889 us.
 frame count is 1422 | fps is 271.018 fps.
 ```
 
->**注意：**
-
-soc环境运行时如果报错
-```bash
-./bytetrack_demo: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
-```
-
-需要设置环境变量
-```bash
-export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
-```
-
 ##  7. 性能测试
 
 测试视频`elevator-1080p-25fps-4000kbps.h264`，编译选项为Release模式，结果如下:

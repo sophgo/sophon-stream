@@ -223,18 +223,6 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 frame count is 1000 | fps is 803.448 fps.
 ```
 
->**注意：**
-
-soc环境运行时如果报错
-```bash
-./resnet_demo: error while loading shared libraries: libframework.so: cannot open shared object file: No such file or directory
-```
-
-需要设置环境变量
-```bash
-export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
-```
-
 ## 7. 性能测试
 
 目前，resnet例程支持在BM1684、BM1684X的PCIE、SOC模式下进行推理。
