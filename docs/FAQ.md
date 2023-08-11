@@ -26,3 +26,7 @@ docker run --privileged --name stream_dev -v $PWD:/workspace -it yifan996/stream
 ```bash
 export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
 ```
+
+## 5. 编译阶段报错找不到-lframework、-livslogger
+
+一般是编译路径有误，例如在element目录或samples目录编译等。需要回到sophon-stream项目目录进行编译。

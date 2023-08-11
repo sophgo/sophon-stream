@@ -68,6 +68,8 @@ sudo apt-get install libboost-all-dev
 
 完成环境配置后，用户可以参考 [sophon-stream编译指南](./HowToMake.md)，使用如下命令编译。
 
+* 需要注意，编译命令在sophon-stream目录下进行。
+
 #### 1.2.1 x86/arm PCIe平台
 
 ```bash

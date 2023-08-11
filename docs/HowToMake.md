@@ -4,6 +4,8 @@
   - [SoC平台](#soc平台)
   - [编译结果](#编译结果)
 
+* 需要注意，编译需要在sophon-stream目录下进行。
+
 ## x86/arm PCIe平台
 ```bash
 mkdir build
