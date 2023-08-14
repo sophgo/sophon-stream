@@ -103,9 +103,18 @@ common::ErrorCode Decoder::init(int deviceId,
       mgr->init(request.base64Port, mUrl);
       mgr->setFps(mFps);
       IVS_DEBUG("Decoder::init, base64Port: {0}", request.base64Port);
-    } else {
+    }
+
+    if (mSourceType == ChannelOperateRequest::SourceType::RTSP ||
+        mSourceType == ChannelOperateRequest::SourceType::RTMP ||
+        mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
       decoder.setFps(mFps);
-      decoder.openDec(&m_handle, mUrl.c_str());
+      auto ret = decoder.openDec(&m_handle, mUrl.c_str());
+      if (ret < 0) {
+        IVS_ERROR("Decoder::init error, openDec failed, ret: {0}, channel id : {1}", ret, request.channelId);
+        errorCode = common::ErrorCode::ERR_FFMPEG_INPUT_CTX_OPEN;
+        break;
+      }
     }
 
   } while (false);

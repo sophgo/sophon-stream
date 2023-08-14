@@ -244,7 +244,7 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   IVS_INFO("add one channel task");
   parse_channel_task(channelTask);
   std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
-
+  channelTask->response.errorCode = common::ErrorCode::SUCCESS;
   if (mThreadsPool.find(channelTask->request.channelId) != mThreadsPool.end()) {
     channelTask->response.errorCode = common::ErrorCode::SUCCESS;
     std::string error = "this channel is used! channel id is " +
@@ -283,8 +283,13 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
 
         common::ErrorCode ret =
             channelInfo->mSpDecoder->init(getDeviceId(), channelTask->request);
+        if (ret != common::ErrorCode::SUCCESS) {
+          channelTask->response.errorCode = ret;
+          std::string error = "Decoder init failed! channel id is " +
+                              std::to_string(channelTask->request.channelId);
+          channelTask->response.errorInfo = error;
+        }
 
-        channelTask->response.errorCode = common::ErrorCode::SUCCESS;
         channelInfo->mCv->notify_one();
 
         return ret;
@@ -293,7 +298,14 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
         return process(channelTask, channelInfo);
       },
       [this, channelInfo, channelTask]() -> common::ErrorCode {
-        return process(channelTask, channelInfo);
+        std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
+        channelInfo->mThreadWrapper->stop(false);
+        channelInfo->mSpDecoder->uninit();
+        auto iter = mThreadsPool.find(channelTask->request.channelId);
+        if (iter != mThreadsPool.end()) {
+          mThreadsPool.erase(iter);
+        }
+        return channelTask->response.errorCode;
       });
   channelInfo->mThreadWrapper->start();
   std::unique_lock<std::mutex> uq(*channelInfo->mMtx);
