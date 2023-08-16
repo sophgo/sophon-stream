@@ -4,7 +4,8 @@
     "url": "../data/videos/elevator-1080p-25fps-4000kbps.h264",
     "source_type": "VIDEO",
     "sample_interval": 1,
-    "loop_num": 1
+    "loop_num": 1,
+    "fps": -1
   },
   "class_names": "../data/coco.names",
   "download_image": false,
