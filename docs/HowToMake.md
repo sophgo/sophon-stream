@@ -2,6 +2,7 @@
 - [编译指南](#编译指南)
   - [x86/arm PCIe平台](#x86arm-pcie平台)
   - [SoC平台](#soc平台)
+  - [使用开发镜像编译](#使用开发镜像编译)
   - [编译结果](#编译结果)
 
 * 需要注意，编译需要在sophon-stream目录下进行。
@@ -22,6 +23,39 @@ cd build
 cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
+
+## 使用开发镜像编译
+如果您的本机部分环境不兼容，且不方便更改本机环境，可以使用我们提供的docker镜像进行编译，[镜像下载地址](http://219.142.246.77:65000/sharing/7XmFQDJKB)
+
+或者通过dfn下载
+```bash
+pip3 install dfn
+python3 -m dfn --url http://219.142.246.77:65000/sharing/7XmFQDJKB
+```
+
+如果是首次使用Docker, 可执行下述命令进行安装和配置(仅首次执行):
+```bash
+sudo apt install docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+在下载好的镜像目录中加载镜像
+```bash
+docker load -i stream_dev.tar
+#Loaded image: stream_dev:latest
+```
+可以通过`docker images`查看加载好的镜像，默认为stream_dev:latest
+
+创建容器
+```bash
+docker run --privileged --name stream_dev -v $PWD:/workspace  -it stream_dev:latest
+# stream_dev只是举个名字的例子, 请指定成自己想要的容器的名字
+```
+容器中的`workspace`目录会挂载到您运行`docker run`时所在的宿主机目录，您可以在此容器中编译项目
 
 ## 编译结果
 1.`framework`和`element`会在`build/lib`中生成动态链接库

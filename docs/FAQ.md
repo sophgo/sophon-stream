@@ -8,7 +8,7 @@
 #### 2. 编译报错`fatal error: boost/version.hpp: No such file or directory`
 请使用如下命令安装该库：
 ```bash
-sudo apt-get update 
+sudo apt-get update
 sudo apt-get install libboost-all-dev
 ```
 
@@ -16,14 +16,9 @@ sudo apt-get install libboost-all-dev
 
 先检查boost库的版本：`dpkg -S /usr/include/boost/version.hpp` 1.71版本可以正常编译运行，较旧的版本可能报如上错误。
 
-如果不便安装该版本boost，可以使用我们提供的docker镜像进行编译：
+如果不便安装该版本boost，可以使用我们提供的[docker镜像进行编译](./HowToMake.md#使用开发镜像编译)
 
-```bash
-docker pull yifan996/stream_dev
-docker run --privileged --name stream_dev -v $PWD:/workspace -it yifan996/stream_dev
-```
-
-#### 4. 交叉编译之后在盒子上运行报错`/lib/aarch64-linux-gnu/libc.so.6: version 'GLIBC_2.33' not found` 
+#### 4. 交叉编译之后在盒子上运行报错`/lib/aarch64-linux-gnu/libc.so.6: version 'GLIBC_2.33' not found`
 这是由于您主机上的交叉编译工具链版本太高导致，可以通过如下命令重新安装：
 ```bash
 sudo apt remove cpp-*-aarch64-linux-gnu
@@ -32,12 +27,7 @@ sudo ln -s /usr/bin/aarch64-linux-gnu-gcc-7 /usr/bin/aarch64-linux-gnu-gcc
 sudo ln -s /usr/bin/aarch64-linux-gnu-g++-7 /usr/bin/aarch64-linux-gnu-g++
 ```
 
-如果不便安装该版本交叉编译器，可以使用我们提供的docker镜像进行编译：
-
-```bash
-docker pull yifan996/stream_dev
-docker run --privileged --name stream_dev -v $PWD:/workspace -it yifan996/stream_dev
-```
+如果不便安装该版本交叉编译器，可以使用我们提供的[docker镜像进行编译](./HowToMake.md#使用开发镜像编译)
 
 #### 5. 编译阶段报错`找不到tpu_kernel相关定义`
 
