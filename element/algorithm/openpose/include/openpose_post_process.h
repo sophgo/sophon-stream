@@ -63,7 +63,9 @@ class OpenposePostProcess {
 
  private:
   void nms(PoseBlobPtr bottom_blob, PoseBlobPtr top_blob, float threshold);
-
+  void nmsFunc(float* ptr, float* top_ptr, int length, int h, int w,
+               int max_peaks, float threshold, int plane_offset,
+               int top_plane_offset);
   void connectBodyPartsCpu(
       std::vector<std::shared_ptr<common::PosedObjectMetadata>>& poseKeypoints,
       const float* const heatMapPtr, const float* const peaksPtr,
