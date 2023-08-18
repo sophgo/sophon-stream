@@ -32,6 +32,7 @@ cp -r element/algorithm/bytetrack $result_dir/element/algorithm
 cp -r element/algorithm/resnet $result_dir/element/algorithm
 cp -r element/algorithm/yolov5 $result_dir/element/algorithm
 cp -r element/algorithm/yolox $result_dir/element/algorithm
+cp -r element/algorithm/openpose $result_dir/element/algorithm
 
 mkdir $result_dir/element/tools
 cp -r element/tools/converger $result_dir/element/tools
