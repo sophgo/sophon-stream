@@ -44,3 +44,20 @@ export LD_LIBRARY_PATH=path-to/sophon-stream/build/lib/:$LD_LIBRARY_PATH
 #### 7. 编译阶段报错`找不到-lframework、-livslogger`
 
 一般是编译路径有误，例如在element目录或samples目录编译等。需要回到sophon-stream项目目录进行编译。
+
+#### 8. 运行报错`[BM_CHECK][error] BM_CHECK_RET fail`，详细报错如下：
+```
+[bmlib_memory][error] bm_alloc_gmem failed, dev_id = 0, size = 0x20
+[BM_CHECK][error] BM_CHECK_RET fail /workspace/libsophon/bmlib/src/bmlib_memory.cpp: bm_malloc_device_byte_heap_mask: 705
+MAT Allocate Err: dims = 2, size = [1, 8], type = 5
+terminate called after throwing an instance of 'cv::Exception'
+[bmlib_memory][error] bm_alloc_gmem failed, dev_id = 0, size = 0x10
+  what():  OpenCV(4.1.0) /workspace/middleware-soc/bm_opencv/modules/core/src/matrix.cpp:448: error: (-215:Assertion failed) u != 0 in function 'create'
+
+[BM_CHECK][error] BM_CHECK_RET fail /workspace/libsophon/bmlib/src/bmlib_memory.cpp: bm_malloc_device_byte_heap_mask: 705
+Aborted (core dumped)
+```
+可能是linux文件句柄数量限制导致的，某些设备上默认句柄数量限制为1024，可尝试将其设置为20480
+```
+ulimit -n 20480
+```
