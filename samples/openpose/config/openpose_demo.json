@@ -3,7 +3,7 @@
   "channel": {
     "url": "../data/videos/test.mp4",
     "source_type": "VIDEO",
-    "loop_num": 1,
+    "loop_num": 10,
     "fps": -1
   },
   "download_image": false,
