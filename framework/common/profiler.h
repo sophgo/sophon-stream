@@ -38,7 +38,8 @@ class FpsProfiler {
 
   double last_print_ts_ = 0;
 
-  float print_step_ = 10;
+  // 10ms is too long for resnet, so there may be no tmp_fps.
+  float print_step_ = 1;
 };
 
 }  // namespace common
