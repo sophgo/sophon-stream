@@ -117,6 +117,7 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
     mContext->output_num = mContext->bmNetwork->outputTensorNum();
     mContext->min_dim =
         mContext->bmNetwork->outputTensor(0)->get_shape()->num_dims;
+    if(mContext->output_num == 3) {
     if (mContext->use_tpu_kernel)
       mContext->class_num =
           mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] / 3 - 4 -
@@ -124,6 +125,10 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
     else
       mContext->class_num =
           mContext->bmNetwork->outputTensor(0)->get_shape()->dims[4] - 4 - 1;
+    } else {
+      mContext->class_num = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2] - 5;
+    }
+    
     if (mContext->class_thresh_valid) {
       if (mContext->class_num != mContext->class_names.size() ||
           mContext->class_num != mContext->thresh_conf.size() ||

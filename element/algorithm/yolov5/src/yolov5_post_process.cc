@@ -400,6 +400,29 @@ void Yolov5PostProcess::postProcessCPU(
       assert(box_num == 0 || box_num == out_tensor->get_shape()->dims[1]);
       box_num = out_tensor->get_shape()->dims[1];
       output_data = (float*)out_tensor->get_cpu_data();
+      for (int i = 0; i < box_num; i++) {
+        float* ptr = output_data + i * nout;
+        float score = ptr[4];
+        int class_id = argmax(&ptr[5], context->class_num);
+        float confidence = ptr[class_id + 5];
+        if (confidence * score > context->thresh_conf_min) {
+          float centerX = (ptr[0] + 1 - tx1) / ratio - 1;
+          float centerY = (ptr[1] + 1 - ty1) / ratio - 1;
+          float width = (ptr[2] + 0.5) / ratio;
+          float height = (ptr[3] + 0.5) / ratio;
+
+          YoloV5Box box;
+          box.x = int(centerX - width / 2);
+          if (box.x < 0) box.x = 0;
+          box.y = int(centerY - height / 2);
+          if (box.y < 0) box.y = 0;
+          box.width = width;
+          box.height = height;
+          box.class_id = class_id;
+          box.score = confidence * score;
+          yolobox_vec.push_back(box);
+        }
+      }
     }
 
     NMS(yolobox_vec, context->thresh_nms);
