@@ -186,17 +186,18 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mFrameId = mImgIndex;
     objectMetadata->mFrame->mSpData = spBmImage;
 
-    /* mImgIndex会不停累加，mImgIndex % mImagePaths.size()的值为
-    mImagePaths.size() - 1，即最后一张图像时，mLoopNum-1 */
-    if ((mImgIndex % mImagePaths.size()) == (mImagePaths.size() - 1))
-      --mLoopNum;
-    ++mImgIndex;
     if (!mLoopNum) {
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
     } else {
       bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
+
+    /* mImgIndex会不停累加，mImgIndex % mImagePaths.size()的值为
+    mImagePaths.size() - 1，即最后一张图像时，mLoopNum-1 */
+    if ((mImgIndex % mImagePaths.size()) == (mImagePaths.size() - 1))
+      --mLoopNum;
+    ++mImgIndex;
 
     if (common::ErrorCode::SUCCESS != errorCode) {
       objectMetadata->mErrorCode = errorCode;
