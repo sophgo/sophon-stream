@@ -582,6 +582,18 @@ int VideoDecFFM::isNetworkError(int ret) {
   return 0;
 }
 
+AVFrame* VideoDecFFM::flushDecoder()
+{
+    av_frame_unref(frame);
+    int ret = avcodec_send_packet(video_dec_ctx, NULL);
+    ret = avcodec_receive_frame(video_dec_ctx, frame);
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF || ret < 0)
+    {
+        return NULL;
+    }
+    return frame;
+}
+
 AVFrame* VideoDecFFM::grabFrame(int& eof) {
   int ret = 0;
   int got_frame = 0;
@@ -609,14 +621,14 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
         }
         // usleep(10 * 1000);
         continue;
-      } else if (ret == AVERROR_EOF && pkt->stream_index == video_stream_idx) {
-        std::cout << " eof!~! " << std::endl;
-        av_log(video_dec_ctx, AV_LOG_ERROR,
-               "av_read_frame ret(%d) maybe eof...\n", ret);
-        quit_flag = true;
-        eof = 1;
-        return NULL;
       }
+      AVFrame* flush_frame = flushDecoder();
+      if (flush_frame) return flush_frame;
+      av_log(video_dec_ctx, AV_LOG_ERROR,
+             "av_read_frame ret(%d) maybe eof...\n", ret);
+      quit_flag = true;
+      eof = 1;
+      return NULL;
     }
 
     if (pkt->stream_index != video_stream_idx) {
@@ -638,9 +650,7 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     }
 
     if (!got_frame) {
-      // continue;
-      frame =
-          cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id);
+      continue;
     }
 
     width = video_dec_ctx->width;
@@ -657,9 +667,7 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
              width, height, av_get_pix_fmt_name((AVPixelFormat)pix_fmt),
              frame->width, frame->height,
              av_get_pix_fmt_name((AVPixelFormat)frame->format));
-      // continue;
-      frame =
-          cv::av::create(video_dec_ctx->height, video_dec_ctx->width, dev_id);
+      continue;
     }
 
     break;
@@ -679,7 +687,6 @@ std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
       std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
     gettimeofday(&last_time, NULL);
   }
-  // printf("grab frame, frameid is %d\n", frame_id);
   std::shared_ptr<bm_image> spBmImage = nullptr;
   AVFrame* avframe = grabFrame(eof);
   frameId = frame_id++;

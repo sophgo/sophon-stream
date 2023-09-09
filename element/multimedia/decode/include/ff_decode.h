@@ -139,6 +139,8 @@ class VideoDecFFM {
 
   void reConnectVideoStream();
 
+  AVFrame* flushDecoder();
+
   AVFrame* grabFrame(int& eof);
 };
 
