@@ -69,21 +69,22 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     if (inputPort == mDefaultPort) continue;
     auto subdata = popInputData(inputPort, dataPipeId);
     // 这里不能在while里取，否则会堵住
-    // while (!subdata && (getThreadStatus() == ThreadStatus::RUN)) {
-    //   std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    //   subdata = popInputData(inputPort, dataPipeId);
-    // }
-    if (subdata == nullptr) continue;
-    auto subObj = std::static_pointer_cast<common::ObjectMetadata>(subdata);
-    int sub_channel_id = subObj->mFrame->mChannelId;
-    int sub_frame_id = subObj->mFrame->mFrameId;
-    IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {1}",
-              sub_channel_id, sub_frame_id);
-    mBranches[sub_channel_id][sub_frame_id]++;
-    IVS_DEBUG(
-        "data updated, channel_id = {0}, frame_id = {1}, current num_branches "
-        "= {2}",
-        sub_channel_id, sub_frame_id, mBranches[sub_channel_id][sub_frame_id]);
+    while (subdata != nullptr) {
+      auto subObj = std::static_pointer_cast<common::ObjectMetadata>(subdata);
+      int sub_channel_id = subObj->mFrame->mChannelId;
+      int sub_frame_id = subObj->mFrame->mFrameId;
+      IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {1}",
+                sub_channel_id, sub_frame_id);
+      mBranches[sub_channel_id][sub_frame_id]++;
+      IVS_DEBUG(
+          "data updated, channel_id = {0}, frame_id = {1}, current "
+          "num_branches "
+          "= {2}",
+          sub_channel_id, sub_frame_id,
+          mBranches[sub_channel_id][sub_frame_id]);
+      subdata = popInputData(inputPort, dataPipeId);
+    }
+    // if (subdata == nullptr) continue;
   }
 
   // 遍历map，能弹出去的都弹出去
