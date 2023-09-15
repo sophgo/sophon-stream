@@ -17,11 +17,8 @@ mkdir -p ../data/images
 mkdir -p ../data/videos
 mkdir -p ../data/images/face
 
-
-
-http://disk-sophgo-vip.quickconnect.to/sharing/TKlYk3tz4
 # 测试集wind
-python3 -m dfn --url http://219.142.246.77:65000/sharing/4ryx2MOgm
+python3 -m dfn --url http://219.142.246.77:65000/sharing/TKlYk3tz4
 tar -xf wind.tar -C ../data/images/
 rm wind.tar
 
