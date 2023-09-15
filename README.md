@@ -25,7 +25,7 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo      |
 |                         | [resnet](./samples/resnet)                                        | resnet demo      |
 |                         | [openpose](./samples/openpose)                                    | openpose demo      |
-|                         | [openpose](./samples/retinaface)                                    | retinaface demo      |
+|                         | [retinaface](./samples/retinaface)                                    | retinaface demo      |
 |                         | [yolox_bytetrack_osd_encode](./samples/yolox_bytetrack_osd_encode)| 目标检测-跟踪-算法结果推流demo|
 |                         | [yolov5_bytetrack_distributor_resnet_converger](./samples/yolov5_bytetrack_distributor_resnet_converger)| 目标检测-跟踪-分发-属性识别demo|
 | [tools](./tools)        | [web_visualize](./tools/web_visualize)                            | web可视化工具         |
