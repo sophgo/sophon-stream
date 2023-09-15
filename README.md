@@ -14,7 +14,7 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [bytetrack](./element/algorithm/bytetrack)                        | bytetrack插件        |
 |                         | [resnet](./element/algorithm/resnet)                              | resnet插件           |
 |                         | [openpose](./element/algorithm/openpose)                          | openpose插件         |
-|                         | [openpose](./element/algorithm/retinaface)                          | retinaface插件         |
+|                         | [retinaface](./element/algorithm/retinaface)                      | retinaface插件       |
 |                         | [decode](./element/multimedia/decode)                             | 解码插件              |
 |                         | [encode](./element/multimedia/encode)                             | 编码插件              |
 |                         | [osd](./element/multimedia/osd)                                   | 算法结果可视化插件     |
