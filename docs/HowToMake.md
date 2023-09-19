@@ -16,7 +16,13 @@ make -j4
 ```
 
 ## SoC平台
-通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的[文件](https://disk.sophgo.vip/sharing/vmOeAUrI9)。
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)：
+```bash
+pip3 install dfss
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0301.zip
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0501.zip
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0701.zip
+```
 
 交叉编译时，`SOPHON_SDK_SOC`需要填写绝对路径
 
@@ -28,12 +34,12 @@ make -j4
 ```
 
 ## 使用开发镜像编译
-如果您的本机部分环境不兼容，且不方便更改本机环境，可以使用我们提供的docker镜像进行编译，[镜像下载地址](http://219.142.246.77:65000/sharing/7XmFQDJKB)
+如果您的本机部分环境不兼容，且不方便更改本机环境，可以使用我们提供的docker镜像进行编译。
 
-或者通过dfn下载
+通过dfss下载：
 ```bash
-pip3 install dfn
-python3 -m dfn --url http://219.142.246.77:65000/sharing/7XmFQDJKB
+pip3 install dfss
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/docker/stream_dev.tar
 ```
 
 如果是首次使用Docker, 可执行下述命令进行安装和配置(仅首次执行):
