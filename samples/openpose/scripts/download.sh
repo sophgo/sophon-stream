@@ -1,5 +1,5 @@
 #!/bin/bash
-pip3 install dfn
+pip3 install dfss
 #sudo apt install unzip
 
 scripts_dir=$(dirname $(readlink -f "$0"))
@@ -14,7 +14,7 @@ then
     # models
     if [ ! -d "../data/models" ];
     then
-        python3 -m dfn --url https://disk.sophgo.vip/sharing/JboKjYqF5
+        python3 -m dfss --url=open@sophgo.com:/sophon-stream/openpose/models.zip
         unzip models.zip -d ../data/
         rm models.zip
         echo "models download!"
@@ -26,7 +26,7 @@ then
     then
         mkdir -p ../data/videos
 
-        python3 -m dfn --url https://disk.sophgo.vip/sharing/8gY6PTREJ
+        python3 -m dfss --url=open@sophgo.com:/sophon-stream/openpose/test.mp4
         mv test.mp4 ../data/videos/
         echo "videos download!"
     else

@@ -1,5 +1,5 @@
 #!/bin/bash
-pip3 install dfn
+pip3 install dfss
 
 res=$(dpkg -l|grep unzip)
 if [ $? != 0 ];
@@ -18,23 +18,23 @@ mkdir -p ../data/videos
 mkdir -p ../data/images/face
 
 # 测试集wind
-python3 -m dfn --url http://219.142.246.77:65000/sharing/TKlYk3tz4
-tar -xf wind.tar -C ../data/images/
-rm wind.tar
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/retinaface/wind.zip
+unzip wind.zip -d ../data/images/
+rm wind.zip
 
 # 测试集WIDER FACE
-python3 -m dfn --url http://219.142.246.77:65000/sharing/4ryx2MOgm
-tar -xf WIDERVAL.tar -C ../data/images/
-rm WIDERVAL.tar
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/retinaface/WIDERVAL.zip
+unzip WIDERVAL.zip -d ../data/images/
+rm WIDERVAL.zip
 
 ## 单张图片与视频
-python3 -m dfn --url http://219.142.246.77:65000/sharing/BaQm9vdpp
-tar -xf test.tar -C ../data
-mv ../data/images/face0*.jpg ../data/images/face
-rm test.tar
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/retinaface/test.zip
+unzip test.zip -d ../data/images/face
+# mv ../data/images/face0*.jpg ../data/images/face
+rm test.zip
 
 # models
-python3 -m dfn --url http://219.142.246.77:65000/sharing/BmC4MEfEl
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/retinaface/models.zip
 unzip models.zip -d ../data/
 rm models.zip
 
