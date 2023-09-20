@@ -281,7 +281,7 @@ void Encoder::Encoder_CC::init_writer() {
     av_dict_set_int(&enc_dict_, "sophon_idx", bm_get_devid(handle_), 0);
     av_dict_set_int(&enc_dict_, "gop_preset", params_map_["gop_preset"], 0);
     av_dict_set_int(&enc_dict_, "is_dma_buffer", 1, 0);
-    av_dict_set(&enc_dict_, "rtsp_transport", "tcp", 0);
+    // av_dict_set(&enc_dict_, "rtsp_transport", "tcp", 0);
 
     if (-1 == params_map_["qp"]) {
       enc_ctx_->bit_rate_tolerance = params_map_["bitrate"] * 1000;

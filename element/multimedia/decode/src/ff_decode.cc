@@ -403,8 +403,8 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   this->dev_id = bm_get_devid(*dec_handle);
   int ret = 0;
   AVDictionary* dict = NULL;
-  av_dict_set(&dict, "rtsp_transport", "tcp", 0);
-  // av_dict_set(&dict, "rtmp_flags", "prefer_tcp", 0);
+  av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
+  // av_dict_set(&dict, "rtsp_transport", "tcp", 0);
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
     av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
@@ -533,8 +533,7 @@ void VideoDecFFM::reConnectVideoStream() {
     // 尝试连接服务器
     AVDictionary* dict = NULL;
     av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
-    av_dict_set(&dict, "rtmp_flags", "prefer_tcp", 0);
-    av_dict_set(&dict, "rtsp_transport", "tcp", 0);
+    // av_dict_set(&dict, "rtsp_transport", "tcp", 0);
     auto url = this->is_rtsp ? this->rtsp_url : this->rtmp_url;
     av_log(video_dec_ctx, AV_LOG_ERROR, "Start reconnected, url: %s.\n", url);
     auto ret = avformat_open_input(&ifmt_ctx, url, NULL, &dict);
