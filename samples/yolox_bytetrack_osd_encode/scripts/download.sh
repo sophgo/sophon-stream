@@ -16,7 +16,7 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolox_bytetrack_osd_encode/
 tar xvf models.tar -C ../data
 rm -rf models.tar
 
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolox_bytetrack_osd_encode/coco.names
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data
 
 popd

@@ -29,7 +29,7 @@ unzip BM1684X_tpukernel.zip
 rm -rf BM1684X_tpukernel.zip
 mv ./BM1684X ../data/models/BM1684X_tpukernel
 
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov5/coco.names
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data/
 
 popd

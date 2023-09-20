@@ -42,7 +42,7 @@ common::ErrorCode Distributor::initInternal(const std::string& json) {
     assert(istream.is_open());
     std::string line;
     while (std::getline(istream, line)) {
-      line = line.substr(0, line.length() - 1);
+      line = line.substr(0, line.length());
       mClassNames.push_back(line);
     }
     istream.close();

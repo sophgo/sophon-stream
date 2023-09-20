@@ -19,7 +19,7 @@ unzip videos.zip
 rm -rf videos.zip
 mv ./videos ../data/
 
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/bytetrack/coco.names
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data/
 
 popd

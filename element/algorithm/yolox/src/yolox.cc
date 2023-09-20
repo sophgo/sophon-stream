@@ -54,7 +54,7 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
         assert(istream.is_open());
         std::string line;
         while (std::getline(istream, line)) {
-          line = line.substr(0, line.length() - 1);
+          line = line.substr(0, line.length());
           mContext->class_names.push_back(line);
           if (mContext->thresh_conf_min != -1) {
             mContext->thresh_conf.insert({line, mContext->thresh_conf_min});

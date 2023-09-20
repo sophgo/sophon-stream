@@ -123,7 +123,7 @@ demo_config parse_demo_json(std::string& json_path) {
     assert(istream.is_open());
     std::string line;
     while (std::getline(istream, line)) {
-      line = line.substr(0, line.length() - 1);
+      line = line.substr(0, line.length());
       config.class_names.push_back(line);
     }
     istream.close();
@@ -131,7 +131,7 @@ demo_config parse_demo_json(std::string& json_path) {
     istream.open(car_attr_file);
     assert(istream.is_open());
     while (std::getline(istream, line)) {
-      line = line.substr(0, line.length() - 1);
+      line = line.substr(0, line.length());
       config.car_attr.push_back(line);
     }
     istream.close();
@@ -139,7 +139,7 @@ demo_config parse_demo_json(std::string& json_path) {
     istream.open(person_attr_file);
     assert(istream.is_open());
     while (std::getline(istream, line)) {
-      line = line.substr(0, line.length() - 1);
+      line = line.substr(0, line.length());
       config.person_attr.push_back(line);
     }
     istream.close();

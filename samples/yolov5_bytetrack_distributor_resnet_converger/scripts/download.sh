@@ -23,7 +23,7 @@ unzip BM1684X_tpukernel.zip
 rm -rf BM1684X_tpukernel.zip
 mv ./BM1684X_tpukernel ../data/models/BM1684X_tpukernel
 
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov5_bytetrack_distributor_resnet_converger/coco.names
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data/
 
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov5_bytetrack_distributor_resnet_converger/car.attributes
