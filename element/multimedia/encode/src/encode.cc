@@ -144,7 +144,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       int threadNumber = getThreadNumber();
       for (int i = 0; i < threadNumber; ++i) {
         mEncoderMap[i] =
-            std::make_shared<Encoder>(dev_id, encFmt, pixFmt, mEncodeParams);
+            std::make_shared<Encoder>(dev_id, encFmt, pixFmt, mEncodeParams, i);
       }
     } else if (mEncodeType == EncodeType::IMG_DIR) {
       const char* dir_path = "./results";
@@ -212,10 +212,6 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   if (objectMetadata->mFrame->mEndOfStream) {
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
-      auto encodeIt = mEncoderMap.find(dataPipeId);
-      // encodeIt->second->isRunning = false;
-      // encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData),
-      // false); // send stop signal to encoder thread
       IVS_DEBUG("Encode receive end of stream, dataPipeId: {0}", dataPipeId);
     }
   }

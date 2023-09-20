@@ -403,8 +403,8 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   this->dev_id = bm_get_devid(*dec_handle);
   int ret = 0;
   AVDictionary* dict = NULL;
-  av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
-  av_dict_set(&dict, "rtmp_flags", "prefer_tcp", 0);
+  av_dict_set(&dict, "rtsp_transport", "tcp", 0);
+  // av_dict_set(&dict, "rtmp_flags", "prefer_tcp", 0);
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
     av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
@@ -534,6 +534,7 @@ void VideoDecFFM::reConnectVideoStream() {
     AVDictionary* dict = NULL;
     av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
     av_dict_set(&dict, "rtmp_flags", "prefer_tcp", 0);
+    av_dict_set(&dict, "rtsp_transport", "tcp", 0);
     auto url = this->is_rtsp ? this->rtsp_url : this->rtmp_url;
     av_log(video_dec_ctx, AV_LOG_ERROR, "Start reconnected, url: %s.\n", url);
     auto ret = avformat_open_input(&ifmt_ctx, url, NULL, &dict);
@@ -582,16 +583,14 @@ int VideoDecFFM::isNetworkError(int ret) {
   return 0;
 }
 
-AVFrame* VideoDecFFM::flushDecoder()
-{
-    av_frame_unref(frame);
-    int ret = avcodec_send_packet(video_dec_ctx, NULL);
-    ret = avcodec_receive_frame(video_dec_ctx, frame);
-    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF || ret < 0)
-    {
-        return NULL;
-    }
-    return frame;
+AVFrame* VideoDecFFM::flushDecoder() {
+  av_frame_unref(frame);
+  int ret = avcodec_send_packet(video_dec_ctx, NULL);
+  ret = avcodec_receive_frame(video_dec_ctx, frame);
+  if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF || ret < 0) {
+    return NULL;
+  }
+  return frame;
 }
 
 AVFrame* VideoDecFFM::grabFrame(int& eof) {
@@ -677,7 +676,7 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
 
 std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
   // 控制帧率
-  if (fps != -1) {
+  if (fps != -1) { 
     gettimeofday(&current_time, NULL);
     double time_delta =
         1000 * ((current_time.tv_sec - last_time.tv_sec) +

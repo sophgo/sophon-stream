@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+#include "common/logger.h"
+
 namespace sophon_stream {
 namespace element {
 namespace encode {
@@ -47,7 +49,7 @@ class Encoder::Encoder_CC {
  public:
   Encoder_CC();
   Encoder_CC(int dev_id, const std::string& enc_fmt, const std::string& pix_fmt,
-             const std::map<std::string, int>& enc_params);
+             const std::map<std::string, int>& enc_params, int channel_idx);
 
   ~Encoder_CC();
 
@@ -75,6 +77,8 @@ class Encoder::Encoder_CC {
   bool is_rtmp_;
   bool opened_;
 
+  int channel_idx;
+
   void* jpeg_addr;
   int jpeg_size;
 
@@ -97,13 +101,15 @@ class Encoder::Encoder_CC {
   int bm_image_to_avframe(bm_handle_t& handle, bm_image* image, AVFrame* frame);
   int flush_encoder();
 
-  std::queue<std::shared_ptr<void>> encoderQueue;
-  static constexpr int queueMinSize = 5;
   bool pushQueue(std::shared_ptr<void> p);
   std::shared_ptr<void> popQueue();
-  int getSize();
-  std::mutex mQueueMtx;
+  int getSize() const;
   void flowControlFunc();
+
+  static constexpr const int queueMaxSize = 10;
+  static constexpr const int queueMinSize = 5;
+  std::queue<std::shared_ptr<void>> encoderQueue;
+  mutable std::mutex mQueueMtx;
   std::thread flow_control;
   bool isRunning = true;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
@@ -113,8 +119,9 @@ Encoder::Encoder() : _impl(new Encoder_CC()) {}
 
 Encoder::Encoder(int dev_id, const std::string& enc_fmt,
                  const std::string& pix_fmt,
-                 const std::map<std::string, int>& enc_params)
-    : _impl(new Encoder_CC(dev_id, enc_fmt, pix_fmt, enc_params)) {}
+                 const std::map<std::string, int>& enc_params, int channel_idx)
+    : _impl(new Encoder_CC(dev_id, enc_fmt, pix_fmt, enc_params, channel_idx)) {
+}
 
 Encoder::~Encoder() { delete _impl; }
 
@@ -191,7 +198,8 @@ Encoder::Encoder_CC::Encoder_CC() {}
 
 Encoder::Encoder_CC::Encoder_CC(int dev_id, const std::string& enc_fmt,
                                 const std::string& pix_fmt,
-                                const std::map<std::string, int>& enc_params)
+                                const std::map<std::string, int>& enc_params,
+                                int channel_idx)
     : index(0),
       is_jpeg_(false),
       is_rtsp_(false),
@@ -202,7 +210,8 @@ Encoder::Encoder_CC::Encoder_CC(int dev_id, const std::string& enc_fmt,
       enc_dict_(nullptr),
       enc_fmt_(enc_fmt),
       enc_params_(enc_params),
-      pix_fmt_(AV_PIX_FMT_NONE) {
+      pix_fmt_(AV_PIX_FMT_NONE),
+      channel_idx(channel_idx) {
   bm_dev_request(&handle_, dev_id);
   enc_params_prase();
   if (pix_fmt == "I420") {
@@ -271,11 +280,8 @@ void Encoder::Encoder_CC::init_writer() {
 
     av_dict_set_int(&enc_dict_, "sophon_idx", bm_get_devid(handle_), 0);
     av_dict_set_int(&enc_dict_, "gop_preset", params_map_["gop_preset"], 0);
-    // av_dict_set_int(&enc_dict_, "mb_rc",      params_map_["mb_rc"],      0);
-    // 0); av_dict_set_int(&enc_dict_, "bg",         params_map_["bg"], 0);
-    // av_dict_set_int(&enc_dict_, "nr",         params_map_["nr"],         0);
-    // av_dict_set_int(&enc_dict_, "weightp",    params_map_["weightp"],    0);
     av_dict_set_int(&enc_dict_, "is_dma_buffer", 1, 0);
+    av_dict_set(&enc_dict_, "rtsp_transport", "tcp", 0);
 
     if (-1 == params_map_["qp"]) {
       enc_ctx_->bit_rate_tolerance = params_map_["bitrate"] * 1000;
@@ -340,63 +346,28 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
 
     bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
     bmcv_rect_t crop_rect = {0, 0, image->width, image->height};
-    timeval tv1, tv2;
+    // timeval tv1, tv2;
     // gettimeofday(&tv1, NULL);
-    // int ret = bmcv_image_vpp_convert(handle, 1, *image, yuv_image,
-    // &crop_rect);
-    int ret = 1;
+    int ret = bmcv_image_vpp_convert(handle, 1, *image, yuv_image, &crop_rect);
     // gettimeofday(&tv2, NULL);
-    // int time_interval1 = (tv2.tv_sec - tv1.tv_sec)*1000*1000 +
-    // (tv2.tv_usec-tv1.tv_usec); printf("vpp_ret: %d, vpp_convert cost:
-    // %lld\n", ret, time_interval1);
+    // int time_interval1 =
+    //       (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec -
+    //       tv1.tv_usec);
+    // IVS_INFO("Encoder idx is {0}, vpp convert cost is {1}", channel_idx,
+    //            time_interval1);
     if (BM_SUCCESS != ret) {
-      gettimeofday(&tv1, NULL);
+      // gettimeofday(&tv1, NULL);
       ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
-      gettimeofday(&tv2, NULL);
-      int time_interval2 =
-          (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
-      // printf("storage_convert_ret: %d, vpp_convert cost: %lld\n", ret,
-      //        time_interval2);
+      // gettimeofday(&tv2, NULL);
+      // int time_interval2 =
+      //     (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
+      // IVS_INFO("Encoder idx is {0}, convert cost is {1}", channel_idx,
+      //          time_interval2);
       if (BM_SUCCESS != ret) {
         return ret;
       }
     }
   }
-
-  // if (is_jpeg_) {
-  //   plane = 3;
-  //   if (image->image_format == FORMAT_NV12) {
-  //     int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride /
-  //     2}; bm_image_create(handle, image->height, image->width,
-  //     FORMAT_YUV420P,
-  //                     DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
-  //     int ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
-  //     if (BM_SUCCESS != ret) {
-  //       return ret;
-  //     }
-  //   }
-
-  //   else if (image->image_format == FORMAT_RGB_PLANAR ||
-  //            image->image_format == FORMAT_BGR_PLANAR ||
-  //            image->image_format == FORMAT_RGB_PACKED ||
-  //            image->image_format == FORMAT_BGR_PACKED) {
-  //     int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride /
-  //     2}; bm_image_create(handle, image->height, image->width,
-  //     FORMAT_YUV420P,
-  //                     DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
-  //     int ret = bmcv_image_vpp_csc_matrix_convert(handle, 1, *image,
-  //     yuv_image,
-  //                                                 CSC_RGB2YPbPr_BT601);
-  //     if (BM_SUCCESS != ret) {
-  //       ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
-  //       if (BM_SUCCESS != ret) {
-  //         return ret;
-  //       }
-  //     }
-  //   } else {
-  //     yuv_image = image;
-  //   }
-  // }
 
   transcode_t* ImgOut = NULL;
   ImgOut = (transcode_t*)malloc(sizeof(transcode_t));
@@ -467,6 +438,9 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
 bool Encoder::Encoder_CC::is_opened() { return opened_; }
 
 bool Encoder::Encoder_CC::pushQueue(std::shared_ptr<void> p) {
+  if (getSize() >= queueMaxSize) {
+    return false;
+  }
   std::lock_guard<std::mutex> lock(mQueueMtx);
   encoderQueue.push(p);
   return true;
@@ -483,7 +457,7 @@ std::shared_ptr<void> Encoder::Encoder_CC::popQueue() {
   return p;
 }
 
-int Encoder::Encoder_CC::getSize() {
+int Encoder::Encoder_CC::getSize() const {
   std::lock_guard<std::mutex> lock(mQueueMtx);
   return encoderQueue.size();
 }
@@ -523,14 +497,12 @@ void Encoder::Encoder_CC::flowControlFunc() {
 }
 
 int Encoder::Encoder_CC::video_write(bm_image& image) {
-  int64_t push_start_time =
-      std::chrono::duration_cast<std::chrono::microseconds>(
-          std::chrono::system_clock::now().time_since_epoch())
-          .count();
   if (is_rtsp_ || is_video_file_) {
+    // auto _start_time = std::chrono::high_resolution_clock::now();
+
     int ret = 0;
     int got_output = 0;
-    int64_t start_time = 0;
+    // int64_t start_time = 0;
     std::shared_ptr<AVFrame> frame_ = nullptr;
     frame_.reset(av_frame_alloc(), [](AVFrame* p) {
       if (p != nullptr) {
@@ -556,6 +528,11 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
                          out_stream_->time_base);
     mFpsProfiler.add(1);
     pushQueue(std::static_pointer_cast<void>(test_enc_pkt));
+
+    // auto _finish_time = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double> dur = _finish_time - _start_time;
+    // IVS_DEBUG("Time Cost on video_write is {0}, Encoder ID is {1}", dur.count(),
+    //           channel_idx);
     return ret;
   }
   if (is_rtmp_) {

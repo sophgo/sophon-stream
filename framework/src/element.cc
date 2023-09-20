@@ -168,7 +168,8 @@ common::ErrorCode Element::resume() {
 void Element::run(int dataPipeId) {
   onStart();
   prctl(PR_SET_NAME, std::to_string(mId).c_str());
-  // IVS_CRITICAL("create thread, mID = {0}, threadNumber = {1}, tid = {2}", mId,
+  // IVS_CRITICAL("create thread, mID = {0}, threadNumber = {1}, tid = {2}",
+  // mId,
   //              dataPipeId, gettid());
   while (ThreadStatus::RUN == mThreadStatus) {
     doWork(dataPipeId);
@@ -227,7 +228,10 @@ common::ErrorCode Element::pushOutputData(int outputPort, int dataPipeId,
   }
   while (mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) !=
          common::ErrorCode::SUCCESS) {
-    IVS_DEBUG("DataPipe is full, now sleeping...");
+    IVS_DEBUG(
+        "DataPipe is full, now sleeping. ElementID is {0}, outputPort is {1}, "
+        "dataPipeId is {2}",
+        mId, outputPort, dataPipeId);
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
   return common::ErrorCode::SUCCESS;

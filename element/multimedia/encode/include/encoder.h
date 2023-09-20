@@ -18,14 +18,13 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
+#include <queue>
 #include <regex>
 #include <thread>
-#include <queue>
-
-#include "common/profiler.h"
 
 #include "bmcv_api.h"
 #include "bmcv_api_ext.h"
+#include "common/profiler.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -40,8 +39,8 @@ namespace encode {
 class Encoder {
  public:
   Encoder();
-  Encoder(int dev_id, const std::string& enc_fmt,
-          const std::string& pix_fmt, const std::map<std::string, int>& enc_params);
+  Encoder(int dev_id, const std::string& enc_fmt, const std::string& pix_fmt,
+          const std::map<std::string, int>& enc_params, int channel_idx);
 
   ~Encoder();
 
@@ -60,7 +59,6 @@ class Encoder {
 
   class Encoder_CC;
   class Encoder_CC* const _impl;
-
 };
 }  // namespace encode
 }  // namespace element
