@@ -48,6 +48,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
+    add_dependencies(${demo_name} ivslogger framework)
     target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
 
 
@@ -87,6 +88,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
+    add_dependencies(${demo_name} ivslogger framework)
     target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
 
 endif()
