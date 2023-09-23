@@ -26,6 +26,17 @@ namespace sophon_stream {
 namespace element {
 namespace openpose {
 
+typedef struct {
+  unsigned long long input_data_addr;
+  unsigned long long num_output_data_addr;
+  unsigned long long output_data_addr;
+  int input_c;
+  int input_h;
+  int input_w;
+  int max_peak_num;
+  float nms_thresh;
+} __attribute__((packed)) tpu_api_openpose_part_nms_postprocess_t;
+
 class PoseBlob : public NoCopyable,
                  public std::enable_shared_from_this<PoseBlob> {
   int m_count;
@@ -66,6 +77,16 @@ class OpenposePostProcess {
   void nmsFunc(float* ptr, float* top_ptr, int length, int h, int w,
                int max_peaks, float threshold, int plane_offset,
                int top_plane_offset);
+  int kernel_part_nms(bm_device_mem_t input_data, int input_h, int input_w,
+                      int max_peak_num, float threshold, int* num_result,
+                      float* score_out_result, int* coor_out_result,
+                      PosedObjectMetadata::EModelType model_type,
+                      std::shared_ptr<OpenposeContext> context);
+  int resize_multi_channel(float* input, float* output,
+                           bm_device_mem_t out_addr, int input_height,
+                           int input_width, cv::Size outSize, bool use_memcpy,
+                           int start_chan_idx, int end_chan_idx,
+                           std::shared_ptr<OpenposeContext> context);
   void connectBodyPartsCpu(
       std::vector<std::shared_ptr<common::PosedObjectMetadata>>& poseKeypoints,
       const float* const heatMapPtr, const float* const peaksPtr,
@@ -73,11 +94,26 @@ class OpenposePostProcess {
       const int interMinAboveThreshold, const float interThreshold,
       const int minSubsetCnt, const float minSubsetScore,
       const float scaleFactor, PosedObjectMetadata::EModelType model_type);
+  void connectBodyPartsKernel(
+      std::vector<std::shared_ptr<common::PosedObjectMetadata>>& poseKeypoints,
+      const float* const heatMapPtr, const int* const num_result,
+      const float* const score_out_result, const int* const coor_out_result,
+      const float* const peaksPtr, const cv::Size& heatMapSize,
+      const int maxPeaks, const int interMinAboveThreshold,
+      const float interThreshold, const int minSubsetCnt,
+      const float minSubsetScore, const float scaleFactor,
+      PosedObjectMetadata::EModelType model_type);
 
-  void getKeyPoints(
+  void getKeyPointsCPU(
       std::shared_ptr<BMNNTensor> tensorPtr, const bm_image& images,
       std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
       PosedObjectMetadata::EModelType model_type, float nms_threshold);
+
+  void getKeyPointsTPUKERNEL(
+      std::shared_ptr<BMNNTensor> outputTensorPtr, const bm_image& images,
+      std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
+      PosedObjectMetadata::EModelType model_type, float nms_threshold,
+      std::shared_ptr<OpenposeContext> context);
 
   std::vector<unsigned int> getPosePairs(
       PosedObjectMetadata::EModelType model_type);

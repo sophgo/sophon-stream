@@ -38,6 +38,8 @@ struct OpenposeContext {
   std::shared_ptr<BMNNNetwork> bmNetwork;
   bm_handle_t handle;
 
+  bool use_tpu_kernel = false;
+  tpu_kernel_function_t func_id;
   int m_net_h, m_net_w;
   int m_net_channel;
   int max_batch;

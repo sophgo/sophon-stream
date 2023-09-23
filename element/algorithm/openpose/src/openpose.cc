@@ -41,6 +41,14 @@ common::ErrorCode Openpose::initContext(const std::string& json) {
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
     mContext->nms_threshold = threshNmsIt->get<float>();
 
+    auto tpu_kernelIt =
+        configure.find(CONFIG_INTERNAL_THRESHOLD_TPU_KERNEL_FIELD);
+    if (configure.end() == tpu_kernelIt || !tpu_kernelIt->is_boolean()) {
+      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+      break;
+    }
+    mContext->use_tpu_kernel = tpu_kernelIt->get<bool>();
+
     // 1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
     mContext->handle = handle->handle();
@@ -82,6 +90,21 @@ common::ErrorCode Openpose::initContext(const std::string& json) {
     mContext->converto_attr.alpha_2 = input_scale;
     mContext->converto_attr.beta_2 = -128 * input_scale;
 
+    // 5. tpu_kernel postprocess
+    if (mContext->use_tpu_kernel) {
+      tpu_kernel_module_t tpu_module;
+      std::string tpu_kernel_module_path =
+          "../../../3rdparty/tpu_kernel_module/"
+          "libbm1684x_kernel_module.so";
+      tpu_module = tpu_kernel_load_module_file(mContext->bmContext->handle(),
+                                               tpu_kernel_module_path.c_str());
+      mContext->func_id = tpu_kernel_get_function(
+          mContext->bmContext->handle(), tpu_module,
+          "tpu_kernel_api_openpose_part_nms_postprocess");
+      std::cout
+          << "Using tpu_kernel openpose postprocession, kernel funtion id: "
+          << mContext->func_id << std::endl;
+    }
   } while (false);
   return common::ErrorCode::SUCCESS;
 }

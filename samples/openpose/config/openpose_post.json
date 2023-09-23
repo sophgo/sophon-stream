@@ -4,7 +4,8 @@
         "threshold_nms": 0.05,
         "stage": [
             "post"
-        ]
+        ],
+        "use_tpu_kernel": true
     },
     "shared_object": "../../../build/lib/libopenpose.so",
     "name": "openpose",

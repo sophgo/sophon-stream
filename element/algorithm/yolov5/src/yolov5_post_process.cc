@@ -153,6 +153,7 @@ void Yolov5PostProcess::setTpuKernelMem(
           context->bmNetwork->outputTensor(j)->get_shape()->dims[2];
     }
     tpu_k.api[batch_idx].clip_box = 1;
+    tpu_k.api[batch_idx].agnostic_nms = 0;
   }
 }
 

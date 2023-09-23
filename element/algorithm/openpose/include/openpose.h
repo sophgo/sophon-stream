@@ -52,6 +52,8 @@ class Openpose : public ::sophon_stream::framework::Element {
    */
   static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
   static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
+  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_TPU_KERNEL_FIELD =
+      "use_tpu_kernel";
 
   static constexpr const char* CONFIG_INTERNAL_THRESHOLD_NMS_FIELD =
       "threshold_nms";
