@@ -250,9 +250,9 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
                 "{2:p}",
                 getId(), target_port, static_cast<void*>(subObj.get()));
           }
-          ++subId;
         }
       }
+      ++subId;
     }
     if (class2ports.find("full_frame") != class2ports.end()) {
       for (auto port_it = class2ports["full_frame"].begin();
