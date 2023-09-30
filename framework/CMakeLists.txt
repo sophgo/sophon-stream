@@ -38,6 +38,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     add_library(ivslogger SHARED
       common/logger.cc
       common/profiler.cc
+      common/common_defs.h
     )
     target_link_libraries(ivslogger -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS})
 
@@ -96,6 +97,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     add_library(ivslogger SHARED
       common/logger.cc
       common/profiler.cc
+      common/common_defs.h
     )
     target_link_libraries(ivslogger -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov)
 

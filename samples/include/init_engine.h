@@ -10,6 +10,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "engine.h"
 
@@ -40,7 +41,8 @@ void parse_element_json(
     std::string elem_config =
         element_it.find(JSON_CONFIG_ELEMENT_CONFIG_FILED)->get<std::string>();
     elem_stream.open(elem_config);
-    assert(elem_stream.is_open());
+    STREAM_CHECK(elem_stream.is_open(), "Please check if element config file ",
+                 elem_config, " file exists.");
     elem_stream >> element;
     element["id"] = element_it.find(JSON_CONFIG_ELEMENT_ID_FILED)->get<int>();
     element["device_id"] = device_id;
@@ -53,10 +55,9 @@ void parse_element_json(
       if (input_it != ports_it->end()) {
         for (auto& input : *input_it) {
           if (input.find(JSON_CONFIG_ELEMENT_IS_SRC_FILED)->get<bool>()) {
-            if (src_id_port.first != -1) {
-              IVS_ERROR("Too many src element");
-              abort();
-            }
+            STREAM_CHECK(src_id_port.first == -1,
+                         "Too many src element, please check ", elem_config,
+                         " file.");
             src_id_port = {element["id"],
                            input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
           }
@@ -75,12 +76,10 @@ void parse_element_json(
     elementsConfigure.push_back(element);
     elem_stream.close();
   }
-  if (src_id_port.first == -1 || sink_id_port.first == -1) {
-    IVS_ERROR(
-        "THERE MUST BE ONE SRC PORT AND AT LEAST ONE SINK PORT IN GRAPH! CHECK "
-        "YOUR ENGINE.JSON.");
-    abort();
-  }
+  STREAM_CHECK(
+      (src_id_port.first != -1 && sink_id_port.first != -1),
+      "THERE MUST BE ONE SRC PORT AND AT LEAST ONE SINK PORT IN GRAPH! CHECK "
+      "YOUR ENGINE.JSON.");
 }
 
 void parse_connection_json(

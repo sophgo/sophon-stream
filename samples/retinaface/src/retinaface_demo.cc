@@ -5,19 +5,18 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 
+#include "channel.h"
 #include "common/clocker.h"
+#include "common/common_defs.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
 #include "common/profiler.h"
-#include "channel.h"
 #include "engine.h"
 #include "init_engine.h"
 
-
 using namespace cv;
 using namespace std;
-
 
 typedef struct demo_config_ {
   int num_graphs;
@@ -37,7 +36,8 @@ constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
-  assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check config file ", json_path,
+               " exists.");
   nlohmann::json demo_json;
   istream >> demo_json;
   istream.close();
@@ -72,23 +72,25 @@ demo_config parse_demo_json(std::string& json_path) {
   return config;
 }
 
-void draw_bmcv(bm_handle_t& handle, std::shared_ptr<sophon_stream::common::ObjectMetadata> results, bm_image& frame)  // Draw the predicted bounding box
+void draw_bmcv(bm_handle_t& handle,
+               std::shared_ptr<sophon_stream::common::ObjectMetadata> results,
+               bm_image& frame)  // Draw the predicted bounding box
 {
-  
   // Draw a rectangle displaying the bounding box
   bmcv_rect_t rect;
   for (size_t j = 0; j < results->mFaceObjectMetadata.size(); j++) {
-     rect.start_x = results->mFaceObjectMetadata[j]->left;
-     rect.start_y = results->mFaceObjectMetadata[j]->top;
-     rect.crop_w = results->mFaceObjectMetadata[j]->right - results->mFaceObjectMetadata[j]->left + 1;
-     rect.crop_h = results->mFaceObjectMetadata[j]->bottom - results->mFaceObjectMetadata[j]->top + 1;
+    rect.start_x = results->mFaceObjectMetadata[j]->left;
+    rect.start_y = results->mFaceObjectMetadata[j]->top;
+    rect.crop_w = results->mFaceObjectMetadata[j]->right -
+                  results->mFaceObjectMetadata[j]->left + 1;
+    rect.crop_h = results->mFaceObjectMetadata[j]->bottom -
+                  results->mFaceObjectMetadata[j]->top + 1;
 
-    std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
-            << rect.crop_h << std::endl;
+    std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w
+              << "," << rect.crop_h << std::endl;
 
     bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, 255, 2, 2);
   }
-   
 }
 
 int main() {
@@ -110,7 +112,8 @@ int main() {
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
   istream.open(retinaface_json.engine_config_file);
-  assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check if engine_config_file ",
+               retinaface_json.engine_config_file, " exists.");
   istream >> engine_json;
   istream.close();
 
@@ -133,7 +136,7 @@ int main() {
       return;
     }
 
-      if (retinaface_json.download_image) {
+    if (retinaface_json.download_image) {
       int width = objectMetadata->mFrame->mWidth;
       int height = objectMetadata->mFrame->mHeight;
       bm_image image = *objectMetadata->mFrame->mSpData;
@@ -142,8 +145,8 @@ int main() {
                       FORMAT_YUV420P, image.data_type, &imageStorage);
       bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
                                  &imageStorage);
- 
-      draw_bmcv(objectMetadata->mFrame->mHandle,objectMetadata,imageStorage);
+
+      draw_bmcv(objectMetadata->mFrame->mHandle, objectMetadata, imageStorage);
 
       // save image
       void* jpeg_data = NULL;
@@ -162,15 +165,14 @@ int main() {
       bm_image_destroy(imageStorage);
     }
     fpsProfiler.add(1);
-
   };
 
   std::map<int, std::pair<int, int>> graph_src_id_port_map;
   init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
 
   for (auto graph_id : engine.getGraphIds()) {
-    for (int channel_id = 0; channel_id < retinaface_json.num_channels_per_graph;
-         ++channel_id) {
+    for (int channel_id = 0;
+         channel_id < retinaface_json.num_channels_per_graph; ++channel_id) {
       nlohmann::json channel_config = retinaface_json.channel_config;
       channel_config["channel_id"] = channel_id;
       auto channelTask =

@@ -7,6 +7,7 @@
 
 #include "channel.h"
 #include "common/clocker.h"
+#include "common/common_defs.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
@@ -41,7 +42,8 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED =
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
-  assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check config file ", json_path,
+               " exists.");
   nlohmann::json demo_json;
   istream >> demo_json;
   istream.close();
@@ -113,7 +115,8 @@ int main() {
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
   istream.open(demo_json.engine_config_file);
-  assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check if engine_config_file ",
+               demo_json.engine_config_file, " exists.");
   istream >> engine_json;
   istream.close();
 

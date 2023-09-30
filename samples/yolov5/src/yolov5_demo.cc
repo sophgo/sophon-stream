@@ -5,12 +5,13 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 
+#include "channel.h"
 #include "common/clocker.h"
+#include "common/common_defs.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
 #include "common/profiler.h"
-#include "channel.h"
 #include "engine.h"
 #include "init_engine.h"
 
@@ -72,7 +73,8 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_FILED = "channel";
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
-  assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check config file ", json_path,
+               " exists.");
   nlohmann::json demo_json;
   istream >> demo_json;
   istream.close();
@@ -97,11 +99,20 @@ demo_config parse_demo_json(std::string& json_path) {
     struct stat info;
     if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
       std::cout << "Directory already exists." << std::endl;
+      int new_permissions = S_IRWXU | S_IRWXG | S_IRWXO;
+      if (chmod(dir_path, new_permissions) == 0) {
+        std::cout << "Directory permissions modified successfully."
+                  << std::endl;
+      } else {
+        std::cerr << "Error modifying directory permissions." << std::endl;
+        abort();
+      }
     } else {
       if (mkdir(dir_path, 0777) == 0) {
         std::cout << "Directory created successfully." << std::endl;
       } else {
         std::cerr << "Error creating directory." << std::endl;
+        abort();
       }
     }
     istream.open(class_names_file);
@@ -136,7 +147,8 @@ int main() {
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
   istream.open(yolov5_json.engine_config_file);
-  assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check if engine_config_file ",
+               yolov5_json.engine_config_file, " exists.");
   istream >> engine_json;
   istream.close();
 

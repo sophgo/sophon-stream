@@ -13,12 +13,13 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 
+#include "channel.h"
 #include "common/clocker.h"
+#include "common/common_defs.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
 #include "common/profiler.h"
-#include "channel.h"
 #include "engine.h"
 #include "init_engine.h"
 
@@ -78,6 +79,8 @@ demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
   assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check config file ", json_path,
+               " exists.");
   nlohmann::json demo_json;
   istream >> demo_json;
   istream.close();
@@ -131,7 +134,8 @@ int main() {
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
   istream.open(bytetrack_json.engine_config_file);
-  assert(istream.is_open());
+  STREAM_CHECK(istream.is_open(), "Please check if engine_config_file ",
+               bytetrack_json.engine_config_file, " exists.");
   istream >> engine_json;
   istream.close();
 
@@ -182,58 +186,57 @@ int main() {
                           detObj->mBox.mHeight, imageStorage, true);
       }
 
-        // save image
-        void* jpeg_data = NULL;
-        size_t out_size = 0;
-        int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
-                                      &imageStorage, &jpeg_data, &out_size);
-        if (ret == BM_SUCCESS) {
-          std::string img_file =
-              "./results/" +
-              std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
-              std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
-          FILE* fp = fopen(img_file.c_str(), "wb");
-          fwrite(jpeg_data, out_size, 1, fp);
-          fclose(fp);
-        }
-        free(jpeg_data);
-        bm_image_destroy(imageStorage);
+      // save image
+      void* jpeg_data = NULL;
+      size_t out_size = 0;
+      int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
+                                    &imageStorage, &jpeg_data, &out_size);
+      if (ret == BM_SUCCESS) {
+        std::string img_file =
+            "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
+            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        FILE* fp = fopen(img_file.c_str(), "wb");
+        fwrite(jpeg_data, out_size, 1, fp);
+        fclose(fp);
       }
-      fpsProfiler.add(1);
-    };
-
-    std::map<int, std::pair<int, int>> graph_src_id_port_map;
-    init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
-
-    for (auto graph_id : engine.getGraphIds()) {
-      for (int channel_id = 0;
-           channel_id < bytetrack_json.num_channels_per_graph; ++channel_id) {
-        nlohmann::json channel_config = bytetrack_json.channel_config;
-        channel_config["channel_id"] = channel_id;
-        auto channelTask =
-            std::make_shared<sophon_stream::element::decode::ChannelTask>();
-        channelTask->request.operation = sophon_stream::element::decode::
-            ChannelOperateRequest::ChannelOperate::START;
-        channelTask->request.json = channel_config.dump();
-        std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
-        sophon_stream::common::ErrorCode errorCode = engine.pushSourceData(
-            graph_id, src_id_port.first, src_id_port.second,
-            std::static_pointer_cast<void>(channelTask));
-      }
+      free(jpeg_data);
+      bm_image_destroy(imageStorage);
     }
+    fpsProfiler.add(1);
+  };
 
-    {
-      std::unique_lock<std::mutex> uq(mtx);
-      cv.wait(uq);
+  std::map<int, std::pair<int, int>> graph_src_id_port_map;
+  init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
+
+  for (auto graph_id : engine.getGraphIds()) {
+    for (int channel_id = 0; channel_id < bytetrack_json.num_channels_per_graph;
+         ++channel_id) {
+      nlohmann::json channel_config = bytetrack_json.channel_config;
+      channel_config["channel_id"] = channel_id;
+      auto channelTask =
+          std::make_shared<sophon_stream::element::decode::ChannelTask>();
+      channelTask->request.operation = sophon_stream::element::decode::
+          ChannelOperateRequest::ChannelOperate::START;
+      channelTask->request.json = channel_config.dump();
+      std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
+      sophon_stream::common::ErrorCode errorCode =
+          engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
+                                std::static_pointer_cast<void>(channelTask));
     }
-    for (int i = 0; i < bytetrack_json.num_graphs; i++) {
-      std::cout << "graph stop" << std::endl;
-      engine.stop(i);
-    }
-    long totalCost = clocker.tell_us();
-    std::cout << " total time cost " << totalCost << " us." << std::endl;
-    double fps = static_cast<double>(frameCount) / totalCost;
-    std::cout << "frame count is " << frameCount << " | fps is "
-              << fps * 1000000 << " fps." << std::endl;
-    return 0;
   }
+
+  {
+    std::unique_lock<std::mutex> uq(mtx);
+    cv.wait(uq);
+  }
+  for (int i = 0; i < bytetrack_json.num_graphs; i++) {
+    std::cout << "graph stop" << std::endl;
+    engine.stop(i);
+  }
+  long totalCost = clocker.tell_us();
+  std::cout << " total time cost " << totalCost << " us." << std::endl;
+  double fps = static_cast<double>(frameCount) / totalCost;
+  std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000
+            << " fps." << std::endl;
+  return 0;
+}
