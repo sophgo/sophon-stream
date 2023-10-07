@@ -19,9 +19,9 @@ make -j4
 通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)：
 ```bash
 pip3 install dfss
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0301.zip
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0501.zip
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0701.zip
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0301.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0501.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0701.tar.gz
 ```
 
 交叉编译时，`SOPHON_SDK_SOC`需要填写绝对路径
