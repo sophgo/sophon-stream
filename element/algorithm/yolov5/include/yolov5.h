@@ -72,7 +72,7 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
 
   common::ErrorCode initContext(const std::string& json);
-  void process(common::ObjectMetadatas& objectMetadatas);
+  void process(common::ObjectMetadatas& objectMetadatas, int dataPipeId);
 };
 
 }  // namespace yolov5

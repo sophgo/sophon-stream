@@ -17,7 +17,70 @@ namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
-void Yolov5PostProcess::init(std::shared_ptr<Yolov5Context> context) {}
+void Yolov5PostProcess::init(std::shared_ptr<Yolov5Context> context) {
+  if (context->use_tpu_kernel) {
+    int out_len_max = 25200 * 7;
+    int batch_num = 1;  // 4b has bug, now only for 1b.
+    const std::vector<std::vector<std::vector<int>>> anchors{
+        {{10, 13}, {16, 30}, {33, 23}},
+        {{30, 61}, {62, 45}, {59, 119}},
+        {{116, 90}, {156, 198}, {373, 326}}};
+    bm_handle_t handle_ = context->bmContext->handle();
+
+    multi_thread_tpu_kernel = new tpu_kernel[context->thread_number];
+    global_context = context;
+    for (int i = 0; i < context->thread_number; i++) {
+      multi_thread_tpu_kernel[i].func_id = context->func_id;
+      for (int j = 0; j < context->max_batch; j++) {
+        multi_thread_tpu_kernel[i].output_tensor[j] = new float[out_len_max];
+        auto ret = bm_malloc_device_byte(
+            handle_, &multi_thread_tpu_kernel[i].out_dev_mem[j],
+            out_len_max * sizeof(float));
+        assert(BM_SUCCESS == ret);
+        ret = bm_malloc_device_byte(
+            handle_, &multi_thread_tpu_kernel[i].detect_num_mem[j],
+            batch_num * sizeof(int32_t));
+        assert(BM_SUCCESS == ret);
+        multi_thread_tpu_kernel[i].api[j].top_addr =
+            bm_mem_get_device_addr(multi_thread_tpu_kernel[i].out_dev_mem[j]);
+        multi_thread_tpu_kernel[i].api[j].detected_num_addr =
+            bm_mem_get_device_addr(
+                multi_thread_tpu_kernel[i].detect_num_mem[j]);
+        multi_thread_tpu_kernel[i].api[j].batch_num = batch_num;
+        multi_thread_tpu_kernel[i].api[j].num_classes = context->class_num;
+        multi_thread_tpu_kernel[i].api[j].num_boxes = anchors[0].size();
+        multi_thread_tpu_kernel[i].api[j].keep_top_k = 200;
+        multi_thread_tpu_kernel[i].api[j].nms_threshold =
+            0.1 > context->thresh_nms ? 0.1 : context->thresh_nms;
+        multi_thread_tpu_kernel[i].api[j].confidence_threshold =
+            0.1 > context->thresh_conf_min ? 0.1 : context->thresh_conf_min;
+        auto it = multi_thread_tpu_kernel[i].api[j].bias;
+        for (const auto& subvector2 : anchors) {
+          for (const auto& subvector1 : subvector2) {
+            it = copy(subvector1.begin(), subvector1.end(), it);
+          }
+        }
+        multi_thread_tpu_kernel[i].api[j].clip_box = 1;
+        multi_thread_tpu_kernel[i].api[j].agnostic_nms = 0;
+      }
+    }
+  }
+}
+
+Yolov5PostProcess::~Yolov5PostProcess() {
+  if (multi_thread_tpu_kernel != nullptr) {
+    for (int i = 0; i < global_context->thread_number; i++) {
+      for (int j = 0; j < global_context->max_batch; j++) {
+        delete[] multi_thread_tpu_kernel[i].output_tensor[j];
+        bm_free_device(global_context->bmContext->handle(),
+                       multi_thread_tpu_kernel[i].out_dev_mem[j]);
+        bm_free_device(global_context->bmContext->handle(),
+                       multi_thread_tpu_kernel[i].detect_num_mem[j]);
+      }
+    }
+    delete[] multi_thread_tpu_kernel;
+  }
+}
 
 int Yolov5PostProcess::argmax(float* data, int num) {
   float max_value = 0.0;
@@ -90,16 +153,8 @@ void Yolov5PostProcess::NMS(YoloV5BoxVec& dets, float nmsConfidence) {
 void Yolov5PostProcess::setTpuKernelMem(
     std::shared_ptr<Yolov5Context> context,
     common::ObjectMetadatas& objectMetadatas, tpu_kernel& tpu_k) {
-  int out_len_max = 25200 * 7;
   if (objectMetadatas[0]->mFrame->mEndOfStream) return;
   int input_num = objectMetadatas[0]->mOutputBMtensors->tensors.size();  // 3
-  int batch_num = 1;  // 4b has bug, now only for 1b.
-  tpu_k.func_id = context->func_id;
-  const std::vector<std::vector<std::vector<int>>> anchors{
-      {{10, 13}, {16, 30}, {33, 23}},
-      {{30, 61}, {62, 45}, {59, 119}},
-      {{116, 90}, {156, 198}, {373, 326}}};
-  bm_handle_t handle_ = context->bmContext->handle();
 
   std::vector<std::vector<std::shared_ptr<bm_device_mem_t>>> in_dev_mems(
       context->max_batch,
@@ -109,59 +164,33 @@ void Yolov5PostProcess::setTpuKernelMem(
     for (int i = 0; i < input_num; i++)
       in_dev_mems[batch_idx][i] = std::make_shared<bm_device_mem_t>(
           objectMetadatas[batch_idx]->mOutputBMtensors->tensors[i]->device_mem);
-    tpu_k.output_tensor[batch_idx] = new float[out_len_max];
     for (int j = 0; j < input_num; ++j) {
       tpu_k.api[batch_idx].bottom_addr[j] =
           bm_mem_get_device_addr(*in_dev_mems[batch_idx][j]);
     }
-    auto ret = bm_malloc_device_byte(handle_, &tpu_k.out_dev_mem[batch_idx],
-                                     out_len_max * sizeof(float));
-    assert(BM_SUCCESS == ret);
-    ret = bm_malloc_device_byte(handle_, &tpu_k.detect_num_mem[batch_idx],
-                                batch_num * sizeof(int32_t));
-    assert(BM_SUCCESS == ret);
-    tpu_k.api[batch_idx].top_addr =
-        bm_mem_get_device_addr(tpu_k.out_dev_mem[batch_idx]);
-    tpu_k.api[batch_idx].detected_num_addr =
-        bm_mem_get_device_addr(tpu_k.detect_num_mem[batch_idx]);
 
     // config
     tpu_k.api[batch_idx].input_num = input_num;
-    tpu_k.api[batch_idx].batch_num = batch_num;
     for (int j = 0; j < input_num; ++j) {
       tpu_k.api[batch_idx].hw_shape[j][0] =
           context->bmNetwork->outputTensor(j)->get_shape()->dims[2];
       tpu_k.api[batch_idx].hw_shape[j][1] =
           context->bmNetwork->outputTensor(j)->get_shape()->dims[3];
     }
-    tpu_k.api[batch_idx].num_classes = context->class_num;
-    tpu_k.api[batch_idx].num_boxes = anchors[0].size();
-    tpu_k.api[batch_idx].keep_top_k = 200;
-    tpu_k.api[batch_idx].nms_threshold =
-        0.1 > context->thresh_nms ? 0.1 : context->thresh_nms;
-    tpu_k.api[batch_idx].confidence_threshold =
-        0.1 > context->thresh_conf_min ? 0.1 : context->thresh_conf_min;
-    auto it = tpu_k.api[batch_idx].bias;
-    for (const auto& subvector2 : anchors) {
-      for (const auto& subvector1 : subvector2) {
-        it = copy(subvector1.begin(), subvector1.end(), it);
-      }
-    }
     for (int j = 0; j < input_num; ++j) {
       tpu_k.api[batch_idx].anchor_scale[j] =
           context->net_h /
           context->bmNetwork->outputTensor(j)->get_shape()->dims[2];
     }
-    tpu_k.api[batch_idx].clip_box = 1;
-    tpu_k.api[batch_idx].agnostic_nms = 0;
   }
 }
 
 void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
-                                    common::ObjectMetadatas& objectMetadatas) {
+                                    common::ObjectMetadatas& objectMetadatas,
+                                    int dataPipeId) {
   if (objectMetadatas.size() == 0) return;
   if (context->use_tpu_kernel) {
-    postProcessTPUKERNEL(context, objectMetadatas);
+    postProcessTPUKERNEL(context, objectMetadatas, dataPipeId);
   } else {
     postProcessCPU(context, objectMetadatas);
   }
@@ -169,8 +198,8 @@ void Yolov5PostProcess::postProcess(std::shared_ptr<Yolov5Context> context,
 
 void Yolov5PostProcess::postProcessTPUKERNEL(
     std::shared_ptr<Yolov5Context> context,
-    common::ObjectMetadatas& objectMetadatas) {
-  tpu_kernel tpu_k;
+    common::ObjectMetadatas& objectMetadatas, int dataPipeId) {
+  tpu_kernel& tpu_k = multi_thread_tpu_kernel[dataPipeId];
   setTpuKernelMem(context, objectMetadatas, tpu_k);
   for (int i = 0; i < context->max_batch; i++) {
     if (objectMetadatas[i]->mFrame->mEndOfStream) break;
@@ -247,9 +276,6 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
       }
       objectMetadatas[i]->mDetectedObjectMetadatas.push_back(detData);
     }
-    delete[] tpu_k.output_tensor[i];
-    bm_free_device(context->bmContext->handle(), tpu_k.out_dev_mem[i]);
-    bm_free_device(context->bmContext->handle(), tpu_k.detect_num_mem[i]);
   }
 }
 

@@ -46,9 +46,14 @@ class Yolov5PostProcess {
   void init(std::shared_ptr<Yolov5Context> context);
 
   void postProcess(std::shared_ptr<Yolov5Context> context,
-                   common::ObjectMetadatas& objectMetadatas);
+                   common::ObjectMetadatas& objectMetadatas, int dataPipeId);
+
+  ~Yolov5PostProcess();
 
  private:
+  tpu_kernel* multi_thread_tpu_kernel = nullptr;
+  std::shared_ptr<Yolov5Context> global_context = nullptr;
+
   void setTpuKernelMem(std::shared_ptr<Yolov5Context> context,
                        common::ObjectMetadatas& objectMetadatas,
                        tpu_kernel& tpu_k);
@@ -60,7 +65,8 @@ class Yolov5PostProcess {
   void postProcessCPU(std::shared_ptr<Yolov5Context> context,
                       common::ObjectMetadatas& objectMetadatas);
   void postProcessTPUKERNEL(std::shared_ptr<Yolov5Context> context,
-                            common::ObjectMetadatas& objectMetadatas);
+                            common::ObjectMetadatas& objectMetadatas,
+                            int dataPipeId);
 };
 
 }  // namespace yolov5

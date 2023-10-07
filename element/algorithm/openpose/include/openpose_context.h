@@ -48,6 +48,7 @@ struct OpenposeContext {
   int output_num;
   int input_num;
   float nms_threshold;
+  int thread_number;
 };
 }  // namespace openpose
 }  // namespace element

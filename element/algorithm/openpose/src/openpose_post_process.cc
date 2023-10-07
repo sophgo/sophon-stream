@@ -32,11 +32,45 @@ inline T fastMin(const T a, const T b) {
   return (a < b ? a : b);
 }
 
-void OpenposePostProcess::init(std::shared_ptr<OpenposeContext> context) {}
+void OpenposePostProcess::init(std::shared_ptr<OpenposeContext> context) {
+  if (context->use_tpu_kernel) {
+    global_context = context;
+    resize_output_map_whole_device_mem =
+        new bm_device_mem_t* [context->thread_number] { nullptr };
+    aux_data = new bm_device_mem_t* [context->thread_number] { nullptr };
+    output_num = new bm_device_mem_t* [context->thread_number] { nullptr };
+  }
+}
 
-void OpenposePostProcess::postProcess(
-    std::shared_ptr<OpenposeContext> context,
-    common::ObjectMetadatas& objectMetadatas) {
+OpenposePostProcess::~OpenposePostProcess() {
+  if (resize_output_map_whole_device_mem == nullptr) return;
+  for (int i = 0; i < global_context->thread_number; i++) {
+    if (resize_output_map_whole_device_mem[i] != nullptr) {
+      bm_free_device(global_context->bmContext->handle(),
+                     *(resize_output_map_whole_device_mem[i]));
+      delete resize_output_map_whole_device_mem[i];
+      resize_output_map_whole_device_mem[i] = nullptr;
+      bm_free_device(global_context->bmContext->handle(), *(aux_data[i]));
+      delete aux_data[i];
+      aux_data[i] = nullptr;
+      bm_free_device(global_context->bmContext->handle(), *(output_num[i]));
+      delete output_num[i];
+      output_num[i] = nullptr;
+    }
+  }
+  if (resize_output_map_whole_device_mem != nullptr) {
+    delete[] resize_output_map_whole_device_mem;
+    resize_output_map_whole_device_mem = nullptr;
+    delete[] aux_data;
+    aux_data = nullptr;
+    delete[] output_num;
+    output_num = nullptr;
+  }
+}
+
+void OpenposePostProcess::postProcess(std::shared_ptr<OpenposeContext> context,
+                                      common::ObjectMetadatas& objectMetadatas,
+                                      int dataPipeId) {
   if (objectMetadatas.size() == 0) return;
   int idx = 0;
   for (auto obj : objectMetadatas) {
@@ -54,7 +88,7 @@ void OpenposePostProcess::postProcess(
     if (context->use_tpu_kernel) {
       getKeyPointsTPUKERNEL(out_tensor, *obj->mFrame->mSpData,
                             obj->mPosedObjectMetadatas, context->m_model_type,
-                            context->nms_threshold, context);
+                            context->nms_threshold, context, dataPipeId);
     } else {
       getKeyPointsCPU(out_tensor, *obj->mFrame->mSpData,
                       obj->mPosedObjectMetadatas, context->m_model_type,
@@ -161,23 +195,17 @@ void OpenposePostProcess::nms(PoseBlobPtr bottom_blob, PoseBlobPtr top_blob,
 }
 
 int OpenposePostProcess::kernel_part_nms(
-    bm_device_mem_t input_data, int input_h, int input_w, int max_peak_num,
-    float threshold, int* num_result, float* score_out_result,
-    int* coor_out_result, PosedObjectMetadata::EModelType model_type,
+    int dataPipeId, int input_h, int input_w, int max_peak_num, float threshold,
+    int* num_result, float* score_out_result, int* coor_out_result,
+    PosedObjectMetadata::EModelType model_type,
     std::shared_ptr<OpenposeContext> context) {
   tpu_api_openpose_part_nms_postprocess_t api;
   api.input_c = getNumberBodyParts(model_type);
 
-  bm_device_mem_t output_data, output_num;
-  assert(BM_SUCCESS == bm_malloc_device_byte(
-                           context->bmContext->handle(), &output_data,
-                           sizeof(float) * api.input_c * input_h * input_w));
-  assert(BM_SUCCESS == bm_malloc_device_byte(context->bmContext->handle(),
-                                             &output_num,
-                                             sizeof(int) * api.input_c));
-  api.input_data_addr = bm_mem_get_device_addr(input_data);
-  api.output_data_addr = bm_mem_get_device_addr(output_data);
-  api.num_output_data_addr = bm_mem_get_device_addr(output_num);
+  api.input_data_addr =
+      bm_mem_get_device_addr(*(resize_output_map_whole_device_mem[dataPipeId]));
+  api.aux_data_addr = bm_mem_get_device_addr(*(aux_data[dataPipeId]));
+  api.num_output_data_addr = bm_mem_get_device_addr(*(output_num[dataPipeId]));
 
   api.input_h = input_h;
   api.input_w = input_w;
@@ -188,18 +216,16 @@ int OpenposePostProcess::kernel_part_nms(
                                          context->func_id, &api, sizeof(api)));
   bm_thread_sync(context->bmContext->handle());
 
-  bm_memcpy_d2s_partial(context->bmContext->handle(), num_result, output_num,
-                        sizeof(int) * api.input_c);
+  bm_memcpy_d2s_partial(context->bmContext->handle(), num_result,
+                        *(output_num[dataPipeId]), sizeof(int) * api.input_c);
   const int peak_num = num_result[api.input_c - 1];
   bm_memcpy_d2s_partial(context->bmContext->handle(), score_out_result,
-                        input_data, peak_num * sizeof(float));
-  bm_memcpy_d2s_partial_offset(context->bmContext->handle(), coor_out_result,
-                               input_data, peak_num * sizeof(int),
-                               peak_num * sizeof(float));
-
-  bm_free_device(context->bmContext->handle(), input_data);
-  bm_free_device(context->bmContext->handle(), output_data);
-  bm_free_device(context->bmContext->handle(), output_num);
+                        *(resize_output_map_whole_device_mem[dataPipeId]),
+                        peak_num * sizeof(float));
+  bm_memcpy_d2s_partial_offset(
+      context->bmContext->handle(), coor_out_result,
+      *(resize_output_map_whole_device_mem[dataPipeId]), peak_num * sizeof(int),
+      peak_num * sizeof(float));
 }
 
 std::vector<unsigned int> OpenposePostProcess::getPosePairs(
@@ -895,7 +921,7 @@ void OpenposePostProcess::getKeyPointsTPUKERNEL(
     std::shared_ptr<BMNNTensor> outputTensorPtr, const bm_image& image,
     std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
     PosedObjectMetadata::EModelType model_type, float nms_threshold,
-    std::shared_ptr<OpenposeContext> context) {
+    std::shared_ptr<OpenposeContext> context, int dataPipeId) {
   // OpenPosePostProcess postProcess;
   int chan_num = outputTensorPtr->get_shape()->dims[1];
   int net_output_height = outputTensorPtr->get_shape()->dims[2];
@@ -913,16 +939,27 @@ void OpenposePostProcess::getKeyPointsTPUKERNEL(
   std::vector<std::thread> peak_channel_resize_threads;
   int part_nms_chan_num = getNumberBodyParts(model_type);
 
-  bm_device_mem_t resize_output_map_whole_device_mem;
-  unsigned long long resize_output_map_whole_device_mem_addr;
-  assert(BM_SUCCESS ==
-         bm_malloc_device_byte(context->bmContext->handle(),
-                               &resize_output_map_whole_device_mem,
-                               sizeof(float) * nmsSize.height * nmsSize.width *
-                                   part_nms_chan_num));
-  resize_output_map_whole_device_mem_addr =
-      bm_mem_get_device_addr(resize_output_map_whole_device_mem);
+  if (resize_output_map_whole_device_mem[dataPipeId] == nullptr) {
+    aux_data[dataPipeId] = new bm_device_mem_t();
+    output_num[dataPipeId] = new bm_device_mem_t();
+    resize_output_map_whole_device_mem[dataPipeId] = new bm_device_mem_t();
+    assert(BM_SUCCESS == bm_malloc_device_byte(
+                             context->bmContext->handle(), aux_data[dataPipeId],
+                             sizeof(float) * part_nms_chan_num *
+                                 nmsSize.height * nmsSize.width));
+    assert(BM_SUCCESS ==
+           bm_malloc_device_byte(context->bmContext->handle(),
+                                 output_num[dataPipeId],
+                                 sizeof(int) * part_nms_chan_num));
+    assert(BM_SUCCESS ==
+           bm_malloc_device_byte(context->bmContext->handle(),
+                                 resize_output_map_whole_device_mem[dataPipeId],
+                                 sizeof(float) * nmsSize.height *
+                                     nmsSize.width * part_nms_chan_num));
+  }
   bm_device_mem_t resize_output_map_device_mem;
+  unsigned long long resize_output_map_whole_device_mem_addr =
+      bm_mem_get_device_addr(*(resize_output_map_whole_device_mem[dataPipeId]));
 
   int interval = 3;
   for (int ch = 0; ch < part_nms_chan_num; ch += interval) {
@@ -952,11 +989,10 @@ void OpenposePostProcess::getKeyPointsTPUKERNEL(
   for (std::thread& t : peak_channel_resize_threads) {
     t.join();
   }
-  std::thread part_nms_thread(&OpenposePostProcess::kernel_part_nms, this,
-                              resize_output_map_whole_device_mem,
-                              nmsSize.height, nmsSize.width, POSE_MAX_PEOPLE,
-                              0.05, num_result, score_out_result,
-                              coor_out_result, model_type, context);
+  std::thread part_nms_thread(
+      &OpenposePostProcess::kernel_part_nms, this, dataPipeId, nmsSize.height,
+      nmsSize.width, POSE_MAX_PEOPLE, 0.05, num_result, score_out_result,
+      coor_out_result, model_type, context);
 
   interval = 5;
   std::vector<std::thread> connect_channel_resize_threads;

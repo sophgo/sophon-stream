@@ -111,6 +111,7 @@ common::ErrorCode Openpose::initContext(const std::string& json) {
           << "Using tpu_kernel openpose postprocession, kernel funtion id: "
           << mContext->func_id << std::endl;
     }
+    mContext->thread_number = getThreadNumber();
   } while (false);
   return common::ErrorCode::SUCCESS;
 }
@@ -174,7 +175,8 @@ common::ErrorCode Openpose::initInternal(const std::string& json) {
   return errorCode;
 }
 
-void Openpose::process(common::ObjectMetadatas& objectMetadatas) {
+void Openpose::process(common::ObjectMetadatas& objectMetadatas,
+                       int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   if (use_pre) {
     errorCode = mPreProcess->preProcess(mContext, objectMetadatas);
@@ -196,7 +198,8 @@ void Openpose::process(common::ObjectMetadatas& objectMetadatas) {
     }
   }
   // 后处理
-  if (use_post) mPostProcess->postProcess(mContext, objectMetadatas);
+  if (use_post)
+    mPostProcess->postProcess(mContext, objectMetadatas, dataPipeId);
 }
 
 common::ErrorCode Openpose::doWork(int dataPipeId) {
@@ -233,7 +236,7 @@ common::ErrorCode Openpose::doWork(int dataPipeId) {
     }
   }
 
-  process(objectMetadatas);
+  process(objectMetadatas, dataPipeId);
 
   for (auto& objectMetadata : pendingObjectMetadatas) {
     int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;

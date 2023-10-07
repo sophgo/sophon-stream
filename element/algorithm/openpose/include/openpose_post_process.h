@@ -29,7 +29,7 @@ namespace openpose {
 typedef struct {
   unsigned long long input_data_addr;
   unsigned long long num_output_data_addr;
-  unsigned long long output_data_addr;
+  unsigned long long aux_data_addr;
   int input_c;
   int input_h;
   int input_w;
@@ -70,14 +70,19 @@ class OpenposePostProcess {
    * @param objectMetadatas 一个batch的数据
    */
   void postProcess(std::shared_ptr<OpenposeContext> context,
-                   common::ObjectMetadatas& objectMetadatas);
+                   common::ObjectMetadatas& objectMetadatas, int dataPipeId);
+  ~OpenposePostProcess();
 
  private:
+  bm_device_mem_t** resize_output_map_whole_device_mem = nullptr;
+  std::shared_ptr<OpenposeContext> global_context = nullptr;
+  bm_device_mem_t **aux_data = nullptr, **output_num = nullptr;
+
   void nms(PoseBlobPtr bottom_blob, PoseBlobPtr top_blob, float threshold);
   void nmsFunc(float* ptr, float* top_ptr, int length, int h, int w,
                int max_peaks, float threshold, int plane_offset,
                int top_plane_offset);
-  int kernel_part_nms(bm_device_mem_t input_data, int input_h, int input_w,
+  int kernel_part_nms(int dataPipeId, int input_h, int input_w,
                       int max_peak_num, float threshold, int* num_result,
                       float* score_out_result, int* coor_out_result,
                       PosedObjectMetadata::EModelType model_type,
@@ -113,7 +118,7 @@ class OpenposePostProcess {
       std::shared_ptr<BMNNTensor> outputTensorPtr, const bm_image& images,
       std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
       PosedObjectMetadata::EModelType model_type, float nms_threshold,
-      std::shared_ptr<OpenposeContext> context);
+      std::shared_ptr<OpenposeContext> context, int dataPipeId);
 
   std::vector<unsigned int> getPosePairs(
       PosedObjectMetadata::EModelType model_type);

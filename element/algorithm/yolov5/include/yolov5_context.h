@@ -90,6 +90,7 @@ struct Yolov5Context {
 
   bmcv_rect_t roi;
   bool roi_predefined = false;
+  int thread_number;
 };
 }  // namespace yolov5
 }  // namespace element

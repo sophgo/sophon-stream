@@ -187,6 +187,7 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
       mContext->roi.crop_h =
           roi_it->find(CONFIG_INTERNAL_HEIGHT_FILED)->get<int>();
     }
+    mContext->thread_number = getThreadNumber();
   } while (false);
   return common::ErrorCode::SUCCESS;
 }
@@ -249,7 +250,7 @@ common::ErrorCode Yolov5::initInternal(const std::string& json) {
   return errorCode;
 }
 
-void Yolov5::process(common::ObjectMetadatas& objectMetadatas) {
+void Yolov5::process(common::ObjectMetadatas& objectMetadatas, int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   if (use_pre) {
     errorCode = mPreProcess->preProcess(mContext, objectMetadatas);
@@ -271,7 +272,8 @@ void Yolov5::process(common::ObjectMetadatas& objectMetadatas) {
     }
   }
   // 后处理
-  if (use_post) mPostProcess->postProcess(mContext, objectMetadatas);
+  if (use_post)
+    mPostProcess->postProcess(mContext, objectMetadatas, dataPipeId);
 }
 
 common::ErrorCode Yolov5::doWork(int dataPipeId) {
@@ -308,7 +310,7 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
     }
   }
 
-  process(objectMetadatas);
+  process(objectMetadatas, dataPipeId);
 
   for (auto& objectMetadata : pendingObjectMetadatas) {
     int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
