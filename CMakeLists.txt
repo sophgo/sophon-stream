@@ -28,6 +28,7 @@ add_subdirectory(element/multimedia/encode)
 add_subdirectory(element/tools/blank)
 add_subdirectory(element/tools/distributor)
 add_subdirectory(element/tools/converger)
+add_subdirectory(element/tools/http_push)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/yolov5_bytetrack_distributor_resnet_converger/build)
 add_subdirectory(samples/yolov5_bytetrack_distributor_resnet_converger)

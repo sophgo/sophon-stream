@@ -131,12 +131,14 @@ common::ErrorCode Decoder::process(
     int frame_id = 0;
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;
-    spBmImage = decoder.grab(frame_id, eof);
+    int64_t pts = 0;
+    spBmImage = decoder.grab(frame_id, eof, pts);
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
+    objectMetadata->mFrame->mTimestamp = pts;
     if (eof) {
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
@@ -151,12 +153,14 @@ common::ErrorCode Decoder::process(
     int frame_id = 0;
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;
-    spBmImage = decoder.grab(frame_id, eof);
+    int64_t pts = 0;
+    spBmImage = decoder.grab(frame_id, eof, pts);
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
+    objectMetadata->mFrame->mTimestamp = pts;
     /* 当mLoopNum > 1，在最后一帧初始化decoder，开始下一个循环 */
     if (mLoopNum > 1 && (mImgIndex++ == mFrameCount - 1)) {
       --mLoopNum;

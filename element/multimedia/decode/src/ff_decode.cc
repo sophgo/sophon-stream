@@ -673,9 +673,10 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
   return frame;
 }
 
-std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
+std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof,
+                                            int64_t& pts) {
   // 控制帧率
-  if (fps != -1) { 
+  if (fps != -1) {
     gettimeofday(&current_time, NULL);
     double time_delta =
         1000 * ((current_time.tv_sec - last_time.tv_sec) +
@@ -689,6 +690,11 @@ std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof) {
   AVFrame* avframe = grabFrame(eof);
   frameId = frame_id++;
   if (1 == eof) return spBmImage;
+
+  timeval pt;
+  gettimeofday(&pt, NULL);
+  pts = pt.tv_sec * 1e6 + pt.tv_usec;
+  
   spBmImage.reset(new bm_image, [](bm_image* p) {
     bm_image_destroy(*p);
     delete p;

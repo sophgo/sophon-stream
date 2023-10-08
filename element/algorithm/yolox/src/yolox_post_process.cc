@@ -193,6 +193,9 @@ void YoloxPostProcess::postProcess(std::shared_ptr<YoloxContext> context,
         detData->mBox.mX += context->roi.start_x;
         detData->mBox.mY += context->roi.start_y;
       }
+      if (context->class_thresh_valid) {
+        detData->mLabelName = context->class_names[detData->mClassify];
+      }
       obj->mDetectedObjectMetadatas.push_back(detData);
     }
   }

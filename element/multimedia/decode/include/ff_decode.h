@@ -85,7 +85,7 @@ class VideoDecFFM {
   int openDec(bm_handle_t* dec_handle, const char* input);
 
   /* grab a bm_image from the cache queue*/
-  std::shared_ptr<bm_image> grab(int& frame_id, int& eof);
+  std::shared_ptr<bm_image> grab(int& frame_id, int& eof, int64_t& pts);
 
   /* get frame count */
   void mFrameCount(const char* video_file, int& mFrameCount);
