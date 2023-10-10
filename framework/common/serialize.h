@@ -194,7 +194,8 @@ NLOHMANN_JSONIFY_ALL_THINGS(TrackedObjectMetadata, mTrackId)
 
 NLOHMANN_JSONIFY_ALL_THINGS(Rectangle<int>, mX, mY, mWidth, mHeight)
 
-NLOHMANN_JSONIFY_ALL_THINGS(DetectedObjectMetadata, mLabelName, mBox, mScores)
+NLOHMANN_JSONIFY_ALL_THINGS(DetectedObjectMetadata, mLabelName, mBox, mScores,
+                            mClassify)
 
 NLOHMANN_JSONIFY_ALL_THINGS(PosedObjectMetadata, keypoints)
 
