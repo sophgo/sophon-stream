@@ -1,0 +1,13 @@
+{
+    "num_channels_per_graph": 1,
+    "channel": {
+      "url": "../data/test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "fps": 25,
+      "channel_id": 0
+    },
+    "class_names": "../data/coco.names",
+    "download_image": true,
+    "engine_config_path": "../config/engine.json"
+  }

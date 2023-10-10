@@ -21,6 +21,7 @@ add_subdirectory(element/algorithm/bytetrack)
 add_subdirectory(element/algorithm/resnet)
 add_subdirectory(element/algorithm/openpose)
 add_subdirectory(element/algorithm/retinaface)
+add_subdirectory(element/algorithm/lprnet)
 
 add_subdirectory(element/multimedia/decode)
 add_subdirectory(element/multimedia/osd)
@@ -55,3 +56,6 @@ add_subdirectory(samples/yolox_bytetrack_osd_encode)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/retinaface/build)
 add_subdirectory(samples/retinaface)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/license_plate_recognition/build)
+add_subdirectory(samples/license_plate_recognition)

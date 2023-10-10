@@ -1,0 +1,12 @@
+{
+    "configure": {
+        "model_path": "../models/lprnet/BM1684X/lprnet_fp32_1b.bmodel",
+        "stage": [
+            "post"
+        ]
+    },
+    "shared_object": "../../../build/lib/liblprnet.so",
+    "name": "lprnet",
+    "side": "sophgo",
+    "thread_number": 1
+}
