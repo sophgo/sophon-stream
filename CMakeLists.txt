@@ -58,10 +58,8 @@ add_subdirectory(samples/yolox_bytetrack_osd_encode)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/retinaface/build)
 add_subdirectory(samples/retinaface)
 
-<<<<<<< HEAD
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/license_plate_recognition/build)
 add_subdirectory(samples/license_plate_recognition)
-=======
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/retinaface_distributor_resnet_faiss_converger/build)
 add_subdirectory(samples/retinaface_distributor_resnet_faiss_converger)
->>>>>>> 4a4fbf3 (add(retinaface_distributor_resnet_faiss):add a new demo)
