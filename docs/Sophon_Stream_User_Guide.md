@@ -27,6 +27,9 @@
       - [4.1.2 yolox](#412-yolox)
       - [4.1.3 yolov5](#413-yolov5)
       - [4.1.4 bytetrack](#414-bytetrack)
+      - [4.1.5 openpose](#415-openpose)
+      - [4.1.6 lprnet](#416-lprnet)
+      - [4.1.7 retinaface](#417-retinaface)
     - [4.2 multimedia](#42-multimedia)
       - [4.2.1 decode](#421-decode)
       - [4.2.2 encode](#422-encode)
@@ -35,6 +38,7 @@
       - [4.3.1 distributor](#431-distributor)
       - [4.3.2 converger](#432-converger)
       - [4.3.3 blank](#433-blank)
+      - [4.3.4 faiss](#434-faiss)
   - [5. 应用程序](#5-应用程序)
     - [5.1 例程概述](#51-例程概述)
     - [5.2 配置文件](#52-配置文件)
@@ -415,6 +419,90 @@ bytetrack是华中科技大学、香港大学和字节跳动联合提出的一�
 
 bytetrack demo请参考 [bytetrack demo](../samples/bytetrack/README.md)
 
+#### 4.1.5 openpose
+
+openpose是一个强大的姿态估计网络。
+
+其配置文件形如：
+```json
+{
+    "configure": {
+        "model_path": "../data/models/BM1684X/pose_coco_int8_1b.bmodel",
+        "threshold_nms": 0.05,
+        "stage": [
+            "pre"
+        ]
+    },
+    "shared_object": "../../../build/lib/libopenpose.so",
+    "name": "openpose",
+    "side": "sophgo",
+    "thread_number": 4
+}
+```
+
+配置参数的详细介绍请参见 [openpose插件介绍](../element/algorithm/openpose/README.md)
+
+openpose demo请参考 [openpose demo](../samples/openpose/README.md)
+
+#### 4.1.6 lprnet
+
+lprnet是一个用于车牌识别的网络。
+
+其配置文件形如：
+```json
+{
+  "configure": {
+    "model_path": "../models/BM1684/lprnet_fp32_1b.bmodel",
+    "stage": ["infer"]
+  },
+  "shared_object": "../../../build/lib/liblprnet.so",
+  "name": "lprnet",
+  "side": "sophgo",
+  "thread_number": 4
+}
+```
+
+配置参数的详细介绍请参见 [lprnet插件介绍](../element/algorithm/lprnet/README.md)
+
+lprnet没有提供单独的demo，而是提供了一个yolov5车辆检测与lprnet车牌识别级联的demo。请参考 [license_plate_recognition demo](../samples/license_plate_recognition/README.md)
+
+#### 4.1.7 retinaface
+
+retinaface是一个用于人脸检测的网络。
+
+其配置文件形如：
+```json
+{
+    "configure": {
+        "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
+        "max_face_count":50,
+        "score_threshold":0.5,
+        "bgr2rgb": false,
+        "mean": [
+            104,
+            117,
+            123
+        ],
+        "std": [
+            1,
+            1,
+            1
+        ],
+        "stage": [
+            "pre"
+        ]
+    },
+    "shared_object": "../../../build/lib/libretinaface.so",
+    "name": "retinaface",
+    "side": "sophgo",
+    "thread_number": 1
+}
+```
+
+配置参数的详细介绍请参见 [retinaface插件介绍](../element/algorithm/retinaface/README.md)
+
+retinaface没有提供单独的demo，而是提供了一个人脸检测与基于arcface与faiss的人脸识别的demo。请参考 [retinaface_distributor_resnet_faiss_converger demo](../samples/retinaface_distributor_resnet_faiss_converger/README.md)
+
 ### 4.2 multimedia
 
 #### 4.2.1 decode
@@ -586,6 +674,10 @@ converger插件必须搭配distributor插件使用，详细说明请参考[conve
 blank是一个空白插件，可以连接在任意两个element之间，不会对pipeline有任何影响。
 
 该插件提供了一个完整的插件模板，但没有实现任何配置参数或工作逻辑。用户可以自行编写相关代码，以起到调试等作用。
+
+#### 4.3.4 faiss
+
+faiss是一个数据库召回插件，在 BM1684X 上实现了Faiss::IndexFlatIP.search()。考虑 BM1684X 上 TPU 的连续内存, 针对 100W 底库, 可以在单芯片上一次查询最多约 512 个 256 维的输入。
 
 ## 5. 应用程序
 

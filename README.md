@@ -15,11 +15,14 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [resnet](./element/algorithm/resnet)                              | resnet插件           |
 |                         | [openpose](./element/algorithm/openpose)                          | openpose插件         |
 |                         | [retinaface](./element/algorithm/retinaface)                      | retinaface插件       |
+|                         | [lprnet](./element/algorithm/lprnet)                              | lprnet插件
 |                         | [decode](./element/multimedia/decode)                             | 解码插件              |
 |                         | [encode](./element/multimedia/encode)                             | 编码插件              |
 |                         | [osd](./element/multimedia/osd)                                   | 算法结果可视化插件     |
 |                         | [distributor](./element/tools/distributor)                        | 数据分发插件          |
 |                         | [converger](./element/tools/converger)                            | 数据汇聚插件          |
+|                         | [faiss](./element/tools/faiss)                                    | faiss数据库插件      |
+|                         | [blank](./element/tools/blank)                                    | 空白插件             |
 | [samples](./samples)    | [yolov5](./samples/yolov5)                                        | yolov5 demo         |
 |                         | [yolox](./samples/yolox)                                          | yolox demo          |
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo      |
@@ -29,6 +32,7 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [yolox_bytetrack_osd_encode](./samples/yolox_bytetrack_osd_encode)| 目标检测-跟踪-算法结果推流demo|
 |                         | [yolov5_bytetrack_distributor_resnet_converger](./samples/yolov5_bytetrack_distributor_resnet_converger)| 目标检测-跟踪-分发-属性识别demo|
 |                         | [retinaface_distributor_resnet_faiss_converger](./samples/retinaface_distributor_resnet_faiss_converge)| 人脸检测-分发-人脸识别demo|
+|                         | [license_plate_recognition](./samples/license_plate_recognition/) | 车辆检测-车牌识别demo |
 | [tools](./tools)        | [web_visualize](./tools/web_visualize)                            | web可视化工具         |
 
 ## 2 快速入门
