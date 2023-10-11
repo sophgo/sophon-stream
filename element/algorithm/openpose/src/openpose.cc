@@ -14,6 +14,7 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "element_factory.h"
 using namespace std::chrono_literals;
@@ -96,6 +97,11 @@ common::ErrorCode Openpose::initContext(const std::string& json) {
       std::string tpu_kernel_module_path =
           "../../../3rdparty/tpu_kernel_module/"
           "libbm1684x_kernel_module.so";
+      std::ifstream file(tpu_kernel_module_path);
+      STREAM_CHECK(file.good(),
+                   "kernel_module.so does not exist, please check your path: ",
+                   tpu_kernel_module_path);
+      file.close();
       tpu_module = tpu_kernel_load_module_file(mContext->bmContext->handle(),
                                                tpu_kernel_module_path.c_str());
       mContext->func_id = tpu_kernel_get_function(
