@@ -161,6 +161,17 @@ endif ()
 
 project(freetype C)
 
+if (NOT DEFINED TARGET_ARCH)
+  set(TARGET_ARCH pcie)
+endif()
+
+if (${TARGET_ARCH} STREQUAL "soc")
+  add_compile_options(-fPIC)
+  set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
+  set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
+  set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+endif()
+
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "12")
 set(VERSION_PATCH "1")
@@ -190,19 +201,21 @@ set(LIBRARY_VERSION "${LIBRARY_SOVERSION}.${LIBTOOL_AGE}.${LIBTOOL_REVISION}")
 # External dependency library detection is automatic.  See the notes at the
 # top of this file, for how to force or disable dependencies completely.
 option(FT_DISABLE_ZLIB
-  "Disable use of system zlib and use internal zlib library instead." OFF)
+  "Disable use of system zlib and use internal zlib library instead." ON)
+# message("${FT_DISABLE_ZLIB}")
 cmake_dependent_option(FT_REQUIRE_ZLIB
   "Require system zlib instead of internal zlib library." OFF
   "NOT FT_DISABLE_ZLIB" OFF)
+# message("${FT_REQUIRE_ZLIB}")
 
 option(FT_DISABLE_BZIP2
-  "Disable support of bzip2 compressed fonts." OFF)
+  "Disable support of bzip2 compressed fonts." ON)
 cmake_dependent_option(FT_REQUIRE_BZIP2
   "Require support of bzip2 compressed fonts." OFF
   "NOT FT_DISABLE_BZIP2" OFF)
 
 option(FT_DISABLE_PNG
-  "Disable support of PNG compressed OpenType embedded bitmaps." OFF)
+  "Disable support of PNG compressed OpenType embedded bitmaps." ON)
 cmake_dependent_option(FT_REQUIRE_PNG
   "Require support of PNG compressed OpenType embedded bitmaps." OFF
   "NOT FT_DISABLE_PNG" OFF)
@@ -214,7 +227,7 @@ cmake_dependent_option(FT_REQUIRE_HARFBUZZ
   "NOT FT_DISABLE_HARFBUZZ" OFF)
 
 option(FT_DISABLE_BROTLI
-  "Disable support of compressed WOFF2 fonts." OFF)
+  "Disable support of compressed WOFF2 fonts." ON)
 cmake_dependent_option(FT_REQUIRE_BROTLI
   "Require support of compressed WOFF2 fonts." OFF
   "NOT FT_DISABLE_BROTLI" OFF)
