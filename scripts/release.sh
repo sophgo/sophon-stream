@@ -39,6 +39,7 @@ cp -r element/algorithm/retinaface $result_dir/element/algorithm
 mkdir $result_dir/element/tools
 cp -r element/tools/converger $result_dir/element/tools
 cp -r element/tools/distributor $result_dir/element/tools
+cp -r element/tools/blank $result_dir/element/tools
 cp -r element/tools/faiss $result_dir/element/tools
 
 cp -r 3rdparty $result_dir
