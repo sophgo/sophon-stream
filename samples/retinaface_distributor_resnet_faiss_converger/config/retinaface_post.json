@@ -1,0 +1,25 @@
+{
+    "configure": {
+        "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
+        "max_face_count":50,
+        "score_threshold":0.5,
+        "bgr2rgb": false,
+        "mean": [
+            104,
+            117,
+            123
+        ],
+        "std": [
+            1,
+            1,
+            1
+        ],
+        "stage": [
+            "post"
+        ]
+    },
+    "shared_object": "../../../build/lib/libretinaface.so",
+    "name": "retinaface",
+    "side": "sophgo",
+    "thread_number": 1
+}

@@ -1,0 +1,22 @@
+{
+  "configure": {
+    "model_path": "../data/models/BM1684X/resnet_arcface_fp32_1b.bmodel",
+    "bgr2rgb": true,
+    "bgr2gray": true,
+    "extract_feature":true,
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  "shared_object": "../../../build/lib/libresnet.so",
+  "name": "resnet",
+  "side": "sophgo",
+  "thread_number": 1
+}

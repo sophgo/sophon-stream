@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(algorithmAPI)
+project(tools)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -g")
@@ -7,6 +7,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -g")
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)
 endif()
+
+# set(CMAKE_BUILD_TYPE "debug")
 
 if (${TARGET_ARCH} STREQUAL "pcie")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
@@ -37,17 +39,16 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
-    add_library(resnet SHARED
-        src/resnet_multitask.cc
-        src/resnet.cc
+    add_library(faiss SHARED
+        src/faiss.cc
     )
 
-    target_link_libraries(resnet ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
+    target_link_libraries(faiss ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -g -rdynamic")
-    # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -rdynamic")
+    # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  -fprofile-arcs -ftest-coverage -rdynamic")
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
@@ -57,7 +58,7 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     link_directories("${SOPHON_SDK_SOC}/lib/")
     set(BM_LIBS bmlib bmrt bmcv yuv)
     set(JPU_LIBS bmjpuapi bmjpulite)
-
+    
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
@@ -65,9 +66,8 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../../3rdparty/nlohmann-json/include)
 
     include_directories(include)
-    add_library(resnet SHARED
-        src/resnet_multitask.cc
-        src/resnet.cc
+    add_library(faiss SHARED
+        src/faiss.cc
     )
-    target_link_libraries(resnet ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(faiss ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()

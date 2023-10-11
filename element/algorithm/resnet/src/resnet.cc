@@ -41,6 +41,21 @@ common::ErrorCode ResNet::initContext(const std::string& json) {
     auto bgr2rgbIt = configure.find(CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD);
     mContext->bgr2rgb = bgr2rgbIt->get<bool>();
 
+    auto bgr2grayIt = configure.find(CONFIG_INTERNAL_THRESHOLD_BGR2GRAY_FIELD);
+    if (bgr2grayIt != configure.end()) {
+      mContext->bgr2gray = bgr2grayIt->get<bool>();
+    } else {
+      mContext->bgr2gray = false;
+    }
+
+    auto extract_featureIt =
+        configure.find(CONFIG_INTERNAL_EXTRACT_FEATURE_FIELD);
+    if (extract_featureIt != configure.end()) {
+      mContext->extract_feature = extract_featureIt->get<bool>();
+    } else {
+      mContext->extract_feature = false;
+    }
+
     auto meanIt = configure.find(CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD);
     mContext->mean = meanIt->get<std::vector<float>>();
     assert(mContext->mean.size() == 3);
@@ -116,14 +131,14 @@ common::ErrorCode ResNet::initInternal(const std::string& json) {
 
     // 新建context,预处理,推理和后处理对象
     mContext = std::make_shared<ResNetContext>();
-    mClassify = std::make_shared<ResNetClassify>();
+    mMultiTask = std::make_shared<ResNetMultiTask>();
 
     // 新建context
     mContext->deviceId = getDeviceId();
     initContext(configure.dump());
 
     // 推理初始化
-    mClassify->init(mContext);
+    mMultiTask->init(mContext);
 
     mBatch = mContext->max_batch;
   } while (false);
@@ -134,7 +149,7 @@ void ResNet::process(common::ObjectMetadatas& objectMetadatas) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
   // 推理
-  errorCode = mClassify->classify(mContext, objectMetadatas);
+  errorCode = mMultiTask->multiTask(mContext, objectMetadatas);
   if (common::ErrorCode::SUCCESS != errorCode) {
     for (unsigned i = 0; i < objectMetadatas.size(); i++) {
       objectMetadatas[i]->mErrorCode = errorCode;

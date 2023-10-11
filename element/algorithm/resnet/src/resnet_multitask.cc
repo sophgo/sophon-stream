@@ -6,7 +6,7 @@
 // third-party components.
 //
 //===----------------------------------------------------------------------===//
-#include "resnet_classify.h"
+#include "resnet_multitask.h"
 
 #include "common/logger.h"
 
@@ -17,12 +17,12 @@ namespace sophon_stream {
 namespace element {
 namespace resnet {
 
-ResNetClassify::~ResNetClassify() {}
+ResNetMultiTask::~ResNetMultiTask() {}
 
-void ResNetClassify::init(std::shared_ptr<ResNetContext> context) {}
+void ResNetMultiTask::init(std::shared_ptr<ResNetContext> context) {}
 
-void ResNetClassify::initTensors(std::shared_ptr<ResNetContext> context,
-                                 common::ObjectMetadatas& objectMetadatas) {
+void ResNetMultiTask::initTensors(std::shared_ptr<ResNetContext> context,
+                                  common::ObjectMetadatas& objectMetadatas) {
   for (auto& obj : objectMetadatas) {
     obj->mInputBMtensors = std::make_shared<sophon_stream::common::bmTensors>();
     int channelId = obj->mFrame->mChannelId;
@@ -53,7 +53,7 @@ void ResNetClassify::initTensors(std::shared_ptr<ResNetContext> context,
   }
 }
 
-common::ErrorCode ResNetClassify::classify(
+common::ErrorCode ResNetMultiTask::multiTask(
     std::shared_ptr<ResNetContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -69,8 +69,13 @@ common::ErrorCode ResNetClassify::classify(
     IVS_ERROR("ResNet predict error");
     return errorCode;
   }
-  // 3. post process
-  errorCode = post_process(context, objectMetadatas);
+
+  if (context->extract_feature) {
+    // 3. post process
+    errorCode = post_process_extract(context, objectMetadatas);
+  } else {
+    errorCode = post_process_classfy(context, objectMetadatas);
+  }
   if (common::ErrorCode::SUCCESS != errorCode) {
     IVS_ERROR("ResNet post_process error");
     return errorCode;
@@ -79,13 +84,15 @@ common::ErrorCode ResNetClassify::classify(
   return errorCode;
 }
 
-common::ErrorCode ResNetClassify::pre_process(
+common::ErrorCode ResNetMultiTask::pre_process(
     std::shared_ptr<ResNetContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
   initTensors(context, objectMetadatas);
 
   auto jsonPlanner = context->bgr2rgb ? FORMAT_RGB_PLANAR : FORMAT_BGR_PLANAR;
+  jsonPlanner = context->bgr2gray ? FORMAT_GRAY : jsonPlanner;
+
   int i = 0;
   for (auto& objMetadata : objectMetadatas) {
     if (objMetadata->mFrame->mSpData == nullptr) continue;
@@ -224,7 +231,7 @@ common::ErrorCode ResNetClassify::pre_process(
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode ResNetClassify::predict(
+common::ErrorCode ResNetMultiTask::predict(
     std::shared_ptr<ResNetContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
@@ -248,7 +255,7 @@ common::ErrorCode ResNetClassify::predict(
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode ResNetClassify::post_process(
+common::ErrorCode ResNetMultiTask::post_process_classfy(
     std::shared_ptr<ResNetContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
@@ -263,6 +270,10 @@ common::ErrorCode ResNetClassify::post_process(
         context->bmNetwork->is_soc);
 
     float* output_data = (float*)outputTensor->get_cpu_data();
+
+    std::shared_ptr<common::RecognizedObjectMetadata> RecogObj =
+        std::make_shared<common::RecognizedObjectMetadata>();
+
     auto output_scale =
         context->bmNetwork->m_netinfo->output_scales[context->output_num - 1];
     float exp_sum = 0;
@@ -280,19 +291,9 @@ common::ErrorCode ResNetClassify::post_process(
       }
     }
 
-    std::shared_ptr<common::RecognizedObjectMetadata> RecogObj =
-        std::make_shared<common::RecognizedObjectMetadata>();
-
     RecogObj->mScores.push_back(max_score);
     RecogObj->mTopKLabels.push_back(max_idx);
     obj->mRecognizedObjectMetadatas.push_back(RecogObj);
-
-    // std::string filename = std::to_string(obj->mFrame->mChannelId) +
-    //                        "-" +
-    //                        std::to_string(obj->mFrame->mFrameId) +
-    //                        "-car-" + std::to_string(subId) + ".bmp";
-    // bm_image_write_to_bmp(*obj->mFrame->mSpData, filename.c_str());
-    // ++ subId;
 
     IVS_DEBUG("recognizition succeed, frame_id: {0}, class_id: {1}",
               obj->mFrame->mFrameId, max_idx);
@@ -301,8 +302,39 @@ common::ErrorCode ResNetClassify::post_process(
   return common::ErrorCode::SUCCESS;
 }
 
-float ResNetClassify::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
-                                              int dst_h, bool* pIsAligWidth) {
+common::ErrorCode ResNetMultiTask::post_process_extract(
+    std::shared_ptr<ResNetContext> context,
+    common::ObjectMetadatas& objectMetadatas) {
+  if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
+  assert(context->output_num == 1);
+  for (auto obj : objectMetadatas) {
+    if (obj->mFrame->mEndOfStream) break;
+    std::shared_ptr<BMNNTensor> outputTensor = std::make_shared<BMNNTensor>(
+        obj->mOutputBMtensors->handle,
+        context->bmNetwork->m_netinfo->output_names[context->output_num - 1],
+        context->bmNetwork->m_netinfo->output_scales[context->output_num - 1],
+        obj->mOutputBMtensors->tensors[context->output_num - 1].get(),
+        context->bmNetwork->is_soc);
+
+    float* output_data = (float*)outputTensor->get_cpu_data();
+
+    std::shared_ptr<common::RecognizedObjectMetadata> RecogObj =
+        std::make_shared<common::RecognizedObjectMetadata>();
+
+    if (context->extract_feature) {
+      RecogObj->feature_vector.reset(new float[512]);
+      std::memcpy(RecogObj->feature_vector.get(), output_data,
+                  sizeof(float) * 512);
+      obj->mRecognizedObjectMetadatas.push_back(RecogObj);
+      IVS_DEBUG("recognizition succeed, frame_id: {0}", obj->mFrame->mFrameId);
+      continue;
+    }
+  }
+  return common::ErrorCode::SUCCESS;
+}
+
+float ResNetMultiTask::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
+                                               int dst_h, bool* pIsAligWidth) {
   float ratio;
   float r_w = (float)dst_w / src_w;
   float r_h = (float)dst_h / src_h;
@@ -317,8 +349,8 @@ float ResNetClassify::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
 }
 
 std::shared_ptr<sophon_stream::common::bmTensors>
-ResNetClassify::mergeInputDeviceMem(std::shared_ptr<ResNetContext> context,
-                                    common::ObjectMetadatas& objectMetadatas) {
+ResNetMultiTask::mergeInputDeviceMem(std::shared_ptr<ResNetContext> context,
+                                     common::ObjectMetadatas& objectMetadatas) {
   // 合并inputBMtensors，并且申请连续的outputBMtensors
   std::shared_ptr<sophon_stream::common::bmTensors> inputTensors =
       std::make_shared<sophon_stream::common::bmTensors>();
@@ -365,7 +397,7 @@ ResNetClassify::mergeInputDeviceMem(std::shared_ptr<ResNetContext> context,
 }
 
 std::shared_ptr<sophon_stream::common::bmTensors>
-ResNetClassify::getOutputDeviceMem(std::shared_ptr<ResNetContext> context) {
+ResNetMultiTask::getOutputDeviceMem(std::shared_ptr<ResNetContext> context) {
   std::shared_ptr<sophon_stream::common::bmTensors> outputTensors =
       std::make_shared<sophon_stream::common::bmTensors>();
   outputTensors.reset(
@@ -406,7 +438,7 @@ ResNetClassify::getOutputDeviceMem(std::shared_ptr<ResNetContext> context) {
   return outputTensors;
 }
 
-void ResNetClassify::splitOutputMemIntoObjectMetadatas(
+void ResNetMultiTask::splitOutputMemIntoObjectMetadatas(
     std::shared_ptr<ResNetContext> context,
     common::ObjectMetadatas& objectMetadatas,
     std::shared_ptr<sophon_stream::common::bmTensors> outputTensors) {

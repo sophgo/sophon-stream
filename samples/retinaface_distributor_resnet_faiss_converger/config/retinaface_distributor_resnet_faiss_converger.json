@@ -1,0 +1,12 @@
+{
+  "num_channels_per_graph": 1,
+  "channel": {
+    "url": "../data/images/face_data_test",
+    "source_type": "IMG_DIR",
+    "loop_num": 1,
+    "sample_interval": 1,
+    "fps": -1
+  },
+  "download_image": true,
+  "engine_config_path": "../config/engine.json"
+}

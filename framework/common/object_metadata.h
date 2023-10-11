@@ -143,7 +143,7 @@ struct ObjectMetadata {
    * @brief 检测结果的vector，一个目标对应一个FaceObjectMetadata
    */
    std::vector<std::shared_ptr<common::FaceObjectMetadata>>
-      mFaceObjectMetadata;
+      mFaceObjectMetadatas;
 };
 
 using ObjectMetadatas = std::vector<std::shared_ptr<ObjectMetadata>>;

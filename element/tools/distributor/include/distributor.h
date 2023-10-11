@@ -17,6 +17,7 @@
 #include "common/clocker.h"
 #include "common/object_metadata.h"
 #include "element.h"
+#include "opencv2/opencv.hpp"
 
 namespace sophon_stream {
 namespace element {
@@ -44,11 +45,20 @@ class Distributor : public ::sophon_stream::framework::Element {
       "frame_interval";
   static constexpr const char* CONFIG_INTERNAL_ROUTES_FILED = "routes";
 
+  static constexpr const char* CONFIG_INTERNAL_IS_AFFINE_FIELD = "is_affine";
+
  private:
   void makeSubObjectMetadata(
       std::shared_ptr<common::ObjectMetadata> obj,
       std::shared_ptr<common::DetectedObjectMetadata> detObj,
       std::shared_ptr<common::ObjectMetadata> subObj, int subId);
+  void makeSubFaceObjectMetadata(
+      std::shared_ptr<common::ObjectMetadata> obj,
+      std::shared_ptr<common::FaceObjectMetadata> faceObj,
+      std::shared_ptr<common::ObjectMetadata> subObj, int subId);
+  cv::Mat estimateAffine2D(const std::vector<cv::Point2f>& src_points,
+                           const std::vector<cv::Point2f>& dst_points);
+
   /**
    * @brief 按时间间隔分发的所有规则。key：时间间隔，value：{类名，端口}
    */
@@ -66,13 +76,16 @@ class Distributor : public ::sophon_stream::framework::Element {
   std::vector<float> mTimeIntervals;
   std::vector<int> mFrameIntervals;
   /**
-   * @brief 每一路数据上一次分发的时间，key：channel_id_internal，value：上次分发的时间
+   * @brief
+   * 每一路数据上一次分发的时间，key：channel_id_internal，value：上次分发的时间
    * 虽然channel_id_internal从0开始有序增长，但由于
    * 不同channel首次进入doWork的时间先后不能确定，因此采用unordered_map而不是vector
    */
   std::unordered_map<int, std::vector<float>> mChannelLastTimes;
 
   sophon_stream::common::Clocker clocker;
+
+  bool is_affine = false;
 };
 
 }  // namespace distributor

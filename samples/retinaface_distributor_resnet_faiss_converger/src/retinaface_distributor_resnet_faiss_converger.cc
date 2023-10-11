@@ -7,7 +7,6 @@
 
 #include "channel.h"
 #include "common/clocker.h"
-#include "common/common_defs.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"
@@ -36,8 +35,7 @@ constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
-  STREAM_CHECK(istream.is_open(), "Please check config file ", json_path,
-               " exists.");
+  assert(istream.is_open());
   nlohmann::json demo_json;
   istream >> demo_json;
   istream.close();
@@ -72,24 +70,25 @@ demo_config parse_demo_json(std::string& json_path) {
   return config;
 }
 
-void draw_bmcv(bm_handle_t& handle,
-               std::shared_ptr<sophon_stream::common::ObjectMetadata> results,
-               bm_image& frame)  // Draw the predicted bounding box
+void draw_all_bmcv(bm_handle_t& handle, int left, int top, int width,
+                   int height, bm_image& frame,
+                   string label)  // Draw the predicted bounding box
 {
-  // Draw a rectangle displaying the bounding box
   bmcv_rect_t rect;
-  for (size_t j = 0; j < results->mFaceObjectMetadatas.size(); j++) {
-    rect.start_x = results->mFaceObjectMetadatas[j]->left;
-    rect.start_y = results->mFaceObjectMetadatas[j]->top;
-    rect.crop_w = results->mFaceObjectMetadatas[j]->right -
-                  results->mFaceObjectMetadatas[j]->left + 1;
-    rect.crop_h = results->mFaceObjectMetadatas[j]->bottom -
-                  results->mFaceObjectMetadatas[j]->top + 1;
-
-    std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w
-              << "," << rect.crop_h << std::endl;
-
-    bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, 255, 2, 2);
+  rect.start_x = left;
+  rect.start_y = top;
+  rect.crop_w = width;
+  rect.crop_h = height;
+  std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
+            << rect.crop_h << std::endl;
+  // bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, 255, 0,0);
+  bmcv_point_t org = {left, top + 40};
+  bmcv_color_t bmcv_color = {255, 0, 0};
+  int thickness = 2;
+  float fontScale = 1.5;
+  if (BM_SUCCESS != bmcv_image_put_text(handle, frame, label.c_str(), org,
+                                        bmcv_color, fontScale, thickness)) {
+    std::cout << "bmcv put text error !!!" << std::endl;
   }
 }
 
@@ -107,13 +106,13 @@ int main() {
 
   std::ifstream istream;
   nlohmann::json engine_json;
-  std::string retinaface_config_file = "../config/retinaface_demo.json";
+  std::string retinaface_config_file =
+      "../config/retinaface_distributor_resnet_faiss_converger.json";
   demo_config retinaface_json = parse_demo_json(retinaface_config_file);
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
   istream.open(retinaface_json.engine_config_file);
-  STREAM_CHECK(istream.is_open(), "Please check if engine_config_file ",
-               retinaface_json.engine_config_file, " exists.");
+  assert(istream.is_open());
   istream >> engine_json;
   istream.close();
 
@@ -139,30 +138,42 @@ int main() {
     if (retinaface_json.download_image) {
       int width = objectMetadata->mFrame->mWidth;
       int height = objectMetadata->mFrame->mHeight;
-      bm_image image = *objectMetadata->mFrame->mSpData;
-      bm_image imageStorage;
-      bm_image_create(objectMetadata->mFrame->mHandle, height, width,
-                      FORMAT_YUV420P, image.data_type, &imageStorage);
-      bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
-                                 &imageStorage);
+      bm_image image = *objectMetadata->mFrame->mSpData;  // 取出第一张大图
 
-      draw_bmcv(objectMetadata->mFrame->mHandle, objectMetadata, imageStorage);
+      if (objectMetadata->mSubObjectMetadatas.size() > 0) {
+        bm_image imageStorage;
+        bm_image_create(objectMetadata->mFrame->mHandle, height, width,
+                        FORMAT_YUV420P, image.data_type, &imageStorage);
+        bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
+                                   &imageStorage);
+        for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+          int subId = subObj->mSubId;
+          auto faceObj =
+              objectMetadata->mFaceObjectMetadatas[subId];  // 第一张脸
+          auto resnetObj =
+              subObj->mRecognizedObjectMetadatas[0];  // 第一张脸对应的resnet
+          int class_id = subObj->mRecognizedObjectMetadatas[0]->mTopKLabels[0];
+          auto label = subObj->mRecognizedObjectMetadatas[0]->mLabelName;
 
-      // save image
-      void* jpeg_data = NULL;
-      size_t out_size = 0;
-      int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
-                                    &imageStorage, &jpeg_data, &out_size);
-      if (ret == BM_SUCCESS) {
-        std::string img_file =
+          bmcv_rect_t rect;
+          rect.start_x = max(faceObj->left, 0);
+          rect.start_y = max(faceObj->top, 0);
+          rect.crop_w = max(faceObj->right - faceObj->left + 1, 0);
+          rect.crop_h = max(faceObj->bottom - faceObj->top + 1, 0);
+
+          draw_all_bmcv(objectMetadata->mFrame->mHandle, rect.start_x,
+                        rect.start_y, rect.crop_w, rect.crop_h, imageStorage,
+                        label);
+
+          std::cout << "label:" << label << std::endl;
+        }
+
+        std::string filename =
             "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
-        FILE* fp = fopen(img_file.c_str(), "wb");
-        fwrite(jpeg_data, out_size, 1, fp);
-        fclose(fp);
+            "-" + std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
+        bm_image_write_to_bmp(imageStorage, filename.c_str());
+        bm_image_destroy(imageStorage);
       }
-      free(jpeg_data);
-      bm_image_destroy(imageStorage);
     }
     fpsProfiler.add(1);
   };

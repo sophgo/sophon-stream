@@ -1,0 +1,23 @@
+{
+    "configure": {
+        "default_port": 0,
+        "rules": [
+            {
+                "time_interval": 1,
+                "routes": [
+                    {
+                        "classes":[],
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "class_names_file": "../data/class.names",
+        "is_affine":false
+        
+    },
+    "shared_object": "../../../build/lib/libdistributor.so",
+    "name": "distributor",
+    "side": "sophgo",
+    "thread_number": 1
+}

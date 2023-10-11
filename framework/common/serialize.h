@@ -220,7 +220,7 @@ void to_json(nlohmann::json& j, std::shared_ptr<common::ObjectMetadata> obj) {
   for (auto recogObj : obj->mRecognizedObjectMetadatas) {
     j["mRecognizedObjectMetadatas"].push_back(*recogObj);
   }
-  for (auto faceObj : obj->mFaceObjectMetadata) {
+  for (auto faceObj : obj->mFaceObjectMetadatas) {
     j["mFaceObjectMetadata"].push_back(*faceObj);
   }
   j["mFrame"] = (*(obj->mFrame));

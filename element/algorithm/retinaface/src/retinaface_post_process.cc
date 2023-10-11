@@ -111,7 +111,7 @@ void RetinafacePostProcess::postProcess(std::shared_ptr<RetinafaceContext> conte
         detData->points_y[k] = faceInfo[i].pts.y[k];
       }
 
-      obj->mFaceObjectMetadata.push_back(detData);
+      obj->mFaceObjectMetadatas.push_back(detData);
     }
   }
 }

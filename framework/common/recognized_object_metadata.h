@@ -46,6 +46,7 @@ struct RecognizedObjectMetadata {
   std::vector<float> mScores;
   std::vector<int> mTopKLabels;
   std::vector<std::shared_ptr<LabelMetadata> > mTopKLabelMetadatas;
+  std::shared_ptr<float> feature_vector;
 };
 
 }  // namespace common

@@ -23,16 +23,16 @@ namespace sophon_stream {
 namespace element {
 namespace resnet {
 
-class ResNetClassify {
+class ResNetMultiTask {
  public:
-  ~ResNetClassify();
+  ~ResNetMultiTask();
   /**
    * init device and engine
    * @param[in] context: model path,inputs and outputs name...
    */
   void init(std::shared_ptr<ResNetContext> context);
 
-  common::ErrorCode classify(std::shared_ptr<ResNetContext> context,
+  common::ErrorCode multiTask(std::shared_ptr<ResNetContext> context,
                              common::ObjectMetadatas& objectMetadatas);
 
  private:
@@ -63,7 +63,9 @@ class ResNetClassify {
                             common::ObjectMetadatas& objectMetadatas);
 
   // postprocess
-  common::ErrorCode post_process(std::shared_ptr<ResNetContext> context,
+  common::ErrorCode post_process_classfy(std::shared_ptr<ResNetContext> context,
+                                 common::ObjectMetadatas& objectMetadatas);
+  common::ErrorCode post_process_extract(std::shared_ptr<ResNetContext> context,
                                  common::ObjectMetadatas& objectMetadatas);
 
   int subId = 0;

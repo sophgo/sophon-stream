@@ -41,6 +41,8 @@ struct ResNetContext {
   std::vector<float> mean;  // 前处理均值， 长度为3，顺序为rgb
   std::vector<float> stdd;  // 前处理方差， 长度为3，顺序为rgb
   bool bgr2rgb;             // 是否将bgr图像转成rgb推理
+  bool bgr2gray;            // 是否将bgr图像转成gray推理
+  bool extract_feature=false;     // 是否直接提取特征
 
   int m_frame_h, m_frame_w;
   int net_h, net_w, m_net_channel;
