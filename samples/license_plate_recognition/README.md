@@ -178,13 +178,14 @@ SoC 平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以 PCIe 模式进行介绍。
 
-运行可执行文件
+运行可执行文件，
 
 ```bash
-./license_plate_recognition
+./license_plate_recognition_demo
 ```
+推理结果保存在/build/results路径下。
 
-推理 1 路图片运行结果如下
+关闭图片保存时，1684X PCIe上推理 1 路图片运行结果如下，PCIe上的性能由于CPU的不同可能存在较大差异：
 
 ```bash
  total time cost 24724501 us.
