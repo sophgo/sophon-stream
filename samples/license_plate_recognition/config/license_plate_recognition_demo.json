@@ -4,10 +4,10 @@
       "url": "../data/test",
       "source_type": "IMG_DIR",
       "loop_num": 1,
-      "fps": 25,
+      "fps": -1,
       "channel_id": 0
     },
     "class_names": "../data/coco.names",
-    "download_image": true,
+    "download_image": false,
     "engine_config_path": "../config/engine.json"
   }

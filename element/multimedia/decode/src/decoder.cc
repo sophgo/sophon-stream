@@ -96,6 +96,7 @@ common::ErrorCode Decoder::init(int deviceId,
                                                     "bmp"};
       getAllFiles(mUrl, mImagePaths, correct_postfixes);
       std::sort(mImagePaths.begin(), mImagePaths.end());
+      decoder.setFps(mFps);
     }
 
     if (mSourceType == ChannelOperateRequest::SourceType::BASE64) {
