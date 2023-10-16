@@ -40,7 +40,7 @@ chmod -R +x scripts/
 ./scripts/download.sh
 ```
 
-脚本执行完毕后，会在当前目录下生成`data`目录，其中包含`models`和`videos`两个子目录。
+脚本执行完毕后，会在当前目录下生成`data`目录，其中包含`models`、`face_data`、`image`三个子目录。
 
 下载的模型包括：
 

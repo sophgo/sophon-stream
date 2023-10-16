@@ -29,7 +29,6 @@ class Faiss : public ::sophon_stream::framework::Element {
       "default_port";
   static constexpr const char* CONFIG_INTERNAL_DB_DATA_PATH_FILED = "db_path";
   static constexpr const char* CONFIG_INTERNAL_LABEL_PATH_FILED = "label_path";
-
   int subId = 0;
 
  private:
@@ -45,10 +44,17 @@ class Faiss : public ::sophon_stream::framework::Element {
 
   std::vector<std::string> mClassNames;
   float* db_data;
+  float* output_dis;
+  int* output_inx;
 
   void getFaceId(std::shared_ptr<common::RecognizedObjectMetadata> resnetObj);
   bm_handle_t handle = nullptr;
+  bm_device_mem_t query_data_dev_mem;
   bm_device_mem_t db_data_dev_mem;
+  bm_device_mem_t buffer_dev_mem;
+  bm_device_mem_t sorted_similarity_dev_mem;
+  bm_device_mem_t sorted_index_dev_mem;
+  std::mutex mutex;
   
 };
 

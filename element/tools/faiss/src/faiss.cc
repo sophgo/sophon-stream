@@ -23,7 +23,13 @@ namespace faiss {
 Faiss::Faiss() {}
 Faiss::~Faiss() {
   delete[] db_data;
+  delete[] output_dis;
+  delete[] output_inx;
+  bm_free_device(handle, query_data_dev_mem);
   bm_free_device(handle, db_data_dev_mem);
+  bm_free_device(handle, buffer_dev_mem);
+  bm_free_device(handle, sorted_similarity_dev_mem);
+  bm_free_device(handle, sorted_index_dev_mem);
 }
 
 common::ErrorCode Faiss::initInternal(const std::string& json) {
@@ -77,14 +83,23 @@ common::ErrorCode Faiss::initInternal(const std::string& json) {
     istream.close();
 
     db_data = new float[db_vecs_num * vec_dims];
+    output_dis = new float[query_vecs_num * sort_cnt];
+    output_inx = new int[query_vecs_num * sort_cnt];
     std::memcpy(db_data, db_vec.data(), db_vec.size() * sizeof(float));
 
     bm_dev_request(&handle, 0);
     bm_memcpy_s2d(handle, db_data_dev_mem, db_data);
-    
+    bm_malloc_device_byte(handle, &buffer_dev_mem,
+                          query_vecs_num * db_vecs_num * sizeof(float));
+    bm_malloc_device_byte(handle, &sorted_similarity_dev_mem,
+                          query_vecs_num * sort_cnt * sizeof(float));
+    bm_malloc_device_byte(handle, &sorted_index_dev_mem,
+                          query_vecs_num * sort_cnt * sizeof(int));
+    bm_malloc_device_byte(handle, &query_data_dev_mem,
+                          query_vecs_num * vec_dims * sizeof(float));
     bm_malloc_device_byte(handle, &db_data_dev_mem,
                           db_vecs_num * vec_dims * sizeof(float));
-    
+
   } while (false);
   return errorCode;
 }
@@ -92,25 +107,15 @@ common::ErrorCode Faiss::initInternal(const std::string& json) {
 void Faiss::getFaceId(
     std::shared_ptr<common::RecognizedObjectMetadata> resnetObj) {
   if (resnetObj != nullptr) {
-    float* output_dis = new float[query_vecs_num * sort_cnt];
-    int* output_inx = new int[query_vecs_num * sort_cnt];
-  
-    bm_device_mem_t sorted_similarity_dev_mem;
-    bm_device_mem_t sorted_index_dev_mem;
-    bm_device_mem_t query_data_dev_mem;
-    bm_device_mem_t buffer_dev_mem;
-    
-    bm_malloc_device_byte(handle, &sorted_similarity_dev_mem,
-                          query_vecs_num * sort_cnt * sizeof(float));
-    bm_malloc_device_byte(handle, &sorted_index_dev_mem,
-                          query_vecs_num * sort_cnt * sizeof(int));
-    bm_malloc_device_byte(handle, &query_data_dev_mem,
-                          query_vecs_num * vec_dims * sizeof(float));
-
     // float *input_data = new float[query_vecs_num * vec_dims];
     float* input_data = resnetObj->feature_vector.get();
+    for (int i = 0; i < 10; i++) {
+      std::cout << input_data[i] << " ";
+    }
     // 将 input_data 的值赋给 feature_vector
     // bm_handle_t handle=obj->mFrame->mHandle;
+   {
+    std::lock_guard<std::mutex> lock(mutex);
     bm_memcpy_s2d(handle, query_data_dev_mem, input_data);
     bmcv_faiss_indexflatIP(handle, query_data_dev_mem, db_data_dev_mem,
                            buffer_dev_mem, sorted_similarity_dev_mem,
@@ -120,19 +125,10 @@ void Faiss::getFaceId(
 
     bm_memcpy_d2s(handle, output_dis, sorted_similarity_dev_mem);
     bm_memcpy_d2s(handle, output_inx, sorted_index_dev_mem);
-
+   }
     int label_index = output_inx[0];
-
     resnetObj->mLabelName = mClassNames[label_index];
-    resnetObj->mTopKLabels.push_back(label_index);
-    memset(output_inx, 0, sizeof(int) * query_vecs_num * sort_cnt);
-
-    delete[] output_dis;
-    delete[] output_inx;
-    bm_free_device(handle, sorted_similarity_dev_mem);
-    bm_free_device(handle, sorted_index_dev_mem);
-    bm_free_device(handle, query_data_dev_mem);
-    bm_free_device(handle, buffer_dev_mem);
+    resnetObj->mTopKLabels.push_back(output_inx[0]);
   }
 }
 
@@ -157,11 +153,10 @@ common::ErrorCode Faiss::doWork(int dataPipeId) {
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
   int subId = 0;
   // 从resnet取出一个objectMetadata
-
   // 从data里面取人脸，对一个个人脸做处理，首先需要取出
   for (auto resnetObj : objectMetadata->mRecognizedObjectMetadatas) {
     // mRecognizedObjectMetadatas是一个数组，每个数组包含人脸的框、特征等等,需要做的只是提取特征，填充label
-    getFaceId(resnetObj);
+    Faiss::getFaceId(resnetObj);
   }
 
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;

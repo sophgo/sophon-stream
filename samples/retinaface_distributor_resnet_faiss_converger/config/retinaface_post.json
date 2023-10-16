@@ -1,7 +1,7 @@
 {
     "configure": {
         "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
-        "max_face_count":50,
+        "max_face_count":1,
         "score_threshold":0.5,
         "bgr2rgb": false,
         "mean": [
