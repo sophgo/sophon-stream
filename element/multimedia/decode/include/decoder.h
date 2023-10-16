@@ -61,6 +61,7 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
 
   double mFps;
   int mSampleInterval;
+  ChannelOperateRequest::SampleStrategy mSampleStrategy;
 };
 }  // namespace decode
 }  // namespace element

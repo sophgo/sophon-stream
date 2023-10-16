@@ -56,14 +56,7 @@ void getAllFiles(std::string path, std::vector<std::string>& files,
   closedir(dir);
 }
 
-void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {
-  f->mWidth = img.width;
-  f->mHeight = img.height;
-  f->mDataType = img.data_type;
-  f->mFormatType = img.image_format;
-  f->mChannel = 3;
-  f->mDataSize = img.width * img.height * f->mChannel * sizeof(uchar);
-}
+void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {}
 
 Decoder::Decoder() {}
 
@@ -77,6 +70,7 @@ common::ErrorCode Decoder::init(int deviceId,
     mLoopNum = request.loopNum;
     mSampleInterval = request.sampleInterval;
     mFps = request.fps;
+    mSampleStrategy = request.sampleStrategy;
     int ret = bm_dev_request(&m_handle, deviceId);
     mDeviceId = deviceId;
     mSourceType = request.sourceType;
@@ -112,7 +106,9 @@ common::ErrorCode Decoder::init(int deviceId,
       decoder.setFps(mFps);
       auto ret = decoder.openDec(&m_handle, mUrl.c_str());
       if (ret < 0) {
-        IVS_ERROR("Decoder::init error, openDec failed, ret: {0}, channel id : {1}", ret, request.channelId);
+        IVS_ERROR(
+            "Decoder::init error, openDec failed, ret: {0}, channel id : {1}",
+            ret, request.channelId);
         errorCode = common::ErrorCode::ERR_FFMPEG_INPUT_CTX_OPEN;
         break;
       }
@@ -133,7 +129,8 @@ common::ErrorCode Decoder::process(
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;
     int64_t pts = 0;
-    spBmImage = decoder.grab(frame_id, eof, pts);
+    spBmImage =
+        decoder.grab(frame_id, eof, pts, mSampleInterval, mSampleStrategy);
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
@@ -155,7 +152,8 @@ common::ErrorCode Decoder::process(
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;
     int64_t pts = 0;
-    spBmImage = decoder.grab(frame_id, eof, pts);
+    spBmImage =
+        decoder.grab(frame_id, eof, pts, mSampleInterval, mSampleStrategy);
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;

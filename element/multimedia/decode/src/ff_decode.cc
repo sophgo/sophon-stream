@@ -674,7 +674,8 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
 }
 
 std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof,
-                                            int64_t& pts) {
+                                            int64_t& pts, int sampleInterval,
+                                            sampleStrategy strategy) {
   // 控制帧率
   if (fps != -1) {
     gettimeofday(&current_time, NULL);
@@ -694,7 +695,11 @@ std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof,
   timeval pt;
   gettimeofday(&pt, NULL);
   pts = pt.tv_sec * 1e6 + pt.tv_usec;
-  
+
+  if ((strategy == sampleStrategy::DROP) && (frameId % sampleInterval != 0)) {
+    return spBmImage;
+  }
+
   spBmImage.reset(new bm_image, [](bm_image* p) {
     bm_image_destroy(*p);
     delete p;
