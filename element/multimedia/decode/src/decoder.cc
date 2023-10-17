@@ -56,7 +56,14 @@ void getAllFiles(std::string path, std::vector<std::string>& files,
   closedir(dir);
 }
 
-void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {}
+void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {
+  f->mWidth = img.width;
+  f->mHeight = img.height;
+  f->mDataType = img.data_type;
+  f->mFormatType = img.image_format;
+  f->mChannel = 3;
+  f->mDataSize = img.width * img.height * f->mChannel * sizeof(uchar);
+}
 
 Decoder::Decoder() {}
 
@@ -141,7 +148,8 @@ common::ErrorCode Decoder::process(
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
     } else {
-      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+      if (spBmImage != nullptr)
+        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
 
     if (common::ErrorCode::SUCCESS != errorCode) {
@@ -172,7 +180,8 @@ common::ErrorCode Decoder::process(
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
     } else {
-      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+      if (spBmImage != nullptr)
+        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
 
     if (common::ErrorCode::SUCCESS != errorCode) {
@@ -193,7 +202,8 @@ common::ErrorCode Decoder::process(
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
     } else {
-      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+      if (spBmImage != nullptr)
+        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     }
 
     /* mImgIndex会不停累加，mImgIndex % mImagePaths.size()的值为
@@ -214,7 +224,8 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = mImgIndex++;
     objectMetadata->mFrame->mSpData = spBmImage;
-    bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+    if (spBmImage != nullptr)
+      bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     if (common::ErrorCode::SUCCESS != errorCode) {
       objectMetadata->mErrorCode = errorCode;
     }
