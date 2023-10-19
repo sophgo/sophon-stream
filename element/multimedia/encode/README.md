@@ -67,7 +67,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 3. encode_type为VIDEO和IMG_DIR时，文件保存路径为`./results`
 
 ## 3. rtsp使用说明
-需要本地启动推流服务器，具体用法见[6. 推流服务器](#6-推流服务器)
+需要本地启动推流服务器，具体用法见[6. 推流服务器](#8-推流服务器)
 在`encode.json`中做出以下设置
 ```json
 "encode_type": "RTSP",
@@ -126,7 +126,13 @@ host_ip为127.0.0.1, wss_port为9000，channel_id为2，此时URL为`ws://127.0.
 ## 8. 推流服务器
 可以使用`mediamtx`作为推流服务器，启动步骤如下
 
-首先去[官网](https://github.com/bluenviron/mediamtx/releases)下载对应的软件包然后解压
+首先去[官网](https://github.com/bluenviron/mediamtx/releases)下载对应的软件包然后解压。
+
+对于在边缘设备上部署sophon-stream的场合，我们推荐使用arm64v8版本流服务器。即：
+
+```bash
+wget https://github.com/bluenviron/mediamtx/releases/download/v1.2.0/mediamtx_v1.2.0_linux_arm64v8.tar.gz
+```
 
 解压缩后打开`mediamtx.yml`配置文件，修改readTimeout与writeTimeout这两个参数，保存后退出
 ```yml
@@ -151,8 +157,6 @@ INF [WebRTC] listener opened on :8889 (HTTP)
 ```
 
 mediamtx.yml中rtsp的默认TCP端口是8554，rtmp默认端口是1935，如果修改端口号，插件配置中相应端口配置也要修改成一致。
-
-github：https://github.com/bluenviron/mediamtx
 
 需要注意的是，mediamtx是一个示例服务器，并不具备高度的可扩展性和功能完整性。如果您需要构建一个稳定和功能丰富的实际RTSP流媒体服务器，可以选择使用成熟的开源或商业解决方案，如Live555、GStreamer、FFmpeg等，这些工具提供了更广泛和全面的RTSP功能支持。
 

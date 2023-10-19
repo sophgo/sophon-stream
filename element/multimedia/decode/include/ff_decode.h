@@ -66,7 +66,8 @@ std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, std::string input_name);
 std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, std::string input_name);
 std::shared_ptr<bm_image> bmpDec(bm_handle_t& handle, std::string input_name);
 
-using sampleStrategy = ::sophon_stream::element::decode::ChannelOperateRequest::SampleStrategy;
+using sampleStrategy =
+    ::sophon_stream::element::decode::ChannelOperateRequest::SampleStrategy;
 
 /**
  * video decode class
@@ -88,9 +89,8 @@ class VideoDecFFM {
   int openDec(bm_handle_t* dec_handle, const char* input);
 
   /* grab a bm_image from the cache queue*/
-  std::shared_ptr<bm_image> grab(
-      int& frame_id, int& eof, int64_t& pts, int sampleInterval,
-      sampleStrategy strategy);
+  std::shared_ptr<bm_image> grab(int& frame_id, int& eof, int64_t& pts,
+                                 int sampleInterval, sampleStrategy strategy);
 
   /* get frame count */
   void mFrameCount(const char* video_file, int& mFrameCount);
