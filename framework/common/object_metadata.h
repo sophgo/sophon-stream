@@ -18,14 +18,13 @@
 #include "common/bmnn_utils.h"
 #include "detected_object_metadata.h"
 #include "error_code.h"
+#include "face_object_metadata.h"
 #include "frame.h"
 #include "graphics.h"
+#include "posed_object_metadata.h"
 #include "recognized_object_metadata.h"
 #include "segmented_object_metadata.h"
 #include "tracked_object_metadata.h"
-#include "posed_object_metadata.h"
-#include "face_object_metadata.h"
-
 
 namespace sophon_stream {
 namespace common {
@@ -55,8 +54,16 @@ typedef struct bmTensors_ {
   bm_handle_t handle;
 } bmTensors;
 
+typedef struct bmSubTensors_ {
+  std::vector<std::vector<std::shared_ptr<bm_tensor_t>>> tensors;
+  bm_handle_t handle;
+} bmSubTensors;
+
 struct ObjectMetadata {
-  ObjectMetadata() : mErrorCode(common::ErrorCode::SUCCESS), mFilter(false), numBranches(0) {}
+  ObjectMetadata()
+      : mErrorCode(common::ErrorCode::SUCCESS),
+        mFilter(false),
+        numBranches(0) {}
 
   int getChannelId() const {
     if (mFrame) {
@@ -97,12 +104,16 @@ struct ObjectMetadata {
   bool mFilter;
 
   /**
-   * @brief 跳过的element，由channelTask配置，可以实现不同channel经过不同的pipeline
+   * @brief
+   * 跳过的element，由channelTask配置，可以实现不同channel经过不同的pipeline
    */
   std::vector<int> mSkipElements;
 
   std::shared_ptr<bmTensors> mInputBMtensors;
   std::shared_ptr<bmTensors> mOutputBMtensors;
+
+  std::shared_ptr<bmSubTensors> mSubInputBMtensors;
+  std::shared_ptr<bmSubTensors> mSubOutputBMtensors;
 
   std::shared_ptr<ModelConfigureMap> mModelConfigureMap;
   std::shared_ptr<DataInformation>
@@ -129,21 +140,22 @@ struct ObjectMetadata {
   std::vector<std::shared_ptr<common::PosedObjectMetadata>>
       mPosedObjectMetadatas;
   /**
-   * @brief 识别结果的vector，一个原始ObjectMetadata通过多个模型，每个模型的结果对应一个RecognizedObjectMetadata
+   * @brief
+   * 识别结果的vector，一个原始ObjectMetadata通过多个模型，每个模型的结果对应一个RecognizedObjectMetadata
    */
   std::vector<std::shared_ptr<common::RecognizedObjectMetadata>>
       mRecognizedObjectMetadatas;
   /**
-   * @brief 分割结果的vector，一个原始ObjectMetadata通过多个模型，每个模型的结果对应一个SegmentedObjectMetadata
+   * @brief
+   * 分割结果的vector，一个原始ObjectMetadata通过多个模型，每个模型的结果对应一个SegmentedObjectMetadata
    */
   std::vector<std::shared_ptr<common::SegmentedObjectMetadata>>
       mSegmentedObjectMetadatas;
-  
-    /**
+
+  /**
    * @brief 检测结果的vector，一个目标对应一个FaceObjectMetadata
    */
-   std::vector<std::shared_ptr<common::FaceObjectMetadata>>
-      mFaceObjectMetadatas;
+  std::vector<std::shared_ptr<common::FaceObjectMetadata>> mFaceObjectMetadatas;
 };
 
 using ObjectMetadatas = std::vector<std::shared_ptr<ObjectMetadata>>;

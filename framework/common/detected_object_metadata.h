@@ -63,6 +63,8 @@ struct DetectedObjectMetadata {
   }
 
   common::Rectangle<int> mBox;
+  // mCroppedBox are the dilated boxes by using mBox
+  common::Rectangle<int> mCroppedBox;
   std::string mItemName;
   std::string mLabelName;
   std::vector<float> mScores;

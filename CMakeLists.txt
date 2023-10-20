@@ -31,6 +31,7 @@ function (checkAndAddSample dir)
     endif()
 endfunction()
 
+checkAndAddElement(element/algorithm/fastpose)
 checkAndAddElement(element/algorithm/yolox)
 checkAndAddElement(element/algorithm/yolov5)
 checkAndAddElement(element/algorithm/bytetrack)

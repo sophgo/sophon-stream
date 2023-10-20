@@ -25,6 +25,7 @@ struct PosedObjectMetadata {
   };  // 检测模型类别，支持25个关键点或者18个
   std::vector<float>
       keypoints;  //{x,y,score....},包含一个人的所有关键点坐标，大小与modeltype有关
+  std::vector<float> scores;
   EModelType modeltype;  // 模型类别
 };
 
