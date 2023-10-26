@@ -22,6 +22,7 @@
 #include "bmruntime_interface.h"
 #include "common/bmnn_utils.h"
 #include "common/error_code.h"
+#include "group.h"
 
 namespace sophon_stream {
 namespace element {
@@ -52,7 +53,8 @@ typedef struct {
 
 #define MAX_BATCH 16
 
-struct Yolov5Context {
+class Yolov5Context : public ::sophon_stream::framework::Context {
+ public:
   int deviceId;  // 设备ID
 
   std::shared_ptr<BMNNContext> bmContext;

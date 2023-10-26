@@ -16,6 +16,7 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "yolov5_context.h"
 
 namespace sophon_stream {
@@ -41,14 +42,15 @@ typedef struct tpu_kernel_ {
   int32_t detect_num[MAX_BATCH];
 } tpu_kernel;
 
-class Yolov5PostProcess {
+class Yolov5PostProcess
+    : public ::sophon_stream::framework::PostProcess {
  public:
   void init(std::shared_ptr<Yolov5Context> context);
 
   void postProcess(std::shared_ptr<Yolov5Context> context,
                    common::ObjectMetadatas& objectMetadatas, int dataPipeId);
 
-  ~Yolov5PostProcess();
+  ~Yolov5PostProcess() override;
 
  private:
   tpu_kernel* multi_thread_tpu_kernel = nullptr;

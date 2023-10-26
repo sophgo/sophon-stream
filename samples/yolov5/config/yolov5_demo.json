@@ -1,7 +1,7 @@
 {
-  "num_channels_per_graph": 8,
+  "num_channels_per_graph": 4,
   "channel": {
-    "url": "../data/videos/elevator-1080p-25fps-4000kbps.h264",
+    "url": "../data/videos/test_car_person_1080P.avi",
     "source_type": "VIDEO",
     "sample_interval": 1,
     "loop_num": 1,
@@ -9,5 +9,5 @@
   },
   "class_names": "../data/coco.names",
   "download_image": false,
-  "engine_config_path": "../config/engine.json"
+  "engine_config_path": "../config/engine_group.json"
 }

@@ -27,6 +27,8 @@ Yolov5::Yolov5() {}
 
 Yolov5::~Yolov5() {}
 
+const std::string Yolov5::elementName = "yolov5";
+
 common::ErrorCode Yolov5::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
@@ -203,27 +205,24 @@ common::ErrorCode Yolov5::initInternal(const std::string& json) {
     }
 
     auto stageNameIt = configure.find(CONFIG_INTERNAL_STAGE_NAME_FIELD);
-    if (configure.end() == stageNameIt || !stageNameIt->is_array()) {
-      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-      break;
-    }
+    if (configure.end() != stageNameIt && stageNameIt->is_array()) {
+      std::vector<std::string> stages =
+          stageNameIt->get<std::vector<std::string>>();
+      if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
+        use_pre = true;
+        mFpsProfilerName = "fps_yolov5_pre";
+      }
+      if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
+        use_infer = true;
+        mFpsProfilerName = "fps_yolov5_infer";
+      }
+      if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
+        use_post = true;
+        mFpsProfilerName = "fps_yolov5_post";
+      }
 
-    std::vector<std::string> stages =
-        stageNameIt->get<std::vector<std::string>>();
-    if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
-      use_pre = true;
-      mFpsProfilerName = "fps_yolov5_pre";
+      mFpsProfiler.config(mFpsProfilerName, 100);
     }
-    if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
-      use_infer = true;
-      mFpsProfilerName = "fps_yolov5_infer";
-    }
-    if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
-      use_post = true;
-      mFpsProfilerName = "fps_yolov5_post";
-    }
-
-    mFpsProfiler.config(mFpsProfilerName, 100);
 
     // 新建context,预处理,推理和后处理对象
     mContext = std::make_shared<Yolov5Context>();
@@ -243,8 +242,6 @@ common::ErrorCode Yolov5::initInternal(const std::string& json) {
     mInference->init(mContext);
     // 后处理初始化
     mPostProcess->init(mContext);
-
-    mBatch = mContext->max_batch;
 
   } while (false);
   return errorCode;
@@ -285,12 +282,12 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
   int outputPort = 0;
   if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
-    int outputPort = outputPorts[0];
+    outputPort = outputPorts[0];
   }
 
   common::ObjectMetadatas pendingObjectMetadatas;
 
-  while (objectMetadatas.size() < mBatch &&
+  while (objectMetadatas.size() < mContext->max_batch &&
          (getThreadStatus() == ThreadStatus::RUN)) {
     // 如果队列为空则等待
     auto data = popInputData(inputPort, dataPipeId);
@@ -332,7 +329,40 @@ common::ErrorCode Yolov5::doWork(int dataPipeId) {
   return common::ErrorCode::SUCCESS;
 }
 
+void Yolov5::setStage(bool pre, bool infer, bool post) {
+  use_pre = pre;
+  use_infer = infer;
+  use_post = post;
+}
+
+void Yolov5::initProfiler(std::string name, int interval) {
+  mFpsProfiler.config(mFpsProfilerName, 100);
+}
+
+void Yolov5::setContext(
+    std::shared_ptr<::sophon_stream::framework::Context> context) {
+  // check
+  mContext = std::dynamic_pointer_cast<Yolov5Context>(context);
+}
+
+void Yolov5::setPreprocess(
+    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+  mPreProcess = std::dynamic_pointer_cast<Yolov5PreProcess>(pre);
+}
+
+void Yolov5::setInference(
+    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+  mInference = std::dynamic_pointer_cast<Yolov5Inference>(infer);
+}
+
+void Yolov5::setPostprocess(
+    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+  mPostProcess = std::dynamic_pointer_cast<Yolov5PostProcess>(post);
+}
+
 REGISTER_WORKER("yolov5", Yolov5)
+REGISTER_TEMPLATE_WORKER("yolov5_group",
+                         sophon_stream::framework::Group<Yolov5>, Yolov5)
 
 }  // namespace yolov5
 }  // namespace element

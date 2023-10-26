@@ -272,6 +272,10 @@ common::ErrorCode Graph::initElements(const std::string& json) {
         break;
       }
 
+      if (element->getGroup()) {
+        element->groupInsert(mElementMap);
+      }
+
       mElementMap[element->getId()] = element;
     }
     if (common::ErrorCode::SUCCESS != errorCode) {
@@ -367,7 +371,7 @@ common::ErrorCode Graph::initConnections(const std::string& json) {
 }
 
 common::ErrorCode Graph::connect(int srcId, int srcPort, int dstId,
-                                          int dstPort) {
+                                 int dstPort) {
   auto srcElementIt = mElementMap.find(srcId);
   if (mElementMap.end() == srcElementIt) {
     IVS_ERROR("Can not find element, graphd id: {0:d}, element id: {1:d}", mId,
@@ -400,13 +404,16 @@ common::ErrorCode Graph::connect(int srcId, int srcPort, int dstId,
 
   framework::Element::connect(*srcElement, srcPort, *dstElement, dstPort);
 
+  srcElement->afterConnect(false, true);
+  dstElement->afterConnect(true, false);
+
   IVS_INFO("{0}~~~~~~~~~~~~~~~~~~{1}", srcId, dstId);
 
   return common::ErrorCode::SUCCESS;
 }
 
 void Graph::setSinkHandler(int elementId, int outputPort,
-                                    SinkHandler sinkHandler) {
+                           SinkHandler sinkHandler) {
   IVS_INFO(
       "Set data handler, graph id: {0:d}, element id: {1:d}, output port: "
       "{2:d}",
@@ -429,8 +436,8 @@ void Graph::setSinkHandler(int elementId, int outputPort,
   element->setSinkHandler(outputPort, sinkHandler);
 }
 
-common::ErrorCode Graph::pushSourceData(
-    int elementId, int inputPort, std::shared_ptr<void> data) {
+common::ErrorCode Graph::pushSourceData(int elementId, int inputPort,
+                                        std::shared_ptr<void> data) {
   IVS_DEBUG(
       "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
       "data: {3:p}",

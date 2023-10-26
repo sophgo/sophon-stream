@@ -80,9 +80,18 @@ common::ErrorCode Element::init(const std::string& json) {
       mThreadNumber = threadNumberIt->get<int>();
     }
 
+    std::vector<int> inner_elements_id;
+    bool is_group = false;
+    auto innerIdsIt = configure.find(JSON_INNER_ELEMENTS_ID);
+    if (configure.end() != innerIdsIt) {
+      inner_elements_id = innerIdsIt->get<std::vector<int>>();
+    }
+
     std::string internalConfigure;
     auto internalConfigureIt = configure.find(JSON_CONFIGURE_FIELD);
     if (configure.end() != internalConfigureIt) {
+      if (getGroup())
+        (*internalConfigureIt)[JSON_INNER_ELEMENTS_ID] = inner_elements_id;
       internalConfigure = internalConfigureIt->dump();
     }
 

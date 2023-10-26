@@ -19,6 +19,7 @@
 #include "common/no_copyable.h"
 #include "common/singleton.h"
 #include "element.h"
+//#include "group.h"
 
 namespace sophon_stream {
 namespace framework {
@@ -69,6 +70,18 @@ using SingletonElementFactory = common::Singleton<ElementFactory>;
     }                                                                         \
   };                                                                          \
   static ElementClass##Register g##ElementClass##Register;
+
+#define REGISTER_TEMPLATE_WORKER(elementName, GroupElement, ElementClass)     \
+  struct Group##ElementClass##Register {                                      \
+    Group##ElementClass##Register() {                                         \
+      auto& elementFactory =                                                  \
+          ::sophon_stream::framework::SingletonElementFactory::getInstance(); \
+      std::cout << elementName << std::endl;                                  \
+      elementFactory.addElementMaker(                                         \
+          elementName, []() { return std::make_shared<GroupElement>(); });    \
+    }                                                                         \
+  };                                                                          \
+  static Group##ElementClass##Register g##Group##ElementClass##Register;
 
 }  // namespace framework
 }  // namespace sophon_stream

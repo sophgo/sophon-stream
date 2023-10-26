@@ -19,10 +19,10 @@
 #define STREAM_LIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 1))
 #define STREAM_UNLIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 0))
 
-std::string concatArgs() { return ""; }
+inline std::string concatArgs() { return ""; }
 
 template <typename T, typename... Args>
-std::string concatArgs(const T& arg, const Args&... args) {
+inline std::string concatArgs(const T& arg, const Args&... args) {
   std::stringstream ss;
   ss << std::string(arg);
   return ss.str() + concatArgs(args...);

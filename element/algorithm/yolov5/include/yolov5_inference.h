@@ -16,15 +16,16 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "yolov5_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
-class Yolov5Inference {
+class Yolov5Inference : public ::sophon_stream::framework::Inference {
  public:
-  ~Yolov5Inference();
+  ~Yolov5Inference() override;
   /**
    * init device and engine
    * @param[in] context: model path,inputs and outputs name...

@@ -1,0 +1,44 @@
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "yolov5",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../config/yolov5_group.json",
+                "inner_elements_id": [10001, 10002, 10003],
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            }
+        ]
+    }
+]

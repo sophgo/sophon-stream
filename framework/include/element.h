@@ -101,6 +101,24 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   void setSinkHandler(int outputPort, SinkHandler sinkHandler);
 
+  /**
+   * @brief 在执行connect()之后进行，只有Group
+   * Element才需要override该函数，用于将group的输入输出与内部preElement和postElement连接起来
+   *
+   * @param is_dst 对应connect方法里的dst
+   * @param is_src 对应connect方法里的dst
+   */
+  virtual void afterConnect(bool is_dst, bool is_src) {}
+
+  virtual bool getGroup() { return false; }
+
+  /**
+   * @brief 仅group element重写，用于向graph的elementMap注册内部各个element
+   * @param mapPtr graph的elementMap
+   */
+  virtual void groupInsert(
+      std::map<int, std::shared_ptr<framework::Element>>& mapPtr) {}
+
   int getId() const { return mId; }
 
   const std::string& getSide() const { return mSide; }
@@ -120,12 +138,39 @@ class Element : public ::sophon_stream::common::NoCopyable {
     return mInputConnectorMap[inputPort];
   };
 
+  inline void setId(const int id) { mId = id; }
+  inline void setSide(const std::string side) { mSide = side; }
+  inline void setSinkFlag(const bool flag) { mSinkElementFlag = flag; }
+  inline void setDeviceId(const int id) { mDeviceId = id; }
+  inline void setThreadNumber(const int num) { mThreadNumber = num; }
+
   static constexpr const char* JSON_ID_FIELD = "id";
   static constexpr const char* JSON_SIDE_FIELD = "side";
   static constexpr const char* JSON_DEVICE_ID_FIELD = "device_id";
   static constexpr const char* JSON_THREAD_NUMBER_FIELD = "thread_number";
   static constexpr const char* JSON_CONFIGURE_FIELD = "configure";
   static constexpr const char* JSON_IS_SINK_FILED = "is_sink";
+  static constexpr const char* JSON_INNER_ELEMENTS_ID = "inner_elements_id";
+
+  std::map<int, std::shared_ptr<framework::Connector>>& getInputConnectorMap() {
+    return mInputConnectorMap;
+  }
+  std::map<int, std::weak_ptr<framework::Connector>>& getOutputConnectorMap() {
+    return mOutputConnectorMap;
+  }
+
+  void setInputConnectorMap(
+      std::map<int, std::shared_ptr<framework::Connector>>& input) {
+    mInputConnectorMap = input;
+  }
+
+  void setOutputConnectorMap(
+      std::map<int, std::weak_ptr<framework::Connector>>& input) {
+    mOutputConnectorMap = input;
+  }
+
+  void addInputPort(int port);
+  void addOutputPort(int port);
 
  protected:
   /**
@@ -193,8 +238,6 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   std::vector<int> mInputPorts;
   std::vector<int> mOutputPorts;
-  void addInputPort(int port);
-  void addOutputPort(int port);
 
   bool mSinkElementFlag = false;
 };

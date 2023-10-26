@@ -16,6 +16,7 @@
 
 #include "common/profiler.h"
 #include "element.h"
+#include "group.h"
 #include "yolov5_context.h"
 #include "yolov5_inference.h"
 #include "yolov5_post_process.h"
@@ -33,9 +34,33 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   Yolov5();
   ~Yolov5() override;
 
+  const static std::string elementName;
+
   common::ErrorCode initInternal(const std::string& json) override;
 
   common::ErrorCode doWork(int dataPipeId) override;
+
+  void setContext(std::shared_ptr<::sophon_stream::framework::Context> context);
+  void setPreprocess(
+      std::shared_ptr<::sophon_stream::framework::PreProcess> pre);
+  void setInference(
+      std::shared_ptr<::sophon_stream::framework::Inference> infer);
+  void setPostprocess(
+      std::shared_ptr<::sophon_stream::framework::PostProcess> post);
+  void setStage(bool pre, bool infer, bool post);
+  void initProfiler(std::string name, int interval);
+  std::shared_ptr<::sophon_stream::framework::Context> getContext() {
+    return mContext;
+  }
+  std::shared_ptr<::sophon_stream::framework::PreProcess> getPreProcess() {
+    return mPreProcess;
+  }
+  std::shared_ptr<::sophon_stream::framework::Inference> getInference() {
+    return mInference;
+  }
+  std::shared_ptr<::sophon_stream::framework::PostProcess> getPostProcess() {
+    return mPostProcess;
+  }
 
   static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
   static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
@@ -66,7 +91,6 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   bool use_pre = false;
   bool use_infer = false;
   bool use_post = false;
-  int mBatch;
 
   std::string mFpsProfilerName;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;

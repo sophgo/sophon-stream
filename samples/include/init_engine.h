@@ -30,6 +30,7 @@ constexpr const char* JSON_CONFIG_SRC_ID_FILED = "src_element_id";
 constexpr const char* JSON_CONFIG_SRC_PORT_FILED = "src_port";
 constexpr const char* JSON_CONFIG_DST_ID_FILED = "dst_element_id";
 constexpr const char* JSON_CONFIG_DST_PORT_FILED = "dst_port";
+constexpr const char* JSON_CONFIG_INNER_ELEMENTS_ID = "inner_elements_id";
 
 void parse_element_json(
     const nlohmann::detail::iter_impl<nlohmann::json> elements_it,
@@ -46,6 +47,14 @@ void parse_element_json(
     elem_stream >> element;
     element["id"] = element_it.find(JSON_CONFIG_ELEMENT_ID_FILED)->get<int>();
     element["device_id"] = device_id;
+    
+    std::vector<int> elements_id_list;
+
+    auto inner_it = element_it.find(JSON_CONFIG_INNER_ELEMENTS_ID);
+    if(inner_it != element_it.end()) {
+      elements_id_list = inner_it->get<std::vector<int>>();
+      element[JSON_CONFIG_INNER_ELEMENTS_ID] = elements_id_list;
+    }
 
     auto ports_it = element_it.find(JSON_CONFIG_PORTS_CONFIG_FILED);
     if (ports_it != element_it.end()) {
@@ -69,6 +78,9 @@ void parse_element_json(
             sink_id_port = {element["id"],
                             output.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
             element["is_sink"] = true;
+            if(elements_id_list.size() != 0) {
+              sink_id_port.first = elements_id_list.back();
+            }
           }
         }
       }

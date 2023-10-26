@@ -16,13 +16,14 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "yolov5_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolov5 {
 
-class Yolov5PreProcess {
+class Yolov5PreProcess : public ::sophon_stream::framework::PreProcess {
  public:
   common::ErrorCode preProcess(std::shared_ptr<Yolov5Context> context,
                                common::ObjectMetadatas& objectMetadatas);
