@@ -16,6 +16,7 @@
 
 #include "common/profiler.h"
 #include "element.h"
+#include "group.h"
 #include "template_context.h"
 #include "template_inference.h"
 #include "template_post_process.h"
@@ -29,6 +30,8 @@ namespace template {
    public:
     Template();
     ~Template() override;
+
+    const static std::string elementName;
 
     /**
      * @brief
@@ -46,6 +49,29 @@ namespace template {
      * @return common::ErrorCode 成功返回common::ErrorCode::SUCCESS
      */
     common::ErrorCode doWork(int dataPipeId) override;
+
+    void setContext(
+        std::shared_ptr<::sophon_stream::framework::Context> context);
+    void setPreprocess(
+        std::shared_ptr<::sophon_stream::framework::PreProcess> pre);
+    void setInference(
+        std::shared_ptr<::sophon_stream::framework::Inference> infer);
+    void setPostprocess(
+        std::shared_ptr<::sophon_stream::framework::PostProcess> post);
+    void setStage(bool pre, bool infer, bool post);
+    void initProfiler(std::string name, int interval);
+    std::shared_ptr<::sophon_stream::framework::Context> getContext() {
+      return mContext;
+    }
+    std::shared_ptr<::sophon_stream::framework::PreProcess> getPreProcess() {
+      return mPreProcess;
+    }
+    std::shared_ptr<::sophon_stream::framework::Inference> getInference() {
+      return mInference;
+    }
+    std::shared_ptr<::sophon_stream::framework::PostProcess> getPostProcess() {
+      return mPostProcess;
+    }
 
     /**
      * @brief 从json文件读取的配置项
@@ -78,7 +104,6 @@ namespace template {
     bool use_pre = false;
     bool use_infer = false;
     bool use_post = false;
-    int mBatch;
 
     std::string mFpsProfilerName;
     ::sophon_stream::common::FpsProfiler mFpsProfiler;

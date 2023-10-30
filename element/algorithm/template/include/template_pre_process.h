@@ -16,34 +16,34 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "template_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace template {
 
-  class TemplatePreProcess {
-   public:
-    /**
-     * @brief 对一个batch的数据做预处理
-     * @param context context指针
-     * @param objectMetadatas 一个batch的数据
-     * @return common::ErrorCode
-     * common::ErrorCode::SUCCESS，中间过程失败会中断执行
-     */
-    common::ErrorCode preProcess(std::shared_ptr<TemplateContext> context,
-                                 common::ObjectMetadatas& objectMetadatas);
-    void init(std::shared_ptr<TemplateContext> context);
-
-   private:
-    /**
-     * @brief 为一个batch的数据初始化设备内存
-     * @param context context指针
-     * @param objectMetadatas 一个batch的数据
-     */
-    void initTensors(std::shared_ptr<TemplateContext> context,
-                     common::ObjectMetadatas& objectMetadatas);
-  };
+class TemplatePreProcess : public ::sophon_stream::framework::PreProcess {
+ public:
+  /**
+   * @brief 对一个batch的数据做预处理
+   * @param context context指针
+   * @param objectMetadatas 一个batch的数据
+   * @return common::ErrorCode
+   * common::ErrorCode::SUCCESS，中间过程失败会中断执行
+   */
+  common::ErrorCode preProcess(std::shared_ptr<TemplateContext> context,
+                               common::ObjectMetadatas& objectMetadatas);
+  void init(std::shared_ptr<TemplateContext> context);
+ private:
+  /**
+   * @brief 为一个batch的数据初始化设备内存
+   * @param context context指针
+   * @param objectMetadatas 一个batch的数据
+   */
+  void initTensors(std::shared_ptr<TemplateContext> context,
+                   common::ObjectMetadatas& objectMetadatas);
+};
 
 }  // namespace template
 }  // namespace element

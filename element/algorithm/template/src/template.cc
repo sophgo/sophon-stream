@@ -14,6 +14,7 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "element_factory.h"
 using namespace std::chrono_literals;
@@ -24,7 +25,9 @@ namespace template {
 
   Template::Template() {}
 
-  Template::~Template() { }
+  Template::~Template() {}
+
+  const std::string Template::elementName = "template";
 
   common::ErrorCode Template::initContext(const std::string& json) {
     common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -51,28 +54,24 @@ namespace template {
       }
 
       auto stageNameIt = configure.find(CONFIG_INTERNAL_STAGE_NAME_FIELD);
-      if (configure.end() == stageNameIt || !stageNameIt->is_array()) {
-        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-        break;
-      }
+      if (configure.end() != stageNameIt && stageNameIt->is_array()) {
+        std::vector<std::string> stages =
+            stageNameIt->get<std::vector<std::string>>();
+        if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
+          use_pre = true;
+          mFpsProfilerName = "fps_template_pre";
+        }
+        if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
+          use_infer = true;
+          mFpsProfilerName = "fps_template_infer";
+        }
+        if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
+          use_post = true;
+          mFpsProfilerName = "fps_template_post";
+        }
 
-      std::vector<std::string> stages =
-          stageNameIt->get<std::vector<std::string>>();
-      if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
-        use_pre = true;
-        mFpsProfilerName = "fps_template_pre";
+        mFpsProfiler.config(mFpsProfilerName, 100);
       }
-      if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
-        use_infer = true;
-        mFpsProfilerName = "fps_template_infer";
-      }
-      if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
-        use_post = true;
-        mFpsProfilerName = "fps_template_post";
-      }
-
-      mFpsProfiler.config(mFpsProfilerName, 100);
-
       // 新建context,预处理,推理和后处理对象
       mContext = std::make_shared<TemplateContext>();
       mPreProcess = std::make_shared<TemplatePreProcess>();
@@ -91,8 +90,6 @@ namespace template {
       mInference->init(mContext);
       // 后处理初始化
       mPostProcess->init(mContext);
-
-      mBatch = mContext->max_batch;
 
     } while (false);
     return errorCode;
@@ -123,7 +120,6 @@ namespace template {
     if (use_post) mPostProcess->postProcess(mContext, objectMetadatas);
   }
 
-
   common::ErrorCode Template::doWork(int dataPipeId) {
     common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
@@ -133,12 +129,12 @@ namespace template {
     int outputPort = 0;
     if (!getSinkElementFlag()) {
       std::vector<int> outputPorts = getOutputPorts();
-      int outputPort = outputPorts[0];
+      outputPort = outputPorts[0];
     }
 
     common::ObjectMetadatas pendingObjectMetadatas;
 
-    while (objectMetadatas.size() < mBatch &&
+    while (objectMetadatas.size() < mContext->max_batch &&
            (getThreadStatus() == ThreadStatus::RUN)) {
       // 如果队列为空则等待
       auto data = popInputData(inputPort, dataPipeId);
@@ -181,8 +177,40 @@ namespace template {
     return common::ErrorCode::SUCCESS;
   }
 
-  REGISTER_WORKER("template", Template)
+  void Template::setStage(bool pre, bool infer, bool post) {
+    use_pre = pre;
+    use_infer = infer;
+    use_post = post;
+  }
 
+  void Template::initProfiler(std::string name, int interval) {
+    mFpsProfiler.config(mFpsProfilerName, 100);
+  }
+
+  void Template::setContext(
+      std::shared_ptr<::sophon_stream::framework::Context> context) {
+    // check
+    mContext = std::dynamic_pointer_cast<TemplateContext>(context);
+  }
+
+  void Template::setPreprocess(
+      std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+    mPreProcess = std::dynamic_pointer_cast<TemplatePreProcess>(pre);
+  }
+
+  void Template::setInference(
+      std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+    mInference = std::dynamic_pointer_cast<TemplateInference>(infer);
+  }
+
+  void Template::setPostprocess(
+      std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+    mPostProcess = std::dynamic_pointer_cast<TemplatePostProcess>(post);
+  }
+
+  REGISTER_WORKER("template", Template)
+  REGISTER_TEMPLATE_WORKER("template_group",
+                           sophon_stream::framework::Group<Template>, Template)
 }  // namespace template
 }  // namespace element
 }  // namespace sophon_stream
