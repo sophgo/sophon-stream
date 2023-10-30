@@ -16,15 +16,16 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "yolox_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-class YoloxInference {
+class YoloxInference : public ::sophon_stream::framework::Inference {
  public:
-  ~YoloxInference();
+  ~YoloxInference() override;
 
   void init(std::shared_ptr<YoloxContext> context);
 

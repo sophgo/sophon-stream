@@ -11,6 +11,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "element_factory.h"
 
@@ -21,6 +22,8 @@ namespace yolox {
 Yolox::Yolox() {}
 
 Yolox::~Yolox() {}
+
+const std::string Yolox::elementName = "yolox";
 
 common::ErrorCode Yolox::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -161,27 +164,24 @@ common::ErrorCode Yolox::initInternal(const std::string& json) {
     }
 
     auto stageNameIt = configure.find(CONFIG_INTERNAL_STAGE_NAME_FIELD);
-    if (configure.end() == stageNameIt || !stageNameIt->is_array()) {
-      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-      break;
-    }
+    if (configure.end() != stageNameIt && stageNameIt->is_array()) {
+      std::vector<std::string> stages =
+          stageNameIt->get<std::vector<std::string>>();
+      if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
+        use_pre = true;
+        mFpsProfilerName = "fps_yolox_pre";
+      }
+      if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
+        use_infer = true;
+        mFpsProfilerName = "fps_yolox_infer";
+      }
+      if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
+        use_post = true;
+        mFpsProfilerName = "fps_yolox_post";
+      }
 
-    std::vector<std::string> stages =
-        stageNameIt->get<std::vector<std::string>>();
-    if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
-      use_pre = true;
-      mFpsProfilerName = "fps_yolox_pre";
+      mFpsProfiler.config(mFpsProfilerName, 100);
     }
-    if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
-      use_infer = true;
-      mFpsProfilerName = "fps_yolox_infer";
-    }
-    if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
-      use_post = true;
-      mFpsProfilerName = "fps_yolox_post";
-    }
-
-    mFpsProfiler.config(mFpsProfilerName, 100);
 
     // 新建context,预处理,推理和后处理对象
     mContext = std::make_shared<YoloxContext>();
@@ -190,7 +190,6 @@ common::ErrorCode Yolox::initInternal(const std::string& json) {
     mPostProcess = std::make_shared<YoloxPostProcess>();
 
     if (!mPreProcess || !mInference || !mPostProcess || !mContext) {
-      // errorCode = common::ErrorCode::ALGORITHM_FACTORY_MAKE_FAIL;
       break;
     }
 
@@ -203,8 +202,6 @@ common::ErrorCode Yolox::initInternal(const std::string& json) {
     mInference->init(mContext);
     // 后处理初始化
     mPostProcess->init(mContext);
-
-    mBatch = mContext->max_batch;
 
   } while (false);
   return errorCode;
@@ -248,12 +245,12 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
   int outputPort = 0;
   if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
-    int outputPort = outputPorts[0];
+    outputPort = outputPorts[0];
   }
 
   common::ObjectMetadatas pendingObjectMetadatas;
 
-  while (objectMetadatas.size() < mBatch &&
+  while (objectMetadatas.size() < mContext->max_batch &&
          (getThreadStatus() == ThreadStatus::RUN)) {
     // 如果队列为空则等待
     auto data = popInputData(inputPort, dataPipeId);
@@ -295,7 +292,40 @@ common::ErrorCode Yolox::doWork(int dataPipeId) {
   return common::ErrorCode::SUCCESS;
 }
 
+void Yolox::setStage(bool pre, bool infer, bool post) {
+  use_pre = pre;
+  use_infer = infer;
+  use_post = post;
+}
+
+void Yolox::initProfiler(std::string name, int interval) {
+  mFpsProfiler.config(mFpsProfilerName, 100);
+}
+
+void Yolox::setContext(
+    std::shared_ptr<::sophon_stream::framework::Context> context) {
+  // check
+  mContext = std::dynamic_pointer_cast<YoloxContext>(context);
+}
+
+void Yolox::setPreprocess(
+    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+  mPreProcess = std::dynamic_pointer_cast<YoloxPreProcess>(pre);
+}
+
+void Yolox::setInference(
+    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+  mInference = std::dynamic_pointer_cast<YoloxInference>(infer);
+}
+
+void Yolox::setPostprocess(
+    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+  mPostProcess = std::dynamic_pointer_cast<YoloxPostProcess>(post);
+}
+
 REGISTER_WORKER("yolox", Yolox)
+REGISTER_TEMPLATE_WORKER("yolox_group",
+                         sophon_stream::framework::Group<Yolox>, Yolox)
 
 }  // namespace yolox
 }  // namespace element

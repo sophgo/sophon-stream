@@ -176,10 +176,6 @@ class Group : public ::sophon_stream::framework::Element {
     inferElement->setThreadNumber(threadNum);
     postElement->setThreadNumber(threadNum);
 
-    preElement->setThreadNumber(threadNum);
-    inferElement->setThreadNumber(threadNum);
-    postElement->setThreadNumber(threadNum);
-
     preElement->initInternal(json);
     preElement->setStage(true, false, false);
     preElement->initProfiler("fps_" + elementName + "_pre", 100);

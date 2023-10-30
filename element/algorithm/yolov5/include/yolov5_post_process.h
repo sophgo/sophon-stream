@@ -42,8 +42,7 @@ typedef struct tpu_kernel_ {
   int32_t detect_num[MAX_BATCH];
 } tpu_kernel;
 
-class Yolov5PostProcess
-    : public ::sophon_stream::framework::PostProcess {
+class Yolov5PostProcess : public ::sophon_stream::framework::PostProcess {
  public:
   void init(std::shared_ptr<Yolov5Context> context);
 

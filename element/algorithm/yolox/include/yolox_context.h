@@ -22,6 +22,7 @@
 #include "bmruntime_interface.h"
 #include "common/bmnn_utils.h"
 #include "common/error_code.h"
+#include "group.h"
 
 namespace sophon_stream {
 namespace element {
@@ -29,7 +30,8 @@ namespace yolox {
 
 #define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
-struct YoloxContext {
+class YoloxContext : public ::sophon_stream::framework::Context {
+ public:
   int deviceId;
 
   std::shared_ptr<BMNNContext> bmContext;

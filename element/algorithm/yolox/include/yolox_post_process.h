@@ -16,6 +16,7 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "yolox_context.h"
 
 namespace sophon_stream {
@@ -35,13 +36,13 @@ struct YoloxBox {
 
 using YoloxBoxVec = std::vector<YoloxBox>;
 
-class YoloxPostProcess {
+class YoloxPostProcess : public ::sophon_stream::framework::PostProcess {
  public:
   void init(std::shared_ptr<YoloxContext> context);
 
   void postProcess(std::shared_ptr<YoloxContext> context,
                    common::ObjectMetadatas& objectMetadatas);
-  ~YoloxPostProcess();
+  ~YoloxPostProcess() override;
 
  private:
   float sigmoid(float x);
