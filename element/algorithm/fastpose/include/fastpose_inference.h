@@ -17,14 +17,15 @@
 #include "common/error_code.h"
 #include "common/object_metadata.h"
 #include "fastpose_context.h"
+#include "group.h"
 
 namespace sophon_stream {
 namespace element {
 namespace fastpose {
 
-class FastposeInference {
+class FastposeInference : public ::sophon_stream::framework::Inference {
  public:
-  ~FastposeInference();
+  ~FastposeInference() override;
   /**
    * @brief init device and engine
    * @param[in] context: model path,inputs and outputs name...

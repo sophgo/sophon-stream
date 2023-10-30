@@ -19,12 +19,13 @@
 #include "common/error_code.h"
 #include "common/object_metadata.h"
 #include "fastpose_context.h"
+#include "group.h"
 
 namespace sophon_stream {
 namespace element {
 namespace fastpose {
 
-class FastposePreProcess {
+class FastposePreProcess : public ::sophon_stream::framework::PreProcess {
  public:
   /**
    * @brief 对一个batch的数据做预处理

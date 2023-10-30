@@ -14,6 +14,7 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "element_factory.h"
 using namespace std::chrono_literals;
@@ -25,6 +26,8 @@ namespace fastpose {
 Fastpose::Fastpose() {}
 
 Fastpose::~Fastpose() {}
+
+const std::string Fastpose::elementName = "fastpose";
 
 common::ErrorCode Fastpose::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -38,7 +41,8 @@ common::ErrorCode Fastpose::initContext(const std::string& json) {
     auto modelPathIt = configure.find(CONFIG_INTERNAL_MODEL_PATH_FIELD);
 
     auto heatmapLossIt = configure.find(CONFIG_INTERNAL_HEATMAP_LOSS_FIELD);
-    if (heatmapLossIt->get<std::string>() == "MSELoss") mContext->heatmap_loss = HeatmapLossType::MSELoss;
+    if (heatmapLossIt->get<std::string>() == "MSELoss")
+      mContext->heatmap_loss = HeatmapLossType::MSELoss;
 
     // 1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
@@ -89,29 +93,25 @@ common::ErrorCode Fastpose::initInternal(const std::string& json) {
     }
 
     auto stageNameIt = configure.find(CONFIG_INTERNAL_STAGE_NAME_FIELD);
-    if (configure.end() == stageNameIt || !stageNameIt->is_array()) {
-      errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
-      break;
-    }
+    if (configure.end() != stageNameIt && stageNameIt->is_array()) {
+      std::vector<std::string> stages =
+          stageNameIt->get<std::vector<std::string>>();
 
-    std::vector<std::string> stages =
-        stageNameIt->get<std::vector<std::string>>();
+      if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
+        use_pre = true;
+        mFpsProfilerName = "fps_fastpose_pre";
+      }
+      if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
+        use_infer = true;
+        mFpsProfilerName = "fps_fastpose_infer";
+      }
+      if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
+        use_post = true;
+        mFpsProfilerName = "fps_fastpose_post";
+      }
 
-    if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
-      use_pre = true;
-      mFpsProfilerName = "fps_fastpose_pre";
+      mFpsProfiler.config(mFpsProfilerName, 100);
     }
-    if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
-      use_infer = true;
-      mFpsProfilerName = "fps_fastpose_infer";
-    }
-    if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
-      use_post = true;
-      mFpsProfilerName = "fps_fastpose_post";
-    }
-
-    mFpsProfiler.config(mFpsProfilerName, 100);
-
     // 新建context,预处理,推理和后处理对象
     mContext = std::make_shared<FastposeContext>();
     mPreProcess = std::make_shared<FastposePreProcess>();
@@ -130,8 +130,6 @@ common::ErrorCode Fastpose::initInternal(const std::string& json) {
     mInference->init(mContext);
     // 后处理初始化
     mPostProcess->init(mContext);
-
-    mBatch = mContext->max_batch;
 
   } while (false);
   return errorCode;
@@ -171,12 +169,12 @@ common::ErrorCode Fastpose::doWork(int dataPipeId) {
   int outputPort = 0;
   if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
-    int outputPort = outputPorts[0];
+    outputPort = outputPorts[0];
   }
 
   common::ObjectMetadatas pendingObjectMetadatas;
 
-  while (objectMetadatas.size() < mBatch &&
+  while (objectMetadatas.size() < mContext->max_batch &&
          (getThreadStatus() == ThreadStatus::RUN)) {
     // 如果队列为空则等待
     auto data = popInputData(inputPort, dataPipeId);
@@ -218,7 +216,40 @@ common::ErrorCode Fastpose::doWork(int dataPipeId) {
   return common::ErrorCode::SUCCESS;
 }
 
+void Fastpose::setStage(bool pre, bool infer, bool post) {
+  use_pre = pre;
+  use_infer = infer;
+  use_post = post;
+}
+
+void Fastpose::initProfiler(std::string name, int interval) {
+  mFpsProfiler.config(mFpsProfilerName, 100);
+}
+
+void Fastpose::setContext(
+    std::shared_ptr<::sophon_stream::framework::Context> context) {
+  // check
+  mContext = std::dynamic_pointer_cast<FastposeContext>(context);
+}
+
+void Fastpose::setPreprocess(
+    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+  mPreProcess = std::dynamic_pointer_cast<FastposePreProcess>(pre);
+}
+
+void Fastpose::setInference(
+    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+  mInference = std::dynamic_pointer_cast<FastposeInference>(infer);
+}
+
+void Fastpose::setPostprocess(
+    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+  mPostProcess = std::dynamic_pointer_cast<FastposePostProcess>(post);
+}
+
 REGISTER_WORKER("fastpose", Fastpose)
+REGISTER_TEMPLATE_WORKER("fastpose_group",
+                         sophon_stream::framework::Group<Fastpose>, Fastpose)
 
 }  // namespace fastpose
 }  // namespace element

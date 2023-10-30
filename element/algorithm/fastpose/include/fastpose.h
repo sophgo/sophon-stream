@@ -20,6 +20,7 @@
 #include "fastpose_inference.h"
 #include "fastpose_post_process.h"
 #include "fastpose_pre_process.h"
+#include "group.h"
 
 namespace sophon_stream {
 namespace element {
@@ -30,6 +31,8 @@ class Fastpose : public ::sophon_stream::framework::Element {
   Fastpose();
   ~Fastpose() override;
 
+  const static std::string elementName;
+
   /**
    * @brief
    * 解析configure，初始化派生element的特有属性；调用initContext初始化算法相关参数
@@ -38,6 +41,28 @@ class Fastpose : public ::sophon_stream::framework::Element {
    * 成功返回common::ErrorCode::SUCCESS，失败返回common::ErrorCode::PARSE_CONFIGURE_FAIL
    */
   common::ErrorCode initInternal(const std::string& json) override;
+
+  void setContext(std::shared_ptr<::sophon_stream::framework::Context> context);
+  void setPreprocess(
+      std::shared_ptr<::sophon_stream::framework::PreProcess> pre);
+  void setInference(
+      std::shared_ptr<::sophon_stream::framework::Inference> infer);
+  void setPostprocess(
+      std::shared_ptr<::sophon_stream::framework::PostProcess> post);
+  void setStage(bool pre, bool infer, bool post);
+  void initProfiler(std::string name, int interval);
+  std::shared_ptr<::sophon_stream::framework::Context> getContext() {
+    return mContext;
+  }
+  std::shared_ptr<::sophon_stream::framework::PreProcess> getPreProcess() {
+    return mPreProcess;
+  }
+  std::shared_ptr<::sophon_stream::framework::Inference> getInference() {
+    return mInference;
+  }
+  std::shared_ptr<::sophon_stream::framework::PostProcess> getPostProcess() {
+    return mPostProcess;
+  }
 
   /**
    * @brief
@@ -55,7 +80,8 @@ class Fastpose : public ::sophon_stream::framework::Element {
 
   static constexpr const char* CONFIG_INTERNAL_HEATMAP_LOSS_FIELD =
       "heatmap_loss";
-  static constexpr const char* CONFIG_INTERNAL_AREA_THRESH_FIELD = "area_thresh";
+  static constexpr const char* CONFIG_INTERNAL_AREA_THRESH_FIELD =
+      "area_thresh";
 
  private:
   std::shared_ptr<FastposeContext> mContext;          // context对象
@@ -66,7 +92,6 @@ class Fastpose : public ::sophon_stream::framework::Element {
   bool use_pre = false;
   bool use_infer = false;
   bool use_post = false;
-  int mBatch;
 
   std::string mFpsProfilerName;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;

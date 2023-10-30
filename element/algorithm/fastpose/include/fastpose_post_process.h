@@ -20,6 +20,8 @@
 #include "common/error_code.h"
 #include "common/object_metadata.h"
 #include "fastpose_context.h"
+#include "group.h"
+
 using namespace sophon_stream::common;
 
 namespace sophon_stream {
@@ -42,7 +44,7 @@ struct PoseNMSParams {
   float face_weight_dist;
 };
 
-class FastposePostProcess {
+class FastposePostProcess : public ::sophon_stream::framework::PostProcess {
  public:
   void init(std::shared_ptr<FastposeContext> context);
   /**
