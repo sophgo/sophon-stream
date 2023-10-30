@@ -16,6 +16,7 @@
 
 #include "common/profiler.h"
 #include "element.h"
+#include "group.h"
 #include "lprnet_context.h"
 #include "lprnet_inference.h"
 #include "lprnet_post_process.h"
@@ -25,52 +26,74 @@ namespace sophon_stream {
 namespace element {
 namespace lprnet {
 
-  class Lprnet : public ::sophon_stream::framework::Element {
-   public:
-    Lprnet();
-    ~Lprnet() override;
+class Lprnet : public ::sophon_stream::framework::Element {
+ public:
+  Lprnet();
+  ~Lprnet() override;
 
-    /**
-     * @brief
-     * 解析configure，初始化派生element的特有属性；调用initContext初始化算法相关参数
-     * @param json json格式的配置文件
-     * @return common::ErrorCode
-     * 成功返回common::ErrorCode::SUCCESS，失败返回common::ErrorCode::PARSE_CONFIGURE_FAIL
-     */
-    common::ErrorCode initInternal(const std::string& json) override;
+  const static std::string elementName;
 
-    /**
-     * @brief
-     * element的功能在这里实现。例如，算法模块需要实现组batch、调用算法、发送数据等功能
-     * @param dataPipeId pop数据时对应的dataPipeId
-     * @return common::ErrorCode 成功返回common::ErrorCode::SUCCESS
-     */
-    common::ErrorCode doWork(int dataPipeId) override;
+  /**
+   * @brief
+   * 解析configure，初始化派生element的特有属性；调用initContext初始化算法相关参数
+   * @param json json格式的配置文件
+   * @return common::ErrorCode
+   * 成功返回common::ErrorCode::SUCCESS，失败返回common::ErrorCode::PARSE_CONFIGURE_FAIL
+   */
+  common::ErrorCode initInternal(const std::string& json) override;
 
-    /**
-     * @brief 从json文件读取的配置项
-     */
-    static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
-    static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD =
-        "model_path";
+  /**
+   * @brief
+   * element的功能在这里实现。例如，算法模块需要实现组batch、调用算法、发送数据等功能
+   * @param dataPipeId pop数据时对应的dataPipeId
+   * @return common::ErrorCode 成功返回common::ErrorCode::SUCCESS
+   */
+  common::ErrorCode doWork(int dataPipeId) override;
 
-   private:
-    std::shared_ptr<LprnetContext> mContext;          // context对象
-    std::shared_ptr<LprnetPreProcess> mPreProcess;    // 预处理对象
-    std::shared_ptr<LprnetInference> mInference;      // 推理对象
-    std::shared_ptr<LprnetPostProcess> mPostProcess;  // 后处理对象
+  void setContext(std::shared_ptr<::sophon_stream::framework::Context> context);
+  void setPreprocess(
+      std::shared_ptr<::sophon_stream::framework::PreProcess> pre);
+  void setInference(
+      std::shared_ptr<::sophon_stream::framework::Inference> infer);
+  void setPostprocess(
+      std::shared_ptr<::sophon_stream::framework::PostProcess> post);
+  void setStage(bool pre, bool infer, bool post);
+  void initProfiler(std::string name, int interval);
+  std::shared_ptr<::sophon_stream::framework::Context> getContext() {
+    return mContext;
+  }
+  std::shared_ptr<::sophon_stream::framework::PreProcess> getPreProcess() {
+    return mPreProcess;
+  }
+  std::shared_ptr<::sophon_stream::framework::Inference> getInference() {
+    return mInference;
+  }
+  std::shared_ptr<::sophon_stream::framework::PostProcess> getPostProcess() {
+    return mPostProcess;
+  }
 
-    bool use_pre = false;
-    bool use_infer = false;
-    bool use_post = false;
-    int mBatch;
+  /**
+   * @brief 从json文件读取的配置项
+   */
+  static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
+  static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
 
-    std::string mFpsProfilerName;
-    ::sophon_stream::common::FpsProfiler mFpsProfiler;
+ private:
+  std::shared_ptr<LprnetContext> mContext;          // context对象
+  std::shared_ptr<LprnetPreProcess> mPreProcess;    // 预处理对象
+  std::shared_ptr<LprnetInference> mInference;      // 推理对象
+  std::shared_ptr<LprnetPostProcess> mPostProcess;  // 后处理对象
 
-    common::ErrorCode initContext(const std::string& json);
-    void process(common::ObjectMetadatas& objectMetadatas);
-  };
+  bool use_pre = false;
+  bool use_infer = false;
+  bool use_post = false;
+
+  std::string mFpsProfilerName;
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
+
+  common::ErrorCode initContext(const std::string& json);
+  void process(common::ObjectMetadatas& objectMetadatas);
+};
 
 }  // namespace lprnet
 }  // namespace element

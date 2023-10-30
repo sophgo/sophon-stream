@@ -10,33 +10,35 @@
 #ifndef SOPHON_STREAM_ELEMENT_LPRNET_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_LPRNET_POST_PROCESS_H_
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include <iostream>
+
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "lprnet_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace lprnet {
 
-  class LprnetPostProcess {
-   public:
-    void init(std::shared_ptr<LprnetContext> context);
-    /**
-     * @brief 对一个batch的数据做后处理
-     * @param context context指针
-     * @param objectMetadatas 一个batch的数据
-     */
-    void postProcess(std::shared_ptr<LprnetContext> context,
-                     common::ObjectMetadatas& objectMetadatas);
+class LprnetPostProcess : public ::sophon_stream::framework::PostProcess {
+ public:
+  void init(std::shared_ptr<LprnetContext> context);
+  /**
+   * @brief 对一个batch的数据做后处理
+   * @param context context指针
+   * @param objectMetadatas 一个batch的数据
+   */
+  void postProcess(std::shared_ptr<LprnetContext> context,
+                   common::ObjectMetadatas& objectMetadatas);
 
-   private:
-    std::string get_res(int pred_num[], int len_char, int clas_char);
-    int argmax(float* data, int num);
-  };
+ private:
+  std::string get_res(int pred_num[], int len_char, int clas_char);
+  int argmax(float* data, int num);
+};
 
 }  // namespace lprnet
 }  // namespace element

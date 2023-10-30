@@ -16,34 +16,35 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "lprnet_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace lprnet {
 
-  class LprnetPreProcess {
-   public:
-    /**
-     * @brief 对一个batch的数据做预处理
-     * @param context context指针
-     * @param objectMetadatas 一个batch的数据
-     * @return common::ErrorCode
-     * common::ErrorCode::SUCCESS，中间过程失败会中断执行
-     */
-    common::ErrorCode preProcess(std::shared_ptr<LprnetContext> context,
-                                 common::ObjectMetadatas& objectMetadatas);
-    void init(std::shared_ptr<LprnetContext> context);
+class LprnetPreProcess : public ::sophon_stream::framework::PreProcess {
+ public:
+  /**
+   * @brief 对一个batch的数据做预处理
+   * @param context context指针
+   * @param objectMetadatas 一个batch的数据
+   * @return common::ErrorCode
+   * common::ErrorCode::SUCCESS，中间过程失败会中断执行
+   */
+  common::ErrorCode preProcess(std::shared_ptr<LprnetContext> context,
+                               common::ObjectMetadatas& objectMetadatas);
+  void init(std::shared_ptr<LprnetContext> context);
 
-   private:
-    /**
-     * @brief 为一个batch的数据初始化设备内存
-     * @param context context指针
-     * @param objectMetadatas 一个batch的数据
-     */
-    void initTensors(std::shared_ptr<LprnetContext> context,
-                     common::ObjectMetadatas& objectMetadatas);
-  };
+ private:
+  /**
+   * @brief 为一个batch的数据初始化设备内存
+   * @param context context指针
+   * @param objectMetadatas 一个batch的数据
+   */
+  void initTensors(std::shared_ptr<LprnetContext> context,
+                   common::ObjectMetadatas& objectMetadatas);
+};
 
 }  // namespace lprnet
 }  // namespace element
