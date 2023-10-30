@@ -23,6 +23,7 @@
 #include "common/bmnn_utils.h"
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 
 namespace sophon_stream {
 namespace element {
@@ -31,7 +32,8 @@ namespace openpose {
 // #define USE_ASPECT_RATIO 1
 #define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
-struct OpenposeContext {
+class OpenposeContext : public ::sophon_stream::framework::Context {
+ public:
   int deviceId;  // 设备ID
 
   std::shared_ptr<BMNNContext> bmContext;

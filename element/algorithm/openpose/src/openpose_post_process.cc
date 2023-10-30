@@ -226,6 +226,7 @@ int OpenposePostProcess::kernel_part_nms(
       context->bmContext->handle(), coor_out_result,
       *(resize_output_map_whole_device_mem[dataPipeId]), peak_num * sizeof(int),
       peak_num * sizeof(float));
+  return 0;
 }
 
 std::vector<unsigned int> OpenposePostProcess::getPosePairs(

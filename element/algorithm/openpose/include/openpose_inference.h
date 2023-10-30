@@ -16,15 +16,16 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "openpose_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace openpose {
 
-class OpenposeInference {
+class OpenposeInference : public ::sophon_stream::framework::Inference {
  public:
-  ~OpenposeInference();
+  ~OpenposeInference() override;
   /**
    * @brief init device and engine
    * @param[in] context: model path,inputs and outputs name...

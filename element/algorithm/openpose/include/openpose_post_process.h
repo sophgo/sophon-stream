@@ -19,6 +19,7 @@
 #include "common/bmnn_utils.h"
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "openpose_context.h"
 using namespace sophon_stream::common;
 
@@ -61,7 +62,7 @@ class PoseBlob : public NoCopyable,
   float* data() { return m_data; }
 };
 using PoseBlobPtr = std::shared_ptr<PoseBlob>;
-class OpenposePostProcess {
+class OpenposePostProcess : public ::sophon_stream::framework::PostProcess {
  public:
   void init(std::shared_ptr<OpenposeContext> context);
   /**
@@ -71,7 +72,7 @@ class OpenposePostProcess {
    */
   void postProcess(std::shared_ptr<OpenposeContext> context,
                    common::ObjectMetadatas& objectMetadatas, int dataPipeId);
-  ~OpenposePostProcess();
+  ~OpenposePostProcess() override;
 
  private:
   bm_device_mem_t** resize_output_map_whole_device_mem = nullptr;

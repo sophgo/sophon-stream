@@ -1,0 +1,11 @@
+{
+    "configure": {
+      "model_path": "../data/models/BM1684X/pose_coco_int8_1b.bmodel",
+      "threshold_nms": 0.05,
+      "use_tpu_kernel": true
+    },
+    "shared_object": "../../../build/lib/libopenpose.so",
+    "name": "openpose_group",
+    "side": "sophgo",
+    "thread_number": 2
+  }

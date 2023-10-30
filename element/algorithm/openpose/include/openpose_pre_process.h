@@ -16,13 +16,14 @@
 
 #include "common/error_code.h"
 #include "common/object_metadata.h"
+#include "group.h"
 #include "openpose_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace openpose {
 
-class OpenposePreProcess {
+class OpenposePreProcess : public ::sophon_stream::framework::PreProcess {
  public:
   /**
    * @brief 对一个batch的数据做预处理
