@@ -1,5 +1,5 @@
 {
-  "num_channels_per_graph": 1,
+  "num_channels_per_graph": 4,
   "channel": {
     "url": "../data/images/wind",
     "source_type": "IMG_DIR",
@@ -8,5 +8,5 @@
     "fps": -1
   },
   "download_image": false,
-  "engine_config_path": "../config/engine.json"
+  "engine_config_path": "../config/engine_group.json"
 }
