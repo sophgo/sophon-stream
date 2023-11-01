@@ -33,6 +33,31 @@ cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
 
+如果您需要的SDK版本上文未提供，需要自己打包soc-sdk，可以参考以下流程：
+
+ 1. 解压SDK目录下，sophon-img包里的libsophon_soc_<x.y.z>_aarch64.tar.gz，将lib和include的所有内容分别拷贝到您的soc-sdk目录
+ ```bash
+ cd sophon-img_<date>_<hash>
+# 创建依赖文件的根目录
+mkdir -p soc-sdk
+# 解压sophon-img release包里的libsophon_soc_${x.y.z}_aarch64.tar.gz，其中x.y.z为版本号
+tar -zxf libsophon_soc_<x.y.z>_aarch64.tar.gz
+# 将相关的库目录和头文件目录拷贝到依赖文件根目录下
+cp -rf libsophon_soc_<x.y.z>_aarch64/opt/sophon/libsophon-<x.y.z>/lib ${soc-sdk}
+cp -rf libsophon_soc_<x.y.z>_aarch64/opt/sophon/libsophon-<x.y.z>/include ${soc-sdk}
+ ```
+ 2. 解压sophon-mw包里的sophon-mw-soc_<x.y.z>_aarch64.tar.gz，将sophon-mw下lib和include的所有内容拷贝到您的soc-sdk目录。
+ ```bash
+ cd sophon-mw_<date>_<hash>
+# 解压sophon-mw包里的sophon-mw-soc_<x.y.z>_aarch64.tar.gz，其中x.y.z为版本号
+tar -zxf sophon-mw-soc_<x.y.z>_aarch64.tar.gz
+# 将ffmpeg和opencv的库目录和头文件目录拷贝到依赖文件根目录下
+cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-ffmpeg_<x.y.z>/lib ${soc-sdk}
+cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-ffmpeg_<x.y.z>/include ${soc-sdk}
+cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-opencv_<x.y.z>/lib ${soc-sdk}
+cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-opencv_<x.y.z>/include ${soc-sdk}
+ ```
+
 ## 使用开发镜像编译
 如果您的本机部分环境不兼容，且不方便更改本机环境，可以使用我们提供的docker镜像进行编译。
 

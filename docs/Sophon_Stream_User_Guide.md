@@ -96,18 +96,6 @@ make -j
 
 注意：交叉编译时，${path_to_sophon_soc_sdk} 变量指运行交叉编译命令的x86主机上的arm sophon-sdk目录。
 
-具体地，CMakeLists.txt中提供了插件化的编译指令。如果用户不需要启用sophon-stream的全部功能，可以适当选择其中一些插件的编译命令进行注释，例如:
-
-```cmake
-add_subdirectory(element/algorithm/decode)
-add_subdirectory(element/algorithm/yolox)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/samples/yolox/build)
-add_subdirectory(samples/yolox)
-```
-
-上例中，脚本将分别编译yolox算法插件，以及算法对应的例程。如果用户的工程中不涉及其中某项功能，可以将该部分算法及对应的例程编译命令进行注释。
-
 ### 1.3 编译结果
 
 sophon-stream中，除了sample以外的每个模块都以插件的形式参与运行。完成 [1.2 编译命令](#12-编译命令) 后，用户可以在 ./build/lib/ 目录下看到每个参与编译的插件对应的动态库文件。
