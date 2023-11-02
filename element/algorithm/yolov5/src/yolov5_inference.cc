@@ -50,8 +50,8 @@ Yolov5Inference::mergeInputDeviceMem(std::shared_ptr<Yolov5Context> context,
       input_bytes *= 4;
     // malloc空间
     auto ret = bm_malloc_device_byte_heap(inputTensors->handle,
-                                     &inputTensors->tensors[i]->device_mem,
-                                     0, input_bytes);
+                                          &inputTensors->tensors[i]->device_mem,
+                                          0, input_bytes);
     // d2d
     for (int j = 0; j < objectMetadatas.size(); ++j) {
       if (objectMetadatas[j]->mFrame->mEndOfStream) break;
@@ -100,9 +100,9 @@ Yolov5Inference::getOutputDeviceMem(std::shared_ptr<Yolov5Context> context) {
     if (BM_FLOAT32 == context->bmNetwork->m_netinfo->output_dtypes[i])
       max_size *= 4;
     // malloc空间
-    auto ret =
-        bm_malloc_device_byte_heap(outputTensors->handle,
-                              &outputTensors->tensors[i]->device_mem, 0, max_size);
+    auto ret = bm_malloc_device_byte_heap(
+        outputTensors->handle, &outputTensors->tensors[i]->device_mem, 0,
+        max_size);
   }
   return outputTensors;
 }
@@ -151,8 +151,8 @@ void Yolov5Inference::splitOutputMemIntoObjectMetadatas(
       max_size /= context->max_batch;
       auto ret = bm_malloc_device_byte_heap(
           objectMetadatas[i]->mOutputBMtensors->handle,
-          &objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem,
-          0, max_size);
+          &objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem, 0,
+          max_size);
       assert(BM_SUCCESS == ret);
       bm_memcpy_d2d_byte(
           context->handle,
@@ -177,6 +177,8 @@ common::ErrorCode Yolov5Inference::predict(
 
     splitOutputMemIntoObjectMetadatas(context, objectMetadatas, outputTensors);
   } else {
+    if (objectMetadatas[0]->mFrame->mEndOfStream)
+      return common::ErrorCode::SUCCESS;
     objectMetadatas[0]->mOutputBMtensors = getOutputDeviceMem(context);
     int ret = context->bmNetwork->forward(
         objectMetadatas[0]->mInputBMtensors->tensors,

@@ -33,6 +33,16 @@ cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
 
+交叉编译完成后，将编译结果scp到盒子上时，需要保证目录结构不变。
+
+可以使用如下命令直接将主机上的stream目录拷贝到盒子上：
+
+```bash
+scp -r ./sophon-stream linaro@<your ip>:<your path>
+```
+
+其中，盒子的ip和文件目录您可以根据实际情况进行设置。
+
 如果您需要的SDK版本上文未提供，需要自己打包soc-sdk，可以参考以下流程：
 
  1. 解压SDK目录下，sophon-img包里的libsophon_soc_<x.y.z>_aarch64.tar.gz，将lib和include的所有内容分别拷贝到您的soc-sdk目录

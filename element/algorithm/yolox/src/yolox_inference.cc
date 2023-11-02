@@ -177,6 +177,8 @@ common::ErrorCode YoloxInference::predict(
 
     splitOutputMemIntoObjectMetadatas(context, objectMetadatas, outputTensors);
   } else {
+    if (objectMetadatas[0]->mFrame->mEndOfStream)
+      return common::ErrorCode::SUCCESS;
     objectMetadatas[0]->mOutputBMtensors = getOutputDeviceMem(context);
     int ret = context->bmNetwork->forward(
         objectMetadatas[0]->mInputBMtensors->tensors,

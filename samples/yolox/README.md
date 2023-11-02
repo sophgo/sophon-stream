@@ -123,16 +123,19 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
 ```bash
 ./config
 ├── decode.json             # 解码配置
-├── engine.json             # sophon-stream graph配置
+├── engine_group.json       # sophon-stream 简化的graph配置
+├── engine.json             # sophon-stream graph配置，需要分别配置前处理、推理和后处理文件
+├── yolox_classthresh_roi_example.json # yolox按照类别设置阈值的参考配置文件
 ├── yolox_demo.json         # yolox demo配置
+├── yolox_group.json        # 简化的yolox配置文件，将yolox的前处理、推理、后处理合到一个配置文件中
 ├── yolox_infer.json        # yolox 推理配置
 ├── yolox_post.json         # yolox 后处理配置
 └── yolox_pre.json          # yolox 前处理配置
 ```
 
-其中，[yolox_demo.json](./config/yolox_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，sample_interval设置跳帧数，loop_num设置循环播放次数，channel中包含码流url等信息。
+其中，[yolox_demo.json](./config/yolox_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，sample_interval设置跳帧数，loop_num设置循环播放次数，channel中包含码流url等信息。download_image控制是否保存推理结果，若为false则不保存，若为true，则会保存在/build/results目录下。
 
-配置文件不中指定`channel_id`属性的情况，会在demo中对每一路数据的`channel_id`从0开始默认赋值。
+配置文件中不指定`channel_id`属性的情况，会在demo中对每一路数据的`channel_id`从0开始默认赋值。
 
 ```json
 {
@@ -149,15 +152,16 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
 }
 ```
 
-[engine.json](./config/engine.json) 包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
+[engine_group.json](./config/engine_group.json) 包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
 
 这里摘取配置文件的一部分作为示例：在该文件内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
 connection是所有element之间的连接方式，通过element_id和port_id确定。
 
 ```json
-{
+[
+    {
         "graph_id": 0,
-        "device_id":0,
+        "device_id": 0,
         "graph_name": "yolox",
         "elements": [
             {
@@ -170,27 +174,14 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
                             "is_sink": false,
                             "is_src": true
                         }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
                     ]
                 }
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolox_pre.json",
+                "element_config": "../config/yolox_group.json",
+                "inner_elements_id": [10001, 10002, 10003],
                 "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
                     "output": [
                         {
                             "port_id": 0,
@@ -210,36 +201,34 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             }
         ]
     }
+]
 ```
 
-[yolox_pre.json](./config/yolox_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
+[yolox_group.json](./config/yolox_group.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 
 ```json
 {
-  "configure": {
-    "model_path": "../data/models/BM1684X/yolox_s_int8_1b.bmodel",
-    "threshold_conf": 0.5,
-    "threshold_nms": 0.5,
-    "bgr2rgb": true,
-    "mean": [
-      0,
-      0,
-      0
-    ],
-    "std": [
-      1,
-      1,
-      1
-    ],
-    "stage": [
-      "pre"
-    ]
-  },
-  "shared_object": "../../../build/lib/libyolox.so",
-  "name": "yolox",
-  "side": "sophgo",
-  "thread_number": 4
-}
+    "configure": {
+      "model_path": "../data/models/BM1684X/yolox_s_int8_1b.bmodel",
+      "threshold_conf": 0.5,
+      "threshold_nms": 0.5,
+      "bgr2rgb": true,
+      "mean": [
+        0,
+        0,
+        0
+      ],
+      "std": [
+        1,
+        1,
+        1
+      ]
+    },
+    "shared_object": "../../../build/lib/libyolox.so",
+    "name": "yolox_group",
+    "side": "sophgo",
+    "thread_number": 4
+  }
 ```
 
 ### 6.2 运行
@@ -280,3 +269,7 @@ frame count is 1422 | fps is 269.707 fps.
 > **测试说明**：
 1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
 2. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；
+3. 以上性能测试均基于int8模型给出；
+4. 在BM1684设备上运行时，batch_size为4的模型可以达到更高的fps；
+5. 在BM1684X设备上，使用batch_size为1的模型可以达到更高的fps；
+6. 上表中，输入路数和算法线程数的设置请参考[json配置说明](#61-json配置说明)，CPU利用率和系统内存使用top命令可查，TPU利用率和设备内存使用bm-smi命令可查，fps可以从运行程序打印的log中获得。
