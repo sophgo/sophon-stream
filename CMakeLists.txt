@@ -6,14 +6,6 @@ if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)
 endif()
 
-if (NOT DEFINED CHIP)
-    set(CHIP 168x)
-endif()
-
-if (${CHIP} STREQUAL "A2")
-    add_definitions(-Dchip_1688)
-endif()
-
 if (${TARGET_ARCH} STREQUAL "soc")
     if (NOT DEFINED SOPHON_SDK_SOC)
         message(FATAL_ERROR "Please set SOPHON_SDK_SOC for building soc")
@@ -56,17 +48,11 @@ checkAndAddElement(element/tools/blank)
 checkAndAddElement(element/tools/distributor)
 checkAndAddElement(element/tools/converger)
 checkAndAddElement(element/tools/http_push)
-
-if ( NOT ${CHIP} STREQUAL "A2")
-    checkAndAddElement(element/tools/faiss)
-endif()
+checkAndAddElement(element/tools/faiss)
 
 checkAndAddElement(3rdparty/freetype2)
 
-if ( NOT ${CHIP} STREQUAL "A2")
-    checkAndAddSample(samples/yolov5_bytetrack_distributor_resnet_converger)
-endif()
-
+checkAndAddSample(samples/yolov5_bytetrack_distributor_resnet_converger)
 checkAndAddSample(samples/yolov5)
 checkAndAddSample(samples/yolox)
 checkAndAddSample(samples/bytetrack)
@@ -75,7 +61,4 @@ checkAndAddSample(samples/openpose)
 checkAndAddSample(samples/yolox_bytetrack_osd_encode)
 checkAndAddSample(samples/retinaface)
 checkAndAddSample(samples/license_plate_recognition)
-
-if ( NOT ${CHIP} STREQUAL "A2")
-    checkAndAddSample(samples/retinaface_distributor_resnet_faiss_converger)
-endif()
+checkAndAddSample(samples/retinaface_distributor_resnet_faiss_converger)

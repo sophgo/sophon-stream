@@ -15,10 +15,7 @@
 #include <string>
 
 #include "logger.h"
-
-#ifdef chip_1688
 #include "bmcv_api_ext.h"
-#endif
 
 #define STREAM_LIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 1))
 #define STREAM_UNLIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 0))

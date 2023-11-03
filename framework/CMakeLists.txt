@@ -30,7 +30,8 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     link_directories(${LIBSOPHON_LIB_DIRS})
 
     set(BM_LIBS bmlib bmrt bmcv yuv)
-    if ( NOT ${CHIP} STREQUAL "A2")
+    find_library(BMJPU bmjpuapi)
+    if(BMJPU)
         set(JPU_LIBS bmjpuapi bmjpulite)
     endif()
 
@@ -71,7 +72,8 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(.)
 
     set(BM_LIBS bmlib bmrt bmcv yuv)
-    if ( NOT ${CHIP} STREQUAL "A2")
+    find_library(BMJPU bmjpuapi)
+    if(BMJPU)
         set(JPU_LIBS bmjpuapi bmjpulite)
     endif()
 

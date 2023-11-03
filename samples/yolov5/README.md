@@ -120,7 +120,7 @@ yolov5 demo中各部分参数位于 [config](./config/) 目录，结构如下所
 ├── decode.json                 # 解码配置
 ├── engine_group.json           # sophon-stream 简化的graph配置
 ├── engine.json                 # sophon-stream graph配置，需要分别配置前处理、推理和后处理文件
-├── yolov5_classthresh_roi_example.json  # yolov5按照类别设置阈值的参考配置文件
+├── yolov5_classthresh_roi_example.json  # yolov5按照类别设置阈值的参考配置文件，需要注意，按类别设置阈值仅支持非tpu_kernel的后处理模式
 ├── yolov5_demo.json            # demo输入配置文件
 ├── yolov5_group.json           # 简化的yolov5配置文件，将yolov5的前处理、推理、后处理合到一个配置文件中
 ├── yolov5_infer.json           # yolov5推理配置文件

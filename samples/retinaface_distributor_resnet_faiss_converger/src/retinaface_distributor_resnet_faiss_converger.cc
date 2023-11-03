@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 
+#include "bmcv_api_ext.h"
 #include "channel.h"
 #include "common/clocker.h"
 #include "common/common_defs.h"
@@ -95,6 +96,8 @@ void draw_all_bmcv(bm_handle_t& handle, int left, int top, int width,
 
 int main() {
   ::logInit("debug", "");
+
+#if BMCV_VERSION_MAJOR <= 1
 
   std::mutex mtx;
   std::condition_variable cv;
@@ -212,5 +215,8 @@ int main() {
   double fps = static_cast<double>(frameCount) / totalCost;
   std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000
             << " fps." << std::endl;
+
+#endif
+
   return 0;
 }

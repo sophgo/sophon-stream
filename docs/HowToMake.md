@@ -15,8 +15,6 @@ cmake ..
 make -j4
 ```
 
-如果您的设备是BM1684/BM1684X，可以直接使用上述命令进行编译。如果是1688设备，则需要在cmake命令中加入`-DCHIP=A2`选项。
-
 ## SoC平台
 通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)：
 ```bash
@@ -34,8 +32,6 @@ cd build
 cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
-
-如果您的设备是BM1684/BM1684X，可以直接使用上述命令进行编译。如果是1688设备，则需要在cmake命令中加入`-DCHIP=A2`选项。
 
 交叉编译完成后，将编译结果scp到盒子上时，需要保证目录结构不变。
 

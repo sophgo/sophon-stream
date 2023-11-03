@@ -6,8 +6,9 @@
 // third-party components.
 //
 //===----------------------------------------------------------------------===//
-
 #include "faiss.h"
+
+#if BMCV_VERSION_MAJOR <= 1
 
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -179,3 +180,5 @@ REGISTER_WORKER("faiss", Faiss)
 }  // namespace faiss
 }  // namespace element
 }  // namespace sophon_stream
+
+#endif

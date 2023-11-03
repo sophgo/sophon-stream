@@ -344,10 +344,10 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
       bm_image_create(handle, image->height, image->width, FORMAT_NV12,
                       DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
     }
-#ifndef chip_1688
-    bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
-#else
+#if BMCV_VERSION_MAJOR > 1
     bm_image_alloc_dev_mem_heap_mask(*yuv_image, 2);
+#else
+    bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
 #endif
     bmcv_rect_t crop_rect = {0, 0, image->width, image->height};
     // timeval tv1, tv2;

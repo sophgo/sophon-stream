@@ -10,6 +10,10 @@
 #ifndef SOPHON_STREAM_ELEMENT_FAISS_H_
 #define SOPHON_STREAM_ELEMENT_FAISS_H_
 
+#include "bmcv_api_ext.h"
+
+#if BMCV_VERSION_MAJOR <= 1
+
 #include "common/object_metadata.h"
 #include "element.h"
 
@@ -62,4 +66,5 @@ class Faiss : public ::sophon_stream::framework::Element {
 }  // namespace element
 }  // namespace sophon_stream
 
+#endif
 #endif

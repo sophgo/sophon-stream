@@ -164,12 +164,12 @@ void Distributor::makeSubObjectMetadata(
         bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
                         obj->mFrame->mSpData->image_format,
                         obj->mFrame->mSpData->data_type, cropped.get());
-#ifndef chip_1688
-    ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect, *obj->mFrame->mSpData,
-                          cropped.get());
-#else
+#if BMCV_VERSION_MAJOR > 1
     ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1, *obj->mFrame->mSpData,
                                  cropped.get(), &rect);
+#else
+    ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect, *obj->mFrame->mSpData,
+                          cropped.get());
 #endif
 
     subObj->mFrame->mSpData = cropped;
@@ -271,12 +271,12 @@ void Distributor::makeSubFaceObjectMetadata(
           bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
                           obj->mFrame->mSpData->image_format,
                           obj->mFrame->mSpData->data_type, &corp_img);
-#ifndef chip_1688
-      ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
-                            *obj->mFrame->mSpData, &corp_img);
-#else
+#if BMCV_VERSION_MAJOR > 1
       ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
                                    *obj->mFrame->mSpData, &corp_img, &rect);
+#else
+      ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
+                            *obj->mFrame->mSpData, &corp_img);
 #endif
 
       // 得到原始图中关键点
@@ -368,12 +368,12 @@ void Distributor::makeSubFaceObjectMetadata(
       bm_status_t ret = bm_image_create(obj->mFrame->mHandle, rect.crop_h,
                                         rect.crop_w, FORMAT_BGR_PLANAR,
                                         DATA_TYPE_EXT_1N_BYTE, cropped.get());
-#ifndef chip_1688
-      ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
-                            *obj->mFrame->mSpData, cropped.get());
-#else
+#if BMCV_VERSION_MAJOR > 1
       ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
                                    *obj->mFrame->mSpData, cropped.get(), &rect);
+#else
+      ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
+                            *obj->mFrame->mSpData, cropped.get());
 #endif
       subObj->mFrame->mSpData = obj->mFrame->mSpData;
     }

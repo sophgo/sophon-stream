@@ -96,13 +96,13 @@ common::ErrorCode LprnetPreProcess::preProcess(
     bm_image_create(context->handle, context->net_h, context->net_w,
                     FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
                     strides);
-#ifndef chip_1688
+#if BMCV_VERSION_MAJOR > 1
     bm_image_alloc_dev_mem_heap_mask(
-        resized_img, 4);  // Apply internal memory for the bm image object,
+        resized_img, 2);  // Apply internal memory for the bm image object,
                           // heap mask = 4, mask code is 100, on heap2, for VPU
 #else
     bm_image_alloc_dev_mem_heap_mask(
-        resized_img, 2);  // Apply internal memory for the bm image object,
+        resized_img, 4);  // Apply internal memory for the bm image object,
                           // heap mask = 2, mask code is 10, on heap1, for VPSS
 #endif
     auto ret = bmcv_image_vpp_convert(

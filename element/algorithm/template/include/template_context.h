@@ -16,9 +16,7 @@
 #include <unordered_map>
 #include <vector>
 
-#ifndef chip_1688
-#include "bmcv_api.h"
-#endif
+// for bmcv_api_ext.h
 #include "bmcv_api_ext.h"
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
