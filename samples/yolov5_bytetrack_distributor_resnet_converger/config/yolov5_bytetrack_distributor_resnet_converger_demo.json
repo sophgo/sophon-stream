@@ -11,5 +11,5 @@
   "car_attributes": "../data/car.attributes",
   "person_attributes": "../data/person.attributes",
   "download_image": true,
-  "engine_config_path": "../config/engine.json"
+  "engine_config_path": "../config/engine_group.json"
 }
