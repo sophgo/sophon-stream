@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "detected_object_metadata.h"
 #include "face_object_metadata.h"

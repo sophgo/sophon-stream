@@ -19,6 +19,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "draw_utils.h"
 #include "element_factory.h"

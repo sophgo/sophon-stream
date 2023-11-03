@@ -9,6 +9,7 @@
 
 #include "openpose_pre_process.h"
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 
 namespace sophon_stream {

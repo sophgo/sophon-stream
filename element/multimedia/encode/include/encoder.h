@@ -22,7 +22,9 @@
 #include <regex>
 #include <thread>
 
+#ifndef chip_1688
 #include "bmcv_api.h"
+#endif
 #include "bmcv_api_ext.h"
 #include "common/profiler.h"
 

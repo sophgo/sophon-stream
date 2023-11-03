@@ -13,6 +13,7 @@
 
 #include <iostream>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 
 namespace sophon_stream {
@@ -343,8 +344,11 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
       bm_image_create(handle, image->height, image->width, FORMAT_NV12,
                       DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
     }
-
+#ifndef chip_1688
     bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
+#else
+    bm_image_alloc_dev_mem_heap_mask(*yuv_image, 2);
+#endif
     bmcv_rect_t crop_rect = {0, 0, image->width, image->height};
     // timeval tv1, tv2;
     // gettimeofday(&tv1, NULL);
@@ -360,7 +364,8 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
       ret = bmcv_image_storage_convert(handle, 1, image, yuv_image);
       // gettimeofday(&tv2, NULL);
       // int time_interval2 =
-      //     (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
+      //     (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec -
+      //     tv1.tv_usec);
       // IVS_INFO("Encoder idx is {0}, convert cost is {1}", channel_idx,
       //          time_interval2);
       if (BM_SUCCESS != ret) {
@@ -531,7 +536,8 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
 
     // auto _finish_time = std::chrono::high_resolution_clock::now();
     // std::chrono::duration<double> dur = _finish_time - _start_time;
-    // IVS_DEBUG("Time Cost on video_write is {0}, Encoder ID is {1}", dur.count(),
+    // IVS_DEBUG("Time Cost on video_write is {0}, Encoder ID is {1}",
+    // dur.count(),
     //           channel_idx);
     return ret;
   }

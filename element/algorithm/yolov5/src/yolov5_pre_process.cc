@@ -9,6 +9,7 @@
 
 #include "yolov5_pre_process.h"
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 
 namespace sophon_stream {
@@ -151,7 +152,11 @@ common::ErrorCode Yolov5PreProcess::preProcess(
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
+#ifndef chip_1688
     bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
+#else
+    bm_image_alloc_dev_mem_heap_mask(resized_img, 2);
+#endif
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
     bm_status_t ret = BM_SUCCESS;
     if (context->roi_predefined) {

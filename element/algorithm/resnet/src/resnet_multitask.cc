@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 #include "resnet_multitask.h"
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 
 #define USE_ASPECT_RATIO 1

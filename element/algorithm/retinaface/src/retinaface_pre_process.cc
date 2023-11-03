@@ -8,13 +8,16 @@
 //===----------------------------------------------------------------------===//
 
 #include "retinaface_pre_process.h"
+
+#include "common/common_defs.h"
 #include "common/logger.h"
 
 namespace sophon_stream {
 namespace element {
 namespace retinaface {
-float RetinafacePreProcess::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
-                                                int dst_h, bool* pIsAligWidth) {
+float RetinafacePreProcess::get_aspect_scaled_ratio(int src_w, int src_h,
+                                                    int dst_w, int dst_h,
+                                                    bool* pIsAligWidth) {
   float ratio;
   float r_w = (float)dst_w / src_w;
   float r_h = (float)dst_h / src_h;
@@ -30,8 +33,9 @@ float RetinafacePreProcess::get_aspect_scaled_ratio(int src_w, int src_h, int ds
 
 void RetinafacePreProcess::init(std::shared_ptr<RetinafaceContext> context) {}
 
-void RetinafacePreProcess::initTensors(std::shared_ptr<RetinafaceContext> context,
-                                   common::ObjectMetadatas& objectMetadatas) {
+void RetinafacePreProcess::initTensors(
+    std::shared_ptr<RetinafaceContext> context,
+    common::ObjectMetadatas& objectMetadatas) {
   for (auto& obj : objectMetadatas) {
     obj->mInputBMtensors = std::make_shared<sophon_stream::common::bmTensors>();
     int channelId = obj->mFrame->mChannelId;
@@ -110,9 +114,9 @@ common::ErrorCode RetinafacePreProcess::preProcess(
     }
     // #ifdef USE_ASPECT_RATIO
     bool isAlignWidth = false;
-    float ratio =get_aspect_scaled_ratio(image0.width, image0.height,
-                                                context->net_w, context->net_h,
-                                                &isAlignWidth);
+    float ratio =
+        get_aspect_scaled_ratio(image0.width, image0.height, context->net_w,
+                                context->net_h, &isAlignWidth);
     bmcv_padding_atrr_t padding_attr;
     memset(&padding_attr, 0, sizeof(padding_attr));
     padding_attr.dst_crop_sty = 0;
@@ -122,7 +126,7 @@ common::ErrorCode RetinafacePreProcess::preProcess(
     padding_attr.padding_r = 0;
     padding_attr.if_memset = 1;
     if (isAlignWidth) {
-      padding_attr.dst_crop_h =(image0.height * ratio);
+      padding_attr.dst_crop_h = (image0.height * ratio);
       padding_attr.dst_crop_w = context->net_w;
       padding_attr.dst_crop_sty = 0;
       padding_attr.dst_crop_stx = 0;
@@ -143,12 +147,11 @@ common::ErrorCode RetinafacePreProcess::preProcess(
     bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
     bm_status_t ret = BM_SUCCESS;
-    
 
     ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
-                                           image_aligned, &resized_img,
-                                           &padding_attr, &crop_rect);
-    
+                                         image_aligned, &resized_img,
+                                         &padding_attr, &crop_rect);
+
     assert(BM_SUCCESS == ret);
 
     if (image0.image_format != FORMAT_BGR_PLANAR) {

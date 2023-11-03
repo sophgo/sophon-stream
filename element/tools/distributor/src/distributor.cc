@@ -13,6 +13,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "element_factory.h"
 
@@ -163,8 +164,13 @@ void Distributor::makeSubObjectMetadata(
         bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
                         obj->mFrame->mSpData->image_format,
                         obj->mFrame->mSpData->data_type, cropped.get());
+#ifndef chip_1688
     ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect, *obj->mFrame->mSpData,
                           cropped.get());
+#else
+    ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1, *obj->mFrame->mSpData,
+                                 cropped.get(), &rect);
+#endif
 
     subObj->mFrame->mSpData = cropped;
   } else {
@@ -265,8 +271,13 @@ void Distributor::makeSubFaceObjectMetadata(
           bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
                           obj->mFrame->mSpData->image_format,
                           obj->mFrame->mSpData->data_type, &corp_img);
+#ifndef chip_1688
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
                             *obj->mFrame->mSpData, &corp_img);
+#else
+      ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
+                                   *obj->mFrame->mSpData, &corp_img, &rect);
+#endif
 
       // 得到原始图中关键点
       float left_eye_x = faceObj->points_x[0];
@@ -357,8 +368,13 @@ void Distributor::makeSubFaceObjectMetadata(
       bm_status_t ret = bm_image_create(obj->mFrame->mHandle, rect.crop_h,
                                         rect.crop_w, FORMAT_BGR_PLANAR,
                                         DATA_TYPE_EXT_1N_BYTE, cropped.get());
+#ifndef chip_1688
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
                             *obj->mFrame->mSpData, cropped.get());
+#else
+      ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
+                                   *obj->mFrame->mSpData, cropped.get(), &rect);
+#endif
       subObj->mFrame->mSpData = obj->mFrame->mSpData;
     }
 
@@ -487,12 +503,11 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
                 "Send data fail, element id: {0:d}, output port: {1:d}, data: "
                 "{2:p}",
                 getId(), target_port, static_cast<void*>(subObj.get()));
-          }   
+          }
         }
       }
       ++subId;
     }
-
 
     if (class2ports.find("full_frame") != class2ports.end()) {
       for (auto port_it = class2ports["full_frame"].begin();

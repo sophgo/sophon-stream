@@ -7,6 +7,7 @@
 
 #include "channel.h"
 #include "common/clocker.h"
+#include "common/common_defs.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/object_metadata.h"

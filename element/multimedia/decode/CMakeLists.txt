@@ -29,7 +29,9 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     link_directories(${LIBSOPHON_LIB_DIRS})
 
     set(BM_LIBS bmlib bmrt bmcv yuv)
-    set(JPU_LIBS bmjpuapi bmjpulite)
+    if ( NOT ${CHIP} STREQUAL "A2")
+        set(JPU_LIBS bmjpuapi bmjpulite)
+    endif()
 
     include_directories(../../../framework)
     include_directories(../../../framework/include)
@@ -64,8 +66,11 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories("${SOPHON_SDK_SOC}/include/opencv4")
     link_directories("${SOPHON_SDK_SOC}/lib/")
     set(BM_LIBS bmlib bmrt bmcv yuv)
-    set(JPU_LIBS bmjpuapi bmjpulite)
-
+    if ( NOT ${CHIP} STREQUAL "A2")
+        set(JPU_LIBS bmjpuapi bmjpulite)
+    endif()
+    set(FFMPEG_LIBS avcodec avformat avutil)
+    
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 

@@ -16,6 +16,9 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
+
+#include "common/common_defs.h"
+
 using namespace std;
 
 bool hardware_decode = true;

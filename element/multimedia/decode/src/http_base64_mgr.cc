@@ -15,6 +15,8 @@
 
 #include <websocketpp/base64/base64.hpp>
 
+#include "common/common_defs.h"
+
 namespace sophon_stream {
 namespace element {
 namespace decode {

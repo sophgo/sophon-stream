@@ -30,7 +30,9 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     link_directories(${LIBSOPHON_LIB_DIRS})
 
     set(BM_LIBS bmlib bmrt bmcv yuv)
-    set(JPU_LIBS bmjpuapi bmjpulite)
+    if ( NOT ${CHIP} STREQUAL "A2")
+        set(JPU_LIBS bmjpuapi bmjpulite)
+    endif()
 
     include_directories(../3rdparty/spdlog/include)
     include_directories(../3rdparty/nlohmann-json/include)
@@ -63,24 +65,15 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
     set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
-    set(BM_LIBS bmlib bmrt bmcv yuv)
-    set(JPU_LIBS bmjpuapi bmjpulite)
     include_directories("${SOPHON_SDK_SOC}/include/")
     include_directories("${SOPHON_SDK_SOC}/include/opencv4")
     link_directories("${SOPHON_SDK_SOC}/lib/")
     include_directories(.)
 
-    add_compile_options(-fPIC)
-    set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
-    set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
-    set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
     set(BM_LIBS bmlib bmrt bmcv yuv)
-    set(JPU_LIBS bmjpuapi bmjpulite)
-    include_directories("${SOPHON_SDK_SOC}/include/")
-    include_directories("${SOPHON_SDK_SOC}/include/opencv4")
-    link_directories("${SOPHON_SDK_SOC}/lib/")
-    set(BM_LIBS bmlib bmrt bmcv yuv)
-    set(JPU_LIBS bmjpuapi bmjpulite)
+    if ( NOT ${CHIP} STREQUAL "A2")
+        set(JPU_LIBS bmjpuapi bmjpulite)
+    endif()
 
     link_libraries(pthread)
 
@@ -90,9 +83,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
 
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
-
-    include_directories(../3rdparty/spdlog/include)
-    include_directories(../3rdparty/nlohmann-json/include)
 
     add_library(ivslogger SHARED
       common/logger.cc
