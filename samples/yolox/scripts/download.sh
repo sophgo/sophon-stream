@@ -13,6 +13,11 @@ unzip models.zip
 rm -rf models.zip
 mv ./models ../data/
 
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolox/BM1688_2cores.tar.gz
+tar -zxvf BM1688_2cores.tar.gz
+rm -rf BM1688_2cores.tar.gz
+mv ./BM1688_2cores ../data/models/
+
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolox/videos.zip
 unzip videos.zip
 rm -rf videos.zip

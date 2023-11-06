@@ -16,6 +16,11 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolox_bytetrack_osd_encode/
 tar xvf models.tar -C ../data
 rm -rf models.tar
 
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolox/BM1688_2cores.tar.gz
+tar -zxvf BM1688_2cores.tar.gz
+rm -rf BM1688_2cores.tar.gz
+mv ./BM1688_2cores ../data/models/
+
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data
 
