@@ -32,7 +32,7 @@ mv ./BM1684X ../data/models/BM1684X_tpukernel
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov5/BM1688_2cores.tar.gz
 tar -zxvf BM1688_2cores.tar.gz
 rm -rf BM1688_2cores.tar.gz
-mv ./BM1688_2cores ../data/models/BM1688_2cores.tar.gz
+mv ./BM1688_2cores ../data/models/BM1688_2cores
 
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data/
