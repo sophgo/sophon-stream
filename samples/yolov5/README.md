@@ -67,7 +67,7 @@ chmod -R +x scripts/
 │   ├── yolov5s_tpukernel_fp32_1b.bmodel            # 用于BM1684X的FP32 BModel，batch_size=1，后处理采用tpu_kernel
 │   ├── yolov5s_tpukernel_int8_1b.bmodel            # 用于BM1684X的INT8 BModel，batch_size=1，后处理采用tpu_kernel
 │   └── yolov5s_tpukernel_int8_4b.bmodel            # 用于BM1684X的INT8 BModel，batch_size=4，后处理采用tpu_kernel
-└── BM1688_2cores.tar.gz
+└── BM1688_2cores
     ├── yolov5s_v6.1_3output_int8_1b_2core.bmodel   # 用于BM1688的INT8 BModel，batch_size=1
     └── yolov5s_v6.1_3output_int8_4b_2core.bmodel   # 用于BM1688的INT8 BModel，batch_size=4
 ```
