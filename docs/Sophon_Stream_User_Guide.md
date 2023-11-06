@@ -1,5 +1,7 @@
 # 算能 sophon-stream 用户手册
 
+[English](Sophon_Stream_User_Guide_EN.md) | 简体中文
+
 ## 目录
 - [算能 sophon-stream 用户手册](#算能-sophon-stream-用户手册)
   - [目录](#目录)
@@ -21,6 +23,7 @@
     - [3.4 Connector](#34-connector)
     - [3.5 ObjectMetadata](#35-objectmetadata)
     - [3.6 Frame](#36-frame)
+    - [3.7 Group](#37-group)
   - [4. 插件](#4-插件)
     - [4.1 algorithm](#41-algorithm)
       - [4.1.1 概述](#411-概述)
@@ -79,7 +82,7 @@ sudo apt-get install libboost-all-dev
 ```bash
 mkdir build
 cd build 
-cmake ../ -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=pcie
+cmake ..
 make -j
 ```
 
@@ -90,7 +93,7 @@ make -j
 ```bash
 mkdir build
 cd build 
-cmake ../ -DCMAKE_BUILD_TYPE=Debug -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=${path_to_sophon_soc_sdk}
+cmake .. -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=${path_to_sophon_soc_sdk}
 make -j
 ```
 
@@ -113,7 +116,7 @@ sophon-stream具有以下优点：
  - 稳健灵活的基础框架。在保证sophon-stream基础框架的稳健性的同时，它也具有相当大的灵活性。用户可以简单地配置json文件，从而准确方便地搭建复杂的业务流水线。
  - 完备的软硬件生态体系。sophon-stream基于算丰芯片的底层特点，包含了编解码硬件加速、常规的图像处理加速以及推理加速功能，可以充分发挥算丰芯片的性能优势，极大地提升整体的吞吐效率。
  - 丰富的算法库。sophon-stream支持多种目标检测及跟踪算法，例如yolox、yolov5、bytetrack等。
- - 便于部署。sophon-stream适用于算丰BM1684、BM1684X芯片，可以在PCIE、SOC模式下灵活部署。
+ - 便于部署。sophon-stream适用于算丰BM1684、BM1684X、BM1688芯片，可以在PCIE、SOC模式下灵活部署。
 
 ### 2.2 sophon-stream软件栈
 
@@ -245,6 +248,7 @@ class Connector : public ::sophon_stream::common::NoCopyable {
 ```
 
 Connector类的成员方法都由id获取某个datapipe，然后调用该datapipe的对应方法来实现。
+
 ### 3.5 ObjectMetadata
 
 ObjectMetadata是sophon-stream的通用数据结构，所有element中的功能都基于此结构设计。
@@ -277,6 +281,14 @@ bool mEndOfStream;                      // 数据流结束的标识
 std::shared_ptr<bm_image> mSpData;      // 存放原始bm_image
 std::shared_ptr<bm_image> mSpDataOsd;   // 存放osd插件绘图之后的bm_image
 ```
+
+### 3.7 Group
+
+Group是一个为了统一管理算法的前处理、推理、后处理三个阶段而设计的特殊的模板类。
+
+Group继承自Element基类，其模板参数为某一个具体的算法类。当Group被实例化时，将自动构造模板参数对应的前处理、推理、后处理Element，在初始化流程中配置它们的属性，确定连接关系，并将内部的三个Element与外部相连。
+
+Group Element本身的`doWork()`方法本身不执行任何算法逻辑，其工作由内部的三个Element完成。Group Element的作用是将算法插件的配置文件由三个减少到一个，大大提高了使用的便利性。
 
 ## 4. 插件
 
@@ -700,8 +712,10 @@ faiss是一个数据库召回插件，在 BM1684X 上实现了Faiss::IndexFlatIP
 ├── decode.json                             # 解码
 ├── encode.json                             # 编码
 ├── engine.json                             # graph的总体配置
+├── engine_group.json                       # 简化的graph总体配置
 ├── osd.json                                # osd模块
 ├── yolox_bytetrack_osd_encode_demo.json    # demo的总体配置
+├── yolox_group.json                        # 统一管理的yolox配置
 ├── yolox_infer.json                        # yolox推理
 ├── yolox_post.json                         # yolox后处理
 └── yolox_pre.json                          # yolox预处理

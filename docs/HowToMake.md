@@ -1,4 +1,7 @@
 # 编译指南
+
+[English](HowToMake_EN.md) | 简体中文
+
 - [编译指南](#编译指南)
   - [x86/arm PCIe平台](#x86arm-pcie平台)
   - [SoC平台](#soc平台)
@@ -90,7 +93,6 @@ newgrp docker
 在下载好的镜像目录中加载镜像
 ```bash
 docker load -i stream_dev.tar
-#Loaded image: stream_dev:latest
 ```
 可以通过`docker images`查看加载好的镜像，默认为stream_dev:latest
 

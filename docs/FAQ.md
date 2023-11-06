@@ -1,5 +1,7 @@
 # 使用问题及解答
 
+[English](FAQ_EN.md) | 简体中文
+
 #### 1. 初始化阶段报错`Can not find element maker, name: xxx`
 
 这个原因是修改了某个element的json文件里的"name"项，这是Factory识别Element的依据，需要保持原样。
