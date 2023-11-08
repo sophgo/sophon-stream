@@ -1,15 +1,38 @@
 {
-  "num_channels_per_graph": 1,
-  "channel": {
-    "url": "../data/videos/traffic.mp4",
-    "source_type": "VIDEO",
-    "loop_num": 1,
-    "fps": 25,
-    "channel_id": 0
-  },
-  "class_names": "../data/coco.names",
-  "car_attributes": "../data/car.attributes",
-  "person_attributes": "../data/person.attributes",
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "../yolov5_bytetrack_distributor_resnet_converger/data/videos/traffic.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": 25
+    },
+    {
+      "channel_id": 1,
+      "url": "../yolov5_bytetrack_distributor_resnet_converger/data/videos/traffic.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": 25
+    },
+    {
+      "channel_id": 2,
+      "url": "../yolov5_bytetrack_distributor_resnet_converger/data/videos/traffic.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": 25
+    },
+    {
+      "channel_id": 3,
+      "url": "../yolov5_bytetrack_distributor_resnet_converger/data/videos/traffic.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": 25
+    }
+  ],
+  "class_names": "../yolov5_bytetrack_distributor_resnet_converger/data/coco.names",
+  "car_attributes": "../yolov5_bytetrack_distributor_resnet_converger/data/car.attributes",
+  "person_attributes": "../yolov5_bytetrack_distributor_resnet_converger/data/person.attributes",
   "download_image": true,
-  "engine_config_path": "../config/engine_group.json"
+  "draw_func_name": "draw_yolov5_bytetrack_distributor_resnet_converger_results",
+  "engine_config_path": "../yolov5_bytetrack_distributor_resnet_converger/config/engine_group.json"
 }

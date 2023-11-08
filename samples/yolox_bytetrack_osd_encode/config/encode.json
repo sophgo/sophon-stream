@@ -8,7 +8,7 @@
     "pix_fmt": "I420",
     "fps": 25
   },
-  "shared_object": "../../../build/lib/libencode.so",
+  "shared_object": "../../build/lib/libencode.so",
   "name": "encode",
   "side": "sophgo",
   "thread_number": 4

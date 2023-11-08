@@ -6,7 +6,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../openpose/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -26,7 +26,7 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/openpose_pre.json",
+                "element_config": "../openpose/config/openpose_pre.json",
                 "ports": {
                     "input": [
                         {
@@ -46,7 +46,7 @@
             },
             {
                 "element_id": 5002,
-                "element_config": "../config/openpose_infer.json",
+                "element_config": "../openpose/config/openpose_infer.json",
                 "ports": {
                     "input": [
                         {
@@ -66,7 +66,7 @@
             },
             {
                 "element_id": 5003,
-                "element_config": "../config/openpose_post.json",
+                "element_config": "../openpose/config/openpose_post.json",
                 "ports": {
                     "input": [
                         {

@@ -122,30 +122,30 @@ chmod -R +x scripts/
   "channels": [
     {
       "channel_id": 2,
-      "url": "../data/videos/mot17_01_frcnn.mp4",
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_01_frcnn.mp4",
       "source_type": "VIDEO",
       "loop_num": 1
     },
     {
       "channel_id": 3,
-      "url": "../data/videos/mot17_03_frcnn.mp4",
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_03_frcnn.mp4",
       "source_type": "VIDEO",
       "loop_num": 1
     },
     {
       "channel_id": 20,
-      "url": "../data/videos/mot17_06_frcnn.mp4",
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_06_frcnn.mp4",
       "source_type": "VIDEO",
       "loop_num": 1
     },
     {
       "channel_id": 30,
-      "url": "../data/videos/mot17_08_frcnn.mp4",
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_08_frcnn.mp4",
       "source_type": "VIDEO",
       "loop_num": 1
     }
   ],
-  "engine_config_path": "../config/engine.json"
+  "engine_config_path": "../yolox_bytetrack_osd_encode/config/engine_group.json"
 }
 ```
 
@@ -163,7 +163,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -183,7 +183,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolox_pre.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_pre.json",
                 "ports": {
                     "input": [
                         {
@@ -203,7 +203,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5002,
-                "element_config": "../config/yolox_infer.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_infer.json",
                 "ports": {
                     "input": [
                         {
@@ -223,7 +223,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5003,
-                "element_config": "../config/yolox_post.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_post.json",
                 "ports": {
                     "input": [
                         {
@@ -243,7 +243,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5004,
-                "element_config": "../config/bytetrack.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/bytetrack.json",
                 "ports": {
                     "input": [
                         {
@@ -263,7 +263,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5005,
-                "element_config": "../config/osd.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json",
                 "ports": {
                     "input": [
                         {
@@ -283,7 +283,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5006,
-                "element_config": "../config/encode.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/encode.json",
                 "ports": {
                     "input": [
                         {
@@ -350,9 +350,12 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 {
   "configure": {
     "osd_type": "TRACK",
-    "class_names": "../data/coco.names"
+    "class_names_file": "../yolox_bytetrack_osd_encode/data/coco.names",
+    "draw_utils": "OPENCV",
+    "draw_interval": false,
+    "put_text": false
   },
-  "shared_object": "../../../build/lib/libosd.so",
+  "shared_object": "../../build/lib/libosd.so",
   "name": "osd",
   "side": "sophgo",
   "thread_number": 1
@@ -366,9 +369,9 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-运行可执行文件
+1. 运行可执行文件
 ```bash
-./yolox_bytetrack_osd_encode_demo
+./main --demo_config_path=../yolox_bytetrakc_osd_encode/config/yolox_bytetrakc_osd_encode_demo.json
 ```
 
 由于结尾帧可能丢失，上述命令可能不会停止，属于正常现象。如停止运行结果如下

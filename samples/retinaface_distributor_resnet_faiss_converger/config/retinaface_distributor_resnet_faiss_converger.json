@@ -1,12 +1,39 @@
 {
-  "num_channels_per_graph": 1,
-  "channel": {
-    "url": "../data/images/face_data_test",
-    "source_type": "IMG_DIR",
-    "loop_num": 1,
-    "sample_interval": 1,
-    "fps": -1
-  },
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 1,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 2,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    }
+  ],
   "download_image": true,
-  "engine_config_path": "../config/engine_group.json"
+  "draw_func_name": "draw_retinaface_distributor_resnet_faiss_converger_results",
+  "engine_config_path": "../retinaface_distributor_resnet_faiss_converger/config/engine_group.json"
 }

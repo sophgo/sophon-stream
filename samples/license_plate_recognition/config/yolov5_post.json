@@ -1,6 +1,6 @@
 {
     "configure": {
-        "model_path": "../models/yolov5s-licensePLate/BM1684X/yolov5s_v6.1_license_3output_int8_1b.bmodel",
+        "model_path": "../license_plate_recognition/models/yolov5s-licensePLate/BM1684X/yolov5s_v6.1_license_3output_int8_1b.bmodel",
         "threshold_conf": 0.5,
         "threshold_nms": 0.5,
         "bgr2rgb": true,
@@ -17,10 +17,10 @@
         "stage": [
             "post"
         ],
-        "class_names_file": "../data/coco.names",
+        "class_names_file": "../license_plate_recognition/data/coco.names",
         "use_tpu_kernel": false
     },
-    "shared_object": "../../../build/lib/libyolov5.so",
+    "shared_object": "../../build/lib/libyolov5.so",
     "name": "yolov5",
     "side": "sophgo",
     "thread_number": 1

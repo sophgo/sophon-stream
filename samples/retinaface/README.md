@@ -116,16 +116,43 @@ retinaface demo中各部分参数位于 [config](./config/) 目录，结构如�
 
 ```json
 {
-  "num_channels_per_graph": 1,
-  "channel": {
-    "url": "../data/images/face",
-    "source_type": "IMG_DIR",
-    "loop_num": -1,
-    "sample_interval": 1,
-    "fps": -1
-  },
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    }
+  ],
   "download_image": true,
-  "engine_config_path": "../config/engine.json"
+  "draw_func_name": "draw_retinaface_results",
+  "engine_config_path": "../retinaface/config/engine_group.json"
 }
 
 
@@ -137,14 +164,15 @@ retinaface demo中各部分参数位于 [config](./config/) 目录，结构如�
 connection是所有element之间的连接方式，通过element_id和port_id确定。
 
 ```json
-{
+[
+    {
         "graph_id": 0,
         "device_id": 0,
         "graph_name": "retinaface",
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../retinaface/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -164,7 +192,47 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/retinaface_pre.json",
+                "element_config": "../retinaface/config/retinaface_pre.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5002,
+                "element_config": "../retinaface/config/retinaface_infer.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5003,
+                "element_config": "../retinaface/config/retinaface_post.json",
                 "ports": {
                     "input": [
                         {
@@ -189,9 +257,22 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
                 "src_port": 0,
                 "dst_element_id": 5001,
                 "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5002,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5002,
+                "src_port": 0,
+                "dst_element_id": 5003,
+                "dst_port": 0
             }
         ]
     }
+]
 ```
 
 [retinaface_pre.json](./config/retinaface_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
@@ -199,7 +280,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
+        "model_path": "../retinaface/data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
         "max_face_count":50,
         "score_threshold":0.5,
         "bgr2rgb": false,
@@ -215,12 +296,12 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
         ],
         "stage": [
             "pre"
-        ],
+        ]
     },
-    "shared_object": "../../../build/lib/libretinaface.so",
+    "shared_object": "../../build/lib/libretinaface.so",
     "name": "retinaface",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
 }
 ```
 
@@ -229,9 +310,9 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 
 对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的动态链接库、可执行文件、所需的模型和测试数据拷贝到SoC平台中测试。测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-运行可执行文件
+1. 运行可执行文件
 ```bash
-./retinaface_demo
+./main --demo_config_path=../retinaface/config/retinaface_demo.json
 ```
 
 8路视频流运行结果如下:

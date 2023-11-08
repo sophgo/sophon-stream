@@ -1,12 +1,39 @@
 {
-  "num_channels_per_graph": 8,
-  "channel": {
-    "url": "../data/videos/elevator-1080p-25fps-4000kbps.h264",
-    "source_type": "VIDEO",
-    "sample_interval": 1,
-    "loop_num": 1,
-    "fps": -1
-  },
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    }
+  ],
   "download_image": true,
-  "engine_config_path": "../config/engine.json"
+  "draw_func_name": "draw_bytetrack_results",
+  "engine_config_path": "../bytetrack/config/engine.json"
 }

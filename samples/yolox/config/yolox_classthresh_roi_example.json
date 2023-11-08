@@ -1,6 +1,6 @@
 {
   "configure": {
-    "model_path": "../data/models/BM1684X/yolox_s_int8_1b.bmodel",
+    "model_path": "../yolox/data/models/BM1684X/yolox_s_int8_1b.bmodel",
     "threshold_conf": {
       "person": 0.3,
       "bicycle": 0.5,
@@ -104,9 +104,9 @@
       "width": 800,
       "height": 600
     },
-    "class_names_file": "../data/coco.names"
+    "class_names_file": "../yolox/data/coco.names"
   },
-  "shared_object": "../../../build/lib/libyolox.so",
+  "shared_object": "../../build/lib/libyolox.so",
   "name": "yolox",
   "side": "sophgo",
   "thread_number": 1

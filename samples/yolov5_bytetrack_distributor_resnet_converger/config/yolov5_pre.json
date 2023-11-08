@@ -1,6 +1,6 @@
 {
     "configure": {
-        "model_path": "../data/models/BM1684X/yolov5s_v6.1_3output_int8_1b.bmodel",
+        "model_path": "../yolov5_bytetrack_distributor_resnet_converger/data/models/BM1684X/yolov5s_v6.1_3output_int8_1b.bmodel",
         "threshold_conf": {
             "person": 0.3,
             "bicycle": 0.5,
@@ -98,10 +98,10 @@
         "stage": [
             "pre"
         ],
-        "class_names_file": "../data/coco.names",
+        "class_names_file": "../yolov5_bytetrack_distributor_resnet_converger/data/coco.names",
         "use_tpu_kernel": false
     },
-    "shared_object": "../../../build/lib/libyolov5.so",
+    "shared_object": "../../build/lib/libyolov5.so",
     "name": "yolov5",
     "side": "sophgo",
     "thread_number": 1

@@ -6,7 +6,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../license_plate_recognition/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -19,21 +19,21 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolov5_group.json",
+                "element_config": "../license_plate_recognition/config/yolov5_group.json",
                 "inner_elements_id": [10001, 10002, 10003]
             },
             {
                 "element_id": 5004,
-                "element_config": "../config/distributor_time_class.json"
+                "element_config": "../license_plate_recognition/config/distributor_time_class.json"
             },
             {
                 "element_id": 6001,
-                "element_config": "../config/lprnet_group.json",
+                "element_config": "../license_plate_recognition/config/lprnet_group.json",
                 "inner_elements_id": [20001, 20002, 20003]
             },
             {
                 "element_id": 5005,
-                "element_config": "../config/converger.json",
+                "element_config": "../license_plate_recognition/config/converger.json",
                 "ports": {
                     "output": [
                         {

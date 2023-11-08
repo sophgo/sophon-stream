@@ -1,11 +1,37 @@
 {
-  "num_channels_per_graph": 1,
-  "channel": {
-    "url": "../data/images/imagenet_val_1k",
-    "source_type": "IMG_DIR",
-    "loop_num": 1,
-    "sample_interval": 1,
-    "fps": -1
-  },
-  "engine_config_path": "../config/engine.json"
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    }
+  ],
+  "engine_config_path": "../resnet/config/engine.json"
 }

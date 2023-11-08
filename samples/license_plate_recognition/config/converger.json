@@ -2,7 +2,7 @@
     "configure": {
         "default_port": 0
     },
-    "shared_object": "../../../build/lib/libconverger.so",
+    "shared_object": "../../build/lib/libconverger.so",
     "name": "converger",
     "side": "sophgo",
     "thread_number": 1

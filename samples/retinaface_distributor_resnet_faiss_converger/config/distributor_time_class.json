@@ -12,10 +12,10 @@
                 ]
             }
         ],
-        "class_names_file": "../data/class.names",
+        "class_names_file": "../retinaface_distributor_resnet_faiss_converger/data/class.names",
         "is_affine":false
     },
-    "shared_object": "../../../build/lib/libdistributor.so",
+    "shared_object": "../../build/lib/libdistributor.so",
     "name": "distributor",
     "side": "sophgo",
     "thread_number": 1

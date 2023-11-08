@@ -113,151 +113,183 @@ bytetrack demo中各部分参数位于[config](../bytetrack/config/)目录，结
 
 ```json
 {
-    "num_channels_per_graph": 1,
-    "channel": {
-      "url": "../data/videos/test_car_person_1080P.avi",
-      "source_type": "VIDEO"
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
     },
-    "download_image": false,
-    "engine_config_path": "../config/engine.json"
-  }
+    {
+      "channel_id": 3,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../bytetrack/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    }
+  ],
+  "download_image": true,
+  "draw_func_name": "draw_bytetrack_results",
+  "engine_config_path": "../bytetrack/config/engine.json"
+}
 ```
 [engine.json](../bytetrack/config/engine.json)包含对每一张graph的配置信息。这里摘取一部分作为示例：在一张图内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
 connection是所有element之间的连接方式，通过element_id和port_id确定。
 ```json
-{
-    "graph_id": 0,
-    "device_id": 0,
-    "graph_name": "bytetrack",
-    "elements": [
-        {
-            "element_id": 5000,
-            "element_config": "../config/decode.json",
-            "ports": {
-                "input": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": true
-                    }
-                ],
-                "output": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ]
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "bytetrack",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../bytetrack/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../bytetrack/config/yolox_pre.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5002,
+                "element_config": "../bytetrack/config/yolox_infer.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5003,
+                "element_config": "../bytetrack/config/yolox_post.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5004,
+                "element_config": "../bytetrack/config/bytetrack.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
             }
-        },
-        {
-            "element_id": 5001,
-            "element_config": "../config/yolox_pre.json",
-            "ports": {
-                "input": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ],
-                "output": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ]
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5002,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5002,
+                "src_port": 0,
+                "dst_element_id": 5003,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5003,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 0
             }
-        },
-        {
-            "element_id": 5002,
-            "element_config": "../config/yolox_infer.json",
-            "ports": {
-                "input": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ],
-                "output": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ]
-            }
-        },
-        {
-            "element_id": 5003,
-            "element_config": "../config/yolox_post.json",
-            "ports": {
-                "input": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ],
-                "output": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ]
-            }
-        },
-        {
-            "element_id": 5004,
-            "element_config": "../config/bytetrack.json",
-            "ports": {
-                "input": [
-                    {
-                        "port_id": 0,
-                        "is_sink": false,
-                        "is_src": false
-                    }
-                ],
-                "output": [
-                    {
-                        "port_id": 0,
-                        "is_sink": true,
-                        "is_src": false
-                    }
-                ]
-            }
-        }
-    ],
-    "connections": [
-        {
-            "src_element_id": 5000,
-            "src_port": 0,
-            "dst_element_id": 5001,
-            "dst_port": 0
-        },
-        {
-            "src_element_id": 5001,
-            "src_port": 0,
-            "dst_element_id": 5002,
-            "dst_port": 0
-        },
-        {
-            "src_element_id": 5002,
-            "src_port": 0,
-            "dst_element_id": 5003,
-            "dst_port": 0
-        },
-        {
-            "src_element_id": 5003,
-            "src_port": 0,
-            "dst_element_id": 5004,
-            "dst_port": 0
-        }
-    ]
-}
+        ]
+    }
+]
 ```
 [bytetrack.json](../bytetrack/config/bytetrack.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，thread_number是element内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 ```json
@@ -269,7 +301,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
         "frame_rate": 30,
         "track_buffer": 30
     },
-    "shared_object": "../../../build/lib/libbytetrack.so",
+    "shared_object": "../../build/lib/libbytetrack.so",
     "name": "bytetrack",
     "side": "sophgo",
     "thread_number": 2
@@ -283,9 +315,9 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-运行可执行文件
+1. 运行可执行文件
 ```bash
-./bytetrack_demo
+./main --demo_config_path=../bytetrack/config/bytetrack_demo.json
 ```
 
 2路视频流运行结果如下

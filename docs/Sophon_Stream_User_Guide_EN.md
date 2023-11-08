@@ -100,7 +100,7 @@ Note: When cross-compiling, the variable ${path_to_sophon_soc_sdk} should point 
 
 In sophon-stream, every module, except for 'sample,' participates in the runtime as a plugin. After completing the [1.2 Compilation Commands](#12-compilation-commands), users can find dynamic library files corresponding to each compiled plugin in the ./build/lib/ directory.
 
-The source files in the 'samples' directory result in executable programs. For example, the executable program for the 'yolox' sample can be found at [yolox](../samples/yolox/build/yolox_demo).
+The source files in the 'samples' directory result in executable programs. The result is an executable program in the `samples/build` directory.
 
 
 ## 2. Overview
@@ -323,7 +323,7 @@ The configuration file for yolox is structured as follows:
 ```json
 {
   "configure": {
-    "model_path": "../data/models/BM1684X/yolox_s_int8_4b.bmodel",
+    "model_path": "../yolox/data/models/BM1684X/yolox_s_int8_1b.bmodel",
     "threshold_conf": 0.5,
     "threshold_nms": 0.5,
     "bgr2rgb": true,
@@ -336,17 +336,12 @@ The configuration file for yolox is structured as follows:
       1,
       1,
       1
-    ],
-    "stage": [
-      "pre"
     ]
   },
-  "shared_object": "../../../build/lib/libyolox.so",
-  "id": 0,
-  "device_id": 0,
-  "name": "yolox",
+  "shared_object": "../../build/lib/libyolox.so",
+  "name": "yolox_group",
   "side": "sophgo",
-  "thread_number": 2
+  "thread_number": 4
 }
 ```
 
@@ -362,7 +357,7 @@ The configuration file for YOLOv5 looks like this:
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_4b.bmodel",
+        "model_path": "../yolov5/data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_1b.bmodel",
         "threshold_conf": 0.5,
         "threshold_nms": 0.5,
         "bgr2rgb": true,
@@ -376,17 +371,12 @@ The configuration file for YOLOv5 looks like this:
             1,
             1
         ],
-        "stage": [
-            "pre"
-        ],
         "use_tpu_kernel": true
     },
-    "shared_object": "../../../build/lib/libyolov5.so",
-    "id": 0,
-    "device_id": 0,
-    "name": "YOLOv5",
+    "shared_object": "../../build/lib/libyolov5.so",
+    "name": "yolov5_group",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
 }
 ```
 
@@ -406,15 +396,14 @@ Its configuration file appears as follows:
         "track_thresh": 0.5,
         "high_thresh": 0.6,
         "match_thresh": 0.7,
+        "min_box_area": 10,
         "frame_rate": 30,
         "track_buffer": 30
     },
-    "shared_object": "../../../build/lib/libbytetrack.so",
-    "id": 0,
-    "device_id": 0,
+    "shared_object": "../../build/lib/libbytetrack.so",
     "name": "bytetrack",
     "side": "sophgo",
-    "thread_number": 2
+    "thread_number": 8
 }
 ```
 
@@ -431,16 +420,14 @@ Its configuration file is structured as follows:
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X/pose_coco_int8_1b.bmodel",
-        "threshold_nms": 0.05,
-        "stage": [
-            "pre"
-        ]
+      "model_path": "../openpose/data/models/BM1684X/pose_coco_int8_1b.bmodel",
+      "threshold_nms": 0.05,
+      "use_tpu_kernel": true
     },
-    "shared_object": "../../../build/lib/libopenpose.so",
-    "name": "openpose",
+    "shared_object": "../../build/lib/libopenpose.so",
+    "name": "openpose_group",
     "side": "sophgo",
-    "thread_number": 4
+    "thread_number": 2
 }
 ```
 
@@ -456,14 +443,13 @@ Its configuration file appears as follows:
 
 ```json
 {
-  "configure": {
-    "model_path": "../models/BM1684/lprnet_fp32_1b.bmodel",
-    "stage": ["infer"]
-  },
-  "shared_object": "../../../build/lib/liblprnet.so",
-  "name": "lprnet",
-  "side": "sophgo",
-  "thread_number": 4
+    "configure": {
+      "model_path": "../license_plate_recognition/models/lprnet/BM1684X/lprnet_fp32_1b.bmodel"
+    },
+    "shared_object": "../../build/lib/liblprnet.so",
+    "name": "lprnet_group",
+    "side": "sophgo",
+    "thread_number": 1
 }
 ```
 
@@ -480,9 +466,9 @@ Its configuration file is structured as follows:
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
-        "max_face_count": 50,
-        "score_threshold": 0.5,
+        "model_path": "../retinaface/data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
+        "max_face_count":50,
+        "score_threshold":0.5,
         "bgr2rgb": false,
         "mean": [
             104,
@@ -493,15 +479,12 @@ Its configuration file is structured as follows:
             1,
             1,
             1
-        ],
-        "stage": [
-            "pre"
         ]
     },
-    "shared_object": "../../../build/lib/libretinaface.so",
-    "name": "retinaface",
+    "shared_object": "../../build/lib/libretinaface.so",
+    "name": "retinaface_group",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
 }
 ```
 
@@ -550,7 +533,7 @@ The configuration file for decode includes the following content:
 ```json
 {
   "configure": {},
-  "shared_object": "../../../build/lib/libdecode.so",
+  "shared_object": "../../build/lib/libdecode.so",
   "id": 0,
   "device_id": 0,
   "name": "decode",
@@ -581,7 +564,7 @@ The configuration file for encode includes the following content:
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420"
   },
-  "shared_object": "../../../build/lib/libencode.so",
+  "shared_object": "../../build/lib/libencode.so",
   "id": 0,
   "device_id": 0,
   "name": "encode",
@@ -602,11 +585,12 @@ The configuration file for the osd plugin includes:
 {
   "configure": {
     "osd_type": "TRACK",
-    "class_names_file": "../data/coco.names"
+    "class_names_file": "../yolox_bytetrack_osd_encode/data/coco.names",
+    "draw_utils": "OPENCV",
+    "draw_interval": false,
+    "put_text": false
   },
-  "shared_object": "../../../build/lib/libosd.so",
-  "id": 0,
-  "device_id": 0,
+  "shared_object": "../../build/lib/libosd.so",
   "name": "osd",
   "side": "sophgo",
   "thread_number": 1
@@ -644,9 +628,9 @@ The configuration file for the distributor includes:
                 ]
             }
         ],
-        "class_names_file": "../data/coco.names"
+        "class_names_file": "../xxx/data/coco.names"
     },
-    "shared_object": "../../../build/lib/libdistributor.so",
+    "shared_object": "../../build/lib/libdistributor.so",
     "name": "distributor",
     "side": "sophgo",
     "thread_number": 1
@@ -666,7 +650,7 @@ The configuration file for the converger includes:
     "configure": {
         "default_port": 0
     },
-    "shared_object": "../../../build/lib/libconverger.so",
+    "shared_object": "../../build/lib/libconverger.so",
     "name": "converger",
     "side": "sophgo",
     "thread_number": 1
@@ -702,7 +686,7 @@ A typical pipeline generally includes the following operations:
   - Drawing tracking results
   - Encoding output
 
-In this section, the [reference demo](../samples/yolox_bytetrack_osd_encode/src/yolox_bytetrack_osd_encode_demo.cc) is used as an example. The graph built by this demo is shown in the following figure:
+In this section, the [reference demo](../samples/yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json) is used as an example. The graph built by this demo is shown in the following figure:
 
 ![dec_det_track_osd_enc](./pics/dec_det_track_osd_enc.png)
 
@@ -733,27 +717,39 @@ The `yolox_bytetrack_osd_encode_demo.json` is the overall configuration for this
 
 ```json
 {
-  {
   "channels": [
     {
       "channel_id": 2,
-      "url": "../data/videos/mot17_01_frcnn.mp4",
-      "source_type": "VIDEO"
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_01_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 3,
-      "url": "../data/videos/mot17_03_frcnn.mp4",
-      "source_type": "VIDEO"
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_03_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    },
+    {
+      "channel_id": 20,
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_06_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    },
+    {
+      "channel_id": 30,
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_08_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
     }
   ],
-  "engine_config_path": "../config/engine.json"
-}
+  "engine_config_path": "../yolox_bytetrack_osd_encode/config/engine_group.json"
 }
 ```
 
 The demo configuration file includes two properties. The first one is `channels`, where all input information, such as `url`, `channel_id`, and `source_type`, is recorded in a list. It's important to note that `source_type` should be accurately set based on the [decode configuration](../element/multimedia/decode/README.md).
 
-In this configuration file, `channel_id` is used to identify the URL of the output video stream when the encode plugin starts the streaming server. For details on configuring the streaming URL, please refer to [#4.2.2 encode](#422-encode). If you don't need this feature, you can refer to the [yolov5 demo](../samples/yolov5/src/yolov5_demo.cc) and [yolov5 configuration file](../samples/yolov5/config/yolov5_demo.json). In that case, you don't need to set `channel_id`, and it will be automatically assigned starting from 0 in the demo.
+In this configuration file, `channel_id` is used to identify the URL of the output video stream when the encode plugin starts the streaming server. For details on configuring the streaming URL, please refer to [#4.2.2 encode](#422-encode). If you don't need this feature, you don't need to set `channel_id`, and it will be automatically assigned starting from 0 in the demo.
 
 The `engine.json` file contains the graph information constructed in the current demo program. It stores information about each graph, including the elements within the graph and how these elements are connected. It has the following structure:
 
@@ -761,11 +757,12 @@ The `engine.json` file contains the graph information constructed in the current
 [
     {
         "graph_id": 0,
-        "graph_name": "yolox",
+        "device_id": 0,
+        "graph_name": "yolox_osd_encode",
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -785,7 +782,20 @@ The `engine.json` file contains the graph information constructed in the current
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolox_pre.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_group.json",
+                "inner_elements_id": [10001, 10002, 10003]
+            },
+            {
+                "element_id": 5004,
+                "element_config": "../yolox_bytetrack_osd_encode/config/bytetrack.json"
+            },
+            {
+                "element_id": 5005,
+                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json",
+            },
+            {
+                "element_id": 5006,
+                "element_config": "../config/encode.json",
                 "ports": {
                     "input": [
                         {
@@ -809,6 +819,24 @@ The `engine.json` file contains the graph information constructed in the current
                 "src_element_id": 5000,
                 "src_port": 0,
                 "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 0,
+                "dst_element_id": 5005,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5005,
+                "src_port": 0,
+                "dst_element_id": 5006,
                 "dst_port": 0
             }
         ]

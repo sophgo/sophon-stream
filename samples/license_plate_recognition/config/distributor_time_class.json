@@ -12,9 +12,9 @@
                 ]
             }
         ],
-        "class_names_file": "../data/coco.names"
+        "class_names_file": "../license_plate_recognition/data/coco.names"
     },
-    "shared_object": "../../../build/lib/libdistributor.so",
+    "shared_object": "../../build/lib/libdistributor.so",
     "name": "distributor",
     "side": "sophgo",
     "thread_number": 1

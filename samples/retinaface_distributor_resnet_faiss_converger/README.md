@@ -112,16 +112,43 @@ chmod -R +x scripts/
 
 ```json
 {
-  "num_channels_per_graph": 1,
-  "channel": {
-    "url": "../data/images/face_data_test",
-    "source_type": "IMG_DIR",
-    "loop_num": 1,
-    "sample_interval": 1,
-    "fps": -1
-  },
-  "download_image": false,
-  "engine_config_path": "../config/engine.json"
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 1,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 2,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../retinaface_distributor_resnet_faiss_converger/data/images/face_data_test",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    }
+  ],
+  "download_image": true,
+  "draw_func_name": "draw_retinaface_distributor_resnet_faiss_converger_results",
+  "engine_config_path": "../retinaface_distributor_resnet_faiss_converger/config/engine_group.json"
 }
 ```
 
@@ -140,9 +167,9 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-运行可执行文件
+1. 运行可执行文件
 ```bash
-./retinaface_distributor_resnet_faiss
+./main --demo_config_path=../retinaface_distributor_resnet_faiss_converger/config/retinaface_distributor_resnet_faiss_converger.json
 ```
 
 运行结果存放在`./build/results`目录下。本例程默认配置方式为每秒按类别发送到resnet分支，会在结果目录中每秒保存一帧绘制人脸label图像。

@@ -1,6 +1,6 @@
 {
     "configure": {
-      "model_path": "../data/models/BM1684X/resnet_vehicle_color_int8_4b.bmodel",
+      "model_path": "../resnet/data/models/BM1684X/resnet_vehicle_color_int8_4b.bmodel",
       "bgr2rgb": true,
       "mean": [
         0,
@@ -19,7 +19,7 @@
         "height": 50
       }
     },
-    "shared_object": "../../../build/lib/libresnet.so",
+    "shared_object": "../../build/lib/libresnet.so",
     "name": "resnet",
     "side": "sophgo",
     "thread_number": 1

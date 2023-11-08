@@ -136,17 +136,40 @@ license_plate_recognition demo 中各部分参数位于 [config](./config/) 目�
 
 ```json
 {
-  "num_channels_per_graph": 1,
-  "channel": {
-    "url": "../data/test",
-    "source_type": "IMG_DIR",
-    "loop_num": 1,
-    "fps": 25,
-    "channel_id": 0
-  },
-  "class_names": "../data/coco.names",
-  "download_image": true,
-  "engine_config_path": "../config/engine.json"
+    "channels": [
+      {
+        "channel_id": 0,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      },
+      {
+        "channel_id": 1,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      },
+      {
+        "channel_id": 2,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      },
+      {
+        "channel_id": 3,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      }
+    ],
+    "class_names": "../license_plate_recognition/data/coco.names",
+    "download_image": true,
+    "draw_func_name": "draw_license_plate_recognition_results",
+    "engine_config_path": "../license_plate_recognition/config/engine_group.json"
 }
 ```
 
@@ -159,14 +182,16 @@ connection 是所有 element 之间的连接方式，通过 element_id 和 port_
 
 ```json
 {
-  "configure": {
-    "model_path": "../models/lprnet/BM1684X/lprnet_fp32_1b.bmodel",
-    "stage": ["pre"]
-  },
-  "shared_object": "../../../build/lib/liblprnet.so",
-  "name": "lprnet",
-  "side": "sophgo",
-  "thread_number": 1
+    "configure": {
+        "model_path": "../license_plate_recognition/models/lprnet/BM1684X/lprnet_fp32_1b.bmodel",
+        "stage": [
+            "pre"
+        ]
+    },
+    "shared_object": "../../build/lib/liblprnet.so",
+    "name": "lprnet",
+    "side": "sophgo",
+    "thread_number": 1
 }
 ```
 
@@ -178,11 +203,11 @@ SoC 平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以 PCIe 模式进行介绍。
 
-运行可执行文件，
-
+1. 运行可执行文件
 ```bash
-./license_plate_recognition_demo
+./main --demo_config_path=../license_plate_recognition/config/license_plate_recognition_demo.json
 ```
+
 推理结果保存在/build/results路径下。
 
 关闭图片保存时，1684X PCIe上推理 1 路图片运行结果如下，PCIe上的性能由于CPU的不同可能存在较大差异：

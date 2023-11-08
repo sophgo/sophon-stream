@@ -1,11 +1,35 @@
 {
-  "num_channels_per_graph": 2,
-  "channel": {
-    "url": "../data/videos/test.mp4",
-    "source_type": "VIDEO",
-    "loop_num": 10,
-    "fps": -1
-  },
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../openpose/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../openpose/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../openpose/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../openpose/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": -1
+    }
+  ],
   "download_image": false,
-  "engine_config_path": "../config/engine_group.json"
+  "draw_func_name": "draw_openpose_results",
+  "engine_config_path": "../openpose/config/engine_group.json"
 }

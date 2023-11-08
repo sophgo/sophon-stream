@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(sophon_stream)
 
 set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_BUILD_TYPE "Debug")
 
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)
@@ -34,22 +33,29 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     link_libraries(pthread)
     link_libraries(dl)
 
-    link_directories(../../build/lib)
+    link_directories(../build/lib)
 
-    include_directories(../../3rdparty/spdlog/include)
-    include_directories(../../3rdparty/nlohmann-json/include)
-    include_directories(../../element/multimedia/decode/include)
-    include_directories(../../framework)
-    include_directories(../../framework/include)
+    include_directories(../3rdparty/spdlog/include)
+    include_directories(../3rdparty/nlohmann-json/include)
+    include_directories(../element/multimedia/decode/include)
 
-    include_directories(../include)
+    include_directories(../framework)
+    include_directories(../framework/include)
+
+    include_directories(./include)
     set(demo_src
-        src/yolox_bytetrack_osd_encode_demo.cc
+        src/main.cc
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
+    add_library(cvunitext SHARED src/cvUniText.cpp)
+    target_link_libraries(${demo_name}  cvunitext)
+    add_dependencies(cvunitext freetype)
+    target_link_libraries(cvunitext freetype ${OPENCV_LIBS})
+
+    add_dependencies(${demo_name} ivslogger framework cvunitext)
     add_dependencies(${demo_name} ivslogger framework)
-    target_link_libraries(${demo_name} -dl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
+    target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
 
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
@@ -69,25 +75,29 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     link_directories("${SOPHON_SDK_SOC}/lib/")
     include_directories(.)
 
-    set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio opencv_video)
+    set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(pthread)
     link_libraries(dl)
 
-    link_directories(../../build/lib/)
+    link_directories(../build/lib/)
 
-    include_directories(../../3rdparty/spdlog/include)
-    include_directories(../../3rdparty/nlohmann-json/include)
-    include_directories(../../element/multimedia/decode/include)
-    include_directories(../../framework)
-    include_directories(../../framework/include)
+    include_directories(../3rdparty/spdlog/include)
+    include_directories(../3rdparty/nlohmann-json/include)
+    include_directories(../element/multimedia/decode/include)
+    include_directories(../framework)
+    include_directories(../framework/include)
 
-
-    include_directories(../include)
+    include_directories(./include)
     set(demo_src
-        src/yolox_bytetrack_osd_encode_demo.cc
+        src/main.cc
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
+    add_library(cvunitext SHARED src/cvUniText.cpp)
+    target_link_libraries(${demo_name}  cvunitext)
+    target_link_libraries(cvunitext freetype ${OPENCV_LIBS})
+    add_dependencies(cvunitext freetype)
+    add_dependencies(${demo_name} ivslogger framework cvunitext)
     add_dependencies(${demo_name} ivslogger framework)
     target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
 

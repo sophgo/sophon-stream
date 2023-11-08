@@ -12,7 +12,7 @@
             }
         ]
     },
-    "shared_object": "../../../build/lib/libdistributor.so",
+    "shared_object": "../../build/lib/libdistributor.so",
     "name": "distributor",
     "side": "sophgo",
     "thread_number": 1

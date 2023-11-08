@@ -6,7 +6,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../resnet/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -26,7 +26,7 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/resnet.json",
+                "element_config": "../resnet/config/resnet.json",
                 "ports": {
                     "input": [
                         {

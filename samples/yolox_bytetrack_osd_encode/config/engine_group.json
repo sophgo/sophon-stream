@@ -6,7 +6,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -26,16 +26,16 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolox_group.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_group.json",
                 "inner_elements_id": [10001, 10002, 10003]
             },
             {
                 "element_id": 5004,
-                "element_config": "../config/bytetrack.json"
+                "element_config": "../yolox_bytetrack_osd_encode/config/bytetrack.json"
             },
             {
                 "element_id": 5005,
-                "element_config": "../config/osd.json"
+                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json",
             },
             {
                 "element_id": 5006,

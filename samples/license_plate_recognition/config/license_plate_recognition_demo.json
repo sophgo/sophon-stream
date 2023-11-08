@@ -1,13 +1,36 @@
 {
-    "num_channels_per_graph": 1,
-    "channel": {
-      "url": "../data/test",
-      "source_type": "IMG_DIR",
-      "loop_num": 1,
-      "fps": -1,
-      "channel_id": 0
-    },
-    "class_names": "../data/coco.names",
-    "download_image": false,
-    "engine_config_path": "../config/engine_group.json"
+    "channels": [
+      {
+        "channel_id": 0,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      },
+      {
+        "channel_id": 1,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      },
+      {
+        "channel_id": 2,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      },
+      {
+        "channel_id": 3,
+        "url": "../license_plate_recognition/data/test",
+        "source_type": "IMG_DIR",
+        "loop_num": 1,
+        "fps": -1
+      }
+    ],
+    "class_names": "../license_plate_recognition/data/coco.names",
+    "download_image": true,
+    "draw_func_name": "draw_license_plate_recognition_results",
+    "engine_config_path": "../license_plate_recognition/config/engine_group.json"
   }

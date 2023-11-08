@@ -133,15 +133,41 @@ resnet demo中各部分参数位于 [config](./config/) 目录，结构如下所
 
 ```json
 {
-  "num_channels_per_graph": 1,
-  "channel": {
-    "url": "../data/images/imagenet_val_1k",
-    "source_type": "IMG_DIR",
-    "loop_num": 1,
-    "sample_interval": 1,
-    "fps": -1
-  },
-  "engine_config_path": "../config/engine.json"
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../resnet/data/images/imagenet_val_1k",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    }
+  ],
+  "engine_config_path": "../resnet/config/engine.json"
 }
 ```
 
@@ -159,7 +185,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../resnet/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -179,7 +205,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/resnet.json",
+                "element_config": "../resnet/config/resnet.json",
                 "ports": {
                     "input": [
                         {
@@ -218,9 +244,9 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-运行可执行文件
+1. 运行可执行文件
 ```bash
-./resnet_demo
+./main --demo_config_path=../resnet/config/resnet_demo.json
 ```
 
 2路视频流运行结果如下

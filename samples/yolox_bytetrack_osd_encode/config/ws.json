@@ -2,7 +2,7 @@
   "configure": {
     "start_port": 9000
   },
-  "shared_object": "../../../build/lib/libws.so",
+  "shared_object": "../../build/lib/libws.so",
   "name": "ws",
   "side": "sophgo",
   "thread_number": 4

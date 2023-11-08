@@ -6,7 +6,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../yolov5/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -19,7 +19,7 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolov5_group.json",
+                "element_config": "../yolov5/config/yolov5_group.json",
                 "inner_elements_id": [10001, 10002, 10003],
                 "ports": {
                     "output": [

@@ -142,16 +142,44 @@ yolox demo中各部分参数位于 [config](./config/) 目录，结构如下所�
 
 ```json
 {
-  "num_channels_per_graph": 3,
-  "channel": {
-    "url": "../data/videos/test_car_person_1080P.avi",
-    "source_type": "VIDEO",
-    "sample_interval": 1,
-    "loop_num": 1
-  },
-  "class_names": "../data/coco.names",
-  "download_image": false,
-  "engine_config_path": "../config/engine.json"
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    }
+  ],
+  "class_names": "../yolox/data/coco.names",
+  "download_image": true,
+  "draw_func_name": "draw_yolox_results",
+  "engine_config_path": "../yolox/config/engine_group.json"
 }
 ```
 
@@ -169,7 +197,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../yolox/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -182,7 +210,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolox_group.json",
+                "element_config": "../yolox/config/yolox_group.json",
                 "inner_elements_id": [10001, 10002, 10003],
                 "ports": {
                     "output": [
@@ -212,7 +240,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ```json
 {
     "configure": {
-      "model_path": "../data/models/BM1684X/yolox_s_int8_1b.bmodel",
+      "model_path": "../yolox/data/models/BM1684X/yolox_s_int8_1b.bmodel",
       "threshold_conf": 0.5,
       "threshold_nms": 0.5,
       "bgr2rgb": true,
@@ -227,11 +255,11 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
         1
       ]
     },
-    "shared_object": "../../../build/lib/libyolox.so",
+    "shared_object": "../../build/lib/libyolox.so",
     "name": "yolox_group",
     "side": "sophgo",
     "thread_number": 4
-  }
+}
 ```
 
 ### 6.2 运行
@@ -242,9 +270,9 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-运行可执行文件
+1. 运行可执行文件
 ```bash
-./yolox_demo
+./main --demo_config_path=../yolox/config/yolox_demo.json
 ```
 
 2路视频流运行结果如下

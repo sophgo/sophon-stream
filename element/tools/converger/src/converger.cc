@@ -71,7 +71,7 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     // 这里不能在while里取，否则会堵住
     while (subdata != nullptr) {
       auto subObj = std::static_pointer_cast<common::ObjectMetadata>(subdata);
-      int sub_channel_id = subObj->mFrame->mChannelId;
+      int sub_channel_id = subObj->mFrame->mChannelIdInternal;
       int sub_frame_id = subObj->mFrame->mFrameId;
       IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {1}",
                 sub_channel_id, sub_frame_id);

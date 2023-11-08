@@ -1,11 +1,11 @@
 {
     "configure": {
-        "model_path": "../models/lprnet/BM1684X/lprnet_fp32_1b.bmodel",
+        "model_path": "../license_plate_recognition/models/lprnet/BM1684X/lprnet_fp32_1b.bmodel",
         "stage": [
             "pre"
         ]
     },
-    "shared_object": "../../../build/lib/liblprnet.so",
+    "shared_object": "../../build/lib/liblprnet.so",
     "name": "lprnet",
     "side": "sophgo",
     "thread_number": 1

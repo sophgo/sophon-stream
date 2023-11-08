@@ -6,7 +6,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../license_plate_recognition/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -19,35 +19,35 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolov5_pre.json"
+                "element_config": "../license_plate_recognition/config/yolov5_pre.json"
             },
             {
                 "element_id": 5002,
-                "element_config": "../config/yolov5_infer.json"
+                "element_config": "../license_plate_recognition/config/yolov5_infer.json"
             },
             {
                 "element_id": 5003,
-                "element_config": "../config/yolov5_post.json"
+                "element_config": "../license_plate_recognition/config/yolov5_post.json"
             },
             {
                 "element_id": 5004,
-                "element_config": "../config/distributor_time_class.json"
+                "element_config": "../license_plate_recognition/config/distributor_time_class.json"
             },
             {
                 "element_id": 6001,
-                "element_config": "../config/lprnet_pre.json"
+                "element_config": "../license_plate_recognition/config/lprnet_pre.json"
             },
             {
                 "element_id": 6002,
-                "element_config": "../config/lprnet_infer.json"
+                "element_config": "../license_plate_recognition/config/lprnet_infer.json"
             },
             {
                 "element_id": 6003,
-                "element_config": "../config/lprnet_post.json"
+                "element_config": "../license_plate_recognition/config/lprnet_post.json"
             },
             {
                 "element_id": 5005,
-                "element_config": "../config/converger.json",
+                "element_config": "../license_plate_recognition/config/converger.json",
                 "ports": {
                     "output": [
                         {

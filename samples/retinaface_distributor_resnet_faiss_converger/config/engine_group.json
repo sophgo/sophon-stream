@@ -6,7 +6,7 @@
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../retinaface_distributor_resnet_faiss_converger/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -19,16 +19,16 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/retinaface_group.json",
+                "element_config": "../retinaface_distributor_resnet_faiss_converger/config/retinaface_group.json",
                 "inner_elements_id": [10001, 10002, 10003]
             },
             {
                 "element_id": 5004,
-                "element_config": "../config/distributor_frame_class.json"
+                "element_config": "../retinaface_distributor_resnet_faiss_converger/config/distributor_frame_class.json"
             },
             {
                 "element_id": 5005,
-                "element_config": "../config/converger.json",
+                "element_config": "../retinaface_distributor_resnet_faiss_converger/config/converger.json",
                 "ports": {
                     "output": [
                         {
@@ -41,11 +41,11 @@
             },
             {
                 "element_id": 5006,
-                "element_config": "../config/resnet_face.json"
+                "element_config": "../retinaface_distributor_resnet_faiss_converger/config/resnet_face.json"
             },
             {
                 "element_id": 5007,
-                "element_config": "../config/faiss.json"
+                "element_config": "../retinaface_distributor_resnet_faiss_converger/config/faiss.json"
             }
         ],
         "connections": [

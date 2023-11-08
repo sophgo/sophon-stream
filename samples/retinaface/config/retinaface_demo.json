@@ -1,12 +1,39 @@
 {
-  "num_channels_per_graph": 4,
-  "channel": {
-    "url": "../data/images/wind",
-    "source_type": "IMG_DIR",
-    "loop_num": 1,
-    "sample_interval": 1,
-    "fps": -1
-  },
-  "download_image": false,
-  "engine_config_path": "../config/engine_group.json"
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../retinaface/data/images/wind",
+      "source_type": "IMG_DIR",
+      "loop_num": 1,
+      "sample_interval": 1,
+      "fps": -1
+    }
+  ],
+  "download_image": true,
+  "draw_func_name": "draw_retinaface_results",
+  "engine_config_path": "../retinaface/config/engine_group.json"
 }

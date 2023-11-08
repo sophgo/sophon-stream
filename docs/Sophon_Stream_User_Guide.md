@@ -99,7 +99,7 @@ make -j
 
 sophon-stream中，除了sample以外的每个模块都以插件的形式参与运行。完成 [1.2 编译命令](#12-编译命令) 后，用户可以在 ./build/lib/ 目录下看到每个参与编译的插件对应的动态库文件。
 
-samples中的源文件，其编译结果是可执行程序。例如，yolox例程的可执行程序位于 [yolox](../samples/yolox/build/yolox_demo) 。
+samples中的源文件，其编译结果是`samples/build`目录下的可执行程序。
 
 ## 2. 概述
 
@@ -318,7 +318,7 @@ yolox的配置文件形如：
 ```json
 {
   "configure": {
-    "model_path": "../data/models/BM1684X/yolox_s_int8_4b.bmodel",
+    "model_path": "../yolox/data/models/BM1684X/yolox_s_int8_1b.bmodel",
     "threshold_conf": 0.5,
     "threshold_nms": 0.5,
     "bgr2rgb": true,
@@ -331,17 +331,12 @@ yolox的配置文件形如：
       1,
       1,
       1
-    ],
-    "stage": [
-      "pre"
     ]
   },
-  "shared_object": "../../../build/lib/libyolox.so",
-  "id": 0,
-  "device_id": 0,
-  "name": "yolox",
+  "shared_object": "../../build/lib/libyolox.so",
+  "name": "yolox_group",
   "side": "sophgo",
-  "thread_number": 2
+  "thread_number": 4
 }
 ```
 配置参数的详细介绍请参见 [yolox插件介绍](../element/algorithm/yolox/README.md)
@@ -356,7 +351,7 @@ yolov5的配置文件形如：
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_4b.bmodel",
+        "model_path": "../yolov5/data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_1b.bmodel",
         "threshold_conf": 0.5,
         "threshold_nms": 0.5,
         "bgr2rgb": true,
@@ -370,17 +365,12 @@ yolov5的配置文件形如：
             1,
             1
         ],
-        "stage": [
-            "pre"
-        ],
         "use_tpu_kernel": true
     },
-    "shared_object": "../../../build/lib/libyolov5.so",
-    "id": 0,
-    "device_id": 0,
-    "name": "yolov5",
+    "shared_object": "../../build/lib/libyolov5.so",
+    "name": "yolov5_group",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
 }
 ```
 
@@ -399,15 +389,14 @@ bytetrack是华中科技大学、香港大学和字节跳动联合提出的一�
         "track_thresh": 0.5,
         "high_thresh": 0.6,
         "match_thresh": 0.7,
+        "min_box_area": 10,
         "frame_rate": 30,
         "track_buffer": 30
     },
-    "shared_object": "../../../build/lib/libbytetrack.so",
-    "id": 0,
-    "device_id": 0,
+    "shared_object": "../../build/lib/libbytetrack.so",
     "name": "bytetrack",
     "side": "sophgo",
-    "thread_number": 2
+    "thread_number": 8
 }
 ```
 
@@ -423,16 +412,14 @@ openpose是一个强大的姿态估计网络。
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X/pose_coco_int8_1b.bmodel",
-        "threshold_nms": 0.05,
-        "stage": [
-            "pre"
-        ]
+      "model_path": "../openpose/data/models/BM1684X/pose_coco_int8_1b.bmodel",
+      "threshold_nms": 0.05,
+      "use_tpu_kernel": true
     },
-    "shared_object": "../../../build/lib/libopenpose.so",
-    "name": "openpose",
+    "shared_object": "../../build/lib/libopenpose.so",
+    "name": "openpose_group",
     "side": "sophgo",
-    "thread_number": 4
+    "thread_number": 2
 }
 ```
 
@@ -447,14 +434,13 @@ lprnet是一个用于车牌识别的网络。
 其配置文件形如：
 ```json
 {
-  "configure": {
-    "model_path": "../models/BM1684/lprnet_fp32_1b.bmodel",
-    "stage": ["infer"]
-  },
-  "shared_object": "../../../build/lib/liblprnet.so",
-  "name": "lprnet",
-  "side": "sophgo",
-  "thread_number": 4
+    "configure": {
+      "model_path": "../license_plate_recognition/models/lprnet/BM1684X/lprnet_fp32_1b.bmodel"
+    },
+    "shared_object": "../../build/lib/liblprnet.so",
+    "name": "lprnet_group",
+    "side": "sophgo",
+    "thread_number": 1
 }
 ```
 
@@ -470,7 +456,7 @@ retinaface是一个用于人脸检测的网络。
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
+        "model_path": "../retinaface/data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
         "max_face_count":50,
         "score_threshold":0.5,
         "bgr2rgb": false,
@@ -483,15 +469,12 @@ retinaface是一个用于人脸检测的网络。
             1,
             1,
             1
-        ],
-        "stage": [
-            "pre"
         ]
     },
-    "shared_object": "../../../build/lib/libretinaface.so",
-    "name": "retinaface",
+    "shared_object": "../../build/lib/libretinaface.so",
+    "name": "retinaface_group",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
 }
 ```
 
@@ -540,7 +523,7 @@ decode的配置文件包括以下内容:
 ```json
 {
   "configure": {},
-  "shared_object": "../../../build/lib/libdecode.so",
+  "shared_object": "../../build/lib/libdecode.so",
   "id": 0,
   "device_id": 0,
   "name": "decode",
@@ -571,7 +554,7 @@ encode的配置文件包括以下内容:
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420"
   },
-  "shared_object": "../../../build/lib/libencode.so",
+  "shared_object": "../../build/lib/libencode.so",
   "id": 0,
   "device_id": 0,
   "name": "encode",
@@ -592,11 +575,12 @@ osd插件的配置文件包括:
 {
   "configure": {
     "osd_type": "TRACK",
-    "class_names_file": "../data/coco.names"
+    "class_names_file": "../yolox_bytetrack_osd_encode/data/coco.names",
+    "draw_utils": "OPENCV",
+    "draw_interval": false,
+    "put_text": false
   },
-  "shared_object": "../../../build/lib/libosd.so",
-  "id": 0,
-  "device_id": 0,
+  "shared_object": "../../build/lib/libosd.so",
   "name": "osd",
   "side": "sophgo",
   "thread_number": 1
@@ -634,9 +618,9 @@ distributor的配置文件包括：
                 ]
             }
         ],
-        "class_names_file": "../data/coco.names"
+        "class_names_file": "../xxx/data/coco.names"
     },
-    "shared_object": "../../../build/lib/libdistributor.so",
+    "shared_object": "../../build/lib/libdistributor.so",
     "name": "distributor",
     "side": "sophgo",
     "thread_number": 1
@@ -656,7 +640,7 @@ converger的配置文件包括：
     "configure": {
         "default_port": 0
     },
-    "shared_object": "../../../build/lib/libconverger.so",
+    "shared_object": "../../build/lib/libconverger.so",
     "name": "converger",
     "side": "sophgo",
     "thread_number": 1
@@ -692,7 +676,7 @@ faiss是一个数据库召回插件，在 BM1684X 上实现了Faiss::IndexFlatIP
   - 绘制跟踪结果
   - 编码输出
 
-本节以 [参考例程](../samples/yolox_bytetrack_osd_encode/src/yolox_bytetrack_osd_encode_demo.cc) 为例进行讲解。该例程构建的graph如下图所示:
+本节以 [参考例程](../samples/yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json) 为例进行讲解。该例程构建的graph如下图所示:
 
 ![dec_det_track_osd_enc](./pics/dec_det_track_osd_enc.png)
 
@@ -723,27 +707,39 @@ yolox_bytetrack_osd_encode_demo.json 是该demo的总体配置，其形如：
 
 ```json
 {
-  {
   "channels": [
     {
       "channel_id": 2,
-      "url": "../data/videos/mot17_01_frcnn.mp4",
-      "source_type": "VIDEO"
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_01_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
     },
     {
       "channel_id": 3,
-      "url": "../data/videos/mot17_03_frcnn.mp4",
-      "source_type": "VIDEO"
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_03_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    },
+    {
+      "channel_id": 20,
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_06_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    },
+    {
+      "channel_id": 30,
+      "url": "../yolox_bytetrack_osd_encode/data/videos/mot17_08_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
     }
   ],
-  "engine_config_path": "../config/engine.json"
-}
+  "engine_config_path": "../yolox_bytetrack_osd_encode/config/engine_group.json"
 }
 ```
 
 demo的配置文件包括两个属性。一是`channels` ，在一个list中记录所有输入的`url`、`channel_id`和`source_type`信息。需要注意的是：`source_type`需要参考 [decode配置](../element/multimedia/decode/README.md) 准确设置。
 
-该配置文件中，`channel_id`标记了encode插件启动推流服务器时，输出视频流的URL。推流URL配置请参考 [#4.2.2 encode](#422-encode)。如果不需要该功能，可以参考 [yolov5 demo](../samples/yolov5/src/yolov5_demo.cc) 及 [yolov5 配置文件](../samples/yolov5/config/yolov5_demo.json)，不设置`channel_id`，在demo中默认从0开始赋值。
+该配置文件中，`channel_id`标记了encode插件启动推流服务器时，输出视频流的URL。推流URL配置请参考 [#4.2.2 encode](#422-encode)。如果不需要该功能，可以不设置`channel_id`，在demo中默认从0开始赋值。
 
 engine.json 是当前demo程序中构造的graph信息，储存了每个graph内包含的element及element之间如何连接等信息。其形如：
 
@@ -751,11 +747,12 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
 [
     {
         "graph_id": 0,
-        "graph_name": "yolox",
+        "device_id": 0,
+        "graph_name": "yolox_osd_encode",
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -775,7 +772,20 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolox_pre.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_group.json",
+                "inner_elements_id": [10001, 10002, 10003]
+            },
+            {
+                "element_id": 5004,
+                "element_config": "../yolox_bytetrack_osd_encode/config/bytetrack.json"
+            },
+            {
+                "element_id": 5005,
+                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json",
+            },
+            {
+                "element_id": 5006,
+                "element_config": "../config/encode.json",
                 "ports": {
                     "input": [
                         {
@@ -799,6 +809,24 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
                 "src_element_id": 5000,
                 "src_port": 0,
                 "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 0,
+                "dst_element_id": 5005,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5005,
+                "src_port": 0,
+                "dst_element_id": 5006,
                 "dst_port": 0
             }
         ]

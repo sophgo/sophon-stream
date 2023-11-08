@@ -7,7 +7,7 @@
         "frame_rate": 30,
         "track_buffer": 30
     },
-    "shared_object": "../../../build/lib/libbytetrack.so",
+    "shared_object": "../../build/lib/libbytetrack.so",
     "name": "bytetrack",
     "side": "sophgo",
     "thread_number": 4
