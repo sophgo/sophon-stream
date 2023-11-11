@@ -3,6 +3,7 @@ build/
 build_soc/
 data/
 images/
+models/
 
 *.zip
 *.tar

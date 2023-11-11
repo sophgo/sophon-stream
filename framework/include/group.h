@@ -48,7 +48,9 @@ class PostProcess {
   virtual ~PostProcess() = default;
 };
 
-template <typename T>
+template <typename T,
+          typename std::enable_if<std::is_same_v<
+              decltype(T::elementName), const std::string>>::type* = nullptr>
 class Group : public ::sophon_stream::framework::Element {
  public:
   Group() {}
