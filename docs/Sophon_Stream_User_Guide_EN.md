@@ -59,7 +59,7 @@ English | [简体中文](Sophon_Stream_User_Guide.md)
 
 #### 1.1.1 x86/arm PCIe Platform
 
-If you have installed a AI Accelerator Card (such as the SC series AI Accelerator Card) on the x86/ARM platform, you can use it directly as your development and runtime environment. You will need to install libsophon, sophon-opencv, and sophon-ffmpeg. For specific steps, please refer to [the installation and configuration guide for x86-pcie platform](EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建) or [installation and configuration guide for arm-pcie platform](EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建).
+If you have installed a Deep Learning Accelerator Card (such as the SC series Deep Learning Accelerator Card) on the x86/ARM platform, you can use it directly as your development and runtime environment. You will need to install libsophon, sophon-opencv, and sophon-ffmpeg. For specific steps, please refer to [the installation and configuration guide for x86-pcie platform](EnvironmentInstallGuide.md#3-x86-pcie平台的开发和运行环境搭建) or [installation and configuration guide for arm-pcie platform](EnvironmentInstallGuide.md#5-arm-pcie平台的开发和运行环境搭建).
 
 #### 1.1.2 Soc Platform
 
@@ -122,7 +122,7 @@ sophon-stream has the following advantages:
 
 ### 2.2 sophon-stream Software Stack
 
-sophon-stream is designed based on SophonSDK. SophonSDK is a deep learning SDK customized by Sophgo Technologies for its self-developed AI chips. It encompasses capabilities required for neural network inference, such as model optimization and efficient runtime support, providing an easy-to-use and efficient end-to-end solution for deep learning application development and deployment.
+sophon-stream is designed based on SophonSDK. SophonSDK is a deep learning SDK customized by Sophgo Technologies for its self-developed Deep Learning chips. It encompasses capabilities required for neural network inference, such as model optimization and efficient runtime support, providing an easy-to-use and efficient end-to-end solution for deep learning application development and deployment.
 
 ![stream_and_sdk](./pics/stream_sdk.png)
 
@@ -178,7 +178,7 @@ common::ErrorCode stop();
 // Push data, used to initiate the decoding task for the DecoderElement.
 common::ErrorCode pushInputData(int inputPort, int dataPipeId, std::shared_ptr<void> data);
 
-// Thread function responsible for cyclically calling doWork() and allocating CPU time slices.
+// Thread function responsible for cyclically calling doWork() and allocating processor time slices.
 void run(int dataPipeId)
 
 // Pure virtual function, used in derived classes to initialize custom properties, such as algorithm-specific content.
@@ -316,7 +316,7 @@ Algorithm plugins exhibit the following characteristics:
 - Each thread of an element is associated with a data pipe of the input connector. Batching occurs at the outset of the `doWork()` function, with data retrieval originating from the data pipe linked to the current thread.
 - When transmitting data, load balancing among the threads of downstream elements is ensured.
 - In cases where two modules only differ in internal model parameters, the preprocessing and post-processing elements can be reused when the preprocessing, inference, and post-processing procedures are identical.
-- The ability to configure preprocessing, inference, and post-processing on different elements is supported. This configuration is designed to maximize the utilization of CPU and TPU resources, thereby enhancing algorithm efficiency.
+- The ability to configure preprocessing, inference, and post-processing on different elements is supported. This configuration is designed to maximize the utilization of processor and TPU resources, thereby enhancing algorithm efficiency.
 
 #### 4.1.2 yolox
 
@@ -687,7 +687,7 @@ This plugin provides a complete plugin template but does not implement any confi
 
 #### 4.3.4 faiss
 
-Faiss is a database retrieval plugin that implements Faiss::IndexFlatIP.search() on BM1684X. Considering the continuous memory of TPU on BM1684X, for a database of 1 million, it can query a maximum of about 512 inputs with 256 dimensions in a single chip.
+Faiss is a database retrieval plugin that implements Faiss::IndexFlatIP.search() on BM1684X. Considering the continuous memory of TPU on BM1684X, for a database of 1 million, it can query a maximum of about 512 inputs with 256 dimensions in a single processor.
 
 ## 5. Applications
 

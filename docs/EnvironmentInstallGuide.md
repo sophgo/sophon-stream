@@ -19,7 +19,7 @@
 Sophon Stream所依赖的环境主要包括用于编译和量化模型的TPU-NNTC、TPU-MLIR环境，用于编译C++程序的开发环境以及用于部署程序的运行环境。
 
 ## 1 TPU-MLIR环境搭建
-如果您使用BM1684X芯片，建议使用TPU-MLIR编译BModel。通常需要在x86主机上安装TPU-MLIR环境，x86主机已安装Ubuntu16.04/18.04/20.04系统，并且运行内存在12GB以上。TPU-MLIR环境安装步骤主要包括：
+如果您使用BM1684X处理器，建议使用TPU-MLIR编译BModel。通常需要在x86主机上安装TPU-MLIR环境，x86主机已安装Ubuntu16.04/18.04/20.04系统，并且运行内存在12GB以上。TPU-MLIR环境安装步骤主要包括：
 
 1. 安装Docker
 
@@ -60,7 +60,7 @@ Sophon Stream所依赖的环境主要包括用于编译和量化模型的TPU-NNT
 此镜像仅用于编译和量化模型，程序编译和运行请在开发和运行环境中进行。更多TPU-MLIR的教程请参考[算能官网](https://developer.sophgo.com/site/index/material/31/all.html)的《TPU-MLIR快速入门手册》和《TPU-MLIR开发参考手册》。
 
 ## 2 TPU-NNTC环境搭建
-如果您使用BM1684芯片，建议使用TPU-NNTC编译BModel。通常需要在x86主机上安装TPU-NNTC环境，x86主机已安装Ubuntu16.04/18.04/20.04系统，并且运行内存在12GB以上。TPU-NNTC环境安装步骤主要包括：
+如果您使用BM1684处理器，建议使用TPU-NNTC编译BModel。通常需要在x86主机上安装TPU-NNTC环境，x86主机已安装Ubuntu16.04/18.04/20.04系统，并且运行内存在12GB以上。TPU-NNTC环境安装步骤主要包括：
 
 1. 安装Docker
 

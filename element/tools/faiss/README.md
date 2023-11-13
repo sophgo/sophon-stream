@@ -3,7 +3,7 @@
 sophon-stream faiss element是sophon-stream框架中的一个插件，是一个专用作计算查询向量与数据库向量的内积距离的工具。
 
 ## 1. 特性
-* 该接口用于 Faiss::IndexFlatIP.search(), 在 BM1684X 上实现。考虑 BM1684X 上 TPU 的连续内存, 针对 100W 底库, 可以在单芯片上一次查询最多约 512 个 256 维的输入。
+* 该接口用于 Faiss::IndexFlatIP.search(), 在 BM1684X 上实现。考虑 BM1684X 上 TPU 的连续内存, 针对 100W 底库, 可以在单处理器上一次查询最多约 512 个 256 维的输入。
 
 ## 2. 配置参数
 sophon-stream faiss插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
