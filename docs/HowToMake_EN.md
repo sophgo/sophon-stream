@@ -19,7 +19,9 @@ make -j4
 ```
 
 ## SoC Platform
-Usually, when cross-compiling programs on an x86 host, you need to set up a cross-compilation environment using the SOPHON SDK on the x86 host. You will package the required header files and library files into the `sophon_sdk_soc` directory. You can either download the SOPHON SDK and package it yourself or download our pre-packaged files (choose one based on your SOC environment):
+Usually, when cross-compiling programs on an x86 host, you need to set up a cross-compilation environment using the SOPHON SDK on the x86 host. You will package the required header files and library files into the `sophon_sdk_soc` directory. You can either download the SOPHON SDK and package it yourself or download our pre-packaged files (choose one based on your SOC environment).
+
+The following three files correspond to the v23.03.01, v23.05.01, and v23.07.01 versions of the official SDK.
 
 ```bash
 pip3 install dfss
@@ -37,7 +39,7 @@ cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
 
-If the required SDK version was not provided in the previous sections, you'll need to package the `soc-sdk` by following this process:
+If the required SDK version was not provided in the previous sections, you'll need to package the `soc-sdk` by following this process. Note that for SE9 devices, sophon-img in the following command needs to be changed to sophon-img-se9.
 
 1. Unzip the contents of the `libsophon_soc_<x.y.z>_aarch64.tar.gz` file located in the `sophon-img` directory of the SDK. Copy all the contents of the `lib` and `include` folders to your `soc-sdk` directory.
 

@@ -19,7 +19,9 @@ make -j4
 ```
 
 ## SoC平台
-通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)：
+通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)。
+
+下面的三个文件，分别对应官网SDK的v23.03.01、v23.05.01、v23.07.01版本。
 ```bash
 pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0301.tar.gz
@@ -36,7 +38,7 @@ cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
 
-如果您需要的SDK版本上文未提供，需要自己打包soc-sdk，可以参考以下流程：
+如果您需要的SDK版本上文未提供，需要自己打包soc-sdk，可以参考以下流程进行打包。需要注意的是，对于SE9设备，下列命令中的sophon-img需要改为sophon-img-se9。
 
  1. 解压SDK目录下，sophon-img包里的libsophon_soc_<x.y.z>_aarch64.tar.gz，将lib和include的所有内容分别拷贝到您的soc-sdk目录
  ```bash
