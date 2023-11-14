@@ -123,11 +123,11 @@ void RetinafacePostProcess::get_faceInfo(std::shared_ptr<RetinafaceContext> cont
     int hs=context->net_h;
     int ws=context->net_w;
 
-    float * cls_data = preds[output_names_map["cls"]];
-    float *land_data = preds[output_names_map["land"]];
-    float *loc_data = preds[output_names_map["loc"]];
+    float * cls_data = preds[output_names_map[context->bmNetwork->m_netinfo->output_names[1]]];
+    float *land_data = preds[output_names_map[context->bmNetwork->m_netinfo->output_names[2]]];
+    float *loc_data = preds[output_names_map[context->bmNetwork->m_netinfo->output_names[0]]];
     
-
+    
     const int num_layer = 3;
     const size_t steps[] = {8, 16, 32};
     const int num_anchor = 2;
