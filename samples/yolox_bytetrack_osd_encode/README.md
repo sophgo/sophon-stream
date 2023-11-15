@@ -28,7 +28,7 @@
 ## 2. 特性
 * 检测模型使用yolox；
 * 跟踪模型使用bytetrack；
-* 支持BM1684X(x86 PCIe、SoC)和BM1684(x86 PCIe、SoC、arm PCIe)
+* 支持BM1684X(x86 PCIe、SoC)，BM1684(x86 PCIe、SoC、arm PCIe)，BM1688(SoC)
 * 支持多路视频流
 * 支持多线程
 
@@ -58,7 +58,7 @@ chmod -R +x scripts/
 │   ├── yolox_s_int8_1b.bmodel              # 用于BM1684的INT8 BModel，batch_size=1
 │   └── yolox_s_int8_4b.bmodel              # 用于BM1684的INT8 BModel，batch_size=4
 ├── BM1684X
-│   ├── yolox_bytetrack_s_fp16_1b.bmodel    # 用于BM1684X的FP16 BModel，batch_size=1
+│   ├── yolox_bytetrack_s_fp32_4b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=4
 │   ├── yolox_bytetrack_s_fp32_1b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=1
 │   ├── yolox_bytetrack_s_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1
 │   ├── yolox_bytetrack_s_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4
@@ -72,7 +72,7 @@ chmod -R +x scripts/
 ```
 模型说明:
 
-1.`yolox_s_bytetrack_`系列模型移植于[bytetrack官方](https://github.com/ifzhang/ByteTrack)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`，支持person类别的检测任务。
+1.`yolox_bytetrack_s`系列模型移植于[bytetrack官方](https://github.com/ifzhang/ByteTrack)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`，支持person类别的检测任务。
 
 2.`yolox_s`系列模型移植于[yolox官方](https://github.com/Megvii-BaseDetection/YOLOX)，插件配置`mean=[0,0,0]`，`std=[1,1,1]`，支持COCO数据集的80分类检测任务。
 

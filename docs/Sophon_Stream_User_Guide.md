@@ -97,7 +97,7 @@ cmake .. -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=${path_to_sophon_soc_sdk}
 make -j
 ```
 
-注意：交叉编译时，${path_to_sophon_soc_sdk} 变量指运行交叉编译命令的x86主机上的arm sophon-sdk目录。
+注意：交叉编译时，${path_to_sophon_soc_sdk} 变量指运行交叉编译命令的x86主机上打包好的sophon_sdk_soc目录。
 
 ### 1.3 编译结果
 

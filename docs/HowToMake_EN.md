@@ -39,7 +39,7 @@ cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
 
-If the required SDK version was not provided in the previous sections, you'll need to package the `soc-sdk` by following this process. Note that for SE9 devices, sophon-img in the following command needs to be changed to sophon-img-se9.
+If the required SDK version was not provided in the previous sections, you'll need to package the `soc-sdk` by following this process. Note that for SE9 devices, sophon-img in the following command needs to be changed to sophon-img-se9, and sophon-mw needs to be changed to sophon_media.
 
 1. Unzip the contents of the `libsophon_soc_<x.y.z>_aarch64.tar.gz` file located in the `sophon-img` directory of the SDK. Copy all the contents of the `lib` and `include` folders to your `soc-sdk` directory.
 

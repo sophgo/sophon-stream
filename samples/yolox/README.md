@@ -34,7 +34,7 @@ yolox由旷视提出，是基于YOLO系列的改进
 
 ## 2. 特性
 
-* 支持BM1684X(x86 PCIe、SoC)和BM1684(x86 PCIe、SoC、arm PCIe)
+* 支持BM1684X(x86 PCIe、SoC)，BM1684(x86 PCIe、SoC、arm PCIe)，BM1688(SoC)
 * 支持多路视频流
 * 支持多线程
 
@@ -255,7 +255,7 @@ frame count is 1422 | fps is 269.707 fps.
 
 ## 7. 性能测试
 
-目前，yolox例程支持在BM1684、BM1684X的PCIE、SOC模式下进行推理。
+目前，yolox例程支持在BM1684、BM1684X的PCIE、SOC模式下进行推理，支持在BM1688 SOC模式下进行推理。
 
 在不同的设备上可能需要修改json配置，例如模型路径、输入路数等。json的配置方法参考6.1节，程序运行方法参考上文6.2节。
 
