@@ -272,9 +272,20 @@ void Encode::processVideoStream(
           output_path = "rtmp://localhost:" + mRtmpPort + "/" +
                         std::to_string(channel_id);
           break;
-        case EncodeType::VIDEO:
-          output_path = std::to_string(channel_id) + ".avi";
-          break;
+        case EncodeType::VIDEO: {
+          std::string dir_path_ = "./results/";
+          struct stat info;
+          if (stat(dir_path_.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
+            IVS_INFO("Directory already exists.");
+          } else {
+            if (mkdir(dir_path_.c_str(), 0777) == 0) {
+              IVS_INFO("Directory created successfully.");
+            } else {
+              IVS_INFO("Error creating directory.");
+            }
+          }
+          output_path = dir_path_ + std::to_string(channel_id) + ".avi";
+        } break;
         default:
           IVS_ERROR("Encode type error, please input RTSP, RTMP or VIDEO");
       }
