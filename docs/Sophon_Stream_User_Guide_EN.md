@@ -48,10 +48,6 @@ English | [简体中文](Sophon_Stream_User_Guide.md)
     - [5.2 Configuration Files](#52-configuration-files)
     - [5.3 Entry Program](#53-entry-program)
     - [5.4 User-Side Information](#54-user-side-information)
-  - [6. Tools](#6-tools)
-    - [6.1 Introduction to web\_visualize](#61-introduction-to-web_visualize)
-    - [6.2 Features](#62-features)
-    - [6.3 Usage](#63-usage)
 
 ## 1. Quick Start
 
@@ -942,35 +938,3 @@ When running a demo, the following information is sequentially printed in the co
 total time cost 5286871 us.
 frame count is 1422 | fps is 268.968 fps.
 ```
-
-## 6. Tools
-
-### 6.1 Introduction to web_visualize
-
-web_visualize is a visualization tool designed for running the sophon-stream project. This tool visualizes the project's results on the frontend, allowing users to have real-time insights into the project's inference results. With this tool, users can visually observe the processing status and outputs of each stage in real-time on the frontend. This interactive visualization provides great convenience for debugging and optimization of the project, making it accessible even to non-technical users.
-
-Currently, web_visualize consists of two subdirectories: web_server, which is the backend program of the project, and web_ui, which is the frontend program of the project. Details on how to start and an overview of the project can be found in the [Quick Start Guide](../tools/web_visualize/README.md) below, which will provide step-by-step instructions for launching both the frontend and backend.
-
-### 6.2 Features
-
-The web_visualize visualization tool provides the following features to users:
-
-- Graphical user interface for operation and configuration:
-
-  We offer built-in pipeline example configurations for each pipeline, allowing you to run examples and quickly experience sophon-stream.
-
-- Support for modifying different pipeline parameters:
-
-  We support online configuration of various pipeline parameters. You can select different configuration files and submit them online.
-
-- Support for previewing pipeline results:
-
-  You can preview real-time video results of running pipelines.
-
-### 6.3 Usage
-
-To use this project tool, start the web_server backend program first and then the web_ui frontend program. Follow the introductory steps below:
-
-First, refer to the Quick Start Guide for the backend program to launch it. For details, please see the [web_server user manual](../tools/web_visualize/web_server/README.md).
-
-Then, refer to the Quick Start Guide for the frontend program to launch it. For details, please see the [web_ui user manual](../tools/web_visualize/web_ui/README.md).

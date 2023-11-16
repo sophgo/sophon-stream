@@ -35,7 +35,6 @@ Main Directory Structure and Module Descriptions:
 |                         | [yolov5_bytetrack_distributor_resnet_converger](./samples/yolov5_bytetrack_distributor_resnet_converger)| detect-track-distribute-recognize demo|
 |                         | [retinaface_distributor_resnet_faiss_converger](./samples/retinaface_distributor_resnet_faiss_converge)| face detect-distribute-face recognize demo|
 |                         | [license_plate_recognition](./samples/license_plate_recognition/) | car detect-license plate recognize demo |
-| [tools](./tools)        | [web_visualize](./tools/web_visualize)                            | web visualize tools         |
 
 ## 2 Quick Start
 

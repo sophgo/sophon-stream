@@ -107,7 +107,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 "encode_type": "IMG_DIR",
 ```
 
-输出图片文件名为：`{channel_id}_{mFrameId}.jpg`
+输出图片文件名为：`./results/{channel_id}/{mFrameId}.jpg`
 
 假设channel_id为0, mFrameId为0，此时文件名为`0_0.jpg`
 

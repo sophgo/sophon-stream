@@ -35,7 +35,6 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [yolov5_bytetrack_distributor_resnet_converger](./samples/yolov5_bytetrack_distributor_resnet_converger)| 目标检测-跟踪-分发-属性识别demo|
 |                         | [retinaface_distributor_resnet_faiss_converger](./samples/retinaface_distributor_resnet_faiss_converge)| 人脸检测-分发-人脸识别demo|
 |                         | [license_plate_recognition](./samples/license_plate_recognition/) | 车辆检测-车牌识别demo |
-| [tools](./tools)        | [web_visualize](./tools/web_visualize)                            | web可视化工具       |
 
 ## 2 快速入门
 请参考[sophon-stream用户文档](./docs/Sophon_Stream_User_Guide.md)
