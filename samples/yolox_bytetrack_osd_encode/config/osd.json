@@ -9,5 +9,5 @@
   "shared_object": "../../build/lib/libosd.so",
   "name": "osd",
   "side": "sophgo",
-  "thread_number": 1
+  "thread_number": 4
 }

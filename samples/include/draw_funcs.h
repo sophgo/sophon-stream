@@ -521,3 +521,7 @@ void draw_yolox_results(std::shared_ptr<sophon_stream::common::ObjectMetadata> o
     free(jpeg_data);
     bm_image_destroy(imageStorage);
 }
+
+void draw_default(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata) {
+    return;
+}

@@ -35,11 +35,11 @@
             },
             {
                 "element_id": 5005,
-                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json"
             },
             {
                 "element_id": 5006,
-                "element_config": "../config/encode.json",
+                "element_config": "../yolox_bytetrack_osd_encode/config/encode.json",
                 "ports": {
                     "input": [
                         {
