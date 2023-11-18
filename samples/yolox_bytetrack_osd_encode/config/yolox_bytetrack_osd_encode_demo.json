@@ -25,6 +25,5 @@
       "loop_num": 1
     }
   ],
-  "engine_config_path": "../yolox_bytetrack_osd_encode/config/engine_group.json",
-  "draw_func_name": "default"
+  "engine_config_path": "../yolox_bytetrack_osd_encode/config/engine_group.json"
 }

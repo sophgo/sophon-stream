@@ -67,6 +67,8 @@ demo_config parse_demo_json(std::string& json_path) {
   if (demo_json.contains(JSON_CONFIG_DRAW_FUNC_NAME_FILED))
       config.draw_func_name =
         demo_json.find(JSON_CONFIG_DRAW_FUNC_NAME_FILED)->get<std::string>();
+  else
+    config.draw_func_name = "default";
   std::string car_attr_file;
   if (demo_json.contains(JSON_CONFIG_CAR_ATTRIBUTES_FILED))
     car_attr_file =
