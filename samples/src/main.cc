@@ -43,6 +43,7 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED =
 constexpr const char* JSON_CONFIG_DRAW_FUNC_NAME_FILED = "draw_func_name";
 constexpr const char* JSON_CONFIG_CAR_ATTRIBUTES_FILED = "car_attributes";
 constexpr const char* JSON_CONFIG_PERSON_ATTRIBUTES_FILED = "person_attributes";
+constexpr const char* JSON_CONFIG_CHANNEL_DECODE_IDX_FILED = "decode_idx";
 constexpr const char* JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED = "heatmap_loss";
 
 demo_config parse_demo_json(std::string& json_path) {
@@ -172,6 +173,12 @@ demo_config parse_demo_json(std::string& json_path) {
       channel_json["skip_element"] = skip_element_it->get<std::vector<int>>();
     }
 
+    channel_json["decode_idx"] = 0;
+    auto decode_idx_it = channel_it.find(JSON_CONFIG_CHANNEL_DECODE_IDX_FILED);
+    if (decode_idx_it != channel_it.end()) {
+      channel_json["decode_idx"] = decode_idx_it->get<int>();
+    }
+
     config.channel_configs.push_back(channel_json);
   }
 
@@ -256,7 +263,7 @@ int main(int argc, char *argv[]) {
         draw_func(objectMetadata);
   };
 
-  std::map<int, std::pair<int, int>> graph_src_id_port_map;
+  std::map<int, std::vector<std::pair<int, int>>> graph_src_id_port_map;
   init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
 
   for (auto graph_id : engine.getGraphIds()) {
@@ -267,7 +274,8 @@ int main(int argc, char *argv[]) {
           ChannelOperateRequest::ChannelOperate::START;
         channelTask->request.channelId = channel_config["channel_id"];
       channelTask->request.json = channel_config.dump();
-      std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id];
+      int decode_idx = channel_config["decode_idx"];
+      std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id][decode_idx];
       sophon_stream::common::ErrorCode errorCode =
           engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
                                 std::static_pointer_cast<void>(channelTask));

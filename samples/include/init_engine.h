@@ -35,7 +35,7 @@ constexpr const char* JSON_CONFIG_INNER_ELEMENTS_ID = "inner_elements_id";
 void parse_element_json(
     const nlohmann::detail::iter_impl<nlohmann::json> elements_it,
     nlohmann::json& elementsConfigure, int device_id,
-    std::pair<int, int>& src_id_port, std::pair<int, int>& sink_id_port) {
+    std::vector<std::pair<int, int>>& src_id_port, std::pair<int, int>& sink_id_port) {
   std::ifstream elem_stream;
   for (auto& element_it : *elements_it) {
     nlohmann::json element;
@@ -64,11 +64,11 @@ void parse_element_json(
       if (input_it != ports_it->end()) {
         for (auto& input : *input_it) {
           if (input.find(JSON_CONFIG_ELEMENT_IS_SRC_FILED)->get<bool>()) {
-            STREAM_CHECK(src_id_port.first == -1,
-                         "Too many src element, please check ", elem_config,
-                         " file.");
-            src_id_port = {element["id"],
-                           input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
+            // STREAM_CHECK(src_id_port.first == -1,
+            //              "Too many src element, please check ", elem_config,
+            //              " file.");
+            src_id_port.push_back({element["id"],
+                           input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()});
           }
         }
       }
@@ -89,7 +89,7 @@ void parse_element_json(
     elem_stream.close();
   }
   STREAM_CHECK(
-      (src_id_port.first != -1 && sink_id_port.first != -1),
+      (src_id_port.size() > 0 && src_id_port[0].first != -1 && sink_id_port.first != -1),
       "THERE MUST BE ONE SRC PORT AND AT LEAST ONE SINK PORT IN GRAPH! CHECK "
       "YOUR ENGINE.JSON.");
 }
@@ -116,10 +116,10 @@ void parse_connection_json(
 void init_engine(
     sophon_stream::framework::Engine& engine, nlohmann::json& engine_json,
     const sophon_stream::framework::Engine::SinkHandler& sinkHandler,
-    std::map<int, std::pair<int, int>>& graph_src_id_port_map) {
+    std::map<int, std::vector<std::pair<int, int>>>& graph_src_id_port_map) {
   for (auto& graph_it : engine_json) {
     nlohmann::json graphConfigure, elementsConfigure;
-    std::pair<int, int> src_id_port = {-1, -1};   // src_port
+    std::vector<std::pair<int, int>> src_id_port;;   // src_port
     std::pair<int, int> sink_id_port = {-1, -1};  // sink_port
 
     int graph_id = graph_it.find(JSON_CONFIG_GRAPH_ID_FILED)->get<int>();
