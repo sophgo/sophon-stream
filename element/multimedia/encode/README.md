@@ -111,7 +111,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 
 输出图片文件名为：`./results/{channel_id}/{mFrameId}.jpg`
 
-假设channel_id为0, mFrameId为0，此时文件名为`0_0.jpg`
+假设channel_id为0, mFrameId为0，此时文件名为`./results/0/0.jpg`
 
 ## 7. WebSocket使用说明
 
