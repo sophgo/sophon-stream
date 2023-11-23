@@ -18,5 +18,5 @@
     "shared_object": "../../build/lib/libretinaface.so",
     "name": "retinaface_group",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
 }

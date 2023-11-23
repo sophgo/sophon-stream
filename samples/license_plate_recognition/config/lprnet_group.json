@@ -5,5 +5,5 @@
     "shared_object": "../../build/lib/liblprnet.so",
     "name": "lprnet_group",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
   }

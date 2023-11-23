@@ -34,7 +34,7 @@
     }
   ],
   "class_names": "../yolox/data/coco.names",
-  "download_image": true,
+  "download_image": false,
   "draw_func_name": "draw_yolox_results",
   "engine_config_path": "../yolox/config/engine_group.json"
 }

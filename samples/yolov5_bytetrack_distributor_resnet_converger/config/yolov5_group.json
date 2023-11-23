@@ -101,5 +101,5 @@
     "shared_object": "../../build/lib/libyolov5.so",
     "name": "yolov5_group",
     "side": "sophgo",
-    "thread_number": 1
+    "thread_number": 4
 }

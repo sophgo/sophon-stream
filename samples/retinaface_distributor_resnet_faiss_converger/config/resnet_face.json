@@ -18,5 +18,5 @@
   "shared_object": "../../build/lib/libresnet.so",
   "name": "resnet",
   "side": "sophgo",
-  "thread_number": 1
+  "thread_number": 4
 }

@@ -7,5 +7,5 @@
     "shared_object": "../../build/lib/libopenpose.so",
     "name": "openpose_group",
     "side": "sophgo",
-    "thread_number": 2
+    "thread_number": 4
   }
