@@ -115,18 +115,9 @@ static void _draw_face_rectangle_bmcv(bm_handle_t& handle,
   }
 }
 
-static void _draw_text_bmcv(bm_handle_t& handle, int left, int top, int width,
-                   int height, bm_image& frame,
+static void _draw_text_bmcv(bm_handle_t& handle, int left, int top, bm_image& frame,
                    std::string label)  // Draw the predicted bounding box
 {
-    bmcv_rect_t rect;
-    rect.start_x = left;
-    rect.start_y = top;
-    rect.crop_w = width;
-    rect.crop_h = height;
-    std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
-                << rect.crop_h << std::endl;
-    // bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, 255, 0,0);
     bmcv_point_t org = {left, top + 40};
     bmcv_color_t bmcv_color = {255, 0, 0};
     int thickness = 2;
@@ -154,6 +145,163 @@ static std::vector<unsigned int> _get_pose_pairs(
       return {1, 2,  1,  5,  2,  3,  3,  4,  5,  6,  6,  7, 1,
               8, 8,  9,  9,  10, 1,  11, 11, 12, 12, 13, 1, 0,
               0, 14, 14, 16, 0,  15, 15, 17, 2,  16, 5,  17};
+  }
+}
+
+static std::vector<unsigned int> _get_fastpose_pairs(int kp_num) {
+  switch (kp_num) {
+    case 17:
+      return {0, 1, 0,  2,  1,  3,  2,  4,  5,  6,  5,  7,  7,  9,  6,
+             8, 8, 10, 11, 12, 11, 13, 12, 14, 13, 15, 14, 16};
+    case 136:
+      return {
+          0,   1,   0,   2,   1,   3,   2,   4,   5,   18,  6,   18,  5,   7,
+          7,   9,   6,   8,   8,   10,  17,  18,  18,  19,  19,  11,  19,  12,
+          11,  13,  12,  14,  13,  15,  14,  16,  20,  24,  21,  25,  23,  25,
+          22,  24,  15,  24,  16,  25,  26,  27,  27,  28,  28,  29,  29,  30,
+          30,  31,  31,  32,  32,  33,  33,  34,  34,  35,  35,  36,  36,  37,
+          37,  38,  38,  39,  39,  40,  40,  41,  41,  42,  43,  44,  44,  45,
+          45,  46,  46,  47,  48,  49,  49,  50,  50,  51,  51,  52,  53,  54,
+          54,  55,  55,  56,  57,  58,  58,  59,  59,  60,  60,  61,  62,  63,
+          63,  64,  64,  65,  65,  66,  66,  67,  68,  69,  69,  70,  70,  71,
+          71,  72,  72,  73,  74,  75,  75,  76,  76,  77,  77,  78,  78,  79,
+          79,  80,  80,  81,  81,  82,  82,  83,  83,  84,  84,  85,  85,  86,
+          86,  87,  87,  88,  88,  89,  89,  90,  90,  91,  91,  92,  92,  93,
+          94,  95,  95,  96,  96,  97,  97,  98,  94,  99,  99,  100, 100, 101,
+          101, 102, 94,  103, 103, 104, 104, 105, 105, 106, 94,  107, 107, 108,
+          108, 109, 109, 110, 94,  111, 111, 112, 112, 113, 113, 114, 115, 116,
+          116, 117, 117, 118, 118, 119, 115, 120, 120, 121, 121, 122, 122, 123,
+          115, 124, 124, 125, 125, 126, 126, 127, 115, 128, 128, 129, 129, 130,
+          130, 131, 115, 132, 132, 133, 133, 134, 134, 135};
+    case 133:
+      return {
+          0,   1,   0,   2,   1,   3,   2,   4,   5,   7,   7,   9,   6,   8,
+          8,   10,  11,  13,  12,  14,  13,  15,  14,  16,  18,  19,  21,  22,
+          20,  22,  17,  19,  15,  19,  16,  22,  23,  24,  24,  25,  25,  26,
+          26,  27,  27,  28,  28,  29,  29,  30,  30,  31,  31,  32,  32,  33,
+          33,  34,  34,  35,  35,  36,  36,  37,  37,  38,  38,  39,  40,  41,
+          41,  42,  42,  43,  43,  44,  45,  46,  46,  47,  47,  48,  48,  49,
+          50,  51,  51,  52,  52,  53,  54,  55,  55,  56,  56,  57,  57,  58,
+          59,  60,  60,  61,  61,  62,  62,  63,  63,  64,  65,  66,  66,  67,
+          67,  68,  68,  69,  69,  70,  71,  72,  72,  73,  73,  74,  74,  75,
+          75,  76,  76,  77,  77,  78,  78,  79,  79,  80,  80,  81,  81,  82,
+          82,  83,  83,  84,  84,  85,  85,  86,  86,  87,  87,  88,  88,  89,
+          89,  90,  91,  92,  92,  93,  93,  94,  94,  95,  91,  96,  96,  97,
+          97,  98,  98,  99,  91,  100, 100, 101, 101, 102, 102, 103, 91,  104,
+          104, 105, 105, 106, 106, 107, 91,  108, 108, 109, 109, 110, 110, 111,
+          112, 113, 113, 114, 114, 115, 115, 116, 112, 117, 117, 118, 118, 119,
+          119, 120, 112, 121, 121, 122, 122, 123, 123, 124, 112, 125, 125, 126,
+          126, 127, 127, 128, 112, 129, 129, 130, 130, 131, 131, 132};
+    case 68:
+      return {0,  1,  0,  2,  1,  3,  2,  4,  5,  18, 6,  18, 5,  7,  7,  9,
+              6,  8,  8,  10, 17, 18, 18, 19, 19, 11, 19, 12, 11, 13, 12, 14,
+              13, 15, 14, 16, 20, 24, 21, 25, 23, 25, 22, 24, 15, 24, 16, 25,
+              26, 27, 27, 28, 28, 29, 29, 30, 26, 31, 31, 32, 32, 33, 33, 34,
+              26, 35, 35, 36, 36, 37, 37, 38, 26, 39, 39, 40, 40, 41, 41, 42,
+              26, 43, 43, 44, 44, 45, 45, 46, 47, 48, 48, 49, 49, 50, 50, 51,
+              47, 52, 52, 53, 53, 54, 54, 55, 47, 56, 56, 57, 57, 58, 58, 59,
+              47, 60, 60, 61, 61, 62, 62, 63, 47, 64, 64, 65, 65, 66, 66, 67};
+    case 26:
+      return {
+          0,  1,  0,  2,  1,  3,  2,  4,  5,  18, 6,  18, 5,  7,  7,  9,
+          6,  8,  8,  10, 17, 18, 18, 19, 19, 11, 19, 12, 11, 13, 12, 14,
+          13, 15, 14, 16, 20, 24, 21, 25, 23, 25, 22, 24, 15, 24, 16, 25,
+      };
+    case 21:
+      return {0,  1,  1,  2,  2,  3,  3,  4,  0,  5,  5,  6,  6,  7,  7,  8,
+              0,  9,  9,  10, 10, 11, 11, 12, 0,  13, 13, 14, 14, 15, 15, 16,
+              0,  17, 17, 18, 18, 19, 19, 20, 21, 22, 22, 23, 23, 24, 24, 25,
+              21, 26, 26, 27, 27, 28, 28, 29, 21, 30, 30, 31, 31, 32, 32, 33,
+              21, 34, 34, 35, 35, 36, 36, 37, 21, 38, 38, 39, 39, 40, 40, 41};
+  }
+}
+
+static std::vector<float> _get_fastpose_p_color(int kp_num) {
+  switch (kp_num) {
+    case 17:
+      return {0,   255, 255, 0,   191, 255, 0,   255, 102, 0,   77,
+              255, 0,   255, 0,   77,  255, 255, 77,  255, 204, 77,
+              204, 255, 191, 255, 77,  77,  191, 255, 191, 255, 77,
+              204, 77,  255, 77,  255, 204, 191, 77,  255, 77,  255,
+              191, 127, 77,  255, 77,  255, 127, 0,   255, 255};
+    case 136:
+      return {0,   255, 255, 0,   191, 255, 0,   255, 102, 0,   77,  255, 0,
+              255, 0,   77,  255, 255, 77,  255, 204, 77,  204, 255, 191, 255,
+              77,  77,  191, 255, 191, 255, 77,  204, 77,  255, 77,  255, 204,
+              191, 77,  255, 77,  255, 191, 127, 77,  255, 77,  255, 127, 77,
+              255, 255, 0,   255, 255, 77,  204, 255, 0,   255, 255, 0,   191,
+              255, 0,   255, 102, 0,   77,  255, 0,   255, 0,   77,  255, 255};
+    case 133:
+      return {0,   255, 255, 0,   191, 255, 0,   255, 102, 0,   77,  255,
+              0,   255, 0,   77,  255, 255, 77,  255, 204, 77,  204, 255,
+              191, 255, 77,  77,  191, 255, 191, 255, 77,  204, 77,  255,
+              77,  255, 204, 191, 77,  255, 77,  255, 191, 127, 77,  255,
+              77,  255, 127, 0,   255, 255, 0,   191, 255, 0,   255, 102,
+              0,   77,  255, 0,   255, 0,   77,  255, 255};
+    case 68:
+      return {0,   255, 255, 0,   191, 255, 0,   255, 102, 0,   77,  255, 0,
+              255, 0,   77,  255, 255, 77,  255, 204, 77,  204, 255, 191, 255,
+              77,  77,  191, 255, 191, 255, 77,  204, 77,  255, 77,  255, 204,
+              191, 77,  255, 77,  255, 191, 127, 77,  255, 77,  255, 127, 77,
+              255, 255, 0,   255, 255, 77,  204, 255, 0,   255, 255, 0,   191,
+              255, 0,   255, 102, 0,   77,  255, 0,   255, 0,   77,  255, 255};
+    case 26:
+      return {0,   255, 255, 0,   191, 255, 0,   255, 102, 0,   77,  255, 0,
+              255, 0,   77,  255, 255, 77,  255, 204, 77,  204, 255, 191, 255,
+              77,  77,  191, 255, 191, 255, 77,  204, 77,  255, 77,  255, 204,
+              191, 77,  255, 77,  255, 191, 127, 77,  255, 77,  255, 127, 77,
+              255, 255, 0,   255, 255, 77,  204, 255, 0,   255, 255, 0,   191,
+              255, 0,   255, 102, 0,   77,  255, 0,   255, 0,   77,  255, 255};
+    case 21:
+      return {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+  }
+}
+
+static std::vector<float> _get_fastpose_line_color(int kp_num) {
+  switch (kp_num) {
+    case 17:
+      return {0,   215, 255, 0,  255, 204, 0,   134, 255, 0,   255, 50,
+              77,  255, 222, 77, 196, 255, 77,  135, 255, 191, 255, 77,
+              77,  255, 77,  77, 222, 255, 255, 156, 127, 0,   127, 255,
+              255, 127, 77,  0,  77,  255, 255, 77,  36};
+    case 136:
+      return {0,   215, 255, 0,   255, 204, 0,   134, 255, 0,   255, 50,
+              0,   255, 102, 77,  255, 222, 77,  196, 255, 77,  135, 255,
+              191, 255, 77,  77,  255, 77,  77,  191, 255, 204, 77,  255,
+              77,  222, 255, 255, 156, 127, 0,   127, 255, 255, 127, 77,
+              0,   77,  255, 255, 77,  36,  0,   77,  255, 0,   77,  255,
+              0,   77,  255, 0,   77,  255, 255, 156, 127, 255, 156, 127};
+    case 133:
+      return {0,   215, 255, 0,   255, 204, 0,   134, 255, 0,   255,
+              50,  0,   255, 102, 77,  255, 222, 77,  196, 255, 77,
+              135, 255, 191, 255, 77,  77,  255, 77,  77,  191, 255,
+              204, 77,  255, 77,  222, 255, 255, 156, 127, 0,   127,
+              255, 255, 127, 77,  0,   77,  255, 255, 77,  36,  0,
+              77,  255, 0,   77,  255, 0,   77,  255, 0,   77,  255};
+    case 68:
+      return {0,   215, 255, 0,   255, 204, 0,   134, 255, 0,   255, 50,
+              0,   255, 102, 77,  255, 222, 77,  196, 255, 77,  135, 255,
+              191, 255, 77,  77,  255, 77,  77,  191, 255, 204, 77,  255,
+              77,  222, 255, 255, 156, 127, 0,   127, 255, 255, 127, 77,
+              0,   77,  255, 255, 77,  36,  0,   77,  255, 0,   77,  255,
+              0,   77,  255, 0,   77,  255, 255, 156, 127, 255, 156, 127};
+    case 26:
+      return {0,   215, 255, 0,   255, 204, 0,   134, 255, 0,   255, 50,
+              0,   255, 102, 77,  255, 222, 77,  196, 255, 77,  135, 255,
+              191, 255, 77,  77,  255, 77,  77,  191, 255, 204, 77,  255,
+              77,  222, 255, 255, 156, 127, 0,   127, 255, 255, 127, 77,
+              0,   77,  255, 255, 77,  36,  0,   77,  255, 0,   77,  255,
+              0,   77,  255, 0,   77,  255, 255, 156, 127, 255, 156, 127};
+    case 21:
+      return {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+              255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
   }
 }
 
@@ -226,6 +374,101 @@ static void _render_pose_keypoints_bmcv(bm_handle_t& handle, bm_image& frame,
   _render_keypoints_bmcv(handle, frame, poseKeypoints, pairs, POSE_COLORS_RENDER,
                       thicknessCircleRatio, thicknessLineRatioWRTCircle,
                       renderThreshold, scale);
+}
+
+static void _render_fastpose_keypoints_bmcv(
+    bm_handle_t& handle, bm_image& frame, const std::vector<float>& keypoints,
+    const std::vector<float>& scores, const std::vector<unsigned int>& pairs,
+    const std::vector<float> p_colors, const std::vector<float> line_colors,
+    const float thicknessCircleRatio, const float thicknessLineRatioWRTCircle,
+    std::string loss_type, float scale) {
+  // Get frame channels
+  const auto width = frame.width;
+  const auto height = frame.height;
+  const auto area = width * height;
+
+  // Parameters
+  const auto lineType = 8;
+  const auto shift = 0;
+  const auto pNumberColors = p_colors.size();
+  const auto lineNumberColors = line_colors.size();
+  const auto thresholdRectangle = 0.1f;
+  float threshold1 = 0.4, threshold2 = 0.4;
+  if (loss_type == "L1JointRegression") threshold1 = 0.05, threshold2 = 0.05;
+
+  // Keypoints
+
+  const auto ratioAreas = 1;
+  // Size-dependent variables
+  const auto thicknessRatio =
+      fastMax(intRound(std::sqrt(area) * thicknessCircleRatio * ratioAreas), 1);
+  // Negative thickness in cv::circle means that a filled circle is to
+  // be drawn.
+  const auto thicknessCircle = (ratioAreas > 0.05 ? thicknessRatio : -1);
+  const auto thicknessLine =
+      2;  // intRound(thicknessRatio * thicknessLineRatioWRTCircle);
+  const auto radius = thicknessRatio / 2;
+
+  // Draw lines
+  for (auto pair = 0u; pair < pairs.size(); pair += 2) {
+    const auto index1 = pairs[pair];
+    const auto index2 = pairs[pair + 1];
+
+    if (loss_type == "Combined" && keypoints.size() / 2 == 68) {
+      if (index1 >= 26)
+        threshold1 = 0.05;
+      else
+        threshold1 = 0.4;
+      if (index2 >= 26)
+        threshold2 = 0.05;
+      else
+        threshold2 = 0.4;
+    } else if (loss_type == "Combined") {
+      if (index1 >= keypoints.size() / 2 - 110)
+        threshold1 = 0.05;
+      else
+        threshold1 = 0.4;
+      if (index2 >= keypoints.size() / 2 - 110)
+        threshold2 = 0.05;
+      else
+        threshold2 = 0.4;
+    }
+
+    if (scores[index1] > threshold1 && scores[index2] > threshold2) {
+      bmcv_color_t color;
+      if (pair / 2 < line_colors.size() / 3)
+        color = {line_colors[pair / 2 * 3 + 2], line_colors[pair / 2 * 3 + 1],
+                 line_colors[pair / 2 * 3 + 0]};
+      else
+        color = {255, 255, 255};
+      bmcv_point_t start = {intRound(keypoints[index1 * 2] * scale),
+                            intRound(keypoints[index1 * 2 + 1] * scale)};
+      bmcv_point_t end = {intRound(keypoints[index2 * 2] * scale),
+                          intRound(keypoints[index2 * 2 + 1] * scale)};
+
+      if (BM_SUCCESS != bmcv_image_draw_lines(handle, frame, &start, &end, 1,
+                                              color, thicknessLine)) {
+        std::cout << "bmcv draw lines error !!!" << std::endl;
+      }
+    }
+  }
+}
+
+static void _render_fastpose_keypoints(bm_handle_t& handle, bm_image& frame,
+                             const std::vector<float>& poseKeypoints,
+                             const std::vector<float>& scores,
+                             std::string loss_type, float scale) {
+    // Parameters
+    const auto thicknessCircleRatio = 1.f / 75.f;
+    const auto thicknessLineRatioWRTCircle = 0.75f;
+    const auto& pairs = _get_fastpose_pairs(poseKeypoints.size() / 2);
+    const auto& p_color = _get_fastpose_p_color(poseKeypoints.size() / 2);
+    const auto& line_color = _get_fastpose_line_color(poseKeypoints.size() / 2);
+
+    // Render keypoints
+    _render_fastpose_keypoints_bmcv(handle, frame, poseKeypoints, scores, pairs, p_color,
+                        line_color, thicknessCircleRatio,
+                        thicknessLineRatioWRTCircle, loss_type, scale);
 }
 
 void draw_bytetrack_results(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata, std::string& out_dir)
@@ -413,7 +656,7 @@ void draw_retinaface_distributor_resnet_faiss_converger_results(std::shared_ptr<
             rect.crop_h = std::max(faceObj->bottom - faceObj->top + 1, 0);
 
             _draw_text_bmcv(objectMetadata->mFrame->mHandle, rect.start_x,
-                        rect.start_y, rect.crop_w, rect.crop_h, imageStorage,
+                        rect.start_y, imageStorage,
                         label);
 
             std::cout << "label:" << label << std::endl;
@@ -532,4 +775,40 @@ void save_only(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMeta
 
 void draw_default(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata) {
     return;
+}
+
+void draw_yolov5_fastpose_posec3d_results(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata, std::string& out_dir, std::string loss_type) {
+    bm_image imageStorage;
+    _gen_storage_image(objectMetadata, imageStorage);
+    if (objectMetadata->mRecognizedObjectMetadatas.size() != 0)
+        _draw_text_bmcv(objectMetadata->mFrame->mHandle, 50, 10, imageStorage, 
+            objectMetadata->mRecognizedObjectMetadatas[0]->mLabelName + ":" + cv::format("%.2f", objectMetadata->mRecognizedObjectMetadatas[0]->mScores[0]));
+    for (auto subObj : objectMetadata->mPosedObjectMetadatas) {
+        _render_fastpose_keypoints(objectMetadata->mFrame->mHandle, imageStorage,
+                                subObj->keypoints, subObj->scores,
+                                loss_type, 1.0);
+    }
+    for (auto subObj : objectMetadata->mDetectedObjectMetadatas) {
+        std::string label = "person:" + cv::format("%.2f", subObj->mScores[0]);
+        _draw_rectangle_and_text_bmcv(objectMetadata->mFrame->mHandle, label,
+                  subObj->mBox.mX, subObj->mBox.mY, subObj->mBox.mWidth,
+                  subObj->mBox.mHeight, imageStorage, colors[0], true);
+    }
+    void* jpeg_data = NULL;
+    size_t out_size = 0;
+    int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
+                                    &imageStorage, &jpeg_data, &out_size);
+
+    if (ret == BM_SUCCESS) {
+        std::string img_file =
+            out_dir + "/" +
+            std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+            std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        FILE* fp = fopen(img_file.c_str(), "wb");
+        fwrite(jpeg_data, out_size, 1, fp);
+        fclose(fp);
+    
+    }
+    free(jpeg_data);
+    bm_image_destroy(imageStorage);
 }

@@ -1,0 +1,14 @@
+{
+  "configure": {
+    "model_path": "../yolov5_fastpose_posec3d/data/models/BM1684X/posec3d_ntu60_int8.bmodel",
+    "stage": [
+      "pre"
+    ],
+    "class_names_file": "../yolov5_fastpose_posec3d/data/label_map_ntu60.txt",
+    "frames_num": 72
+  },
+  "shared_object": "../../build/lib/libposec3d.so",
+  "name": "posec3d",
+  "side": "sophgo",
+  "thread_number": 3
+}

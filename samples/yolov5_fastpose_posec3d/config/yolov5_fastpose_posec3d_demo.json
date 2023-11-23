@@ -1,0 +1,18 @@
+{
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "../yolov5_fastpose_posec3d/data/videos/demo_skeleton.mp4",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    }
+  ],
+  "class_names": "../yolov5_fastpose_posec3d/data/coco.names",
+  "download_image": true,
+  "draw_func_name": "draw_yolov5_fastpose_posec3d_results",
+  "engine_config_path": "../yolov5_fastpose_posec3d/config/engine_group.json",
+  "heatmap_loss": "MSELoss"
+}
+

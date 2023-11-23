@@ -247,7 +247,7 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
         continue;
       }
       temp_bbox.score = *(tpu_k.output_tensor[i] + 7 * bid + 2);
-      if (context->roi_predefined &&
+      if (context->class_thresh_valid &&
           (temp_bbox.score <
            context->thresh_conf[context->class_names[temp_bbox.class_id]]))
         continue;

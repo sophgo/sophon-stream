@@ -1,0 +1,64 @@
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "yolov5_fastpose_posec3d",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../yolov5_fastpose_posec3d/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../yolov5_fastpose_posec3d/config/yolov5_group.json",
+                "inner_elements_id": [10001, 10002, 10003],
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 6001,
+                "element_config": "../yolov5_fastpose_posec3d/config/fastpose_group.json",
+                "inner_elements_id": [20001, 20002, 20003],
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 6001,
+                "dst_port": 0
+            }
+        ]
+    }
+]

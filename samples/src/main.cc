@@ -19,6 +19,7 @@ typedef struct demo_config_ {
   std::string draw_func_name;
   std::vector<std::string> car_attr; 
   std::vector<std::string> person_attr;
+  std::string heatmap_loss;
 } demo_config;
 
 constexpr const char* JSON_CONFIG_DOWNLOAD_IMAGE_FILED = "download_image";
@@ -42,6 +43,7 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED =
 constexpr const char* JSON_CONFIG_DRAW_FUNC_NAME_FILED = "draw_func_name";
 constexpr const char* JSON_CONFIG_CAR_ATTRIBUTES_FILED = "car_attributes";
 constexpr const char* JSON_CONFIG_PERSON_ATTRIBUTES_FILED = "person_attributes";
+constexpr const char* JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED = "heatmap_loss";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -77,6 +79,10 @@ demo_config parse_demo_json(std::string& json_path) {
   if (demo_json.contains(JSON_CONFIG_PERSON_ATTRIBUTES_FILED))
     person_attr_file =
         demo_json.find(JSON_CONFIG_PERSON_ATTRIBUTES_FILED)->get<std::string>();
+  if (demo_json.contains(JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED))
+    config.heatmap_loss =
+      demo_json.find(JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED)->get<std::string>();
+
   if (config.download_image) {
     const char* dir_path = "./results";
     struct stat info;
@@ -225,6 +231,7 @@ int main(int argc, char *argv[]) {
   else if (demo_json.draw_func_name == "draw_yolov5_bytetrack_distributor_resnet_converger_results") draw_func = std::bind(draw_yolov5_bytetrack_distributor_resnet_converger_results, std::placeholders::_1, out_dir, demo_json.car_attr, demo_json.person_attr);
   else if (demo_json.draw_func_name == "draw_yolox_results") draw_func = std::bind(draw_yolox_results, std::placeholders::_1, out_dir, demo_json.class_names);
   else if (demo_json.draw_func_name == "save_only") draw_func = std::bind(save_only, std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name == "draw_yolov5_fastpose_posec3d_results") draw_func = std::bind(draw_yolov5_fastpose_posec3d_results, std::placeholders::_1, out_dir, demo_json.heatmap_loss);
   else if (demo_json.draw_func_name == "default") draw_func = std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>(draw_default);
   else IVS_ERROR("No such function! Please check your 'draw_func_name'.");
 

@@ -1,0 +1,14 @@
+{
+  "configure": {
+    "model_path": "../yolov5_fastpose_posec3d/data/models/BM1684X/halpe26_fast_res50_256x192_int8_1b.bmodel",
+    "stage": [
+      "infer"
+    ],
+    "heatmap_loss": "MSELoss",
+    "area_thresh": 0.0
+  },
+  "shared_object": "../../build/lib/libfastpose.so",
+  "name": "fastpose",
+  "side": "sophgo",
+  "thread_number": 6
+}

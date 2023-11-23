@@ -1,0 +1,11 @@
+{
+  "configure": {
+    "model_path": "../yolov5_fastpose_posec3d/data/models/BM1684X/fast_res50_256x192_coco17_1b_fp16.bmodel",
+    "heatmap_loss": "MSELoss",
+    "area_thresh": 0.0
+  },
+  "shared_object": "../../build/lib/libfastpose.so",
+  "name": "fastpose_group",
+  "side": "sophgo",
+  "thread_number": 1
+}

@@ -52,6 +52,8 @@ struct DataInformation {
 typedef struct bmTensors_ {
   std::vector<std::shared_ptr<bm_tensor_t>> tensors;
   bm_handle_t handle;
+  // cpu data is used to sync dev mem and host mem
+  std::vector<float*> cpu_data;
 } bmTensors;
 
 typedef struct bmSubTensors_ {
@@ -63,6 +65,7 @@ struct ObjectMetadata {
   ObjectMetadata()
       : mErrorCode(common::ErrorCode::SUCCESS),
         mFilter(false),
+        is_main(false),
         numBranches(0) {}
 
   int getChannelId() const {
@@ -123,6 +126,11 @@ struct ObjectMetadata {
 
   int numBranches;
   int mSubId;
+  /**
+   * @brief
+   * 用于posec3d插件中的推理和后处理，表示ObjectMetadata是否包含了多帧输入
+   */
+  bool is_main;
 
   /**
    * @brief 跟踪结果的vector，一个目标对应一个TrackedObjectMetadata
