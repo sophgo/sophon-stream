@@ -109,8 +109,10 @@ class VideoDecFFM {
 
   int is_rtsp;
   int is_rtmp;
+  int is_gb28181;
   const char* rtsp_url;
   const char* rtmp_url;
+  const char* gb28181_url;
   int width;
   int height;
   int pix_fmt;

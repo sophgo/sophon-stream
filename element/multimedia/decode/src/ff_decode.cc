@@ -101,6 +101,7 @@ VideoDecFFM::VideoDecFFM() {
 
   is_rtsp = 0;
   is_rtmp = 0;
+  is_gb28181 = 0;
   width = 0;
   height = 0;
   pix_fmt = 0;
@@ -405,13 +406,21 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   } else if (strstr(input, "rtmp://")) {
     this->is_rtmp = 1;
     this->rtmp_url = input;
+  }else if (strstr(input, "gb28181://")) {
+    this->is_gb28181 = 1;
+    this->gb28181_url = input;
   }
   this->handle = dec_handle;
   this->dev_id = bm_get_devid(*dec_handle);
   int ret = 0;
   AVDictionary* dict = NULL;
-  av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
+  if(this->is_gb28181){
+    av_dict_set(&dict, "gb28181_transport_rtp", "tcp", 0);
+  }else{
+    av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
   // av_dict_set(&dict, "rtsp_transport", "tcp", 0);
+  }
+  
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
     av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
@@ -539,9 +548,13 @@ void VideoDecFFM::reConnectVideoStream() {
   while (1) {
     // 尝试连接服务器
     AVDictionary* dict = NULL;
-    av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
+    if(this->is_gb28181){
+      av_dict_set(&dict, "gb28181_rtsp_transport", "tcp", 0);
+    }else{
+      av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
+    }
     // av_dict_set(&dict, "rtsp_transport", "tcp", 0);
-    auto url = this->is_rtsp ? this->rtsp_url : this->rtmp_url;
+    auto url = this->is_rtsp ? this->rtsp_url : (this->is_rtmp ?this->rtmp_url:this->gb28181_url);
     av_log(video_dec_ctx, AV_LOG_ERROR, "Start reconnected, url: %s.\n", url);
     auto ret = avformat_open_input(&ifmt_ctx, url, NULL, &dict);
     if (ret < 0) {
@@ -610,7 +623,7 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     av_packet_unref(pkt);
     ret = av_read_frame(ifmt_ctx, pkt);
     if (ret < 0) {
-      if ((this->is_rtsp || this->is_rtmp) && isNetworkError(ret)) {
+      if ((this->is_rtsp || this->is_rtmp || this->is_gb28181) && isNetworkError(ret)) {
         avformat_close_input(&ifmt_ctx);  // 关闭当前连接
         av_log(video_dec_ctx, AV_LOG_ERROR,
                "RTSP or RTMP network error ret(%d), start retry.\n", ret);

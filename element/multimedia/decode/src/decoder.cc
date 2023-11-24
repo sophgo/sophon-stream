@@ -109,6 +109,7 @@ common::ErrorCode Decoder::init(int deviceId,
 
     if (mSourceType == ChannelOperateRequest::SourceType::RTSP ||
         mSourceType == ChannelOperateRequest::SourceType::RTMP ||
+        mSourceType == ChannelOperateRequest::SourceType::GB28181 ||
         mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
       decoder.setFps(mFps);
       auto ret = decoder.openDec(&m_handle, mUrl.c_str());
@@ -131,7 +132,8 @@ common::ErrorCode Decoder::process(
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
   if (mSourceType == ChannelOperateRequest::SourceType::RTSP ||
-      mSourceType == ChannelOperateRequest::SourceType::RTMP) {
+      mSourceType == ChannelOperateRequest::SourceType::RTMP || 
+      mSourceType == ChannelOperateRequest::SourceType::GB28181) {
     int frame_id = 0;
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;

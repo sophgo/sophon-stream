@@ -169,8 +169,17 @@ common::ErrorCode Decode::parse_channel_task(
       IVS_INFO("Source type is {0}", sourceType);
       channelTask->request.sourceType =
           ChannelOperateRequest::SourceType::BASE64;
+    } else if (sourceType == "GB28181") {
+      IVS_INFO("Source type is {0}", sourceType);
+      if (channelTask->request.url.compare(0, 10, "gb28181://") != 0) {
+        IVS_ERROR("GB28181 format error");
+        errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+        break;
+      }
+      channelTask->request.sourceType =
+          ChannelOperateRequest::SourceType::GB28181;
     } else {
-      IVS_ERROR("{0} error, please input RTSP, RTMP, VIDEO, IMG_DIR or BASE64",
+      IVS_ERROR("{0} error, please input RTSP, RTMP, VIDEO, IMG_DIR, BASE64 or GB28181",
                 JSON_SOURCE_TYPE);
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
