@@ -471,6 +471,15 @@ void Yolov5PostProcess::postProcessCPU(
         detData->mBox.mX += context->roi.start_x;
         detData->mBox.mY += context->roi.start_y;
       }
+
+      // check the range of box
+      if (detData->mBox.mX + detData->mBox.mWidth >= obj->mFrame->mSpData->width) {
+        detData->mBox.mWidth = (obj->mFrame->mSpData->width - 1 - detData->mBox.mX);
+      }
+      if (detData->mBox.mY + detData->mBox.mHeight >= obj->mFrame->mSpData->height) {
+        detData->mBox.mHeight = (obj->mFrame->mSpData->height - 1 - detData->mBox.mY);
+      }
+
       if (context->class_thresh_valid) {
         detData->mLabelName = context->class_names[detData->mClassify];
       }
