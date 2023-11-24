@@ -48,6 +48,15 @@ then
     python3 -m dfss --url=open@sophgo.com:/sophon-stream/license_plate_recognition/yolov5s-licensePlate.7z
     7z x yolov5s-licensePlate.7z -o../models
     rm yolov5s-licensePlate.7z
+
+    python3 -m dfss --url=open@sophgo.com:/sophon-stream/license_plate_recognition/BM1688.tar.gz
+    tar -zxvf ./BM1688.tar.gz
+    mkdir -p ../models/lprnet/BM1688
+    mkdir -p ../models/yolov5s-licensePLate/BM1688
+    mv ./BM1688/lprnet* ../models/lprnet/BM1688
+    mv ./BM1688/yolov5s* ../models/yolov5s-licensePLate/BM1688
+    rm -rf ./BM1688.tar.gz
+    rm -rf ./BM1688
     
     echo "models download!"
 else

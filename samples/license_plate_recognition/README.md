@@ -28,7 +28,7 @@
 
 ## 2. 特性
 
-- 支持 BM1684X、BM1684(x86 PCIe、SoC)
+- 支持 BM1684X、BM1684(x86 PCIe、SoC)、BM1688(SoC)
 - 支持多路视频流
 - 支持多线程
 
@@ -61,6 +61,9 @@ chmod -R +x scripts/
 │   │   ├── lprnet_fp32_1b.bmodel
 │   │   ├── lprnet_int8_1b.bmodel
 │   │   └── lprnet_int8_4b.bmodel
+│   ├── BM1688
+│   │   ├── lprnet_fp32_1b.bmodel
+│   │   └── lprnet_int8_1b.bmodel
 │   ├── onnx
 │   │   ├── lprnet_1b.onnx
 │   │   └── lprnet_4b.onnx
@@ -71,10 +74,12 @@ chmod -R +x scripts/
     ├── BM1684
     │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
     │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
-    └── BM1684X
+    ├── BM1684X
+    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
+    └── BM1688
         ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
         └── yolov5s_v6.1_license_3output_int8_1b.bmodel
-
 ```
 
 模型说明:
@@ -116,15 +121,18 @@ chmod -R +x scripts/
 license_plate_recognition demo 中各部分参数位于 [config](./config/) 目录，结构如下所示：
 
 ```bash
-./config/
+./config
 ├── converger.json
 ├── decode.json
 ├── distributor_time_class.json
+├── engine_group.json
 ├── engine.json
-├── license_plate_recognition.json
+├── license_plate_recognition_demo.json
+├── lprnet_group.json
 ├── lprnet_infer.json
 ├── lprnet_post.json
 ├── lprnet_pre.json
+├── yolov5_group.json
 ├── yolov5_infer.json
 ├── yolov5_post.json
 └── yolov5_pre.json
