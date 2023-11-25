@@ -522,6 +522,14 @@ void draw_yolox_results(std::shared_ptr<sophon_stream::common::ObjectMetadata> o
     bm_image_destroy(imageStorage);
 }
 
+void save_only(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata, std::string& out_dir) {
+    std::string filename =
+            out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
+            "-" + std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
+    bm_image_write_to_bmp(*objectMetadata->mFrame->mSpData, filename.c_str());
+    return;
+}
+
 void draw_default(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata) {
     return;
 }

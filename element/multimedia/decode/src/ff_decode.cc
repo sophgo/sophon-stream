@@ -132,6 +132,9 @@ int map_avformat_to_bmformat(int avformat) {
     case AV_PIX_FMT_RGB24:
       format = FORMAT_RGB_PACKED;
       break;
+    case AV_PIX_FMT_BGR24:
+      format = FORMAT_BGR_PACKED;
+      break;
     case AV_PIX_FMT_YUV420P:
     case AV_PIX_FMT_YUVJ420P:
       format = FORMAT_YUV420P;
@@ -179,6 +182,7 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
       data_four_denominator = 1;
       data_five_denominator = -1;
       data_six_denominator = -1;
+      break;
     case AV_PIX_FMT_GRAY8:
       plane = 1;
       data_four_denominator = -1;
