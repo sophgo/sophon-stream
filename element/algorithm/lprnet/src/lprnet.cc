@@ -219,7 +219,7 @@ void Lprnet::setStage(bool pre, bool infer, bool post) {
 }
 
 void Lprnet::initProfiler(std::string name, int interval) {
-  mFpsProfiler.config(mFpsProfilerName, 100);
+  mFpsProfiler.config(name, 100);
 }
 
 void Lprnet::setContext(

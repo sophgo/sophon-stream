@@ -299,7 +299,7 @@ void Yolox::setStage(bool pre, bool infer, bool post) {
 }
 
 void Yolox::initProfiler(std::string name, int interval) {
-  mFpsProfiler.config(mFpsProfilerName, 100);
+  mFpsProfiler.config(name, 100);
 }
 
 void Yolox::setContext(

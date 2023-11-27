@@ -336,7 +336,7 @@ void Yolov5::setStage(bool pre, bool infer, bool post) {
 }
 
 void Yolov5::initProfiler(std::string name, int interval) {
-  mFpsProfiler.config(mFpsProfilerName, 100);
+  mFpsProfiler.config(name, 100);
 }
 
 void Yolov5::setContext(

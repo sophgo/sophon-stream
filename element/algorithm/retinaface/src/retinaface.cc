@@ -235,7 +235,7 @@ void Retinaface::setStage(bool pre, bool infer, bool post) {
 }
 
 void Retinaface::initProfiler(std::string name, int interval) {
-  mFpsProfiler.config(mFpsProfilerName, 100);
+  mFpsProfiler.config(name, 100);
 }
 
 void Retinaface::setContext(

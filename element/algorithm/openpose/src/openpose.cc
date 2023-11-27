@@ -261,7 +261,7 @@ void Openpose::setStage(bool pre, bool infer, bool post) {
 }
 
 void Openpose::initProfiler(std::string name, int interval) {
-  mFpsProfiler.config(mFpsProfilerName, 100);
+  mFpsProfiler.config(name, 100);
 }
 
 void Openpose::setContext(

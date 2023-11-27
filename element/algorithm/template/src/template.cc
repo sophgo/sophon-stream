@@ -184,7 +184,7 @@ namespace template {
   }
 
   void Template::initProfiler(std::string name, int interval) {
-    mFpsProfiler.config(mFpsProfilerName, 100);
+    mFpsProfiler.config(name, 100);
   }
 
   void Template::setContext(
