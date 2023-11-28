@@ -1,5 +1,7 @@
 # sophon-stream osd element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream osd element是sophon-stream框架中的一个插件，负责算法结果的可视化，支持目标检测、目标跟踪算法结果可视化
 
 ## 目录

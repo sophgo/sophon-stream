@@ -1,5 +1,7 @@
 # sophon-stream distributor element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream distributor element是sophon-stream框架中的一个插件，是一个专用作数据分发功能的工具。
 
 ## 1. 特性

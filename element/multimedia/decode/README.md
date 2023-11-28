@@ -1,5 +1,7 @@
 # sophon-stream decode element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream decode element是sophon-stream框架中的一个插件，用于图片、视频、RTSP/RTMP/GB28181视频流解码，以供后续的分析和处理使用。
 
 ## 1. 特性

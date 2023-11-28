@@ -1,5 +1,7 @@
 # sophon-stream yolov5 element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream yolov5 element是sophon-stream框架中的一个插件，是一个简单、快速、强大的检测模型。本项目已提供此插件例程，详情请参见 [YOLOv5 Demo](../../../samples/yolov5/README.md)
 
 ## 1. 特性

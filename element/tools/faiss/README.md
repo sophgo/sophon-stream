@@ -1,5 +1,7 @@
 # sophon-stream faiss element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream faiss element是sophon-stream框架中的一个插件，是一个专用作计算查询向量与数据库向量的内积距离的工具。
 
 ## 1. 特性

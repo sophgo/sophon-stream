@@ -1,5 +1,7 @@
 # sophon-stream samples说明
 
+[English](README_EN.md) | 简体中文
+
 ## 1. 简介
 
 本目录下包含sophon-stream提供的参考例程。
@@ -32,7 +34,7 @@
 ./main --demo_config_path=../yolov5_bytetrack_distributor_resnet_converger/config/yolov5_bytetrack_distributor_resnet_converger_demo.json
 ```
 
-时，main函数会前往`yolov5_bytetrack_distributor_resnet_converger`例程目录下寻找配置文件，并根据其配置文件来搭建pipeline。此时，运行起来的pipeline就具有`检测+跟踪+识别`的功能。
+此时，main函数会前往`yolov5_bytetrack_distributor_resnet_converger`例程目录下寻找配置文件，并根据其配置文件来搭建pipeline。此时，运行起来的pipeline就具有`检测+跟踪+识别`的功能。
 
 或者，为了运行`license_plate_recognition`demo：
 

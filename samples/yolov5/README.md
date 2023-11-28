@@ -1,5 +1,7 @@
 # YOLOv5 Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [YOLOv5 Demo](#yolov5-demo)
   - [目录](#目录)

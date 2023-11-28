@@ -1,5 +1,7 @@
 # sophon-stream converger element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream converger element是sophon-stream框架中的一个插件，是一个专用作数据汇聚功能的工具。
 
 ## 1. 特性

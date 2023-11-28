@@ -1,5 +1,7 @@
 # sophon-stream encode element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream encode element是sophon-stream框架中的一个插件，用于将处理后的图像信息编码为各类视频格式。
 
 ## 目录
