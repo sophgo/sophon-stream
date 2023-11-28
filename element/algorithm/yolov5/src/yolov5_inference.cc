@@ -184,6 +184,10 @@ common::ErrorCode Yolov5Inference::predict(
         objectMetadatas[0]->mInputBMtensors->tensors,
         objectMetadatas[0]->mOutputBMtensors->tensors);
   }
+  
+  for(auto obj : objectMetadatas) {
+    obj->mInputBMtensors = nullptr;
+  }
 
   return common::ErrorCode::SUCCESS;
 }

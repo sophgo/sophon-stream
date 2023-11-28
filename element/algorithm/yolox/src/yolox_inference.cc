@@ -185,6 +185,10 @@ common::ErrorCode YoloxInference::predict(
         objectMetadatas[0]->mOutputBMtensors->tensors);
   }
 
+  for(auto obj : objectMetadatas) {
+    obj->mInputBMtensors = nullptr;
+  }
+
   return common::ErrorCode::SUCCESS;
 }
 

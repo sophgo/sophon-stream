@@ -253,6 +253,10 @@ common::ErrorCode FastposeInference::predict(
     }
   }
 
+  for(auto obj : objectMetadatas) {
+    obj->mSubInputBMtensors = nullptr;
+  }
+
   return common::ErrorCode::SUCCESS;
 }
 
