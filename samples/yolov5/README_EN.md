@@ -2,9 +2,9 @@
 
 English | [简体中文](README.md)
 
-## Content
+## Catalogs
 - [YOLOv5 Demo](#yolov5-demo)
-  - [Content](#Content)
+  - [Catalogs](#catalogs)
   - [1. Introduction](#1-Introduction)
   - [2. Feature](#2-Feature)
   - [3. Prepare Models and Data](#3-Prepare-Models-and-Data)

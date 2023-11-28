@@ -1,5 +1,7 @@
 # license_plate_recognition Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 
 - [license_plate_recognition Demo](#license_plate_recognition-demo)
@@ -63,7 +65,9 @@ chmod -R +x scripts/
 │   │   └── lprnet_int8_4b.bmodel
 │   ├── BM1688
 │   │   ├── lprnet_fp32_1b.bmodel
-│   │   └── lprnet_int8_1b.bmodel
+│   │   ├── lprnet_fp32_4b.bmodel
+│   │   ├── lprnet_int8_1b.bmodel
+│   │   └── lprnet_int8_4b.bmodel
 │   ├── onnx
 │   │   ├── lprnet_1b.onnx
 │   │   └── lprnet_4b.onnx
@@ -79,7 +83,9 @@ chmod -R +x scripts/
     │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     └── BM1688
         ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
-        └── yolov5s_v6.1_license_3output_int8_1b.bmodel
+        ├── yolov5s_v6.1_license_3output_fp32_4b.bmodel
+        ├── yolov5s_v6.1_license_3output_int8_1b.bmodel
+        └── yolov5s_v6.1_license_3output_int8_4b.bmodel
 ```
 
 模型说明:
