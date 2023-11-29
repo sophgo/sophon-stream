@@ -91,9 +91,9 @@
       0
     ],
     "std": [
-      1,
-      1,
-      1
+      255,
+      255,
+      255
     ],
     "class_names_file": "../yolov5_fastpose_posec3d/data/coco.names",
     "use_tpu_kernel": true

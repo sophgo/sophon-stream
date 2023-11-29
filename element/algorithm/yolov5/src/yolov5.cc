@@ -146,7 +146,7 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
 
     // 4.converto
     float input_scale = inputTensor->get_scale();
-    input_scale = input_scale * 1.0 / 255.f;
+    // input_scale = input_scale * 1.0 / 255.f;
     mContext->converto_attr.alpha_0 = input_scale / (mContext->stdd[0]);
     mContext->converto_attr.beta_0 = -(mContext->mean[0]) / (mContext->stdd[0]);
     mContext->converto_attr.alpha_1 = input_scale / (mContext->stdd[1]);
