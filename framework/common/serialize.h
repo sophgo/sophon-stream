@@ -136,8 +136,8 @@ std::string frame_to_base64(Frame& frame) {
   unsigned char* jpegData = nullptr;
   size_t nBytes = 0;
 
-  bm_handle_t handle_ = frame.mHandle;
   bm_image bgr_ = *(frame.mSpData);
+  bm_handle_t handle_ = bm_image_get_handle(&bgr_);
 
   bm_image yuv_;
 
@@ -151,7 +151,7 @@ std::string frame_to_base64(Frame& frame) {
 #if ENABLE_TIME_LOG
   gettimeofday(&time3, NULL);
 #endif
-  bmcv_image_jpeg_enc(frame.mHandle, 1, &yuv_, (void**)&jpegData, &nBytes);
+  bmcv_image_jpeg_enc(handle_, 1, &yuv_, (void**)&jpegData, &nBytes);
 #if ENABLE_TIME_LOG
   gettimeofday(&time4, NULL);
 #endif
