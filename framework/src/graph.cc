@@ -20,7 +20,12 @@
 namespace sophon_stream {
 namespace framework {
 
-Graph::Graph() : mId(-1), mThreadStatus(ThreadStatus::STOP) {}
+Graph::Graph() : mId(-1), mThreadStatus(ThreadStatus::STOP) {
+  // listenThreadPtr =
+  // std::make_shared<ListenThread>(*ListenThread::getInstance());
+  listenThreadPtr = ListenThread::getInstance();
+  listenThreadPtr->init(defaultPort);
+}
 
 Graph::~Graph() {
   auto& elementFactory = framework::SingletonElementFactory::getInstance();
@@ -271,6 +276,9 @@ common::ErrorCode Graph::initElements(const std::string& json) {
         errorCode = common::ErrorCode::REPEATED_WORKER_ID;
         break;
       }
+
+      element->setListener(listenThreadPtr);
+      element->registListenFunc(listenThreadPtr);
 
       if (element->getGroup()) {
         element->groupInsert(mElementMap);

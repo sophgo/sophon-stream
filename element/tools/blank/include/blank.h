@@ -16,6 +16,7 @@
 namespace sophon_stream {
 namespace element {
 namespace blank {
+
 class Blank : public ::sophon_stream::framework::Element {
  public:
   Blank();
@@ -25,9 +26,13 @@ class Blank : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
-  int subId = 0;
+  std::string postNameSetIdx = "/blank/setIdx";
+  void listenerSetIdx(const httplib::Request& request,
+                      httplib::Response& response);
+  void registListenFunc(sophon_stream::framework::ListenThread* listener) override;
 
  private:
+  int printIdx;
 };
 
 }  // namespace blank

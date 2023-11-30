@@ -37,6 +37,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/httplib)
 
     include_directories(include)
     add_library(bytetrack SHARED
@@ -71,7 +72,8 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
 
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
-
+    include_directories(../../../3rdparty/httplib)
+    
     include_directories(include)
     add_library(bytetrack SHARED
         src/bytetrack.cc
