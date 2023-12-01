@@ -371,7 +371,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 1. 运行可执行文件
 ```bash
-./main --demo_config_path=../yolox_bytetrakc_osd_encode/config/yolox_bytetrakc_osd_encode_demo.json
+./main --demo_config_path=../yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json
 ```
 
 由于结尾帧可能丢失，上述命令可能不会停止，属于正常现象。如停止运行结果如下
