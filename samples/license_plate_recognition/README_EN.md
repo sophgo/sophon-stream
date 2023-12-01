@@ -55,37 +55,41 @@ The downloaded models include:
 ```bash
 ./models/
 ├── lprnet
-│   ├── BM1684
-│   │   ├── lprnet_fp32_1b.bmodel
-│   │   ├── lprnet_int8_1b.bmodel
-│   │   └── lprnet_int8_4b.bmodel
-│   ├── BM1684X
-│   │   ├── lprnet_fp16_1b.bmodel
-│   │   ├── lprnet_fp32_1b.bmodel
-│   │   ├── lprnet_int8_1b.bmodel
-│   │   └── lprnet_int8_4b.bmodel
-│   ├── BM1688
-│   │   ├── lprnet_fp32_1b.bmodel
-│   │   ├── lprnet_fp32_4b.bmodel
-│   │   ├── lprnet_int8_1b.bmodel
-│   │   └── lprnet_int8_4b.bmodel
-│   ├── onnx
-│   │   ├── lprnet_1b.onnx
-│   │   └── lprnet_4b.onnx
-│   └── torch
-│       ├── Final_LPRNet_model.pth
-│       └── LPRNet_model.torchscript
+│   ├── BM1684
+│   │   ├── lprnet_fp32_1b.bmodel
+│   │   ├── lprnet_int8_1b.bmodel
+│   │   └── lprnet_int8_4b.bmodel
+│   ├── BM1684X
+│   │   ├── lprnet_fp16_1b.bmodel
+│   │   ├── lprnet_fp32_1b.bmodel
+│   │   ├── lprnet_int8_1b.bmodel
+│   │   └── lprnet_int8_4b.bmodel
+│   ├── BM1688
+│   │   ├── lprnet_fp32_1b.bmodel
+│   │   ├── lprnet_fp32_4b.bmodel
+│   │   ├── lprnet_int8_1b.bmodel
+│   │   └── lprnet_int8_4b.bmodel
+│   ├── onnx
+│   │   ├── lprnet_1b.onnx
+│   │   └── lprnet_4b.onnx
+│   └── torch
+│       ├── Final_LPRNet_model.pth
+│       └── LPRNet_model.torchscript
 └── yolov5s-licensePLate
     ├── BM1684
-    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
-    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     ├── BM1684X
-    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
-    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     └── BM1688
+        ├── yolov5s_v6.1_license_3output_fp32_1b_2core.bmodel
         ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+        ├── yolov5s_v6.1_license_3output_fp32_4b_2core.bmodel
         ├── yolov5s_v6.1_license_3output_fp32_4b.bmodel
+        ├── yolov5s_v6.1_license_3output_int8_1b_2core.bmodel
         ├── yolov5s_v6.1_license_3output_int8_1b.bmodel
+        ├── yolov5s_v6.1_license_3output_int8_4b_2core.bmodel
         └── yolov5s_v6.1_license_3output_int8_4b.bmodel
 ```
 

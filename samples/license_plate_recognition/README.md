@@ -54,38 +54,43 @@ chmod -R +x scripts/
 ```bash
 ./models/
 ├── lprnet
-│   ├── BM1684
-│   │   ├── lprnet_fp32_1b.bmodel
-│   │   ├── lprnet_int8_1b.bmodel
-│   │   └── lprnet_int8_4b.bmodel
-│   ├── BM1684X
-│   │   ├── lprnet_fp16_1b.bmodel
-│   │   ├── lprnet_fp32_1b.bmodel
-│   │   ├── lprnet_int8_1b.bmodel
-│   │   └── lprnet_int8_4b.bmodel
-│   ├── BM1688
-│   │   ├── lprnet_fp32_1b.bmodel
-│   │   ├── lprnet_fp32_4b.bmodel
-│   │   ├── lprnet_int8_1b.bmodel
-│   │   └── lprnet_int8_4b.bmodel
-│   ├── onnx
-│   │   ├── lprnet_1b.onnx
-│   │   └── lprnet_4b.onnx
-│   └── torch
-│       ├── Final_LPRNet_model.pth
-│       └── LPRNet_model.torchscript
+│   ├── BM1684
+│   │   ├── lprnet_fp32_1b.bmodel
+│   │   ├── lprnet_int8_1b.bmodel
+│   │   └── lprnet_int8_4b.bmodel
+│   ├── BM1684X
+│   │   ├── lprnet_fp16_1b.bmodel
+│   │   ├── lprnet_fp32_1b.bmodel
+│   │   ├── lprnet_int8_1b.bmodel
+│   │   └── lprnet_int8_4b.bmodel
+│   ├── BM1688
+│   │   ├── lprnet_fp32_1b.bmodel
+│   │   ├── lprnet_fp32_4b.bmodel
+│   │   ├── lprnet_int8_1b.bmodel
+│   │   └── lprnet_int8_4b.bmodel
+│   ├── onnx
+│   │   ├── lprnet_1b.onnx
+│   │   └── lprnet_4b.onnx
+│   └── torch
+│       ├── Final_LPRNet_model.pth
+│       └── LPRNet_model.torchscript
 └── yolov5s-licensePLate
     ├── BM1684
-    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
-    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     ├── BM1684X
-    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
-    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     └── BM1688
+        ├── yolov5s_v6.1_license_3output_fp32_1b_2core.bmodel
         ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+        ├── yolov5s_v6.1_license_3output_fp32_4b_2core.bmodel
         ├── yolov5s_v6.1_license_3output_fp32_4b.bmodel
+        ├── yolov5s_v6.1_license_3output_int8_1b_2core.bmodel
         ├── yolov5s_v6.1_license_3output_int8_1b.bmodel
+        ├── yolov5s_v6.1_license_3output_int8_4b_2core.bmodel
         └── yolov5s_v6.1_license_3output_int8_4b.bmodel
+
 ```
 
 模型说明:
@@ -188,6 +193,8 @@ license_plate_recognition demo 中各部分参数位于 [config](./config/) 目�
 ```
 
 [engine.json](./config/engine.json)包含对 graph 的配置信息，这部分配置确定之后基本不会发生更改。
+
+需要注意，需要注意，部署环境下的NPU等设备内存大小会显著影响例程运行的路数。如果默认的输入路数运行中出现了申请内存失败等错误，可以考虑把输入路数减少，即删除`channels`的部分元素，再进行测试。
 
 在该文件内，需要初始化每个 element 的信息和 element 之间的连接方式。element_id 是唯一的，起到标识身份的作用。element_config 指向该 element 的详细配置文件地址，port_id 是该 element 的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src 标志当前端口是否是整张图的输入端口，is_sink 标识当前端口是否是整张图的输出端口。
 connection 是所有 element 之间的连接方式，通过 element_id 和 port_id 确定。
