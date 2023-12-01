@@ -127,7 +127,7 @@ resnet demo中各部分参数位于 [config](./config/) 目录，结构如下所
 └── resnet_classify.json    # resnet 插件配置
 ```
 
-其中，[resnet_demo.json](./config/resnet_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，num_channels_per_graph参数配置输入的路数，channel中包含码流url等信息。
+其中，[resnet_demo.json](./config/resnet_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels参数配置输入的路数，channel中包含码流url等信息。
 
 配置文件中不指定`channel_id`属性的情况，会在demo中对每一路数据的`channel_id`从0开始默认赋值。
 

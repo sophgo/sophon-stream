@@ -135,13 +135,13 @@ In the YOLOv5 demo, various parameters for each section are located in [config](
 └── yolov5_pre.json             # YOLOv5 pre-processing configuration file
 ```
 
-Indeed, [yolov5_demo.json](./config/yolov5_demo.json) is the overall configuration file for the example, managing input streams and other information. Multiple data inputs can be supported on a single graph, where the `num_channels_per_graph` parameter configures the number of input channels, `sample_interval` sets the frame skipping rate, and `loop_num` sets the number of looped plays. The `channel` section contains video stream information such as the URL. The `download_image` parameter controls whether to save the inference results. If set to `false`, results will not be saved. If set to `true`, they will be saved in the `/build/results` directory.
+Indeed, [yolov5_demo.json](./config/yolov5_demo.json) is the overall configuration file for the example, managing input streams and other information. Multiple data inputs can be supported on a single graph, where the `channels` parameter configures the number of input channels, `sample_interval` sets the frame skipping rate, and `loop_num` sets the number of looped plays. The `channel` section contains video stream information such as the URL. The `download_image` parameter controls whether to save the inference results. If set to `false`, results will not be saved. If set to `true`, they will be saved in the `/build/results` directory.
 
 In the configuration file, when the `channel_id` attribute is not specified, the demo will assign default `channel_id` values starting from 0 for each data channel.
 
 ```json
 {
-  "num_channels_per_graph": 3,
+  "channels": 3,
   "channel": {
     "url": "../data/videos/test_car_person_1080P.avi",
     "source_type": "VIDEO",

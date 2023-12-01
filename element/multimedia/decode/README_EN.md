@@ -79,7 +79,7 @@ Additionally, attention should be paid to the setting of the input data channels
 |source_type | string  | \  | Input data types: "RTSP" represents an RTSP video stream, “RTMP” represents an RTMP video stream, “VIDEO” represents local videos, “IMG_DIR” represents image folders, and “BASE64” represents base64-encoded data. |
 |sample_interval | int  | 1  |Frame extraction rate. Setting it to 5 implies that for every 5 frames, 1 frame will be processed subsequently, which means the ObjectMata mFilter field is set to false.|
 |loop_num | int  | 1  | Loop count. Only applicable when the source_type is set to "VIDEO" and "IMG_DIR". A value of 0 indicates an infinite loop.|
-|fps | float  | 30 | Used to control the frames per second (fps) of the video stream. Fps=-1 means no control over fps. When source_type is set to "IMG_DIR" or "BASE64", it's determined by the set value. For other source_types, fps is read from the video stream, and the set value does not take effect.|
+|fps | float  | 30 | Used to control the frames per second (fps) of the video stream. Fps=-1 means no control over fps. In other cases, when source_type is set to "IMG_DIR" or "BASE64", it's determined by the set value. For other source_types, fps is read from the video stream, and the set value does not take effect.|
 |base64_port | int  | 12348 | Base64 corresponds to the HTTP port |
 |skip_element| list | \ | Set whether to skip certain elements for this data stream. Currently, this only applies to OSD and Encode. When not specified, it's assumed that no elements are to be skipped.|
 |sample_strategy|string|"DROP"|When frames are being filtered, set whether the filtered frames are to be kept or discarded. "DROP" indicates discarding the frames, while "KEEP" indicates retaining them.|
