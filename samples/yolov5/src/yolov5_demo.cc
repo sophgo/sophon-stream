@@ -155,6 +155,12 @@ int main() {
   yolov5_json.num_graphs = engine_json.size();
   int num_channels =
       yolov5_json.num_channels_per_graph * yolov5_json.num_graphs;
+
+  STREAM_CHECK(
+      num_channels <= 2,
+      "In order to ensure that the program can be run properly on the 1688, it "
+      "is required that the number of input channels is less than 2.");
+
   ::sophon_stream::common::FpsProfiler fpsProfiler("fps_yolov5_demo", 100);
   auto sinkHandler = [&](std::shared_ptr<void> data) {
     // write stop data handler here
