@@ -125,7 +125,7 @@ int main() {
   int num_channels = demo_json.num_channels_per_graph * demo_json.num_graphs;
 
   STREAM_CHECK(
-      num_channels <= 2,
+      num_channels <= 1,
       "In order to ensure that the program can be run properly on the 1688, it "
       "is required that the number of input channels is less than 2.");
 
