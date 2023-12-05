@@ -34,6 +34,16 @@ void ListenThread::init(int port) {
     abort();
   }
   port_ = port;
+  // server.Options(R"(\*)", [](const auto& req, auto& res) {
+  //   res.set_header("Access-Control-Allow-Methods", "*");
+  //   res.set_header("Access-Control-Allow-Headers", "*");
+  //   res.set_header("Access-Control-Allow-Origin", "*");
+  // });
+  // server.set_default_headers(
+  //     {{"Access-Control-Allow-Origin", "*"},
+  //      {"Access-Control-Allow-Methods", "POST, GET, PUT"},
+  //      {"Access-Control-Max-Age", "3600"},
+  //      {"Access-Control-Allow-Headers", "*"}});
   server.Post("/task/test", ListenThread::handle_task_interact);
   listen_thread_ = std::thread(&ListenThread::listen_loop);
   IVS_INFO("Complete to Init Listen Thread... Port is {0}", port);
@@ -47,9 +57,26 @@ void ListenThread::stop() {
   IVS_INFO("Complete to Stop Listen Thread... Port is {0}", port_);
 }
 
-void ListenThread::setHandler(const std::string& path,
+void ListenThread::setHandler(const std::string& path, RequestType type,
                               httplib::Server::Handler handler) {
-  server.Post(path, handler);
+  switch (type) {
+    case RequestType::GET:
+      server.Get(path, handler);
+      server.Options(path, handler);
+      break;
+    case RequestType::PUT:
+      server.Put(path, handler);
+      server.Options(path, handler);
+      break;
+    case RequestType::POST:
+      server.Post(path, handler);
+      server.Options(path, handler);
+      break;
+    default:
+      IVS_ERROR("RequestType is not supported!");
+      abort();
+  }
+  // server.Post(path, handler);
   IVS_INFO("Regist handler, path is {0}", path);
 }
 

@@ -51,6 +51,11 @@ checkAndAddElement(element/tools/converger)
 checkAndAddElement(element/tools/http_push)
 checkAndAddElement(element/tools/faiss)
 
+checkAndAddElement(element/tools/dwa)
+checkAndAddElement(element/tools/dpu)
+checkAndAddElement(element/tools/blend)
+checkAndAddElement(element/tools/fisheye)
+
 checkAndAddElement(3rdparty/freetype2)
 
 checkAndAddSample(samples)

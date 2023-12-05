@@ -1,0 +1,14 @@
+{
+    "channels": [
+      {
+        "channel_id": 2,
+        "url": "../fisheye/data/images/",
+        "source_type": "IMG_DIR",
+        "loop_num": -1,
+        "fps": -1,
+        "decode_idx": 0
+      }
+    ],
+    "download_image": false,
+    "engine_config_path": "../fisheye/config/engine.json"
+}

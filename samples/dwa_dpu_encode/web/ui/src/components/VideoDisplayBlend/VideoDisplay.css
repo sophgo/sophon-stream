@@ -1,0 +1,31 @@
+.VideoDisplayBlend {
+  margin: 20px;
+  padding: 0px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.CanvasContanier {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56vw;
+  height: 35vw;
+  margin-top: 3vh;
+  border: 1px solid black;
+  /* 边框宽度为 2px，颜色为黑色 */
+  padding: 1px;
+  /* 设置 padding 来增加内边距，使边框不紧贴内容 */
+}
+
+.DisplayTypeSelector {
+  width: 12vw;
+  height: 2vw;
+  margin-left: 2.5vw;
+}
+
+

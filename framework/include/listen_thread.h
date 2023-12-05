@@ -20,6 +20,8 @@
 namespace sophon_stream {
 namespace framework {
 
+enum class RequestType { GET, PUT, POST, OPTIONS };
+
 class ListenThread {
  public:
   ListenThread();
@@ -29,7 +31,7 @@ class ListenThread {
 
   static ListenThread* getInstance();
 
-  void setHandler(const std::string& path, httplib::Server::Handler handler);
+  void setHandler(const std::string& path, RequestType type, httplib::Server::Handler handler);
 
  private:
   httplib::Server server;

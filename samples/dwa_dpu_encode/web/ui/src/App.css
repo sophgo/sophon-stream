@@ -1,0 +1,33 @@
+/* 设置页面根容器 */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* 设定 .App 根容器的样式 */
+.App {
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+  height: 100%;
+}
+
+select {
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 200px; /* 设置宽度 */
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* 样式 VideoDisplay 组件 */
+.VideoDisplay, .ConfigLayer {
+  flex: 1; /* 平均占据父容器的空间 */
+  background-color: #f0f0f0; /* 设置背景色 */
+  padding: 20px; /* 添加内边距 */
+  border: 1px solid #ccc; /* 添加边框 */
+  border-radius: 5px; /* 设置圆角边框 */
+  margin: 10px; /* 添加间距 */
+}

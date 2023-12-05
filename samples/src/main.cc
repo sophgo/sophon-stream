@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
   }
   std::string demo_config_fpath = parser.get<std::string>("demo_config_path");
 
-  ::logInit("debug", "");
+  ::logInit("info", "");
 
   std::mutex mtx;
   std::condition_variable cv;
@@ -222,14 +222,14 @@ int main(int argc, char *argv[]) {
   int num_channels =
       demo_json.num_channels_per_graph * demo_json.num_graphs;
 
-#if BMCV_VERSION_MAJOR > 1
+// #if BMCV_VERSION_MAJOR > 1
 
-  STREAM_CHECK(
-      num_channels <= 1,
-      "In order to ensure that the program can be run properly on the 1688, it "
-      "is required that the number of input channels is less than 2.");
+//   STREAM_CHECK(
+//       num_channels <= 1,
+//       "In order to ensure that the program can be run properly on the 1688, it "
+//       "is required that the number of input channels is less than 2.");
 
-#endif
+// #endif
 
   std::vector<::sophon_stream::common::FpsProfiler> fpsProfilers(num_channels);
   for (int i = 0; i < num_channels; ++i) {

@@ -26,13 +26,14 @@ void Blank::registListenFunc(sophon_stream::framework::ListenThread* listener) {
   std::string mIdStr = std::to_string(getId());
   std::string handlerName = postNameSetIdx + "/" + mIdStr;
   listener->setHandler(handlerName.c_str(),
+                       sophon_stream::framework::RequestType::POST,
                        std::bind(&Blank::listenerSetIdx, this,
                                  std::placeholders::_1, std::placeholders::_2));
 }
 
 void Blank::listenerSetIdx(const httplib::Request& request,
                            httplib::Response& response) {
-  auto listener = getListener();
+  // auto listener = getListener();
   common::Response resp;
   common::RequestSingleInt rsi;
   common::str_to_object(request.body, rsi);
