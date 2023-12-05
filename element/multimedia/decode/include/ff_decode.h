@@ -141,6 +141,8 @@ class VideoDecFFM {
   std::mutex lock;
   std::queue<bm_image*> queue;
 
+  std::string inputUrl;
+
   int openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
                        AVFormatContext* fmt_ctx, enum AVMediaType type,
                        int sophon_idx);
