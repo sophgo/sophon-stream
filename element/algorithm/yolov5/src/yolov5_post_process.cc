@@ -297,8 +297,8 @@ void Yolov5PostProcess::postProcessCPU(
     }
 
     yolobox_vec.clear();
-    int frame_width = obj->mFrame->mWidth;
-    int frame_height = obj->mFrame->mHeight;
+    int frame_width = obj->mFrame->mSpData->width;
+    int frame_height = obj->mFrame->mSpData->height;
 
     int tx1 = 0, ty1 = 0;
 #ifdef USE_ASPECT_RATIO
