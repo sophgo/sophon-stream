@@ -5,7 +5,7 @@ if [ $? != 0 ];
 then
     echo "Please install 7z on your system!"
     echo "To install, use the following command:"
-    echo "sudo apt install p7zip;sudo apt install p7zip-full"
+    echo "sudo apt install p7zip; sudo apt install p7zip-full; sudo apt install unzip"
     exit
 fi
 
