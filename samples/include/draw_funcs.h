@@ -545,8 +545,8 @@ void draw_license_plate_recognition_results(std::shared_ptr<sophon_stream::commo
             out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
             "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
         cv::imwrite(img_file, img);
-        bm_image_destroy(imageStorage);
   }
+  bm_image_destroy(imageStorage);
 }
 
 void draw_openpose_results(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata, std::string& out_dir)
