@@ -1,5 +1,7 @@
 # retinaface Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [retinaface Demo](#retinaface-demo)
   - [目录](#目录)
@@ -20,10 +22,6 @@
 ## 1. 简介
 
 本例程用于说明如何使用sophon-stream快速构建视频目标检测应用。
-
-本例程插件的连接方式如下图所示
-
-![process](./pics/elements.jpg)
 
 **源代码** (https://github.com/biubug6/Pytorch_Retinaface)
 
@@ -61,7 +59,6 @@ chmod -R +x scripts/
 │   │   └── retinaface_mobilenet0.25_int8_4b.bmodel # 用于BM1684X的INT8 BModel，batch_size=4，后处理在CPU上进行
 │   └── onnx
 │       └── retinaface_mobilenet0.25.onnx # 原模型
-
 ```
 
 模型说明:
@@ -73,7 +70,6 @@ chmod -R +x scripts/
 ```bash
 videos/
 ├── station.avi   # 测试视频
-
 ```
 
 ## 4. 环境准备
@@ -101,13 +97,15 @@ videos/
 retinaface demo中各部分参数位于 [config](./config/) 目录，结构如下所示：
 
 ```bash
-./config/
+config/
 ├── decode.json                 # 解码配置
-├── engine.json                 # sophon-stream graph配置
-├── retinaface_demo.json            # retinaface demo配置
-├── retinaface_infer.json           # retinaface 推理配置
-├── retinaface_post.json            # retinaface 后处理配置
-└── retinaface_pre.json             # retinaface 前处理配置
+├── engine_group.json           # sophon-stream 简化的graph配置
+├── engine.json                 # sophon-stream graph配置，需要分别配置前处理、推理和后处理文件
+├── retinaface_demo.json        # demo输入配置文件
+├── retinaface_group.json       # 简化的retinaface配置文件，将retinaface的前处理、推理、后处理合到一个配置文件中
+├── retinaface_infer.json       # retinaface 推理配置文件
+├── retinaface_post.json        # retinaface 后处理配置文件
+└── retinaface_pre.json         # retinaface 前处理配置文件
 ```
 
 其中，[retinaface_demo.json](./config/retinaface_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels参数配置输入的路数，sample_interval设置跳帧数，loop_num设置循环播放次数，channel中包含码流url等信息。
@@ -154,11 +152,9 @@ retinaface demo中各部分参数位于 [config](./config/) 目录，结构如�
   "draw_func_name": "draw_retinaface_results",
   "engine_config_path": "../retinaface/config/engine_group.json"
 }
-
-
 ```
 
-[engine.json](./config/engine.json)包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
+[engine_group.json](./config/engine_group.json)包含对graph的配置信息，这部分配置确定之后基本不会发生更改。
 
 这里摘取配置文件的一部分作为示例：在该文件内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
 connection是所有element之间的连接方式，通过element_id和port_id确定。
@@ -180,67 +176,14 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
                             "is_sink": false,
                             "is_src": true
                         }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
                     ]
                 }
             },
             {
                 "element_id": 5001,
-                "element_config": "../retinaface/config/retinaface_pre.json",
+                "element_config": "../retinaface/config/retinaface_group.json",
+                "inner_elements_id": [10001, 10002, 10003],
                 "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
-            },
-            {
-                "element_id": 5002,
-                "element_config": "../retinaface/config/retinaface_infer.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
-            },
-            {
-                "element_id": 5003,
-                "element_config": "../retinaface/config/retinaface_post.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
                     "output": [
                         {
                             "port_id": 0,
@@ -257,25 +200,13 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
                 "src_port": 0,
                 "dst_element_id": 5001,
                 "dst_port": 0
-            },
-            {
-                "src_element_id": 5001,
-                "src_port": 0,
-                "dst_element_id": 5002,
-                "dst_port": 0
-            },
-            {
-                "src_element_id": 5002,
-                "src_port": 0,
-                "dst_element_id": 5003,
-                "dst_port": 0
             }
         ]
     }
 ]
 ```
 
-[retinaface_pre.json](./config/retinaface_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
+[retinaface_group.json](./config/retinaface_group.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 
 ```json
 {
@@ -293,9 +224,6 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             1,
             1,
             1
-        ],
-        "stage": [
-            "pre"
         ]
     },
     "shared_object": "../../build/lib/libretinaface.so",
@@ -310,7 +238,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 
 对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的动态链接库、可执行文件、所需的模型和测试数据拷贝到SoC平台中测试。测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../retinaface/config/retinaface_demo.json
 ```
@@ -325,7 +253,7 @@ frame count is 920 | fps is 191.723 fps.
 
 目前，retinaface例程支持在BM1684X和BM1684的PCIE、SOC模式下进行推理。
 
-测试`/data/images/wind`，编译选项为Release模式，使用fp32模型，结果如下:
+测试数据`/data/images/wind`，编译选项为Release模式，使用fp32模型，结果如下:
 
 |设备|路数|算法线程数|CPU利用率(%)|平均FPS|峰值FPS|
 |SE7|8|4-4-4|146.7|191.964|192.321|

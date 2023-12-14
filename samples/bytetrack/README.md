@@ -1,5 +1,7 @@
 # ByteTrack Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [ByteTrack Demo](#bytetrack-demo)
   - [目录](#目录)
@@ -315,7 +317,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../bytetrack/config/bytetrack_demo.json
 ```
@@ -337,6 +339,5 @@ frame count is 1422 | fps is 271.018 fps.
 |SE5-8|3|3-3-3|160.97|96.19|97.71|92.69|993.08|1128.00|82.01|91.24|
 
 > **测试说明**：
-1. tpu占用率单位为(%)；
-2. 性能测试结果具有一定的波动性，建议多次测试取平均值；
-3. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；
+1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
+2. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；

@@ -1,9 +1,9 @@
-# YOLOv5 Demo
+# YOLOX Demo
 
 English | [简体中文](README.md)
 
 ## Catalogs
-- [YOLOv5 Demo](#yolov5-demo)
+- [YOLOX Demo](#yolox-demo)
   - [Catalogs](#catalogs)
   - [1. Introduction](#1-introduction)
   - [2. Features](#2-features)
@@ -27,14 +27,17 @@ The connection method for this example plugin is shown in the following diagram.
 
 ![process](./pics/elements.jpg)
 
-**source code** (https://github.com/ultralytics/yolov5) v6.1 version
+yolox is proposed by Megvii and is based on the improvement of the YOLO series.
 
-In this example, the pre-processing, inference, and post-processing of the YOLOv5 algorithm are computed on three separate elements, allowing multiple threads to be utilized within each element, ensuring a certain level of detection efficiency.
+**Paper** (https://arxiv.org/abs/2107.08430)
+
+**Source Code** (https://github.com/Megvii-BaseDetection/YOLOX)
+
+In this example, the pre-processing, inference, and post-processing of the YOLOX algorithm are computed on three separate elements, allowing multiple threads to be utilized within each element, ensuring a certain level of detection efficiency.
 
 ## 2. Feature
 
 * Supports BM1684X, BM1684(x86 PCIe、SoC), supports BM1688(SoC)
-* On the BM1684X platform, the TPU_kernel post-processing is supported.
 * Supports multiple video streams.
 * Supports multi-threading.
 
@@ -56,28 +59,33 @@ The downloaded models include:
 ```bash
 ./models/
 ├── BM1684
-│   ├── yolov5s_v6.1_3output_fp32_1b.bmodel         # FP32 BModel for BM1684, with a batch size of 1. Post-processing takes place on the CPU.
-│   ├── yolov5s_v6.1_3output_int8_1b.bmodel         # INT8 BModel for BM1684, with a batch size of 1. Post-processing takes place on the CPU.
-│   └── yolov5s_v6.1_3output_int8_4b.bmodel         # INT8 BModel for BM1684, with a batch size of 4. Post-processing takes place on the CPU.
+│   ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1684，batch_size=1
+│   ├── yolox_bytetrack_s_fp32_4b.bmodel    # FP32 BModel for BM1684，batch_size=4
+│   ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1684，batch_size=1
+│   ├── yolox_bytetrack_s_int8_4b.bmodel    # INT8 BModel for BM1684，batch_size=4
+│   ├── yolox_s_fp32_1b.bmodel              # FP32 BModel for BM1684，batch_size=1
+│   ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684，batch_size=4
+│   ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684，batch_size=1
+│   └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684，batch_size=4
 ├── BM1684X
-│   ├── yolov5s_v6.1_3output_fp16_1b.bmodel         # FP16 BModel for BM1684X, with a batch size of 1. Post-processing takes place on the CPU.
-│   ├── yolov5s_v6.1_3output_fp32_1b.bmodel         # FP32 BModel for BM1684X, with a batch size of 1. Post-processing takes place on the CPU.
-│   ├── yolov5s_v6.1_3output_int8_1b.bmodel         # INT8 BModel for BM1684X, with a batch size of 1. Post-processing takes place on the CPU.
-│   └── yolov5s_v6.1_3output_int8_4b.bmodel         # INT8 BModel for BM1684X, with a batch size of 4. Post-processing takes place on the CPU.
-├── BM1684X_tpukernel
-│   ├── yolov5s_tpukernel_fp16_1b.bmodel            # FP16 BModel for BM1684X, with a batch size of 1. Post-processing utilizes the tpu_kernel.
-│   ├── yolov5s_tpukernel_fp32_1b.bmodel            # FP32 BModel for BM1684X, with a batch size of 1. Post-processing utilizes the tpu_kernel.
-│   ├── yolov5s_tpukernel_int8_1b.bmodel            # INT8 BModel for BM1684X, with a batch size of 1. Post-processing utilizes the tpu_kernel.
-│   └── yolov5s_tpukernel_int8_4b.bmodel            # INT8 BModel for BM1684X, with a batch size of 4. Post-processing utilizes the tpu_kernel.
+│   ├── yolox_bytetrack_s_fp16_1b.bmodel    # FP16 BModel for BM1684X，batch_size=1
+│   ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1684X，batch_size=1
+│   ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1684X，batch_size=1
+│   ├── yolox_bytetrack_s_int8_4b.bmodel    # INT8 BModel for BM1684X，batch_size=4
+│   ├── yolox_s_fp32_1b.bmodel              # FP32 BModel for BM1684X，batch_size=1
+│   ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684X，batch_size=4
+│   ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684X，batch_size=1
+│   └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684X，batch_size=4
 └── BM1688_2cores
-    ├── yolov5s_v6.1_3output_int8_1b_2core.bmodel   # INT8 BModel for BM1688, with a batch size of 1.
-    └── yolov5s_v6.1_3output_int8_4b_2core.bmodel   # INT8 BModel for BM1688, with a batch size of 4.
+    ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1688，batch_size=1
+    └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1688，batch_size=4
 ```
 
 Model description:
 
-The above models are ported from the official [yolov5 repository](https://github.com/ultralytics/yolov5). The plugin configuration includes `mean=[0,0,0]`, `std=[1,1,1]`, supporting 80-class detection tasks from the COCO dataset.
+1.`yolox_s_bytetrack_` models are from [bytetrack](https://github.com/ifzhang/ByteTrack), `mean=[0,0,0]`, `std=[255,255,255]`, support for person category detection tasks.
 
+2.`yolox_s` models are from [yolox](https://github.com/Megvii-BaseDetection/YOLOX), `mean=[0,0,0]`, `std=[1,1,1]`, support for 80 classes of COCO dataset.
 
 The downloaded data include:
 
@@ -118,22 +126,22 @@ Typically, programs are cross-compiled on an x86 computer. You need to set up a 
 
 ### 6.1 JSON Configuration
 
-In the YOLOv5 demo, various parameters for each section are located in [config](./config/) directory, structured as follows:
+In the YOLOX demo, various parameters for each section are located in [config](./config/) directory, structured as follows:
 
 ```bash
-./config/
-├── decode.json                 # decoding configuration
-├── engine_group.json           # sophon-stream Simplified graph configuration
-├── engine.json                 # sophon-stream graph configuration requires separate configuration for pre-processing, inference, and post-processing files.
-├── yolov5_classthresh_roi_example.json  # reference configuration file for setting thresholds per category in YOLOv5. Please note that setting thresholds per category is only supported in non-tpu_kernel post-processing mode
-├── yolov5_demo.json            # input configuration file for the demo
-├── yolov5_group.json           # A simplified YOLOv5 configuration file that combines pre-processing, inference, and post-processing into one configuration file.
-├── yolov5_infer.json           # YOLOv5 inference configuration file
-├── yolov5_post.json            # YOLOv5 post-processing configuration file
-└── yolov5_pre.json             # YOLOv5 pre-processing configuration file
+./config
+├── decode.json             # decoding configuration
+├── engine_group.json       # sophon-stream Simplified graph configuration
+├── engine.json             # sophon-stream graph configuration requires separate configuration for pre-processing, inference, and post-processing files.
+├── yolox_classthresh_roi_example.json # reference configuration file for setting thresholds per category in YOLOX. Please note that setting thresholds per category is only supported in non-tpu_kernel post-processing mode
+├── yolox_demo.json         # input configuration file for the demo
+├── yolox_group.json        # A simplified YOLOX configuration file that combines pre-processing, inference, and post-processing into one configuration file.
+├── yolox_infer.json        # yolox inference configuration file
+├── yolox_post.json         # yolox post-processing configuration file
+└── yolox_pre.json          # yolox pre-processing configuration file
 ```
 
-Indeed, [yolov5_demo.json](./config/yolov5_demo.json) is the overall configuration file for the example, managing input streams and other information. Multiple data inputs can be supported on a single graph, where the `channels` parameter configures the number of input channels, `sample_interval` sets the frame skipping rate, and `loop_num` sets the number of looped plays. The `channel` section contains video stream information such as the URL. The `download_image` parameter controls whether to save the inference results. If set to `false`, results will not be saved. If set to `true`, they will be saved in the `/build/results` directory.
+Indeed, [yolox_demo.json](./config/yolox_demo.json) is the overall configuration file for the example, managing input streams and other information. Multiple data inputs can be supported on a single graph, where the `channels` parameter configures the number of input channels, `sample_interval` sets the frame skipping rate, and `loop_num` sets the number of looped plays. The `channel` section contains video stream information such as the URL. The `download_image` parameter controls whether to save the inference results. If set to `false`, results will not be saved. If set to `true`, they will be saved in the `/build/results` directory.
 
 In the configuration file, when the `channel_id` attribute is not specified, the demo will assign default `channel_id` values starting from 0 for each data channel.
 
@@ -142,7 +150,7 @@ In the configuration file, when the `channel_id` attribute is not specified, the
   "channels": [
     {
       "channel_id": 2,
-      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
       "source_type": "VIDEO",
       "sample_interval": 1,
       "loop_num": 1,
@@ -150,7 +158,7 @@ In the configuration file, when the `channel_id` attribute is not specified, the
     },
     {
       "channel_id": 3,
-      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
       "source_type": "VIDEO",
       "sample_interval": 1,
       "loop_num": 1,
@@ -158,7 +166,7 @@ In the configuration file, when the `channel_id` attribute is not specified, the
     },
     {
       "channel_id": 20,
-      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
       "source_type": "VIDEO",
       "sample_interval": 1,
       "loop_num": 1,
@@ -166,17 +174,17 @@ In the configuration file, when the `channel_id` attribute is not specified, the
     },
     {
       "channel_id": 30,
-      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "url": "../yolox/data/videos/elevator-1080p-25fps-4000kbps.h264",
       "source_type": "VIDEO",
       "sample_interval": 1,
       "loop_num": 1,
       "fps": -1
     }
   ],
-  "class_names": "../yolov5/data/coco.names",
+  "class_names": "../yolox/data/coco.names",
   "download_image": true,
-  "draw_func_name": "draw_yolov5_results",
-  "engine_config_path": "../yolov5/config/engine_group.json"
+  "draw_func_name": "draw_yolox_results",
+  "engine_config_path": "../yolox/config/engine_group.json"
 }
 ```
 
@@ -189,11 +197,11 @@ Here's an excerpt from the configuration file as an example: Within this file, i
     {
         "graph_id": 0,
         "device_id": 0,
-        "graph_name": "yolov5",
+        "graph_name": "yolox",
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../config/decode.json",
+                "element_config": "../yolox/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -206,7 +214,7 @@ Here's an excerpt from the configuration file as an example: Within this file, i
             },
             {
                 "element_id": 5001,
-                "element_config": "../config/yolov5_group.json",
+                "element_config": "../yolox/config/yolox_group.json",
                 "inner_elements_id": [10001, 10002, 10003],
                 "ports": {
                     "output": [
@@ -231,34 +239,30 @@ Here's an excerpt from the configuration file as an example: Within this file, i
 ]
 ```
 
-
-[yolov5_group.json](./config/yolov5_group.json) and similar configuration files detail the configuration specifics for a particular element, setting parameters such as model settings, dynamic library paths, thresholds, and more. These configuration files don't require specifying the `id` or `device_id` fields, as the demo will pass in the `element_id` and `device_id` specified in the engine_group.json.
+[yolox_group.json](./config/yolox_group.json) and similar configuration files detail the configuration specifics for a particular element, setting parameters such as model settings, dynamic library paths, thresholds, and more. These configuration files don't require specifying the `id` or `device_id` fields, as the demo will pass in the `element_id` and `device_id` specified in the engine_group.json.
 
 Among these configurations, `thread_number` specifies the number of working threads within the `element`. Each thread corresponds to a data queue. In scenarios with multiple inputs, it's essential to set the number of data queues reasonably to ensure an even and adequate workload distribution across threads.
-
-When `use_tpu_kernel` is set to `true`, it will utilize the tpu_kernel post-processing(using tpu to do post process). Note that tpu_kernel post-processing is only supported on BM1684X devices.
 
 ```json
 {
     "configure": {
-        "model_path": "../data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_1b.bmodel",
-        "threshold_conf": 0.5,
-        "threshold_nms": 0.5,
-        "bgr2rgb": true,
-        "mean": [
-            0,
-            0,
-            0
-        ],
-        "std": [
-            1,
-            1,
-            1
-        ],
-        "use_tpu_kernel": true
+      "model_path": "../yolox/data/models/BM1684X/yolox_s_int8_1b.bmodel",
+      "threshold_conf": 0.5,
+      "threshold_nms": 0.5,
+      "bgr2rgb": true,
+      "mean": [
+        0,
+        0,
+        0
+      ],
+      "std": [
+        1,
+        1,
+        1
+      ]
     },
-    "shared_object": "../../../build/lib/libyolov5.so",
-    "name": "yolov5_group",
+    "shared_object": "../../build/lib/libyolox.so",
+    "name": "yolox_group",
     "side": "sophgo",
     "thread_number": 4
 }
@@ -274,18 +278,18 @@ The parameters for testing and the method of execution remain consistent. Theref
 
 Run the executable file
 ```bash
-./main --demo_config_path=../yolov5/config/yolov5_demo.json
+./main --demo_config_path=../yolox/config/yolox_demo.json
 ```
 
 The running results of two video streams are as follows
 ```bash
-total time cost 6898372 us.
-frame count is 1421 | fps is 205.991 fps.
+ total time cost 5272393 us.
+frame count is 1422 | fps is 269.707 fps.
 ```
 
 ## 7. Performance Testing
 
-Currently, the YOLOv5 example supports inference on BM1684X and BM1684 in PCIe and SoC modes, and supports inference on BM1688 in SoC mode.
+Currently, the YOLOX example supports inference on BM1684X and BM1684 in PCIe and SoC modes, and supports inference on BM1688 in SoC mode.
 
 Modifications in JSON configurations might be necessary when switching between different devices, such as adjusting model paths, input channels, etc. Refer to section 6.1 for JSON configuration methods and section 6.2 for program execution methods.
 
@@ -293,18 +297,17 @@ Due to significant differences in CPU capabilities among PCIe devices, performan
 
 The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was done in Release mode. The results are as follows:
 
-
 | Device | Number of Channels | Algorithm Thread Count | CPU Utilization (%) | System Memory (M) | Peak System Memory (M) | TPU Utilization (%) | Device Memory (M) | Peak Device Memory (M) | Average FPS | Peak FPS |
 |----|----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-|SE7|8|4-4-4|136.64|200.95|206.18|100.00|1857.94|2067.00|255.17|265.92|
-|SE5-16|4|4-4-4|218.74|187.12|191.89|96.95|1897.06|2151.00|120.84|141.66|
-|SE5-8|3|3-3-3|137.50|145.81|149.01|94.89|1273.70|1437.00|80.38|90.00|
+|SE7|8|4-4-4|204.26|195.29|201.29|99.45|1373.88|1611.00|319.44|329.85|
+|SE5-16|4|4-4-4|78.39|122.59|124.93|94.60|1252.69|1424.00|130.26|140.32|
+|SE5-8|3|3-3-3|51.42|96.97|98.46|92.77|992.12|1116.00|82.03|91.62|
 
 > **Test Description**:
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.
 2. Both BM1684 and BM1684X SoC devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz.
 3. All aforementioned performance tests are based on the INT8 model.
 4. Running models with a batch size of 4 on the BM1684 device can achieve higher FPS.
-5. On the BM1684X device, utilizing a batch size of 1 for the model and enabling the tpu_kernel for post-processing can yield higher FPS.
+5. On the BM1684X device, utilizing a batch size of 1 for the model can yield higher FPS.
 6. For the settings of input channels and algorithm thread count in the table, please refer to [JSON configuration explanation](#61-json-configuration). CPU utilization and system memory can be checked using the `top` command. TPU utilization and device memory can be checked using the `bm-smi` command. FPS can be obtained from the logs printed during program execution.
 7. Performance testing is not currently supported on the BM1688 device.

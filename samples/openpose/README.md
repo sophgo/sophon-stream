@@ -1,21 +1,27 @@
 # OPENPOSE Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [OPENPOSE Demo](#openpose-demo)
   - [目录](#目录)
   - [1. 简介](#1-简介)
   - [2. 特性](#2-特性)
   - [3. 准备模型与数据](#3-准备模型与数据)
+  - [4. 环境准备](#4-环境准备)
+    - [4.1 x86/arm PCIe平台](#41-x86arm-pcie平台)
+    - [4.2 SoC平台](#42-soc平台)
+  - [5. 程序编译](#5-程序编译)
+    - [5.1 x86/arm PCIe平台](#51-x86arm-pcie平台)
+    - [5.2 SoC平台](#52-soc平台)
+  - [6. 程序运行](#6-程序运行)
+    - [6.1 Json配置说明](#61-json配置说明)
     - [6.2 运行](#62-运行)
   - [7. 性能测试](#7-性能测试)
 
 ## 1. 简介
 
 本例程用于说明如何使用sophon-stream快速构建视频姿态识别应用。
-
-本例程插件的连接方式如下图所示
-
-![process](./pics/elements.jpg)
 
 **源代码** (https://github.com/CMU-Perceptual-Computing-Lab/openpose) 
 
@@ -43,7 +49,7 @@ chmod -R +x scripts/
 
 下载的模型包括：
 
-```
+```bash
 ./models
 ├── BM1684
 │   ├── pose_coco_fp32_1b.bmodel              # 使用TPU-NNTC编译，用于BM1684的FP32 BModel，batch_size=1，18个身体关键点识别
@@ -57,13 +63,12 @@ chmod -R +x scripts/
     ├── pose_coco_int8_4b.bmodel              # 使用TPU-MLIR编译，用于BM1684X的INT8 BModel，batch_size=4，18个身体关键点识别
     ├── pose_body_25_fp32_1b.bmodel           # 使用TPU-MLIR编译，用于BM1684X的FP32 BModel，batch_size=1，25个身体关键点识别
     └── pose_body_25_fp16_1b.bmodel           # 使用TPU-MLIR编译，用于BM1684X的FP16 BModel，batch_size=1，25个身体关键点识别
-
+```
 
 下载的数据包括：
-```
+```bash
 ./videos
 └── test.mp4                                  # 测试视频                                    
-  
 ```
 
 ## 4. 环境准备
@@ -93,11 +98,13 @@ openpose demo中各部分参数位于 [config](./config/) 目录，结构如下�
 ```bash
 ./config/
 ├── decode.json                 # 解码配置
-├── engine.json                 # sophon-stream graph配置
-├── openpose_demo.json            # openpose demo配置
-├── openpose_infer.json           # openpose 推理配置
-├── openpose_post.json            # openpose 后处理配置
-└── openpose_pre.json             # openpose 前处理配置
+├── engine_group.json           # sophon-stream简化的graph配置
+├── engine.json                 # sophon-stream graph配置，需要分别配置前处理、推理和后处理文件
+├── openpose_demo.json          # demo输入配置文件
+├── openpose_group.json         # 简化的openpose配置文件，将前处理、推理、后处理合到一个配置文件中
+├── openpose_infer.json         # openpose 推理配置文件
+├── openpose_post.json          # openpose 后处理配置文件
+└── openpose_pre.json           # openpose 预处理配置文件
 ```
 
 其中，[openpose_demo.json](./config/openpose_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels参数配置输入的路数，channel中包含码流url等信息。
@@ -305,7 +312,7 @@ frame count is 1432 | fps is 47.9211 fps.
 
 测试视频`test.mp4`，编译选项为Release模式，结果如下:
 
-| 设备   | 路数 | 算法线程数 | CPU利用率(%) | 系统内存(M) | 系统内存峰>值(M) | TPU利用率(%) | 设备内存(M) | 设备内存峰值(M) | 平均FPS | 峰>值FPS | 模型                     |
+| 设备   | 路数 | 算法线程数 | CPU利用率(%) | 系统内存(M) | 系统内存峰值(M) | TPU利用率(%) | 设备内存(M) | 设备内存峰值(M) | 平均FPS | 峰值FPS | 模型                     |
 | ------ | ---- | ---------- | ------------ | ----------- | ---------------- | ------------ | ----------- | --------------- | ------- | -------- | ------------------------ |
 | SE7    | 8    | 8-8-8      | 453.26       | 329.96      | 471.59           | 99.36        | 1301.89     | 1330.00         | 91.12   | 115.94   | pose_coco_int8_1b.bmodel |
 | SE7    | 4    | 4-4-4      | 430.31       | 192.94      | 278.14           | 97.72        | 715.61      | 730.00          | 88.84   | 105.93   | pose_coco_int8_1b.bmodel |

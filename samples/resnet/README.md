@@ -1,5 +1,7 @@
 # ResNet Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [ResNet Demo](#resnet-demo)
   - [目录](#目录)
@@ -124,7 +126,7 @@ resnet demo中各部分参数位于 [config](./config/) 目录，结构如下所
 ├── engine.json             # sophon-stream graph配置
 ├── resnet_demo.json        # resnet demo配置
 ├── resnet_roi.json         # resnet roi配置
-└── resnet_classify.json    # resnet 插件配置
+└── resnet.json             # resnet 插件配置
 ```
 
 其中，[resnet_demo.json](./config/resnet_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels参数配置输入的路数，channel中包含码流url等信息。
@@ -244,7 +246,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../resnet/config/resnet_demo.json
 ```

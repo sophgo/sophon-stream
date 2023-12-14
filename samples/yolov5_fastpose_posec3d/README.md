@@ -1,5 +1,7 @@
 # YOLOV5-FASTPOSE-POSEC3D Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [YOLOV5-FASTPOSE-POSEC3D Demo](#yolov5-fastpose_posec3d-demo)
   - [目录](#目录)
@@ -31,7 +33,7 @@
 
 ## 2. 特性
 
-* 支持BM1684X、BM1684(x86 PCIe、SoC)
+* 支持BM1684X(x86 PCIe、SoC)
 * 支持多路视频流
 * 支持多线程
 * BM1684X平台上，支持yolov5 tpu_kernel后处理
@@ -84,8 +86,7 @@ chmod -R +x scripts/
 ├── demo_skeleton.mp4                         # 人体检测+关键检测+行为识别测试视频 
 ├── S017C001P003R001A001_rgb.avi              # 人体检测+关键检测+行为识别测试视频 
 ├── S017C001P003R002A008_rgb.avi              # 人体检测+关键检测+行为识别测试视频 
-└── test.mp4                                  # 人体检测+关键检测测试视频                                    
-  
+└── test.mp4                                  # 人体检测+关键检测测试视频
 ```
 
 ## 4. 环境准备
@@ -239,7 +240,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ]
 ```
 
-[fastpose_pre.json](./config/fastpose_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
+[fastpose_group.json](./config/fastpose_group.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 
 `use_tpu_kernel`为`true`时，会使用yolov5 tpu_kernel后处理。tpu_kernel后处理只支持BM1684X设备。
 
@@ -268,7 +269,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../yolov5_fastpose_posec3d/config/yolov5_fastpose_posec3d_demo.json
 ```

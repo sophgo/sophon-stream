@@ -1,5 +1,7 @@
 # 目标跟踪算法结果推流Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [目标跟踪算法结果推流Demo](#目标跟踪算法结果推流demo)
   - [目录](#目录)
@@ -185,103 +187,16 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "element_id": 5001,
-                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_pre.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
-            },
-            {
-                "element_id": 5002,
-                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_infer.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
-            },
-            {
-                "element_id": 5003,
-                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_post.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../yolox_bytetrack_osd_encode/config/yolox_group.json",
+                "inner_elements_id": [10001, 10002, 10003]
             },
             {
                 "element_id": 5004,
-                "element_config": "../yolox_bytetrack_osd_encode/config/bytetrack.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../yolox_bytetrack_osd_encode/config/bytetrack.json"
             },
             {
                 "element_id": 5005,
-                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ],
-                    "output": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": false
-                        }
-                    ]
-                }
+                "element_config": "../yolox_bytetrack_osd_encode/config/osd.json"
             },
             {
                 "element_id": 5006,
@@ -313,18 +228,6 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
             },
             {
                 "src_element_id": 5001,
-                "src_port": 0,
-                "dst_element_id": 5002,
-                "dst_port": 0
-            },
-            {
-                "src_element_id": 5002,
-                "src_port": 0,
-                "dst_element_id": 5003,
-                "dst_port": 0
-            },
-            {
-                "src_element_id": 5003,
                 "src_port": 0,
                 "dst_element_id": 5004,
                 "dst_port": 0
@@ -371,17 +274,17 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json
 ```
 
-由于结尾帧可能丢失，上述命令可能不会停止，属于正常现象。如停止运行结果如下
+运行结果如下
 ```bash
 total time cost 74520023 us.
 frame count is 3077 | fps is 41.2909 fps.
 ```
-如果encode选择RTSP模式，需要启动推流服务器。您可以使用vlc软件打开推流地址查看视频算法结果，详细说明查看[encode插件文档](../../element/multimedia/encode/README.md)说明。
+如果encode选择RTSP模式，需要启动推流服务器。您可以使用vlc软件打开推流地址查看视频算法结果，详细说明查看[encode插件文档]()说明。
 
 ## 7. 性能测试
 由于Osd插件画图速度慢，本例程暂不提供性能测试结果，如需各模型推理性能，请到对应模型例程查看。

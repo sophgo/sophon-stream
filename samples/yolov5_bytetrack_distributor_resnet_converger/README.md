@@ -1,5 +1,7 @@
 # 目标检测-跟踪-分发-属性识别 Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [目标检测-跟踪-分发-属性识别 Demo](#目标检测-跟踪-分发-属性识别-demo)
   - [目录](#目录)
@@ -143,9 +145,11 @@ chmod -R +x scripts/
 ├── distributor_time_class.json                                       # 间隔时间按类别分发（默认）
 ├── distributor_time.json                                             # 间隔时间分发full frame
 ├── engine.json                                                       # graph配置
+├── engine_group.json                                                 # 简化的graph配置
 ├── resnet_car.json                                                   # resnet 车辆颜色分类
 ├── resnet_person.json                                                # resnet 行人性别分类
 ├── yolov5_bytetrack_distributor_resnet_converger_demo.json           # demo配置
+├── yolov5_group.json                                                 # 简化的yolov5配置文件，将yolov5的前处理、推理、后处理合到一个配置文件中
 ├── yolov5_infer.json                                                 # yolov5 推理配置
 ├── yolov5_post.json                                                  # yolov5 后处理配置
 └── yolov5_pre.json                                                   # yolov5 前处理配置
@@ -201,7 +205,9 @@ chmod -R +x scripts/
 在该文件内，需要初始化每个element的信息和element之间的连接方式。element_id是唯一的，起到标识身份的作用。element_config指向该element的详细配置文件地址，port_id是该element的输入输出端口编号，多输入或多输出的情况下，输入/输出编号也不可以重复。is_src标志当前端口是否是整张图的输入端口，is_sink标识当前端口是否是整张图的输出端口。
 connection是所有element之间的连接方式，通过element_id和port_id确定。
 
-[yolov5_pre.json](./config/yolov5_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
+[yolov5_group.json](./config/yolov5_group.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
+
+`use_tpu_kernel`为`true`时，会使用tpu_kernel后处理。tpu_kernel后处理只支持BM1684X设备。
 
 ### 6.2 运行
 
@@ -211,7 +217,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../yolov5_bytetrack_distributor_resnet_converger/config/yolov5_bytetrack_distributor_resnet_converger_demo.json
 ```
