@@ -1,5 +1,7 @@
 # sophon-stream resnet element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream resnet element是sophon-stream框架中的一个插件，是一个简单、快速、强大的分类模型。本项目已提供此插件例程，详情请参见 [ResNet Demo](../../../samples/resnet/README.md)
 
 ## 1. 特性

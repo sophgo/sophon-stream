@@ -1,5 +1,7 @@
 # sophon-stream fastpose element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream fastpose element是sophon-stream框架中的一个插件，是一个简单、快速、强大的姿态识别模型。本项目已提供此插件例程，详情请参见 [yolov5_fastpose Demo](../../../samples/yolov5_fastpose/README.md)
 
 ## 1. 特性
@@ -10,7 +12,6 @@ sophon-stream fastpose element是sophon-stream框架中的一个插件，是一�
 sophon-stream fastpose插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
 
 ```json
-
 {
     "configure": {
         "model_path": "../data/models/fastpose/BM1684X/halpe26_fast_res50_256x192_int8_1b.bmodel",
