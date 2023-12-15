@@ -156,7 +156,7 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
 void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
   std::shared_ptr<bm_image> imageStorage;
   imageStorage.reset(new bm_image,
-                     [&](bm_image* img) { bm_image_destroy(*img); });
+                     [&](bm_image* img) { bm_image_destroy(*img); delete img; img = nullptr;});
   bm_image image = *(objectMetadata->mFrame->mSpData);
 
   if (mDrawUtils == DrawUtils::OPENCV) {
