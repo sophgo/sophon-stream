@@ -65,6 +65,8 @@ class WSS {
   double m_frame_interval;
   std::queue<std::string> mImgDataQueue;
   std::mutex mQueueMtx;
+
+  static constexpr int WSS_MAX_QUEUE_LEN = 5;
 };
 
 }  // namespace encode

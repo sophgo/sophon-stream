@@ -80,7 +80,8 @@ void WSS::stop() { m_server.stop_listening(); }
 
 void WSS::pushImgDataQueue(const std::string& data) {
   std::lock_guard<std::mutex> lock(mQueueMtx);
-  mImgDataQueue.push(data);
+  if (mImgDataQueue.size() < WSS_MAX_QUEUE_LEN)
+    mImgDataQueue.push(data);
 }
 
 std::string WSS::popImgDataQueue() {
