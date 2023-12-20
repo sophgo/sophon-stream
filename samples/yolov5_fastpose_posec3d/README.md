@@ -51,6 +51,8 @@ chmod -R +x scripts/
 
 脚本执行完毕后，会在当前目录下生成`data`目录，其中包含`models`和`videos`两个子目录。
 
+**注意：fastpose和posec3d BModel模型暂时只支持BM1684X平台。**
+
 下载的模型包括：
 
 ```bash
@@ -63,7 +65,6 @@ chmod -R +x scripts/
 │   ├── fast_res50_256x192_coco17_1b_fp16.bmodel    # 用于BM1684X的FASTPOSE FP16 Bmodel，batch_size=1，17个关键点检测
 │   ├── fast_res50_256x192_coco17_1b_fp32.bmodel    # 用于BM1684X的FASTPOSE FP32 Bmodel，batch_size=1，17个关键点检测
 │   ├── fast_res50_256x192_coco17_1b_int8.bmodel    # 用于BM1684X的FASTPOSE INT8 Bmodel，batch_size=1，17个关键点检测
-│   ├── fast_res50_256x192_coco17_4b_int8.bmodel    # 用于BM1684X的FASTPOSE INT8 Bmodel，batch_size=4，17个关键点检测
 │   ├── posec3d_gym_fp16.bmodel                     # 用于BM1684X的POSEC3D FP16 Bmodel，gym 99类识别
 │   ├── posec3d_gym_fp32.bmodel                     # 用于BM1684X的POSEC3D FP32 Bmodel，gym 99类识别
 │   ├── posec3d_ntu60_fp16.bmodel                   # 用于BM1684X的POSEC3D FP16 Bmodel，ntu 60类识别

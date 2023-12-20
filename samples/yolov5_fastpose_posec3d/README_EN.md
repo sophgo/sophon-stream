@@ -51,6 +51,8 @@ chmod -R +x scripts/
 
 After the script execution, `data` directory will be generated in the current directory, containing two subdirectories: `models` and `videos`
 
+**Note: fastpose and posec3d BModel models are only supported on the BM1684X platform for now.**
+
 The downloaded models include:
 
 ```bash
@@ -63,7 +65,6 @@ The downloaded models include:
 │   ├── fast_res50_256x192_coco17_1b_fp16.bmodel    # FASTPOSE FP16 Bmodel for BM1684X，batch_size=1，17 key points
 │   ├── fast_res50_256x192_coco17_1b_fp32.bmodel    # FASTPOSE FP32 Bmodel for BM1684X，batch_size=1，17 key points
 │   ├── fast_res50_256x192_coco17_1b_int8.bmodel    # FASTPOSE INT8 Bmodel for BM1684X，batch_size=1，17 key points
-│   ├── fast_res50_256x192_coco17_4b_int8.bmodel    # FASTPOSE INT8 Bmodel for BM1684X，batch_size=4，17 key points
 │   ├── posec3d_gym_fp16.bmodel                     # POSEC3D FP16 Bmodel for BM1684X，gym 99 classes
 │   ├── posec3d_gym_fp32.bmodel                     # POSEC3D FP32 Bmodel for BM1684X，gym 99 classes
 │   ├── posec3d_ntu60_fp16.bmodel                   # POSEC3D FP16 Bmodel for BM1684X，ntu 60 classes

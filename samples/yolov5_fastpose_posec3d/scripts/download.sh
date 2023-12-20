@@ -26,8 +26,8 @@ mv ./BM1684X ../data/models/BM1684X_tpukernel
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/fastpose/coco17_BM1684X.zip
 unzip coco17_BM1684X.zip
 rm -rf coco17_BM1684X.zip
-mv ./coco17_fastpose/* ../data/models/BM1684X
-rm -r ./coco17_fastpose
+mv ./coco17_BM1684X/* ../data/models/BM1684X
+rm -r ./coco17_BM1684X
 
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/posec3d/BM1684X.zip
 unzip BM1684X.zip
