@@ -11,7 +11,8 @@ Sophon-stream http_push plugin comes with several configurable parameters that c
 {
     "configure": {
         "ip": "0.0.0.0",
-        "port" : 8000
+        "port" : 8000,
+        "path" : "/stream/test"
     },
     "shared_object": "../../../build/lib/libhttp_push.so",
     "name": "http_push",
@@ -23,7 +24,8 @@ Sophon-stream http_push plugin comes with several configurable parameters that c
 | Parameter Name|  name  |        Default value                       |            Description           |
 | ------------- | ------ | ------------------------------------ | ------------------------------- |
 | ip            | string | "0.0.0.0"                            | `httplib::Client` ip           |
-| port            | int | 8000                                  | The port for `httplib::Client`, determined by the sum of 'port' and channel_id'.      |
+| port            | int | 8000                                  | The port for `httplib::Client`      |
+| path            | string | "/stream/test"                                | The path of http request      |
 | shared_object | string | "../../../build/lib/libhttp_push.so" | libhttp_push dynamic library path      |
 | name          | string | "http_push"                          | element name                     |
 | side          | string | "sophgo"                             | device type                       |

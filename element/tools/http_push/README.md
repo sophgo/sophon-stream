@@ -11,7 +11,8 @@ sophon-stream http_push插件具有一些可配置的参数，可以根据需求
 {
     "configure": {
         "ip": "0.0.0.0",
-        "port" : 8000
+        "port" : 8000,
+        "path": "/stream/test"
     },
     "shared_object": "../../../build/lib/libhttp_push.so",
     "name": "http_push",
@@ -23,7 +24,8 @@ sophon-stream http_push插件具有一些可配置的参数，可以根据需求
 | 参数名        | 类型   | 默认值                               | 说明                            |
 | ------------- | ------ | ------------------------------------ | ------------------------------- |
 | ip            | string | "0.0.0.0"                            | httplib::Client的ip            |
-| port            | int | 8000                            | httplib::Client的端口，实际使用时，端口号为该port + channel_id            |
+| port            | int | 8000                            | httplib::Client的端口            |
+| path            | string | "/stream/test"                     | http请求的path            |
 | shared_object | string | "../../../build/lib/libhttp_push.so" | libhttp_push动态库路径          |
 | name          | string | "http_push"                          | element名称                     |
 | side          | string | "sophgo"                             | 设备类型                        |

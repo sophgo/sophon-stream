@@ -43,12 +43,19 @@ common::ErrorCode HttpPush::initInternal(const std::string& json) {
                  "configuration file");
     port_ = portIt->get<int>();
 
+    auto pathIt = configure.find(CONFIG_INTERNAL_PATH_FILED);
+    STREAM_CHECK((pathIt != configure.end() && pathIt->is_string()),
+                 "Port must be string, please check your http_push element "
+                 "configuration file");
+    path_ = pathIt->get<std::string>();
+
   } while (false);
   return errorCode;
 }
 
-HttpPushImpl_::HttpPushImpl_(std::string& ip, int port, int channel)
-    : cli(ip, port + channel) {
+HttpPushImpl_::HttpPushImpl_(std::string& ip, int port, std::string path_,
+                             int channel)
+    : cli(ip, port), path(path_) {
   workThread = std::thread(&HttpPushImpl_::postFunc, this);
   mFpsProfilerName = "http_push_" + std::to_string(channel) + "_fps";
   mFpsProfiler.config(mFpsProfilerName, 100);
@@ -124,7 +131,8 @@ common::ErrorCode HttpPush::doWork(int dataPipeId) {
     auto implIt = mapImpl_.find(channel_id);
     if (implIt == mapImpl_.end()) {
       std::lock_guard<std::mutex> lock(mapMtx);
-      auto httpImpl = std::make_shared<HttpPushImpl_>(ip_, port_, channel_id);
+      auto httpImpl =
+          std::make_shared<HttpPushImpl_>(ip_, port_, path_, channel_id);
       mapImpl_[channel_id] = httpImpl;
       mapImpl_[channel_id]->pushQueue(
           std::make_shared<nlohmann::json>(serializedObj));
