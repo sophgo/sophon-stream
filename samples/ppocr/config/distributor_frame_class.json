@@ -1,0 +1,21 @@
+{
+    "configure": {
+        "default_port": 0,
+        "rules": [
+            {
+                "frame_interval": 1,
+                "routes": [
+                    {
+                        "classes":["ppocr"],
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "class_names_file": "../ppocr/data/class.names"
+    },
+    "shared_object": "../../build/lib/libdistributor.so",
+    "name": "distributor",
+    "side": "sophgo",
+    "thread_number": 1
+}

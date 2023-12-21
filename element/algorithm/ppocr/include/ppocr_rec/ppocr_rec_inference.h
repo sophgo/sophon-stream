@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_ELEMENT_PPOCR_DET_INFERENCE_H_
-#define SOPHON_STREAM_ELEMENT_PPOCR_DET_INFERENCE_H_
+#ifndef SOPHON_STREAM_ELEMENT_PPOCR_REC_INFERENCE_H_
+#define SOPHON_STREAM_ELEMENT_PPOCR_REC_INFERENCE_H_
 
 #include <memory>
 #include <string>
@@ -17,25 +17,25 @@
 #include "common/error_code.h"
 #include "common/object_metadata.h"
 #include "group.h"
-#include "ppocr_det_context.h"
+#include "ppocr_rec_context.h"
 
 namespace sophon_stream {
 namespace element {
-namespace ppocr_det {
+namespace ppocr_rec {
 
-class Ppocr_detInference : public ::sophon_stream::framework::Inference {
+class PpocrRecInference : public ::sophon_stream::framework::Inference {
  public:
-  ~Ppocr_detInference() override;
+  ~PpocrRecInference() override;
   /**
    * @brief init device and engine
    * @param[in] context: model path,inputs and outputs name...
    */
-  void init(std::shared_ptr<Ppocr_detContext> context);
+  void init(std::shared_ptr<PpocrRecContext> context);
   /**
    * @brief network predict output
    * @param[in] context: inputData and outputData
    */
-  common::ErrorCode predict(std::shared_ptr<Ppocr_detContext> context,
+  common::ErrorCode predict(std::shared_ptr<PpocrRecContext> context,
                             common::ObjectMetadatas& objectMetadatas);
 
  private:
@@ -47,7 +47,7 @@ class Ppocr_detInference : public ::sophon_stream::framework::Inference {
    * 组合的inputTensors
    */
   std::shared_ptr<sophon_stream::common::bmTensors> mergeInputDeviceMem(
-      std::shared_ptr<Ppocr_detContext> context,
+      std::shared_ptr<PpocrRecContext> context,
       common::ObjectMetadatas& objectMetadatas);
   /**
    * @brief 申请outputTensors
@@ -56,7 +56,7 @@ class Ppocr_detInference : public ::sophon_stream::framework::Inference {
    * 申请的outputTensors
    */
   std::shared_ptr<sophon_stream::common::bmTensors> getOutputDeviceMem(
-      std::shared_ptr<Ppocr_detContext> context);
+      std::shared_ptr<PpocrRecContext> context);
   /**
    * @brief
    * 将更新的outputTensors分配到每一个ObjectMetadata上，batchsize==1时不调用
@@ -65,13 +65,13 @@ class Ppocr_detInference : public ::sophon_stream::framework::Inference {
    * @param outputTensors 经过推理，更新的outputTensors
    */
   void splitOutputMemIntoObjectMetadatas(
-      std::shared_ptr<Ppocr_detContext> context,
+      std::shared_ptr<PpocrRecContext> context,
       common::ObjectMetadatas& objectMetadatas,
       std::shared_ptr<sophon_stream::common::bmTensors> outputTensors);
 };
 
-}  // namespace ppocr_det
+}  // namespace ppocr_rec
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif  // SOPHON_STREAM_ELEMENT_PPOCR_DET_INFERENCE_H_
+#endif  // SOPHON_STREAM_ELEMENT_PPOCR_REC_INFERENCE_H_

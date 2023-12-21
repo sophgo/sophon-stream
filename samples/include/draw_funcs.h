@@ -78,7 +78,7 @@ static void _draw_rectangle_and_text_bmcv(bm_handle_t& handle, std::string& labl
     rect.crop_h = height;
     std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
               << rect.crop_h << std::endl;
-    bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0], color[1],
+    int ret = bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0], color[1],
                               color[2]);
     if (put_text_flag) {
         bmcv_point_t org = {left, top - 10};
@@ -811,4 +811,33 @@ void draw_yolov5_fastpose_posec3d_results(std::shared_ptr<sophon_stream::common:
     }
     free(jpeg_data);
     bm_image_destroy(imageStorage);
+}
+
+void draw_ppocr_results(std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata, std::string& out_dir)
+{
+    bm_image imageStorage;
+    _gen_storage_image(objectMetadata, imageStorage);
+    uni_text::UniText uniText("../ppocr/data/wqy-microhei.ttc", 30);
+    cv::Mat img;
+    cv::bmcv::toMAT(&imageStorage, img);
+    // draw words
+    if (objectMetadata->mSubObjectMetadatas.size() > 0) {
+        for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+            IVS_WARN("get recognized words from ppocr");
+            int subId = subObj->mSubId;
+            auto reconizedObj = subObj->mRecognizedObjectMetadatas[0];
+            auto detObj = objectMetadata->mDetectedObjectMetadatas[subId];
+
+            std::string oriLabel = reconizedObj->mLabelName;
+
+            uniText.PutText(img, oriLabel,
+                          cv::Point(detObj->mKeyPoints[0]->mPoint.mX, detObj->mKeyPoints[0]->mPoint.mY),
+                          cv::Scalar(0, 255, 0), false);
+        }
+        std::string img_file =
+            out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
+            "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        cv::imwrite(img_file, img);
+  }
+  bm_image_destroy(imageStorage);
 }

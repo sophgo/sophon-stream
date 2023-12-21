@@ -391,6 +391,110 @@ void Distributor::makeSubFaceObjectMetadata(
   subObj->mSubId = subId;
 }
 
+void Distributor::makeSubOcrObjectMetadata(
+    std::shared_ptr<common::ObjectMetadata> obj,
+    std::shared_ptr<common::DetectedObjectMetadata> detObj,
+    std::shared_ptr<common::ObjectMetadata> subObj, int subId) {
+
+  std::vector<std::vector<int>> box;
+  if (detObj != nullptr){
+    for (auto keyPoint: detObj->mKeyPoints){
+      box.push_back({keyPoint->mPoint.mX, keyPoint->mPoint.mY});
+    }
+  }
+
+  subObj->mFrame = std::make_shared<common::Frame>();
+
+  // crop or not
+  if (detObj != nullptr) {
+    bm_image input_bmimg_planar;
+    bm_status_t ret =
+        bm_image_create(obj->mFrame->mHandle, 
+                        obj->mFrame->mSpData->height, obj->mFrame->mSpData->width,
+                        FORMAT_BGR_PLANAR,
+                        obj->mFrame->mSpData->data_type, &input_bmimg_planar); 
+    ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1, 
+                                *obj->mFrame->mSpData.get(), &input_bmimg_planar);
+    
+    std::shared_ptr<bm_image> cropped = nullptr;
+    cropped.reset(new bm_image, [](bm_image* p) {
+      bm_image_destroy(*p);
+      delete p;
+      p = nullptr;
+    });   
+    
+    bm_image crop_image = get_rotate_crop_image(obj->mFrame->mHandle, input_bmimg_planar, box); 
+    
+    *cropped.get() = crop_image;
+
+    subObj->mFrame->mSpData = cropped;
+    bm_image_destroy(input_bmimg_planar);
+  } else {
+    subObj->mFrame->mSpData = obj->mFrame->mSpData;
+  }
+
+  // update frameid, channelid
+  subObj->mFrame->mFrameId = obj->mFrame->mFrameId;
+  subObj->mFrame->mChannelId = obj->mFrame->mChannelId;
+  subObj->mFrame->mChannelIdInternal = obj->mFrame->mChannelIdInternal;
+  subObj->mSubId = subId;
+
+}
+
+bm_image Distributor::get_rotate_crop_image(bm_handle_t handle, 
+                                            bm_image input_bmimg_planar, 
+                                            std::vector<std::vector<int>> box) { 
+  int crop_width = std::max((int)sqrt(pow(box[0][0] - box[1][0], 2) + pow(box[0][1] - box[1][1], 2)),
+                      (int)sqrt(pow(box[2][0] - box[3][0], 2) + pow(box[2][1] - box[3][1], 2)));
+  int crop_height = std::max((int)sqrt(pow(box[0][0] - box[3][0], 2) + pow(box[0][1] - box[3][1], 2)),
+                      (int)sqrt(pow(box[2][0] - box[1][0], 2) + pow(box[2][1] - box[1][1], 2)));
+  // legality bounding
+  crop_width = std::min(std::max(16, crop_width), input_bmimg_planar.width);
+  crop_height = std::min(std::max(16, crop_height), input_bmimg_planar.height);
+
+  bmcv_perspective_image_coordinate coord;
+  coord.coordinate_num = 1;
+  std::shared_ptr<bmcv_perspective_coordinate> coord_data = std::make_shared<bmcv_perspective_coordinate>();
+  coord.coordinate = coord_data.get();
+  coord.coordinate->x[0] = box[0][0];
+  coord.coordinate->y[0] = box[0][1];
+  coord.coordinate->x[1] = box[1][0];
+  coord.coordinate->y[1] = box[1][1];
+  coord.coordinate->x[2] = box[3][0];
+  coord.coordinate->y[2] = box[3][1];
+  coord.coordinate->x[3] = box[2][0];
+  coord.coordinate->y[3] = box[2][1];
+
+  bm_image crop_bmimg;
+  bm_image_create(handle, crop_height, crop_width, input_bmimg_planar.image_format, input_bmimg_planar.data_type, &crop_bmimg);
+  assert(BM_SUCCESS == bmcv_image_warp_perspective_with_coordinate(handle, 1, &coord, &input_bmimg_planar, &crop_bmimg, 0));//bilinear interpolation.
+
+  if ((float)crop_height / crop_width < 1.5) {
+    return crop_bmimg;
+  } else {
+    bm_image rot_bmimg;
+    bm_image_create(handle, crop_width, crop_height, input_bmimg_planar.image_format, input_bmimg_planar.data_type,
+                    &rot_bmimg);
+
+    cv::Point2f center = cv::Point2f(crop_width / 2.0, crop_height / 2.0);
+    cv::Mat rot_mat = cv::getRotationMatrix2D(center, -90.0, 1.0);
+    bmcv_affine_image_matrix matrix_image;
+    matrix_image.matrix_num = 1;
+    std::shared_ptr<bmcv_affine_matrix> matrix_data = std::make_shared<bmcv_affine_matrix>();
+    matrix_image.matrix = matrix_data.get();
+    matrix_image.matrix->m[0] = rot_mat.at<double>(0, 0);
+    matrix_image.matrix->m[1] = rot_mat.at<double>(0, 1);
+    matrix_image.matrix->m[2] = rot_mat.at<double>(0, 2) - crop_height / 2.0 + crop_width / 2.0;
+    matrix_image.matrix->m[3] = rot_mat.at<double>(1, 0);
+    matrix_image.matrix->m[4] = rot_mat.at<double>(1, 1);
+    matrix_image.matrix->m[5] = rot_mat.at<double>(1, 2) - crop_height / 2.0 + crop_width / 2.0;
+
+    assert(BM_SUCCESS == bmcv_image_warp_affine(handle, 1, &matrix_image, &crop_bmimg, &rot_bmimg, 0));//bilinear interpolation
+    bm_image_destroy(crop_bmimg);
+    return rot_bmimg;
+  }
+}
+
 common::ErrorCode Distributor::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   // 从队列中取出一个数据，判断detection结果，如果需要发送到下游，则做crop并且发送
@@ -487,7 +591,13 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
           // 构造SubObjectMetadata
           std::shared_ptr<common::ObjectMetadata> subObj =
               std::make_shared<common::ObjectMetadata>();
-          makeSubObjectMetadata(objectMetadata, detObj, subObj, subId);
+
+          if (class_name == "ppocr"){
+            makeSubOcrObjectMetadata(objectMetadata, detObj, subObj, subId);
+          } else {
+            makeSubObjectMetadata(objectMetadata, detObj, subObj, subId);
+          }
+    
           objectMetadata->mSubObjectMetadatas.push_back(subObj);
           ++objectMetadata->numBranches;
           int outDataPipeId =

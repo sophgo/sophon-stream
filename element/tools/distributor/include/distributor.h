@@ -58,6 +58,15 @@ class Distributor : public ::sophon_stream::framework::Element {
       std::shared_ptr<common::ObjectMetadata> subObj, int subId);
   cv::Mat estimateAffine2D(const std::vector<cv::Point2f>& src_points,
                            const std::vector<cv::Point2f>& dst_points);
+  void makeSubOcrObjectMetadata(
+      std::shared_ptr<common::ObjectMetadata> obj,
+      std::shared_ptr<common::DetectedObjectMetadata> detObj,
+      std::shared_ptr<common::ObjectMetadata> subObj, int subId);
+
+  bm_image get_rotate_crop_image(bm_handle_t handle, 
+      bm_image input_bmimg_planar, 
+      std::vector<std::vector<int>>);
+  
 
   /**
    * @brief 按时间间隔分发的所有规则。key：时间间隔，value：{类名，端口}

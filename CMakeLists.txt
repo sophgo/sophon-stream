@@ -40,6 +40,7 @@ checkAndAddElement(element/algorithm/resnet)
 checkAndAddElement(element/algorithm/openpose)
 checkAndAddElement(element/algorithm/retinaface)
 checkAndAddElement(element/algorithm/lprnet)
+checkAndAddElement(element/algorithm/ppocr)
 
 checkAndAddElement(element/multimedia/decode)
 checkAndAddElement(element/multimedia/osd)

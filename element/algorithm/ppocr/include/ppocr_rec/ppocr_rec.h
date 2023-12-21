@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_ELEMENT_PPOCR_DET_H_
-#define SOPHON_STREAM_ELEMENT_PPOCR_DET_H_
+#ifndef SOPHON_STREAM_ELEMENT_PPOCR_REC_H_
+#define SOPHON_STREAM_ELEMENT_PPOCR_REC_H_
 
 #include <fstream>
 #include <memory>
@@ -17,19 +17,19 @@
 #include "common/profiler.h"
 #include "element.h"
 #include "group.h"
-#include "ppocr_det_context.h"
-#include "ppocr_det_inference.h"
-#include "ppocr_det_post_process.h"
-#include "ppocr_det_pre_process.h"
+#include "ppocr_rec_context.h"
+#include "ppocr_rec_inference.h"
+#include "ppocr_rec_post_process.h"
+#include "ppocr_rec_pre_process.h"
 
 namespace sophon_stream {
 namespace element {
-namespace ppocr_det {
+namespace ppocr_rec {
 
-class Ppocr_det : public ::sophon_stream::framework::Element {
+class PpocrRec : public ::sophon_stream::framework::Element {
  public:
-  Ppocr_det();
-  ~Ppocr_det() override;
+  PpocrRec();
+  ~PpocrRec() override;
 
   const static std::string elementName;
 
@@ -77,18 +77,17 @@ class Ppocr_det : public ::sophon_stream::framework::Element {
    */
   static constexpr const char* CONFIG_INTERNAL_STAGE_NAME_FIELD = "stage";
   static constexpr const char* CONFIG_INTERNAL_MODEL_PATH_FIELD = "model_path";
-
-  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_BGR2RGB_FIELD =
-      "bgr2rgb";
-  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD = "mean";
-  static constexpr const char* CONFIG_INTERNAL_THRESHOLD_STD_FIELD = "std";
-
+  static constexpr const char* CONFIG_INTERNAL_BEAM_SEARCH_FIELD =
+      "beam_search";
+  static constexpr const char* CONFIG_INTERNAL_BEAM_WIDTH_FIELD = "beam_width";
+  static constexpr const char* CONFIG_INTERNAL_CLASS_NAMES_FILE_FIELD =
+      "class_names_file";
 
  private:
-  std::shared_ptr<Ppocr_detContext> mContext;          // context对象
-  std::shared_ptr<Ppocr_detPreProcess> mPreProcess;    // 预处理对象
-  std::shared_ptr<Ppocr_detInference> mInference;      // 推理对象
-  std::shared_ptr<Ppocr_detPostProcess> mPostProcess;  // 后处理对象
+  std::shared_ptr<PpocrRecContext> mContext;          // context对象
+  std::shared_ptr<PpocrRecPreProcess> mPreProcess;    // 预处理对象
+  std::shared_ptr<PpocrRecInference> mInference;      // 推理对象
+  std::shared_ptr<PpocrRecPostProcess> mPostProcess;  // 后处理对象
 
   bool use_pre = false;
   bool use_infer = false;
@@ -101,8 +100,8 @@ class Ppocr_det : public ::sophon_stream::framework::Element {
   void process(common::ObjectMetadatas& objectMetadatas);
 };
 
-}  // namespace ppocr_det
+}  // namespace ppocr_rec
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif  // SOPHON_STREAM_ELEMENT_PPOCR_DET_H_
+#endif  // SOPHON_STREAM_ELEMENT_PPOCR_REC_H_

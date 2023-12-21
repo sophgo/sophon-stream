@@ -7,31 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ppocr_det_pre_process.h"
+#include "ppocr_rec_pre_process.h"
 
 #include "common/logger.h"
 
 namespace sophon_stream {
 namespace element {
-namespace ppocr_det {
+namespace ppocr_rec {
 
-double pythonRound(double number) {
-  double integer_part = 0.0;
-  double fractional_part = std::modf(number, &integer_part);
+void PpocrRecPreProcess::init(std::shared_ptr<PpocrRecContext> context) {}
 
-  if (fractional_part > 0.5 ||
-      (fractional_part == 0.5 && fmod(integer_part, 2.0) == 1.0)) {
-    integer_part += 1.0;
-  }
-
-  return integer_part;
-}
-
-void Ppocr_detPreProcess::init(std::shared_ptr<Ppocr_detContext> context) {}
-
-void Ppocr_detPreProcess::initTensors(
-    std::shared_ptr<Ppocr_detContext> context,
-    common::ObjectMetadatas& objectMetadatas) {
+void PpocrRecPreProcess::initTensors(std::shared_ptr<PpocrRecContext> context,
+                                     common::ObjectMetadatas& objectMetadatas) {
   for (auto& obj : objectMetadatas) {
     obj->mInputBMtensors = std::make_shared<sophon_stream::common::bmTensors>();
     int channelId = obj->mFrame->mChannelId;
@@ -62,29 +49,16 @@ void Ppocr_detPreProcess::initTensors(
   }
 }
 
-common::ErrorCode Ppocr_detPreProcess::preProcess(
-    std::shared_ptr<Ppocr_detContext> context,
+common::ErrorCode PpocrRecPreProcess::preProcess(
+    std::shared_ptr<PpocrRecContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
   initTensors(context, objectMetadatas);
 
-  auto jsonPlanner = context->bgr2rgb ? FORMAT_RGB_PLANAR : FORMAT_BGR_PLANAR;
-  int i = 0;
   for (auto& objMetadata : objectMetadatas) {
     if (objMetadata->mFrame->mSpData == nullptr) continue;
-    bm_image resized_img;
-    bm_image converto_img;
-    bm_image image0 = *objMetadata->mFrame->mSpData;
-    bm_image image1;
-    // convert to RGB_PLANAR
-    if (image0.image_format != jsonPlanner) {
-      bm_image_create(context->handle, image0.height, image0.width, jsonPlanner,
-                      image0.data_type, &image1);
-      bm_image_alloc_dev_mem_heap_mask(image1, 2);
-      bmcv_image_storage_convert(context->handle, 1, &image0, &image1);
-    } else {
-      image1 = image0;
-    }
+    bm_image image1 = *objMetadata->mFrame->mSpData;
+
     bm_image image_aligned;
     bool need_copy = image1.width & (64 - 1);
     if (need_copy) {
@@ -97,7 +71,7 @@ common::ErrorCode Ppocr_detPreProcess::preProcess(
                       image1.image_format, image1.data_type, &image_aligned,
                       stride2);
 
-      bm_image_alloc_dev_mem_heap_mask(image_aligned, 2);
+      bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
       bmcv_copy_to_atrr_t copyToAttr;
       memset(&copyToAttr, 0, sizeof(copyToAttr));
       copyToAttr.start_x = 0;
@@ -109,25 +83,27 @@ common::ErrorCode Ppocr_detPreProcess::preProcess(
       image_aligned = image1;
     }
 
-    int w = image_aligned.width;
     int h = image_aligned.height;
-
-    float ratio = 1.;
-    int max_wh = w >= h ? w : h;
-    if (max_wh > context->net_w) {
-      ratio = float(context->net_w) / max_wh;
+    int w = image_aligned.width;
+    float ratio = w / float(h);
+    int resize_h;
+    int resize_w;
+    int padding_w;
+    if (ratio > context->img_ratio.back()) {
+      resize_h = context->img_size[context->img_size.size() - 1].h;
+      resize_w = context->img_size[context->img_size.size() - 1].w;
     } else {
-      ratio = 1;
+      for (int i = 0; i < context->img_ratio.size(); i++) {
+        if (ratio <= context->img_ratio[i]) {
+          resize_h = context->img_size[i].h;
+          resize_w = (int)(resize_h * ratio);
+          padding_w = context->img_size[i].w;
+          break;
+        }
+      }
     }
-    int resize_h = int(h * ratio);
-    int resize_w = int(w * ratio);
 
-    resize_h = std::max(int(pythonRound((float)resize_h / 32) * 32), 32);
-    resize_w = std::max(int(pythonRound((float)resize_w / 32) * 32), 32);
-
-    objMetadata->resize_vector.push_back(resize_h);
-    objMetadata->resize_vector.push_back(resize_w);
-
+    // resize + padding
     bmcv_padding_atrr_t padding_attr;
     memset(&padding_attr, 0, sizeof(padding_attr));
     padding_attr.dst_crop_sty = 0;
@@ -138,60 +114,53 @@ common::ErrorCode Ppocr_detPreProcess::preProcess(
     padding_attr.padding_g = 0;
     padding_attr.padding_r = 0;
     padding_attr.if_memset = 1;
+    bmcv_rect_t crop_rect{0, 0, image_aligned.width, image_aligned.height};
 
-    int aligned_net_w = FFALIGN(context->net_w, 64);
+    bm_image resized_img;
+    int aligned_net_w = FFALIGN(context->m_net_w, 64);
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
-    bm_image_create(context->handle, context->net_h, context->net_w,
-                    jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
-#if BMCV_VERSION_MAJOR > 1
-    bm_image_alloc_dev_mem_heap_mask(resized_img, 2);
-#else
-    bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
-#endif
-
-    bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
-    bm_status_t ret = BM_SUCCESS;
-    ret = bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
-                                         image_aligned, &resized_img,
-                                         &padding_attr, &crop_rect);
+    auto ret = bm_image_create(context->bmContext->handle(), context->m_net_h,
+                               context->m_net_w, FORMAT_BGR_PLANAR,
+                               DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
     assert(BM_SUCCESS == ret);
 
-    if (image0.image_format != FORMAT_BGR_PLANAR) {
-      bm_image_destroy(image1);
-    }
-    if (need_copy) bm_image_destroy(image_aligned);
+    bmcv_image_vpp_convert_padding(context->bmContext->handle(), 1,
+                                   image_aligned, &resized_img, &padding_attr,
+                                   &crop_rect);
 
+    // converto
     bm_image_data_format_ext img_dtype = DATA_TYPE_EXT_FLOAT32;
     auto tensor = context->bmNetwork->inputTensor(0);
     if (tensor->get_dtype() == BM_INT8) {
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
     }
-
-    bm_image_create(context->handle, context->net_h, context->net_w,
-                    jsonPlanner, img_dtype, &converto_img);
-
-    bm_device_mem_t mem;
+    bm_image converto_img;
+    bm_image_create(context->bmNetwork->m_handle, context->m_net_h,
+                    context->m_net_w, FORMAT_BGR_PLANAR, img_dtype,
+                    &converto_img);
+    bm_device_mem_t input_dev_mem;
     int size_byte = 0;
     bm_image_get_byte_size(converto_img, &size_byte);
-    ret = bm_malloc_device_byte_heap(context->handle, &mem, 0, size_byte);
-    bm_image_attach(converto_img, &mem);
-
-    bmcv_image_convert_to(context->handle, 1, context->converto_attr,
-                          &resized_img, &converto_img);
+    ret = bm_malloc_device_byte(context->bmContext->handle(), &input_dev_mem,
+                                size_byte);
+    bm_image_attach(converto_img, &input_dev_mem);
+    bmcv_image_convert_to(context->bmContext->handle(), 1,
+                          context->converto_attr, &resized_img, &converto_img);
+    bm_image_get_contiguous_device_mem(1, &converto_img, &input_dev_mem);
 
     bm_image_destroy(resized_img);
 
     bm_image_get_device_mem(
-        converto_img,
-        &objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem);
+        converto_img, &objMetadata->mInputBMtensors->tensors[0]->device_mem);
 
     bm_image_detach(converto_img);
     bm_image_destroy(converto_img);
-    i++;
+    if (need_copy) bm_image_destroy(image_aligned);
   }
+
   return common::ErrorCode::SUCCESS;
 }
 
-}  // namespace ppocr_det
+}  // namespace ppocr_rec
 }  // namespace element
 }  // namespace sophon_stream

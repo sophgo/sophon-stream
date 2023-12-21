@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_ELEMENT_PPOCR_DET_PRE_PROCESS_H_
-#define SOPHON_STREAM_ELEMENT_PPOCR_DET_PRE_PROCESS_H_
+#ifndef SOPHON_STREAM_ELEMENT_PPOCR_REC_PRE_PROCESS_H_
+#define SOPHON_STREAM_ELEMENT_PPOCR_REC_PRE_PROCESS_H_
 
 #include <memory>
 #include <string>
@@ -17,13 +17,13 @@
 #include "common/error_code.h"
 #include "common/object_metadata.h"
 #include "group.h"
-#include "ppocr_det_context.h"
+#include "ppocr_rec_context.h"
 
 namespace sophon_stream {
 namespace element {
-namespace ppocr_det {
+namespace ppocr_rec {
 
-class Ppocr_detPreProcess : public ::sophon_stream::framework::PreProcess {
+class PpocrRecPreProcess : public ::sophon_stream::framework::PreProcess {
  public:
   /**
    * @brief 对一个batch的数据做预处理
@@ -32,9 +32,9 @@ class Ppocr_detPreProcess : public ::sophon_stream::framework::PreProcess {
    * @return common::ErrorCode
    * common::ErrorCode::SUCCESS，中间过程失败会中断执行
    */
-  common::ErrorCode preProcess(std::shared_ptr<Ppocr_detContext> context,
+  common::ErrorCode preProcess(std::shared_ptr<PpocrRecContext> context,
                                common::ObjectMetadatas& objectMetadatas);
-  void init(std::shared_ptr<Ppocr_detContext> context);
+  void init(std::shared_ptr<PpocrRecContext> context);
 
  private:
   /**
@@ -42,12 +42,12 @@ class Ppocr_detPreProcess : public ::sophon_stream::framework::PreProcess {
    * @param context context指针
    * @param objectMetadatas 一个batch的数据
    */
-  void initTensors(std::shared_ptr<Ppocr_detContext> context,
+  void initTensors(std::shared_ptr<PpocrRecContext> context,
                    common::ObjectMetadatas& objectMetadatas);
 };
 
-}  // namespace ppocr_det
+}  // namespace ppocr_rec
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif  // SOPHON_STREAM_ELEMENT_PPOCR_DET_PRE_PROCESS_H_
+#endif  // SOPHON_STREAM_ELEMENT_PPOCR_REC_PRE_PROCESS_H_

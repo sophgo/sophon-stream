@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ppocr_det_inference.h"
+#include "ppocr_rec_inference.h"
 
 namespace sophon_stream {
 namespace element {
-namespace ppocr_det {
+namespace ppocr_rec {
 
-Ppocr_detInference::~Ppocr_detInference() {}
+PpocrRecInference::~PpocrRecInference() {}
 
-void Ppocr_detInference::init(std::shared_ptr<Ppocr_detContext> context) {}
+void PpocrRecInference::init(std::shared_ptr<PpocrRecContext> context) {}
 
 std::shared_ptr<sophon_stream::common::bmTensors>
-Ppocr_detInference::mergeInputDeviceMem(
-    std::shared_ptr<Ppocr_detContext> context,
+PpocrRecInference::mergeInputDeviceMem(
+    std::shared_ptr<PpocrRecContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // 合并inputBMtensors，并且申请连续的outputBMtensors
   std::shared_ptr<sophon_stream::common::bmTensors> inputTensors =
@@ -45,8 +45,8 @@ Ppocr_detInference::mergeInputDeviceMem(
     inputTensors->tensors[i]->st_mode = BM_STORE_1N;
     // 计算大小
     int input_bytes = context->max_batch *
-                      inputTensors->tensors[i]->shape.dims[1] * context->net_h *
-                      context->net_w;
+                      inputTensors->tensors[i]->shape.dims[1] *
+                      context->m_net_h * context->m_net_w;
     if (BM_FLOAT32 == context->bmNetwork->m_netinfo->input_dtypes[0])
       input_bytes *= 4;
     // malloc空间
@@ -67,8 +67,8 @@ Ppocr_detInference::mergeInputDeviceMem(
 }
 
 std::shared_ptr<sophon_stream::common::bmTensors>
-Ppocr_detInference::getOutputDeviceMem(
-    std::shared_ptr<Ppocr_detContext> context) {
+PpocrRecInference::getOutputDeviceMem(
+    std::shared_ptr<PpocrRecContext> context) {
   std::shared_ptr<sophon_stream::common::bmTensors> outputTensors =
       std::make_shared<sophon_stream::common::bmTensors>();
   outputTensors.reset(
@@ -109,8 +109,8 @@ Ppocr_detInference::getOutputDeviceMem(
   return outputTensors;
 }
 
-void Ppocr_detInference::splitOutputMemIntoObjectMetadatas(
-    std::shared_ptr<Ppocr_detContext> context,
+void PpocrRecInference::splitOutputMemIntoObjectMetadatas(
+    std::shared_ptr<PpocrRecContext> context,
     common::ObjectMetadatas& objectMetadatas,
     std::shared_ptr<sophon_stream::common::bmTensors> outputTensors) {
   // 把outputTensors的显存拆出来给objectMetadatas
@@ -164,8 +164,8 @@ void Ppocr_detInference::splitOutputMemIntoObjectMetadatas(
   }
 }
 
-common::ErrorCode Ppocr_detInference::predict(
-    std::shared_ptr<Ppocr_detContext> context,
+common::ErrorCode PpocrRecInference::predict(
+    std::shared_ptr<PpocrRecContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
 
@@ -188,6 +188,6 @@ common::ErrorCode Ppocr_detInference::predict(
   return common::ErrorCode::SUCCESS;
 }
 
-}  // namespace ppocr_det
+}  // namespace ppocr_rec
 }  // namespace element
 }  // namespace sophon_stream

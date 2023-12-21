@@ -39,6 +39,43 @@ namespace ppocr_det {
       }
 
       auto modelPathIt = configure.find(CONFIG_INTERNAL_MODEL_PATH_FIELD);
+
+    auto meanIt = configure.find(CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD);
+    mContext->mean = meanIt->get<std::vector<float>>();
+    assert(mContext->mean.size() == 3);
+
+    auto stdIt = configure.find(CONFIG_INTERNAL_THRESHOLD_STD_FIELD);
+    mContext->stdd = stdIt->get<std::vector<float>>();
+    assert(mContext->stdd.size() == 3);
+
+    // 1. get network
+    BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
+    mContext->bmContext = std::make_shared<BMNNContext>(
+        handle, modelPathIt->get<std::string>().c_str());
+    mContext->bmNetwork = mContext->bmContext->network(0);
+    mContext->handle = handle->handle();
+
+    // 2. get input
+    mContext->max_batch = mContext->bmNetwork->maxBatch();
+    auto inputTensor = mContext->bmNetwork->inputTensor(0);
+    mContext->input_num = mContext->bmNetwork->m_netinfo->input_num;
+    mContext->m_net_channel = inputTensor->get_shape()->dims[1];
+    mContext->net_h = inputTensor->get_shape()->dims[2];
+    mContext->net_w = inputTensor->get_shape()->dims[3];
+
+    // 3. get output
+    mContext->output_num = mContext->bmNetwork->outputTensorNum();    
+
+    // 4.converto
+    float input_scale = inputTensor->get_scale();
+    // input_scale = input_scale * 1.0 / 255.0;
+    mContext->converto_attr.alpha_0 = input_scale / (mContext->stdd[0]);
+    mContext->converto_attr.beta_0 = -(mContext->mean[0]) / (mContext->stdd[0]);
+    mContext->converto_attr.alpha_1 = input_scale / (mContext->stdd[1]);
+    mContext->converto_attr.beta_1 = -(mContext->mean[1]) / (mContext->stdd[1]);
+    mContext->converto_attr.alpha_2 = input_scale / (mContext->stdd[2]);
+    mContext->converto_attr.beta_2 = -(mContext->mean[2]) / (mContext->stdd[2]);
+
     } while (false);
     return common::ErrorCode::SUCCESS;
   }
@@ -209,7 +246,7 @@ namespace ppocr_det {
   }
 
   REGISTER_WORKER("ppocr_det", Ppocr_det)
-  REGISTER_PPOCR_DET_WORKER("ppocr_det_group",
+  REGISTER_TEMPLATE_WORKER("ppocr_det_group",
                            sophon_stream::framework::Group<Ppocr_det>, Ppocr_det)
 }  // namespace ppocr_det
 }  // namespace element

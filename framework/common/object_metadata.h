@@ -164,6 +164,12 @@ struct ObjectMetadata {
    * @brief 检测结果的vector，一个目标对应一个FaceObjectMetadata
    */
   std::vector<std::shared_ptr<common::FaceObjectMetadata>> mFaceObjectMetadatas;
+
+  /**
+   * @brief ocr预处理，以net_w为最长边，进行resize后的宽高
+   */
+  std::vector<int> resize_vector;
+
 };
 
 using ObjectMetadatas = std::vector<std::shared_ptr<ObjectMetadata>>;

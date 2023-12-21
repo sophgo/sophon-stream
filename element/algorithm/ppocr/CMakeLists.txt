@@ -38,16 +38,28 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/clipper/include)
+    include_directories(../../../3rdparty/httplib)
 
-    include_directories(include)
+    include_directories(include/ppocr_det)
+    include_directories(include/ppocr_rec/)
     add_library(ppocr_det SHARED
-        src/ppocr_det_pre_process.cc
-        src/ppocr_det_post_process.cc
-        src/ppocr_det_inference.cc
-        src/ppocr_det.cc
+        src/ppocr_det/ppocr_det_pre_process.cc
+        src/ppocr_det/ppocr_det_post_process.cc
+        src/ppocr_det/ppocr_det_post_processor.cc
+        src/ppocr_det/ppocr_det_inference.cc
+        src/ppocr_det/ppocr_det.cc
+        ../../../3rdparty/clipper/src/clipper.cpp
+    )
+    add_library(ppocr_rec SHARED
+        src/ppocr_rec/ppocr_rec_pre_process.cc
+        src/ppocr_rec/ppocr_rec_post_process.cc
+        src/ppocr_rec/ppocr_rec_inference.cc
+        src/ppocr_rec/ppocr_rec.cc
     )
 
     target_link_libraries(ppocr_det ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
+    target_link_libraries(ppocr_rec ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
@@ -71,13 +83,26 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
 
     include_directories(../../../3rdparty/spdlog/include)
     include_directories(../../../3rdparty/nlohmann-json/include)
+    include_directories(../../../3rdparty/clipper/include)
+    include_directories(../../../3rdparty/httplib)
 
-    include_directories(include)
+    include_directories(include/ppocr_det)
+    include_directories(include/ppocr_rec)
     add_library(ppocr_det SHARED
-        src/ppocr_det_pre_process.cc
-        src/ppocr_det_post_process.cc
-        src/ppocr_det_inference.cc
-        src/ppocr_det.cc
+        src/ppocr_det/ppocr_det_pre_process.cc
+        src/ppocr_det/ppocr_det_post_process.cc
+        src/ppocr_det/ppocr_det_post_processor.cc
+        src/ppocr_det/ppocr_det_inference.cc
+        src/ppocr_det/ppocr_det.cc
+        ../../../3rdparty/clipper/src/clipper.cpp
     )
+    add_library(ppocr_rec SHARED
+        src/ppocr_rec/ppocr_rec_pre_process.cc
+        src/ppocr_rec/ppocr_rec_post_process.cc
+        src/ppocr_rec/ppocr_rec_inference.cc
+        src/ppocr_rec/ppocr_rec.cc
+    )
+
     target_link_libraries(ppocr_det ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(ppocr_rec ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()
