@@ -71,7 +71,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     if(BMJPU)
         set(JPU_LIBS bmjpuapi bmjpulite)
     endif()
-    set(FFMPEG_LIBS avcodec avformat avutil)
+    set(FFMPEG_LIBS avcodec avformat avutil avdevice avutil)
     
     include_directories(../../../framework)
     include_directories(../../../framework/include)
