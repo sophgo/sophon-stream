@@ -148,7 +148,9 @@ std::string frame_to_base64(Frame& frame) {
 #if ENABLE_TIME_LOG
   gettimeofday(&time2, NULL);
 #endif
-  bmcv_image_storage_convert(handle_, 1, &bgr_, &yuv_);
+  // bmcv_image_storage_convert(handle_, 1, &bgr_, &yuv_);
+  bmcv_rect_t rect_{0, 0, bgr_.width, bgr_.height};
+  bmcv_image_vpp_convert(handle_, 1, bgr_, &yuv_, &rect_);
 #if ENABLE_TIME_LOG
   gettimeofday(&time3, NULL);
 #endif
@@ -167,7 +169,8 @@ std::string frame_to_base64(Frame& frame) {
   unsigned long encode_len[2] = {(origin_len[0] + 2) / 3 * 4, 0};
   std::string res(encode_len[0], '\0');
   bmcv_base64_enc(handle_, bm_mem_from_system(jpegData),
-                  bm_mem_from_system(const_cast<char*>(res.c_str())), origin_len);
+                  bm_mem_from_system(const_cast<char*>(res.c_str())),
+                  origin_len);
 #endif
 
 #if ENABLE_TIME_LOG
