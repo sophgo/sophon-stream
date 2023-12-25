@@ -29,6 +29,12 @@ rm -rf coco17_BM1684X.zip
 mv ./coco17_BM1684X/* ../data/models/BM1684X
 rm -r ./coco17_BM1684X
 
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/fastpose/coco17_BM1684.zip
+unzip coco17_BM1684.zip
+rm -rf coco17_BM1684.zip
+mv ./coco17_BM1684/* ../data/models/BM1684
+rm -r ./coco17_BM1684
+
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/posec3d/BM1684X.zip
 unzip BM1684X.zip
 rm -rf BM1684X.zip

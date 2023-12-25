@@ -34,6 +34,7 @@
 ## 2. 特性
 
 * 支持BM1684X(x86 PCIe、SoC)
+* YOLOv5的AlphaPose支持BM1684(x86 PCIe、SoC)、BM1684(x86 PCIe、SoC)
 * 支持多路视频流
 * 支持多线程
 * BM1684X平台上，支持yolov5 tpu_kernel后处理
@@ -58,6 +59,8 @@ chmod -R +x scripts/
 ```bash
 ./models
 ├── BM1684
+│   ├── fast_res50_256x192_coco17_1b_fp32.bmodel    # 用于BM1684的FASTPOSE FP32 Bmodel，batch_size=1，17个关键点检测
+│   ├── fast_res50_256x192_coco17_1b_int8.bmodel    # 用于BM1684的FASTPOSE INT8 Bmodel，batch_size=1，17个关键点检测
 │   ├── yolov5s_v6.1_3output_fp32_1b.bmodel         # 用于BM1684的YOLOV5 FP32 BModel，batch_size=1，后处理在CPU上进行
 │   ├── yolov5s_v6.1_3output_int8_1b.bmodel         # 用于BM1684的YOLOV5 INT8 BModel，batch_size=1，后处理在CPU上进行
 │   └── yolov5s_v6.1_3output_int8_4b.bmodel         # 用于BM1684的YOLOV5 INT8 BModel，batch_size=4，后处理在CPU上进行

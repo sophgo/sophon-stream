@@ -34,6 +34,7 @@ In this example, the pre-processing, inference, and post-processing of the YOLOv
 ## 2. Feature
 
 * Supports BM1684X(x86 PCIe、SoC)
+* AlphaPose with YOLOv5 supports BM1684X(x86 PCIe、SoC) and BM1684(x86 PCIe、SoC)
 * Supports multiple video streams.
 * Supports multi-threading.
 * On the BM1684X platform, the TPU_kernel post-processing is supported.
@@ -58,6 +59,8 @@ The downloaded models include:
 ```bash
 ./models
 ├── BM1684
+│   ├── fast_res50_256x192_coco17_1b_fp32.bmodel    # FASTPOSE FP32 Bmodel for BM1684，batch_size=1，17 key points
+│   ├── fast_res50_256x192_coco17_1b_int8.bmodel    # FASTPOSE INT8 Bmodel for BM1684，batch_size=1，17 key points
 │   ├── yolov5s_v6.1_3output_fp32_1b.bmodel         # YOLOV5 FP32 BModel for BM1684，batch_size=1，post process on CPU
 │   ├── yolov5s_v6.1_3output_int8_1b.bmodel         # YOLOV5 INT8 BModel for BM1684，batch_size=1，post process on CPU
 │   └── yolov5s_v6.1_3output_int8_4b.bmodel         # YOLOV5 INT8 BModel for BM1684，batch_size=4，post process on CPU
