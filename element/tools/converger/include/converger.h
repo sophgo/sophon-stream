@@ -44,6 +44,8 @@ class Converger : public ::sophon_stream::framework::Element {
    * @brief recored number of branches for every ObjectMetadata in default_port
    */
   std::unordered_map<int, std::unordered_map<int, int>> mBranches;
+
+  std::mutex mtx;
 };
 
 }  // namespace converger
