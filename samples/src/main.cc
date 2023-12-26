@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
   }
   std::string demo_config_fpath = parser.get<std::string>("demo_config_path");
 
-  ::logInit("info", "");
+  ::logInit("debug", "");
 
   std::mutex mtx;
   std::condition_variable cv;
