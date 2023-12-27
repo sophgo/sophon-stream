@@ -246,7 +246,7 @@ namespace ppocr_det {
   }
 
   REGISTER_WORKER("ppocr_det", Ppocr_det)
-  REGISTER_TEMPLATE_WORKER("ppocr_det_group",
+  REGISTER_GROUP_WORKER("ppocr_det_group",
                            sophon_stream::framework::Group<Ppocr_det>, Ppocr_det)
 }  // namespace ppocr_det
 }  // namespace element

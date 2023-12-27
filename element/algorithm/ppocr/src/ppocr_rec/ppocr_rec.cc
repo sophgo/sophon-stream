@@ -289,7 +289,7 @@ void PpocrRec::setPostprocess(
 }
 
 REGISTER_WORKER("ppocr_rec", PpocrRec)
-REGISTER_TEMPLATE_WORKER("ppocr_rec_group",
+REGISTER_GROUP_WORKER("ppocr_rec_group",
                          sophon_stream::framework::Group<PpocrRec>, PpocrRec)
 }  // namespace ppocr_rec
 }  // namespace element

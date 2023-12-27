@@ -278,7 +278,7 @@ void Posec3d::setPostprocess(
 }
 
 REGISTER_WORKER("posec3d", Posec3d)
-REGISTER_TEMPLATE_WORKER("posec3d_group",
+REGISTER_GROUP_WORKER("posec3d_group",
                          sophon_stream::framework::Group<Posec3d>, Posec3d)
 
 }  // namespace posec3d

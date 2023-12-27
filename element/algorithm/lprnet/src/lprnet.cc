@@ -244,7 +244,7 @@ void Lprnet::setPostprocess(
 }
 
 REGISTER_WORKER("lprnet", Lprnet)
-REGISTER_TEMPLATE_WORKER("lprnet_group",
+REGISTER_GROUP_WORKER("lprnet_group",
                          sophon_stream::framework::Group<Lprnet>, Lprnet)
 
 }  // namespace lprnet

@@ -361,7 +361,7 @@ void Yolov5::setPostprocess(
 }
 
 REGISTER_WORKER("yolov5", Yolov5)
-REGISTER_TEMPLATE_WORKER("yolov5_group",
+REGISTER_GROUP_WORKER("yolov5_group",
                          sophon_stream::framework::Group<Yolov5>, Yolov5)
 
 }  // namespace yolov5

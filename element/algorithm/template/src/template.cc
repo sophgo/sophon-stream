@@ -209,7 +209,7 @@ namespace template {
   }
 
   REGISTER_WORKER("template", Template)
-  REGISTER_TEMPLATE_WORKER("template_group",
+  REGISTER_GROUP_WORKER("template_group",
                            sophon_stream::framework::Group<Template>, Template)
 }  // namespace template
 }  // namespace element

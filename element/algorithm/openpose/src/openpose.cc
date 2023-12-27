@@ -286,7 +286,7 @@ void Openpose::setPostprocess(
 }
 
 REGISTER_WORKER("openpose", Openpose)
-REGISTER_TEMPLATE_WORKER("openpose_group",
+REGISTER_GROUP_WORKER("openpose_group",
                          sophon_stream::framework::Group<Openpose>, Openpose)
 
 }  // namespace openpose

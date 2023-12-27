@@ -248,7 +248,7 @@ void Fastpose::setPostprocess(
 }
 
 REGISTER_WORKER("fastpose", Fastpose)
-REGISTER_TEMPLATE_WORKER("fastpose_group",
+REGISTER_GROUP_WORKER("fastpose_group",
                          sophon_stream::framework::Group<Fastpose>, Fastpose)
 
 }  // namespace fastpose

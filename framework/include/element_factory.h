@@ -71,7 +71,7 @@ using SingletonElementFactory = common::Singleton<ElementFactory>;
   };                                                                          \
   static ElementClass##Register g##ElementClass##Register;
 
-#define REGISTER_TEMPLATE_WORKER(elementName, GroupElement, ElementClass)     \
+#define REGISTER_GROUP_WORKER(elementName, GroupElement, ElementClass)     \
   struct Group##ElementClass##Register {                                      \
     Group##ElementClass##Register() {                                         \
       auto& elementFactory =                                                  \
