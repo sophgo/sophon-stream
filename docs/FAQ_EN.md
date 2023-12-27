@@ -65,3 +65,7 @@ This may be caused by a limit on the number of open file handles in Linux, where
 ```bash
 ulimit -n 20480
 ```
+
+#### 9. Some pictures are not recognized/detected.
+
+It is normal that there are a few false detections in pictures/videos, because the original model's accuracy cannot reach 100%. Now stream does not provide accuracy evaluation function for the time being, so it is enough to observe that most of the pictures are recognized/detected normally.
