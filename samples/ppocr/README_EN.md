@@ -5,17 +5,17 @@ English | [简体中文](README.md)
   - [目录](#Catalogs)
   - [1. Introduction](#1-Introduction)
   - [2. Feature](#2-Feature)
-  - [3. Prepare Models and Data](#3-Prepare Models and Data)
-  - [4. Prepare Environment](#4-Prepare Environment)
-    - [4.1 x86/arm PCIe Platform](#41-x86/arm PCIe Platform)
-    - [4.2 SoC Platform](#42-SoC Platform)
-  - [5. Program Compilation](#5-Program Compilation)
-    - [5.1 x86/arm PCIe Platform](#51-x86/arm PCIe Platform)
-    - [5.2 SoC Platform](#52-SoC Platform)
-  - [6. Program Execution](#6-Program Execution)
-    - [6.1 JSON Configuration](#61-JSON Configuration)
-    - [6.2 Execute](#62-Execute)
-  - [7. Performance Testing](#7-Performance Testing)
+  - [3. Prepare Models and Data](#3-prepare-models-and-data)
+  - [4. Prepare Environment](#4-prepare-environment)
+    - [4.1 x86/arm PCIe Platform](#41-x86arm-pcie-platform)
+    - [4.2 SoC Platform](#42-soc-platform)
+  - [5. Program Compilation](#5-program-pompilation)
+    - [5.1 x86/arm PCIe Platform](#51-x86arm-pcie-platform)
+    - [5.2 SoC Platform](#52-soc-platform)
+  - [6. Program Execution](#6-program-execution)
+    - [6.1 JSON Configuration](#61-json-configuration)
+    - [6.2 Execute](#62-execute)
+  - [7. Performance Testing](#7-performance-testing)
 
 ## 1. Introduction
 
@@ -23,7 +23,7 @@ PP-OCRv3 is an ultra-lightweight OCR series model open source by Baidu Feizhu te
 
 
 ## 2. Feature
-* Supports BM1684X、BM1684(x86 PCIe、SoC)
+* Supports BM1684,BM1684X(x86 PCIe、SoC),BM1688(SoC)
 * Support FP32, FP16 model compilation and inference
 * Support image data set testing
 
@@ -43,16 +43,24 @@ After the script execution, data directory will be generated in the current dire
 The downloaded models include：
 
 ```bash
-models
 ├── BM1684
 │   ├── ch_PP-OCRv3_det_fp32_1b.bmodel
 │   ├── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
 │   └── ch_PP-OCRv3_rec_fp32_1b_640.bmodel
-└── BM1684X
+├── BM1684X
+│   ├── ch_PP-OCRv3_det_fp16_1b.bmodel
+│   ├── ch_PP-OCRv3_det_fp32_1b.bmodel
+│   ├── ch_PP-OCRv3_rec_fp16_1b_320.bmodel
+│   ├── ch_PP-OCRv3_rec_fp16_1b_640.bmodel
+│   ├── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
+│   └── ch_PP-OCRv3_rec_fp32_1b_640.bmodel
+└── BM1688
     ├── ch_PP-OCRv3_det_fp16_1b.bmodel
     ├── ch_PP-OCRv3_det_fp32_1b.bmodel
     ├── ch_PP-OCRv3_rec_fp16_1b_320.bmodel
-    └── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
+    ├── ch_PP-OCRv3_rec_fp16_1b_640.bmodel
+    ├── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
+    └── ch_PP-OCRv3_rec_fp32_1b_640.bmodel
 ```
 
 The downloaded datasets include：
@@ -253,7 +261,7 @@ Run the executable file
 ```
 ## 7. Performance Testing
 
-Currently, the ppocr example supports inference on BM1684X and BM1684 in PCIe and SOC modes
+Currently, the ppocr example supports inference on BM1684X and BM1684 in PCIe and SOC modes, and BM1688 SOC mode.
 
 Modifications in JSON configurations might be necessary when switching between different devices, such as adjusting model paths, input channels, etc. Refer to section 6.1 for JSON configuration methods and section 6.2 for program execution methods.
 
@@ -273,3 +281,4 @@ The test dataset is train_full_images_0，The compilation was done in Release mo
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.
 2. Both BM1684 and BM1684X SoC devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz.
 3. For the settings of input channels and algorithm thread count in the table, please refer to JSON configuration explanation. CPU utilization and system memory can be checked using the top command. TPU utilization and device memory can be checked using the bm-smi command. FPS can be obtained from the logs printed during program execution.
+4. Performance testing is not currently supported on the BM1688 device.

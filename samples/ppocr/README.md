@@ -23,7 +23,7 @@ PP-OCRv3，是百度飞桨团队开源的超轻量OCR系列模型，包含文本
 
 
 ## 2. 特性
-* 支持BM1684/BM1684X(x86 PCIe、SoC)
+* 支持BM1684、BM1684X(x86 PCIe、SoC)，BM1688(SoC)
 * 支持FP32、FP16模型编译和推理
 * 支持图片数据集测试
 
@@ -43,16 +43,24 @@ chmod -R +x scripts/
 下载的模型包括：
 
 ```bash
-models
 ├── BM1684
 │   ├── ch_PP-OCRv3_det_fp32_1b.bmodel
 │   ├── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
 │   └── ch_PP-OCRv3_rec_fp32_1b_640.bmodel
-└── BM1684X
+├── BM1684X
+│   ├── ch_PP-OCRv3_det_fp16_1b.bmodel
+│   ├── ch_PP-OCRv3_det_fp32_1b.bmodel
+│   ├── ch_PP-OCRv3_rec_fp16_1b_320.bmodel
+│   ├── ch_PP-OCRv3_rec_fp16_1b_640.bmodel
+│   ├── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
+│   └── ch_PP-OCRv3_rec_fp32_1b_640.bmodel
+└── BM1688
     ├── ch_PP-OCRv3_det_fp16_1b.bmodel
     ├── ch_PP-OCRv3_det_fp32_1b.bmodel
     ├── ch_PP-OCRv3_rec_fp16_1b_320.bmodel
-    └── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
+    ├── ch_PP-OCRv3_rec_fp16_1b_640.bmodel
+    ├── ch_PP-OCRv3_rec_fp32_1b_320.bmodel
+    └── ch_PP-OCRv3_rec_fp32_1b_640.bmodel
 ```
 
 下载的数据包括：
@@ -260,7 +268,7 @@ frame count is 10560 | fps is 28.0774 fps.
 ```
 
 ## 7. 性能测试
-目前，ppocr例程支持在BM1684X和BM1684的PCIE、SOC模式下进行推理。
+目前，ppocr例程支持在BM1684X和BM1684的PCIE、SOC模式下进行推理，支持BM1688 SOC模式下推理。
 
 在不同的设备上可能需要修改json配置，例如模型路径、输入路数等。json的配置方法参考6.1节，程序运行方法参考上文6.2节。
 
@@ -280,3 +288,4 @@ frame count is 10560 | fps is 28.0774 fps.
 1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
 2. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；
 3. 上表中，输入路数和算法线程数的设置请参考[json配置说明](#61-json配置说明)，CPU利用率和系统内存使用top命令可查，TPU利用率和设备内存使用bm-smi命令可查，fps可以从运行程序打印的log中获得;
+4. BM1688设备暂不支持性能测试。

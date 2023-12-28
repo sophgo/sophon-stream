@@ -21,6 +21,9 @@ then
         python3 -m dfss --url=open@sophgo.com:sophon-stream/ppocr/BM1684X.zip
         unzip BM1684X.zip -d ../data/models
         rm BM1684X.zip
+        python3 -m dfss --url=open@sophgo.com:sophon-stream/ppocr/BM1688.zip
+        unzip BM1688.zip -d ../data/models
+        rm BM1688.zip
         echo "models download!"
     else
         echo "models exist!"
