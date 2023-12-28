@@ -396,29 +396,117 @@ void Dpu::registListenFunc(sophon_stream::framework::ListenThread* listener) {
 }
 
 common::ErrorCode Dpu::initInternal(const std::string& json) {
+  common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+  auto configure = nlohmann::json::parse(json, nullptr, false);
+  if (!configure.is_object()) {
+    errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
+  }
+
   bm_status_t ret = bm_dev_request(&handle, dev_id);
 
   dpu_mode = DPU_ONLINE_MUX0;
   // set_sgbm_default_param(&dpu_sgbm_attr);
   set_online_default_param(&dpu_sgbm_attr, &dpu_fgs_attr);
+
+  auto mapY_path =
+      configure.find(CONFIG_INTERNAL_MAPY_FILED)->get<std::string>();
+  auto mapU_path =
+      configure.find(CONFIG_INTERNAL_MAPU_FILED)->get<std::string>();
+  auto mapV_path =
+      configure.find(CONFIG_INTERNAL_MAPV_FILED)->get<std::string>();
+
+  FILE* fp;
+  char str[256];
+  int i = 0;
+  fp = fopen(mapY_path.c_str(), "r");
+  STREAM_CHECK(fp != NULL,"open map table failed!");
+  while (fgets(str, 256, fp) != NULL) {
+    FixMapY[i] = atoi(str);
+    i++;
+  }
+  fclose(fp);
+  fp = fopen(mapU_path.c_str(), "r");
+  STREAM_CHECK(fp != NULL,"open map table failed!");
+  i = 0;
+  while (fgets(str, 256, fp) != NULL) {
+    FixMapU[i] = atoi(str);
+    i++;
+  }
+  fclose(fp);
+  fp = fopen(mapV_path.c_str(), "r");
+  STREAM_CHECK(fp != NULL,"open map table failed!");
+  i = 0;
+  while (fgets(str, 256, fp) != NULL) {
+    FixMapV[i] = atoi(str);
+    i++;
+  }
+  fclose(fp);
+
+  bm_malloc_device_byte(handle, &mapTableY, MAP_TABLE_SIZE);
+  ret = bm_memcpy_s2d(handle, mapTableY, FixMapY);
+  if (ret != BM_SUCCESS) {
+    IVS_DEBUG("bm_memcpy_s2d failed . ret = %d\n", ret);
+    return common::ErrorCode::UNKNOWN;
+  }
+
+  bm_malloc_device_byte(handle, &mapTableU, MAP_TABLE_SIZE);
+  ret = bm_memcpy_s2d(handle, mapTableU, FixMapU);
+  if (ret != BM_SUCCESS) {
+    IVS_DEBUG("bm_memcpy_s2d failed . ret = %d\n", ret);
+    return common::ErrorCode::UNKNOWN;
+  }
+
+  bm_malloc_device_byte(handle, &mapTableV, MAP_TABLE_SIZE);
+  ret = bm_memcpy_s2d(handle, mapTableV, FixMapV);
+  if (ret != BM_SUCCESS) {
+    IVS_DEBUG("bm_memcpy_s2d failed . ret = %d\n", ret);
+    return common::ErrorCode::UNKNOWN;
+  }
+
+  map_mode = IVE_MAP_U8;
+
   return common::ErrorCode::SUCCESS;
+}
+
+void Dpu::dpu_ive_map(bm_image& dpu_image, bm_image& dpu_image_map,
+                      int ive_src_stride[]) {
+  bm_ive_image_calc_stride(handle, dpu_image_map.height, dpu_image_map.width,
+                           FORMAT_YUV444P, DATA_TYPE_EXT_1N_BYTE,
+                           ive_src_stride);
+  bm_image dpu_image_map_y;
+  bm_image dpu_image_map_u;
+  bm_image dpu_image_map_v;
+
+  bm_image_create(handle, dpu_image_map.height, dpu_image_map.width, dpu_fmt,
+                  DATA_TYPE_EXT_1N_BYTE, &dpu_image_map_y, ive_src_stride);
+  bm_image_create(handle, dpu_image_map.height, dpu_image_map.width, dpu_fmt,
+                  DATA_TYPE_EXT_1N_BYTE, &dpu_image_map_u, ive_src_stride);
+  bm_image_create(handle, dpu_image_map.height, dpu_image_map.width, dpu_fmt,
+                  DATA_TYPE_EXT_1N_BYTE, &dpu_image_map_v, ive_src_stride);
+
+  // output
+  bm_device_mem_t dpu_image_map_mem[3] = {0};
+  bm_image_get_device_mem(dpu_image_map, dpu_image_map_mem);
+  bm_image_attach(dpu_image_map_y, &dpu_image_map_mem[0]);  // y
+  bm_image_attach(dpu_image_map_u, &dpu_image_map_mem[1]);  // uv
+  bm_image_attach(dpu_image_map_v, &dpu_image_map_mem[2]);  // uv
+
+  // ive
+  bmcv_image_ive_map(handle, map_mode, mapTableY, &dpu_image, &dpu_image_map_y);
+  bmcv_image_ive_map(handle, map_mode, mapTableU, &dpu_image, &dpu_image_map_u);
+  bmcv_image_ive_map(handle, map_mode, mapTableV, &dpu_image, &dpu_image_map_v);
+
+  // bm_image_destroy
+  bm_image_destroy(&dpu_image_map_y);
+  bm_image_destroy(&dpu_image_map_u);
+  bm_image_destroy(&dpu_image_map_v);
 }
 
 common::ErrorCode Dpu::dpu_work(
     std::shared_ptr<common::ObjectMetadata> leftObj,
     std::shared_ptr<common::ObjectMetadata> rightObj,
     std::shared_ptr<common::ObjectMetadata> dpuObj) {
-  std::shared_ptr<bm_image> dpu_image = nullptr;
-  dpu_image.reset(new bm_image, [](bm_image* p) {
-    bm_image_destroy(*p);
-    delete p;
-    p = nullptr;
-  });
-  bm_status_t ret = bm_image_create(
-      handle, leftObj->mFrame->mSpData->height, leftObj->mFrame->mSpData->width,
-      FORMAT_GRAY, DATA_TYPE_EXT_1N_BYTE, dpu_image.get());
-  bm_image_alloc_dev_mem(*dpu_image, 1);
-
+  bm_status_t ret;
   // select display type
   std::shared_ptr<bm_image> dpu_image_left = nullptr;
   std::shared_ptr<bm_image> dpu_image_right = nullptr;
@@ -430,35 +518,60 @@ common::ErrorCode Dpu::dpu_work(
     dpu_image_right = rightObj->mFrame->mSpData;
   }
 
+  // dpu输出结果
+  bm_image dpu_out;
+  bm_image_create(handle, dpu_image_left->height, dpu_image_left->width,
+                  dpu_fmt, DATA_TYPE_EXT_1N_BYTE, &dpu_out);
+  bm_image_alloc_dev_mem(dpu_out, BMCV_HEAP_ANY);
+
+  // ive_map结果
+  std::shared_ptr<bm_image> dpu_image_map = nullptr;
+  dpu_image_map.reset(new bm_image, [](bm_image* p) {
+    bm_image_destroy(*p);
+    delete p;
+    p = nullptr;
+  });
+
+  int ive_src_stride[4];
+  bm_ive_image_calc_stride(handle, dpu_image_left->height,
+                           dpu_image_left->width, FORMAT_YUV444P,
+                           DATA_TYPE_EXT_1N_BYTE, ive_src_stride);
+  bm_image_create(handle, leftObj->mFrame->mSpData->height,
+                  leftObj->mFrame->mSpData->width, FORMAT_YUV444P,
+                  DATA_TYPE_EXT_1N_BYTE, dpu_image_map.get(), ive_src_stride);
+
+  bm_image_alloc_dev_mem(*dpu_image_map, 1);
+
   //
-  bool need_convert = (dpu_image_left->image_format != FORMAT_GRAY ||
-                       dpu_image_right->image_format != FORMAT_GRAY);
+  bool need_convert = (dpu_image_left->image_format != dpu_fmt ||
+                       dpu_image_right->image_format != dpu_fmt);
   bm_image dpu_img[2];
   if (need_convert) {
-    ret = bm_image_create(leftObj->mFrame->mHandle, dpu_image_left->height,
-                          dpu_image_left->width, FORMAT_GRAY,
-                          DATA_TYPE_EXT_1N_BYTE, &dpu_img[0], NULL);
-    ret = bm_image_create(rightObj->mFrame->mHandle, dpu_image_right->height,
-                          dpu_image_right->width, FORMAT_GRAY,
+    bm_image_create(leftObj->mFrame->mHandle, dpu_image_left->height,
+                          dpu_image_left->width, dpu_fmt, DATA_TYPE_EXT_1N_BYTE,
+                          &dpu_img[0], NULL);
+    bm_image_create(rightObj->mFrame->mHandle, dpu_image_right->height,
+                          dpu_image_right->width, dpu_fmt,
                           DATA_TYPE_EXT_1N_BYTE, &dpu_img[1], NULL);
 
     bm_image_alloc_dev_mem(dpu_img[0], 1);
     bm_image_alloc_dev_mem(dpu_img[1], 1);
 
-    ret = bmcv_image_storage_convert(leftObj->mFrame->mHandle, 1,
+    bmcv_image_storage_convert(leftObj->mFrame->mHandle, 1,
                                      dpu_image_left.get(), &dpu_img[0]);
-    ret = bmcv_image_storage_convert(rightObj->mFrame->mHandle, 1,
+    bmcv_image_storage_convert(rightObj->mFrame->mHandle, 1,
                                      dpu_image_right.get(), &dpu_img[1]);
   } else {
     dpu_img[0] = *dpu_image_left;
     dpu_img[1] = *dpu_image_right;
   }
-  // dpu
+
+  // dpu and ive map
   {
     std::lock_guard<std::mutex> lk(mtx);
-    ret =
-        bmcv_dpu_online_disp(handle, &dpu_img[0], &dpu_img[1], dpu_image.get(),
-                             &dpu_sgbm_attr, &dpu_fgs_attr, dpu_mode);
+    bmcv_dpu_online_disp(handle, &dpu_img[0], &dpu_img[1], &dpu_out,
+                               &dpu_sgbm_attr, &dpu_fgs_attr, dpu_mode);
+    dpu_ive_map(dpu_out, *dpu_image_map, ive_src_stride);
   }
 
   // dispaly image
@@ -469,19 +582,18 @@ common::ErrorCode Dpu::dpu_work(
       delete p;
       p = nullptr;
     });
-    ret = bm_image_create(handle, dpu_image_left->height * 3 + 200,
-                          dpu_image->width, FORMAT_GRAY, DATA_TYPE_EXT_1N_BYTE,
-                          all_image.get());
+    ret = bm_image_create(handle, dpu_image_map->height,
+                          dpu_image_map->width *2+100, FORMAT_YUV444P,
+                          DATA_TYPE_EXT_1N_BYTE, all_image.get());
     bm_image_alloc_dev_mem(*all_image, 1);
 
-    bm_device_mem_t dpu_mem;
-    bm_image_get_device_mem(*all_image, &dpu_mem);
-    bm_memset_device(handle, 0, dpu_mem);
+    bm_device_mem_t dpu_mem[3];
+    bm_image_get_device_mem(*all_image, dpu_mem);
+    bm_memset_device(handle, 0, dpu_mem[0]);
+    bm_memset_device(handle, 0, dpu_mem[1]);
+    bm_memset_device(handle, 0, dpu_mem[2]);
 
-    // bmcv_rect_t rect = {0, 0, all_image->width, all_image->height};
-    // ret = bmcv_image_fill_rectangle(handle, *all_image, 1, &rect, 0, 0, 0);
-
-    int input_num = 3;
+    int input_num = 2;
     bmcv_rect_t dst_crop[input_num];
 
     dst_crop[0] = {.start_x = 0,
@@ -489,28 +601,23 @@ common::ErrorCode Dpu::dpu_work(
                    .crop_w = (unsigned int)dpu_image_left->width,
                    .crop_h = (unsigned int)dpu_image_left->height};
 
-    dst_crop[1] = {.start_x = 0,
-                   .start_y = (unsigned int)dpu_image_right->height + 100,
-                   .crop_w = (unsigned int)dpu_image_right->width,
-                   .crop_h = (unsigned int)dpu_image_right->height};
+    dst_crop[1] = {.start_x = (unsigned int)dpu_image_left->width + 100,
+                   .start_y = 0,
+                   .crop_w = (unsigned int)dpu_image_map->width,
+                   .crop_h = (unsigned int)dpu_image_map->height};
 
-    dst_crop[2] = {.start_x = 0,
-                   .start_y = (unsigned int)dpu_image_right->height +
-                              (unsigned int)dpu_image_left->height + 100,
-                   .crop_w = (unsigned int)dpu_image->width,
-                   .crop_h = (unsigned int)dpu_image->height};
-
-    bm_image src_img[3] = {dpu_img[0], dpu_img[1], *dpu_image};
+    bm_image src_img[2] = {dpu_img[0], *dpu_image_map};
 
     bmcv_image_vpp_stitch(handle, input_num, src_img, *all_image, dst_crop,
                           NULL);
+
     dpuObj->mFrame->mSpData = all_image;
     dpuObj->mFrame->mWidth = all_image->width;
     dpuObj->mFrame->mHeight = all_image->height;
   } else {
-    dpuObj->mFrame->mSpData = dpu_image;
-    dpuObj->mFrame->mWidth = dpu_image->width;
-    dpuObj->mFrame->mHeight = dpu_image->height;
+    dpuObj->mFrame->mSpData = dpu_image_map;
+    dpuObj->mFrame->mWidth = dpu_image_map->width;
+    dpuObj->mFrame->mHeight = dpu_image_map->height;
   }
 
   dpuObj->mFrame->mChannelId = leftObj->mFrame->mChannelId;
@@ -518,6 +625,7 @@ common::ErrorCode Dpu::dpu_work(
   dpuObj->mFrame->mChannelIdInternal = leftObj->mFrame->mChannelIdInternal;
   dpuObj->mFrame->mHandle = leftObj->mFrame->mHandle;
 
+    bm_image_destroy(&dpu_out);
   if (need_convert) {
     bm_image_destroy(&dpu_img[0]);
     bm_image_destroy(&dpu_img[1]);

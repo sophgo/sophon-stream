@@ -12,7 +12,14 @@
 
 #include "common/object_metadata.h"
 #include "element.h"
-
+#define MAP_TABLE_SIZE 256
+extern "C" {
+extern bm_status_t bm_ive_image_calc_stride(bm_handle_t handle, int img_h,
+                                            int img_w,
+                                            bm_image_format_ext image_format,
+                                            bm_image_data_format_ext data_type,
+                                            int* stride) __attribute__((weak));
+}
 namespace sophon_stream {
 namespace element {
 namespace dpu {
@@ -31,6 +38,13 @@ class Dpu : public ::sophon_stream::framework::Element {
   common::ErrorCode dpu_work(std::shared_ptr<common::ObjectMetadata> leftObj,
                              std::shared_ptr<common::ObjectMetadata> rightObj,
                              std::shared_ptr<common::ObjectMetadata> dpuObj);
+  void dpu_ive_map(bm_image& dpu_image, bm_image& dpu_image_map,
+                   int ive_src_stride[]);
+
+  static constexpr const char* CONFIG_INTERNAL_MAPY_FILED = "ive_mapy";
+  static constexpr const char* CONFIG_INTERNAL_MAPU_FILED = "ive_mapu";
+  static constexpr const char* CONFIG_INTERNAL_MAPV_FILED = "ive_mapv";
+
   DisplayType dis_type = RAW_DPU_DIS;
   int subId = 0;
 
@@ -44,6 +58,17 @@ class Dpu : public ::sophon_stream::framework::Element {
   bmcv_dpu_sgbm_mode dpu_sgbm_mode;
 
   bmcv_dpu_online_mode dpu_mode;
+
+  unsigned char FixMapU[256];
+  unsigned char FixMapV[256];
+  unsigned char FixMapY[256];
+
+  bm_device_mem_t mapTable;
+  bm_device_mem_t mapTableY;
+  bm_device_mem_t mapTableU;
+  bm_device_mem_t mapTableV;
+  bm_ive_map_mode map_mode;
+  bm_image_format_ext dpu_fmt = FORMAT_GRAY;
 
  private:
   void getConfig(const httplib::Request& request, httplib::Response& response);
