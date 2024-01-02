@@ -17,9 +17,26 @@ const VideoDisplayBlend = () => {
     setTimeout(() => {
       img.onload = () => {
         const canvas = canvasRef.current;
-        let canvasCtx = canvas.getContext('2d');
-        const { width, height } = canvas;
-        canvasCtx.drawImage(img, 0, 0, width, height);
+        const canvasCtx = canvas.getContext('2d');
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+  
+        // 清除canvas内容
+        canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+  
+        // 计算最适合的缩放比例
+        const scale = Math.min(canvasWidth / img.width, canvasHeight / img.height);
+  
+        // 计算绘制图像的尺寸
+        const imgDrawWidth = img.width * scale;
+        const imgDrawHeight = img.height * scale;
+  
+        // 计算绘制图像的位置以使其居中
+        const imgDrawX = (canvasWidth - imgDrawWidth) / 2;
+        const imgDrawY = (canvasHeight - imgDrawHeight) / 2;
+  
+        // 绘制图像
+        canvasCtx.drawImage(img, imgDrawX, imgDrawY, imgDrawWidth, imgDrawHeight);
       };
     }, 1000 / fps);
   };
