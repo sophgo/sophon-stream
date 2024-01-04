@@ -67,6 +67,8 @@ class ResNetMultiTask {
                                  common::ObjectMetadatas& objectMetadatas);
   common::ErrorCode post_process_extract(std::shared_ptr<ResNetContext> context,
                                  common::ObjectMetadatas& objectMetadatas);
+  common::ErrorCode post_process_multilabel(std::shared_ptr<ResNetContext> context,
+                                 common::ObjectMetadatas& objectMetadatas);
 
   int subId = 0;
 };

@@ -3,7 +3,7 @@
     "model_path": "../retinaface_distributor_resnet_faiss_converger/data/models/BM1684X/resnet_arcface_fp32_1b.bmodel",
     "bgr2rgb": true,
     "bgr2gray": true,
-    "extract_feature":true,
+    "task_type": "FeatureExtract",
     "mean": [
       0.5,
       0.5,
