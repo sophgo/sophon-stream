@@ -1,0 +1,20 @@
+{
+    "configure": {
+        "model_path": "../ppocr/data/models/BM1684X/ch_PP-OCRv3_det_fp32_1b.bmodel",
+        "bgr2rgb": false,
+        "mean": [
+            123.675,
+            116.28,
+            103.53
+        ],
+        "std": [
+            58.395,
+            57.12,
+            57.375
+        ]
+    },
+    "shared_object": "../../build/lib/libppocr_det.so",
+    "name": "ppocr_det_group",
+    "side": "sophgo",
+    "thread_number": 1
+}

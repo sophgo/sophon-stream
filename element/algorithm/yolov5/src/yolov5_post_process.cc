@@ -235,10 +235,12 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
     bm_memcpy_d2s_partial_offset(
         context->bmContext->handle(), (void*)(tpu_k.detect_num + i),
         tpu_k.detect_num_mem[i], tpu_k.api[i].batch_num * sizeof(int32_t), 0);
-    bm_memcpy_d2s_partial_offset(
-        context->bmContext->handle(), (void*)tpu_k.output_tensor[i],
-        tpu_k.out_dev_mem[i], tpu_k.detect_num[i] * 7 * sizeof(float),
-        0);  // 25200*7
+    if (tpu_k.detect_num[i] > 0) {
+      bm_memcpy_d2s_partial_offset(
+          context->bmContext->handle(), (void*)tpu_k.output_tensor[i],
+          tpu_k.out_dev_mem[i], tpu_k.detect_num[i] * 7 * sizeof(float),
+          0);  // 25200*7
+    }
 
     for (int bid = 0; bid < tpu_k.detect_num[i]; bid++) {
       YoloV5Box temp_bbox;
@@ -473,11 +475,15 @@ void Yolov5PostProcess::postProcessCPU(
       }
 
       // check the range of box
-      if (detData->mBox.mX + detData->mBox.mWidth >= obj->mFrame->mSpData->width) {
-        detData->mBox.mWidth = (obj->mFrame->mSpData->width - 1 - detData->mBox.mX);
+      if (detData->mBox.mX + detData->mBox.mWidth >=
+          obj->mFrame->mSpData->width) {
+        detData->mBox.mWidth =
+            (obj->mFrame->mSpData->width - 1 - detData->mBox.mX);
       }
-      if (detData->mBox.mY + detData->mBox.mHeight >= obj->mFrame->mSpData->height) {
-        detData->mBox.mHeight = (obj->mFrame->mSpData->height - 1 - detData->mBox.mY);
+      if (detData->mBox.mY + detData->mBox.mHeight >=
+          obj->mFrame->mSpData->height) {
+        detData->mBox.mHeight =
+            (obj->mFrame->mSpData->height - 1 - detData->mBox.mY);
       }
 
       if (context->class_thresh_valid) {

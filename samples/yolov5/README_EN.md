@@ -5,19 +5,19 @@ English | [简体中文](README.md)
 ## Catalogs
 - [YOLOv5 Demo](#yolov5-demo)
   - [Catalogs](#catalogs)
-  - [1. Introduction](#1-Introduction)
-  - [2. Feature](#2-Feature)
-  - [3. Prepare Models and Data](#3-Prepare-Models-and-Data)
-  - [4. Prepare Environment](#4-Prepare-Environment)
-    - [4.1 x86/arm PCIe Platform](#41-x86arm-pcie-Platform)
-    - [4.2 SoC Platform](#42-soc-Platform)
-  - [5. Program Compilation](#5-Program-Compilation)
-    - [5.1 x86/arm PCIe Platform](#51-x86arm-pcie-Platform)
-    - [5.2 SoC Platform](#52-soc-Platform)
-  - [6. Program Execution](#6-Program-Execution)
-    - [6.1 JSON Configuration](#61-JSON-Configuration)
-    - [6.2 Execute](#62-Execute)
-  - [7. Performance Testing](#7-Performance-Testing)
+  - [1. Introduction](#1-introduction)
+  - [2. Features](#2-features)
+  - [3. Prepare Models and Data](#3-prepare-models-and-data)
+  - [4. Prepare Environment](#4-prepare-environment)
+    - [4.1 x86/arm PCIe Platform](#41-x86arm-pcie-platform)
+    - [4.2 SoC Platform](#42-soc-platform)
+  - [5. Program Compilation](#5-program-pompilation)
+    - [5.1 x86/arm PCIe Platform](#51-x86arm-pcie-platform)
+    - [5.2 SoC Platform](#52-soc-platform)
+  - [6. Program Execution](#6-program-execution)
+    - [6.1 JSON Configuration](#61-json-configuration)
+    - [6.2 Execute](#62-execute)
+  - [7. Performance Testing](#7-performance-testing)
 
 ## 1. Introduction
 
@@ -33,14 +33,14 @@ In this example, the pre-processing, inference, and post-processing of the YOLOv
 
 ## 2. Feature
 
-* Supports BM1684X、BM1684(x86 PCIe、SoC)，supports BM1688(SoC)
+* Supports BM1684X, BM1684(x86 PCIe、SoC), supports BM1688(SoC)
 * On the BM1684X platform, the TPU_kernel post-processing is supported.
 * Supports multiple video streams.
 * Supports multi-threading.
 
 ## 3. Prepare Models and Data
 
-The `scripts` directory contains download scripts for relevant models and data. [download.sh](./scripts/download.sh)。
+The `scripts` directory contains download scripts for relevant models and data. [download.sh](./scripts/download.sh).
 
 ```bash
 # Install unzip. Skip this step if already installed. If not Ubuntu systems, use yum or other methods as needed.
@@ -79,7 +79,7 @@ Model description:
 The above models are ported from the official [yolov5 repository](https://github.com/ultralytics/yolov5). The plugin configuration includes `mean=[0,0,0]`, `std=[1,1,1]`, supporting 80-class detection tasks from the COCO dataset.
 
 
-The downloaded data include:：
+The downloaded data include:
 
 ```bash
 videos/
@@ -94,7 +94,6 @@ videos/
 ├── mot17_14_frcnn.mp4
 ├── sample_1080p_h265.mp4
 └── test_car_person_1080P.avi
-
 ```
 
 ## 4. Prepare Environment
@@ -119,8 +118,7 @@ Typically, programs are cross-compiled on an x86 computer. You need to set up a 
 
 ### 6.1 JSON Configuration
 
-
-In the YOLOv5 demo, various parameters for each section are located in [config](./config/) directory, structured as follows:"
+In the YOLOv5 demo, various parameters for each section are located in [config](./config/) directory, structured as follows:
 
 ```bash
 ./config/
@@ -141,17 +139,44 @@ In the configuration file, when the `channel_id` attribute is not specified, the
 
 ```json
 {
-  "channels": 3,
-  "channel": {
-    "url": "../data/videos/test_car_person_1080P.avi",
-    "source_type": "VIDEO",
-    "sample_interval": 1,
-    "loop_num": 1
-
-  },
-  "class_names": "../data/coco.names",
-  "download_image": false,
-  "engine_config_path": "../config/engine.json"
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 3,
+      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 20,
+      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    },
+    {
+      "channel_id": 30,
+      "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    }
+  ],
+  "class_names": "../yolov5/data/coco.names",
+  "download_image": true,
+  "draw_func_name": "draw_yolov5_results",
+  "engine_config_path": "../yolov5/config/engine_group.json"
 }
 ```
 
@@ -249,7 +274,7 @@ The parameters for testing and the method of execution remain consistent. Theref
 
 Run the executable file
 ```bash
-./yolov5_demo
+./main --demo_config_path=../yolov5/config/yolov5_demo.json
 ```
 
 The running results of two video streams are as follows
@@ -260,7 +285,7 @@ frame count is 1421 | fps is 205.991 fps.
 
 ## 7. Performance Testing
 
-Currently, the YOLOv5 example supports inference on BM1684X and BM1684 in PCIe and SOC modes, and supports inference on BM1688 in SOC mode.
+Currently, the YOLOv5 example supports inference on BM1684X and BM1684 in PCIe and SoC modes, and supports inference on BM1688 in SoC mode.
 
 Modifications in JSON configurations might be necessary when switching between different devices, such as adjusting model paths, input channels, etc. Refer to section 6.1 for JSON configuration methods and section 6.2 for program execution methods.
 
@@ -275,7 +300,7 @@ The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was do
 |SE5-16|4|4-4-4|218.74|187.12|191.89|96.95|1897.06|2151.00|120.84|141.66|
 |SE5-8|3|3-3-3|137.50|145.81|149.01|94.89|1273.70|1437.00|80.38|90.00|
 
-> **Test Description**：
+> **Test Description**:
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.
 2. Both BM1684 and BM1684X SoC devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz.
 3. All aforementioned performance tests are based on the INT8 model.

@@ -324,7 +324,7 @@ void Yolox::setPostprocess(
 }
 
 REGISTER_WORKER("yolox", Yolox)
-REGISTER_TEMPLATE_WORKER("yolox_group",
+REGISTER_GROUP_WORKER("yolox_group",
                          sophon_stream::framework::Group<Yolox>, Yolox)
 
 }  // namespace yolox

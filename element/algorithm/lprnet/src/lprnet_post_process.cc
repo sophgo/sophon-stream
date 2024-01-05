@@ -99,7 +99,7 @@ void LprnetPostProcess::postProcess(std::shared_ptr<LprnetContext> context,
         for (int i = 0; i < context->output_num; i++) {
         auto out_tensor = outputTensors[i];
         output_data =
-            (float*)out_tensor->get_cpu_data() + idx * context->len_char * context->clas_char;
+            (float*)out_tensor->get_cpu_data();
         for (int j = 0; j < context->len_char; j++) {
             for (int k = 0; k < context->clas_char; k++) {
                 ptr[k] = *(output_data + k * context->len_char + j);

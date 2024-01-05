@@ -37,6 +37,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     include_directories(../3rdparty/spdlog/include)
     include_directories(../3rdparty/nlohmann-json/include)
+    include_directories(../3rdparty/httplib)
     include_directories(../element/multimedia/decode/include)
 
     include_directories(../framework)
@@ -83,6 +84,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
 
     include_directories(../3rdparty/spdlog/include)
     include_directories(../3rdparty/nlohmann-json/include)
+    include_directories(../3rdparty/httplib)
     include_directories(../element/multimedia/decode/include)
     include_directories(../framework)
     include_directories(../framework/include)

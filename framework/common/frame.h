@@ -75,6 +75,7 @@ struct Frame {
   bm_handle_t mHandle;
   std::shared_ptr<bm_image> mSpData;
   std::shared_ptr<bm_image> mSpDataOsd;
+  std::shared_ptr<bm_image> mSpDataDwa;
 };
 
 }  // namespace common

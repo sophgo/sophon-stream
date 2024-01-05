@@ -260,7 +260,7 @@ void Retinaface::setPostprocess(
 }
 
 REGISTER_WORKER("retinaface", Retinaface)
-REGISTER_TEMPLATE_WORKER("retinaface_group",
+REGISTER_GROUP_WORKER("retinaface_group",
                          sophon_stream::framework::Group<Retinaface>,
                          Retinaface)
 

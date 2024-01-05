@@ -35,12 +35,14 @@ cp -r element/algorithm/yolox $result_dir/element/algorithm
 cp -r element/algorithm/openpose $result_dir/element/algorithm
 cp -r element/algorithm/lprnet $result_dir/element/algorithm
 cp -r element/algorithm/retinaface $result_dir/element/algorithm
+cp -r element/algorithm/fastpose $result_dir/element/algorithm
 
 mkdir $result_dir/element/tools
 cp -r element/tools/converger $result_dir/element/tools
 cp -r element/tools/distributor $result_dir/element/tools
 cp -r element/tools/blank $result_dir/element/tools
 cp -r element/tools/faiss $result_dir/element/tools
+cp -r element/tools/http_push $result_dir/element/tools
 
 cp -r 3rdparty $result_dir
 cp -r samples $result_dir

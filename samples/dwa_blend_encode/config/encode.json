@@ -1,0 +1,15 @@
+{
+  "configure": {
+    "encode_type": "WS",
+    "rtsp_port": "8554",
+    "rtmp_port": "1935",
+    "wss_port": "9000",
+    "enc_fmt": "h264_bm",
+    "pix_fmt": "I420",
+    "fps": 25
+  },
+  "shared_object": "../../build/lib/libencode.so",
+  "name": "encode",
+  "side": "sophgo",
+  "thread_number": 1
+}

@@ -1,5 +1,7 @@
 # sophon-stream retinaface element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream retinaface element是sophon-stream框架中的一个插件，利用额外监督(extra-supervised)和自监督(self-supervised)结合的多任务学习(multi-task learning)，对不同尺寸的人脸进行像素级定位。本项目已提供此插件例程，详情请参见 [retinaface Demo](../../../samples/retinaface/README.md)
 
 ## 1. 特性

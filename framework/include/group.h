@@ -114,6 +114,19 @@ class Group : public ::sophon_stream::framework::Element {
   std::shared_ptr<T> getInferElement() { return inferElement; }
   std::shared_ptr<T> getPostElement() { return postElement; }
 
+  inline void setListener(ListenThread* p) override {
+    // listenThreadPtr = p;
+    preElement->setListener(p);
+    inferElement->setListener(p);
+    postElement->setListener(p);
+  }
+
+  virtual void registListenFunc(ListenThread* listener) {
+    preElement->registListenFunc(listener);
+    inferElement->registListenFunc(listener);
+    postElement->registListenFunc(listener);
+  }
+
   void afterConnect(bool is_dst, bool is_src) {
     auto preElement = getPreElement();
     auto postElement = getPostElement();

@@ -40,7 +40,7 @@ void bmBufferDeviceMemFree(void* opaque, uint8_t* data) {
     free(testTranscoed->bmImg);
     testTranscoed->bmImg = NULL;
   }
-  if (ret != 0) free(testTranscoed);
+  free(testTranscoed);
   testTranscoed = NULL;
   return;
 }
@@ -511,11 +511,15 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     std::shared_ptr<AVFrame> frame_ = nullptr;
     frame_.reset(av_frame_alloc(), [](AVFrame* p) {
       if (p != nullptr) {
-        av_frame_unref(p);
         av_frame_free(&p);
       }
     });
-    std::shared_ptr<AVPacket> test_enc_pkt(new AVPacket);
+    std::shared_ptr<AVPacket> test_enc_pkt = nullptr;
+    test_enc_pkt.reset(av_packet_alloc(), [](AVPacket *p){
+      if(p!=nullptr){
+        av_packet_free(&p);
+      }
+    });
 
     ret = bm_image_to_avframe(handle_, &image, frame_.get());
     if (ret < 0) return -1;

@@ -1,0 +1,22 @@
+{
+    "channels": [
+      {
+        "channel_id": 2,
+        "url": "../dwa_dpu_encode/data/videos/imgL_sofa_2560x1440.avi",
+        "source_type": "VIDEO",
+        "loop_num": -1,
+        "fps": -1,
+        "decode_idx": 0
+      },
+      {
+        "channel_id": 3,
+        "url": "../dwa_dpu_encode/data/videos/imgR_sofa_2560x1440.avi",
+        "source_type": "VIDEO",
+        "loop_num": -1,
+        "fps": -1,
+        "decode_idx": 1
+      }
+    ],
+    "download_image": false,
+    "engine_config_path": "../dwa_dpu_encode/config/engine.json"
+}

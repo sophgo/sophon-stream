@@ -102,6 +102,9 @@ VideoDecFFM::VideoDecFFM() {
   is_rtsp = 0;
   is_rtmp = 0;
   is_gb28181 = 0;
+
+  is_camera = 0;
+
   width = 0;
   height = 0;
   pix_fmt = 0;
@@ -115,6 +118,7 @@ VideoDecFFM::VideoDecFFM() {
   pkt->data = NULL;
   pkt->size = 0;
 
+  avdevice_register_all();
   // frame = av_frame_alloc();
 }
 
@@ -151,6 +155,9 @@ int map_avformat_to_bmformat(int avformat) {
     case AV_PIX_FMT_NV12:
       format = FORMAT_NV12;
       break;
+    case AV_PIX_FMT_NV21:
+      format = FORMAT_NV21;
+      break;
     case AV_PIX_FMT_NV16:
       format = FORMAT_NV16;
       break;
@@ -183,7 +190,7 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
       data_four_denominator = 1;
       data_five_denominator = -1;
       data_six_denominator = -1;
-      break;
+      //      break;
     case AV_PIX_FMT_GRAY8:
       plane = 1;
       data_four_denominator = -1;
@@ -198,6 +205,12 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
       data_six_denominator = 2;
       break;
     case AV_PIX_FMT_NV12:
+      plane = 2;
+      data_four_denominator = -1;
+      data_five_denominator = 1;
+      data_six_denominator = -1;
+      break;
+    case AV_PIX_FMT_NV21:
       plane = 2;
       data_four_denominator = -1;
       data_five_denominator = 1;
@@ -406,21 +419,29 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   } else if (strstr(input, "rtmp://")) {
     this->is_rtmp = 1;
     this->rtmp_url = input;
-  }else if (strstr(input, "gb28181://")) {
+  } else if (strstr(input, "gb28181://")) {
     this->is_gb28181 = 1;
     this->gb28181_url = input;
+  } else if (strstr(input, "/dev/video")) {
+    this->is_camera = 1;
+    this->camera_url = input;
   }
   this->handle = dec_handle;
   this->dev_id = bm_get_devid(*dec_handle);
   int ret = 0;
   AVDictionary* dict = NULL;
-  if(this->is_gb28181){
+  if (this->is_gb28181) {
     av_dict_set(&dict, "gb28181_transport_rtp", "tcp", 0);
-  }else{
+  } else {
     av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
-  // av_dict_set(&dict, "rtsp_transport", "tcp", 0);
+    // av_dict_set(&dict, "rtsp_transport", "tcp", 0);
   }
-  
+
+  if (this->is_camera) {
+    av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
+    av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
+  }
+
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
     av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
@@ -489,7 +510,8 @@ int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
   st = fmt_ctx->streams[stream_index];
 
   if (st->codecpar->codec_id != AV_CODEC_ID_H264 &&
-      st->codecpar->codec_id != AV_CODEC_ID_HEVC) {
+      st->codecpar->codec_id != AV_CODEC_ID_HEVC &&
+      st->codecpar->codec_id != AV_CODEC_ID_RAWVIDEO) {
     hardware_decode = false;
     data_on_device_mem = false;
   }
@@ -524,6 +546,11 @@ int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
   /* Init the decoders, with or without reference counting */
   av_dict_set(&opts, "refcounted_frames", refcount ? "1" : "0", 0);
   av_dict_set_int(&opts, "sophon_idx", sophon_idx, 0);
+
+  if (is_camera) {
+    av_dict_set(&opts, "sg_vi", 1 ? "1" : "0", 0);
+  }
+
   av_dict_set_int(&opts, "extra_frame_buffer_num", EXTRA_FRAME_BUFFER_NUM,
                   0);  // if we use dma_buffer mode
 
@@ -548,13 +575,22 @@ void VideoDecFFM::reConnectVideoStream() {
   while (1) {
     // 尝试连接服务器
     AVDictionary* dict = NULL;
-    if(this->is_gb28181){
+    if (this->is_gb28181) {
       av_dict_set(&dict, "gb28181_rtsp_transport", "tcp", 0);
-    }else{
+    } else {
       av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
     }
+
+    if (this->is_camera) {
+      av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
+      av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
+    }
+
     // av_dict_set(&dict, "rtsp_transport", "tcp", 0);
-    auto url = this->is_rtsp ? this->rtsp_url : (this->is_rtmp ?this->rtmp_url:this->gb28181_url);
+    auto url = this->is_rtsp
+                   ? this->rtsp_url
+                   : (this->is_rtmp ? this->rtmp_url : this->gb28181_url);
+
     av_log(video_dec_ctx, AV_LOG_ERROR, "Start reconnected, url: %s.\n", url);
     auto ret = avformat_open_input(&ifmt_ctx, url, NULL, &dict);
     if (ret < 0) {
@@ -623,7 +659,9 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     av_packet_unref(pkt);
     ret = av_read_frame(ifmt_ctx, pkt);
     if (ret < 0) {
-      if ((this->is_rtsp || this->is_rtmp || this->is_gb28181) && isNetworkError(ret)) {
+      if ((this->is_rtsp || this->is_rtmp || this->is_gb28181 ||
+           this->is_camera) &&
+          isNetworkError(ret)) {
         avformat_close_input(&ifmt_ctx);  // 关闭当前连接
         av_log(video_dec_ctx, AV_LOG_ERROR,
                "RTSP or RTMP network error ret(%d), start retry.\n", ret);
@@ -936,6 +974,7 @@ std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, string input_name) {
     fflush(stdout);
 
     data_on_device_mem = false;
+
     avframe_to_bm_image(handle, frame, spBmImage.get(), false);
     free(bs_buffer);
     avcodec_free_context(&dec_ctx);

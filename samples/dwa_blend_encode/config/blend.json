@@ -1,0 +1,17 @@
+{
+  "configure": {
+    "wgt1": "../dwa_blend_encode/data/wgt/c01_alpha_444p_m2__0_1088x224.bin",
+    "wgt2": "../dwa_blend_encode/data/wgt/c01_beta_444p_m2__0_1088x224.bin",
+    "ovlp_lx": 1696,
+    "ovlp_rx": 1919,
+    "bd_lx0": 0,
+    "bd_rx0": 0,
+    "bd_lx1": 0,
+    "bd_rx1": 0,
+    "wgt_mode": 2
+  },
+  "shared_object": "../../build/lib/libblend.so",
+  "name": "blend",
+  "side": "sophgo",
+  "thread_number": 1
+}

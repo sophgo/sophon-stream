@@ -20,6 +20,7 @@
 #include "common/logger.h"
 #include "common/no_copyable.h"
 #include "element.h"
+#include "listen_thread.h"
 
 namespace sophon_stream {
 namespace framework {
@@ -89,6 +90,11 @@ class Graph : public ::sophon_stream::common::NoCopyable {
 
   std::map<int /* elementId */, std::shared_ptr<framework::Element> >
       mElementMap;
+
+  // friend class ListenThread;
+  ListenThread* listenThreadPtr;
+
+  int defaultPort = 8000;
 };
 
 }  // namespace framework

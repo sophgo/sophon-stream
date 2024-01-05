@@ -25,8 +25,10 @@
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/no_copyable.h"
+#include "common/http_defs.h"
 #include "connector.h"
 #include "datapipe.h"
+#include "listen_thread.h"
 
 namespace sophon_stream {
 namespace framework {
@@ -144,6 +146,8 @@ class Element : public ::sophon_stream::common::NoCopyable {
   inline void setDeviceId(const int id) { mDeviceId = id; }
   inline void setThreadNumber(const int num) { mThreadNumber = num; }
 
+  virtual void registListenFunc(ListenThread* listener) {}
+
   static constexpr const char* JSON_ID_FIELD = "id";
   static constexpr const char* JSON_SIDE_FIELD = "side";
   static constexpr const char* JSON_DEVICE_ID_FIELD = "device_id";
@@ -171,6 +175,9 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   void addInputPort(int port);
   void addOutputPort(int port);
+
+  inline ListenThread* getListener() { return listenThreadPtr; }
+  inline virtual void setListener(ListenThread* p) { listenThreadPtr = p; }
 
  protected:
   /**
@@ -240,6 +247,9 @@ class Element : public ::sophon_stream::common::NoCopyable {
   std::vector<int> mOutputPorts;
 
   bool mSinkElementFlag = false;
+
+  friend class ListenThread;
+  ListenThread* listenThreadPtr;
 };
 
 }  // namespace framework

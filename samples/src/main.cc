@@ -222,14 +222,14 @@ int main(int argc, char *argv[]) {
   int num_channels =
       demo_json.num_channels_per_graph * demo_json.num_graphs;
 
-#if BMCV_VERSION_MAJOR > 1
+// #if BMCV_VERSION_MAJOR > 1
 
-  STREAM_CHECK(
-      num_channels <= 1,
-      "In order to ensure that the program can be run properly on the 1688, it "
-      "is required that the number of input channels is less than 2.");
+//   STREAM_CHECK(
+//       num_channels <= 1,
+//       "In order to ensure that the program can be run properly on the 1688, it "
+//       "is required that the number of input channels is less than 2.");
 
-#endif
+// #endif
 
   std::vector<::sophon_stream::common::FpsProfiler> fpsProfilers(num_channels);
   for (int i = 0; i < num_channels; ++i) {
@@ -250,6 +250,7 @@ int main(int argc, char *argv[]) {
   else if (demo_json.draw_func_name == "save_only") draw_func = std::bind(save_only, std::placeholders::_1, out_dir);
   else if (demo_json.draw_func_name == "draw_yolov5_fastpose_posec3d_results") draw_func = std::bind(draw_yolov5_fastpose_posec3d_results, std::placeholders::_1, out_dir, demo_json.heatmap_loss);
   else if (demo_json.draw_func_name == "default") draw_func = std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>(draw_default);
+  else if (demo_json.draw_func_name == "draw_ppocr_results") draw_func = std::bind(draw_ppocr_results, std::placeholders::_1, out_dir);
   else IVS_ERROR("No such function! Please check your 'draw_func_name'.");
 
   auto sinkHandler = [&, draw_func](std::shared_ptr<void> data) {

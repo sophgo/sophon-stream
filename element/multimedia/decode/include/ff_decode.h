@@ -29,6 +29,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
 #include <libswscale/swscale.h>
+#include <libavdevice/avdevice.h>
 }
 
 #define QUEUE_MAX_SIZE 5
@@ -110,9 +111,11 @@ class VideoDecFFM {
   int is_rtsp;
   int is_rtmp;
   int is_gb28181;
+  int is_camera;
   const char* rtsp_url;
   const char* rtmp_url;
   const char* gb28181_url;
+  const char* camera_url;
   int width;
   int height;
   int pix_fmt;

@@ -25,7 +25,7 @@ namespace http_push {
 
 class HttpPushImpl_ {
  public:
-  HttpPushImpl_(std::string& ip, int port, int channel);
+  HttpPushImpl_(std::string& ip, int port, std::string path, int channel);
   bool pushQueue(std::shared_ptr<nlohmann::json> j);
   void release();
 
@@ -40,7 +40,7 @@ class HttpPushImpl_ {
   constexpr static int maxQueueLen = 20;
 
   httplib::Client cli;
-  std::string path = "/flask_test";
+  std::string path;
 
   std::string mFpsProfilerName;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
@@ -57,12 +57,14 @@ class HttpPush : public ::sophon_stream::framework::Element {
 
   static constexpr const char* CONFIG_INTERNAL_IP_FILED = "ip";
   static constexpr const char* CONFIG_INTERNAL_PORT_FILED = "port";
+  static constexpr const char* CONFIG_INTERNAL_PATH_FILED = "path";
 
  private:
   std::unordered_map<int, std::shared_ptr<HttpPushImpl_>> mapImpl_;
   std::mutex mapMtx;
   std::string ip_;
   int port_;
+  std::string path_;
 };
 
 }  // namespace http_push

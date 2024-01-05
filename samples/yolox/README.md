@@ -1,5 +1,7 @@
 # YOLOX Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [YOLOX Demo](#yolox-demo)
   - [目录](#目录)
@@ -270,7 +272,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../yolox/config/yolox_demo.json
 ```
@@ -283,7 +285,7 @@ frame count is 1422 | fps is 269.707 fps.
 
 ## 7. 性能测试
 
-目前，yolox例程支持在BM1684、BM1684X的PCIE、SOC模式下进行推理，支持在BM1688 SOC模式下进行推理。
+目前，yolox例程支持在BM1684、BM1684X的PCIe、SoC模式下进行推理，支持在BM1688 SoC模式下进行推理。
 
 在不同的设备上可能需要修改json配置，例如模型路径、输入路数等。json的配置方法参考6.1节，程序运行方法参考上文6.2节。
 

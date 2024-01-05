@@ -40,6 +40,7 @@ checkAndAddElement(element/algorithm/resnet)
 checkAndAddElement(element/algorithm/openpose)
 checkAndAddElement(element/algorithm/retinaface)
 checkAndAddElement(element/algorithm/lprnet)
+checkAndAddElement(element/algorithm/ppocr)
 
 checkAndAddElement(element/multimedia/decode)
 checkAndAddElement(element/multimedia/osd)
@@ -50,6 +51,11 @@ checkAndAddElement(element/tools/distributor)
 checkAndAddElement(element/tools/converger)
 checkAndAddElement(element/tools/http_push)
 checkAndAddElement(element/tools/faiss)
+
+checkAndAddElement(element/tools/dwa)
+checkAndAddElement(element/tools/dpu)
+checkAndAddElement(element/tools/blend)
+checkAndAddElement(element/tools/fisheye)
 
 checkAndAddElement(3rdparty/freetype2)
 

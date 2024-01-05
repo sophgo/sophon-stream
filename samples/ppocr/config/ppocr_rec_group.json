@@ -1,0 +1,12 @@
+{
+  "configure": {
+    "model_path": "../ppocr/data/models/BM1684X/ch_PP-OCRv3_rec_fp32_1b_320.bmodel",
+    "beam_search": false,
+    "beam_width": 3,
+    "class_names_file": "../ppocr/data/datasets/ppocr_keys_v1.txt"
+  },
+  "shared_object": "../../build/lib/libppocr_rec.so",
+  "name": "ppocr_rec_group",
+  "side": "sophgo",
+  "thread_number": 1
+}

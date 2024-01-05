@@ -178,7 +178,12 @@ common::ErrorCode Decode::parse_channel_task(
       }
       channelTask->request.sourceType =
           ChannelOperateRequest::SourceType::GB28181;
-    } else {
+    }  else if (sourceType == "CAMERA") {
+      IVS_INFO("Source type is {0}", sourceType);
+      channelTask->request.sourceType =
+          ChannelOperateRequest::SourceType::CAMERA;
+    }
+     else {
       IVS_ERROR("{0} error, please input RTSP, RTMP, VIDEO, IMG_DIR, BASE64 or GB28181",
                 JSON_SOURCE_TYPE);
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;

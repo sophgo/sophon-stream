@@ -1,5 +1,7 @@
 # YOLOV5-FASTPOSE-POSEC3D Demo
 
+[English](README_EN.md) | 简体中文
+
 ## 目录
 - [YOLOV5-FASTPOSE-POSEC3D Demo](#yolov5-fastpose_posec3d-demo)
   - [目录](#目录)
@@ -31,7 +33,8 @@
 
 ## 2. 特性
 
-* 支持BM1684X、BM1684(x86 PCIe、SoC)
+* 支持BM1684X(x86 PCIe、SoC)
+* YOLOv5的AlphaPose支持BM1684(x86 PCIe、SoC)、BM1684(x86 PCIe、SoC)
 * 支持多路视频流
 * 支持多线程
 * BM1684X平台上，支持yolov5 tpu_kernel后处理
@@ -49,11 +52,15 @@ chmod -R +x scripts/
 
 脚本执行完毕后，会在当前目录下生成`data`目录，其中包含`models`和`videos`两个子目录。
 
+**注意：fastpose和posec3d BModel模型暂时只支持BM1684X平台。**
+
 下载的模型包括：
 
 ```bash
 ./models
 ├── BM1684
+│   ├── fast_res50_256x192_coco17_1b_fp32.bmodel    # 用于BM1684的FASTPOSE FP32 Bmodel，batch_size=1，17个关键点检测
+│   ├── fast_res50_256x192_coco17_1b_int8.bmodel    # 用于BM1684的FASTPOSE INT8 Bmodel，batch_size=1，17个关键点检测
 │   ├── yolov5s_v6.1_3output_fp32_1b.bmodel         # 用于BM1684的YOLOV5 FP32 BModel，batch_size=1，后处理在CPU上进行
 │   ├── yolov5s_v6.1_3output_int8_1b.bmodel         # 用于BM1684的YOLOV5 INT8 BModel，batch_size=1，后处理在CPU上进行
 │   └── yolov5s_v6.1_3output_int8_4b.bmodel         # 用于BM1684的YOLOV5 INT8 BModel，batch_size=4，后处理在CPU上进行
@@ -61,7 +68,6 @@ chmod -R +x scripts/
 │   ├── fast_res50_256x192_coco17_1b_fp16.bmodel    # 用于BM1684X的FASTPOSE FP16 Bmodel，batch_size=1，17个关键点检测
 │   ├── fast_res50_256x192_coco17_1b_fp32.bmodel    # 用于BM1684X的FASTPOSE FP32 Bmodel，batch_size=1，17个关键点检测
 │   ├── fast_res50_256x192_coco17_1b_int8.bmodel    # 用于BM1684X的FASTPOSE INT8 Bmodel，batch_size=1，17个关键点检测
-│   ├── fast_res50_256x192_coco17_4b_int8.bmodel    # 用于BM1684X的FASTPOSE INT8 Bmodel，batch_size=4，17个关键点检测
 │   ├── posec3d_gym_fp16.bmodel                     # 用于BM1684X的POSEC3D FP16 Bmodel，gym 99类识别
 │   ├── posec3d_gym_fp32.bmodel                     # 用于BM1684X的POSEC3D FP32 Bmodel，gym 99类识别
 │   ├── posec3d_ntu60_fp16.bmodel                   # 用于BM1684X的POSEC3D FP16 Bmodel，ntu 60类识别
@@ -84,8 +90,7 @@ chmod -R +x scripts/
 ├── demo_skeleton.mp4                         # 人体检测+关键检测+行为识别测试视频 
 ├── S017C001P003R001A001_rgb.avi              # 人体检测+关键检测+行为识别测试视频 
 ├── S017C001P003R002A008_rgb.avi              # 人体检测+关键检测+行为识别测试视频 
-└── test.mp4                                  # 人体检测+关键检测测试视频                                    
-  
+└── test.mp4                                  # 人体检测+关键检测测试视频
 ```
 
 ## 4. 环境准备
@@ -239,7 +244,7 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 ]
 ```
 
-[fastpose_pre.json](./config/fastpose_pre.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
+[fastpose_group.json](./config/fastpose_group.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 
 `use_tpu_kernel`为`true`时，会使用yolov5 tpu_kernel后处理。tpu_kernel后处理只支持BM1684X设备。
 
@@ -268,7 +273,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-1. 运行可执行文件
+运行可执行文件
 ```bash
 ./main --demo_config_path=../yolov5_fastpose_posec3d/config/yolov5_fastpose_posec3d_demo.json
 ```

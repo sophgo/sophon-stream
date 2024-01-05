@@ -1,0 +1,15 @@
+{
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../ppocr/data/datasets/train_full_images_0",
+      "source_type": "IMG_DIR",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": -1
+    }
+  ],
+  "engine_config_path": "../ppocr/config/engine_group.json",
+  "draw_func_name": "draw_ppocr_results",
+  "download_image": false
+}

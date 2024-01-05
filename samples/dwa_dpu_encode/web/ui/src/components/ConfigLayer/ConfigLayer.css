@@ -1,0 +1,71 @@
+.ConfigLayer {
+  margin: 20px;
+  padding: 0px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.buttonsContainer {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  width: fit-content; /* 添加此行，使容器宽度适合其内容 */
+}
+
+
+.configButton {
+  margin: 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.configButton:hover {
+  background-color: #0056b3;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+label {
+  font-weight: bold;
+}
+
+td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+input[type="text"] {
+  width: calc(100% - 16px); /* 计算宽度，减去 padding 的值 */
+  padding: 8px;
+  border: 1px solid #ddd;
+  vertical-align: top; /* 让文本框内容与单元格顶部对齐 */
+}
+
+/* 为偶数行设置背景颜色 */
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* 为奇数行设置不同的背景颜色 */
+tr:nth-child(odd) {
+  background-color: #e6e6e6;
+}
+

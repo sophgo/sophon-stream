@@ -37,11 +37,13 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     include_directories(../3rdparty/spdlog/include)
     include_directories(../3rdparty/nlohmann-json/include)
+    include_directories(../3rdparty/httplib)
 
     add_library(ivslogger SHARED
       common/logger.cc
       common/profiler.cc
       common/common_defs.h
+      common/http_defs.cc
     )
     target_link_libraries(ivslogger -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS})
 
@@ -54,6 +56,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/element_factory.cc
         src/engine.cc
         src/connector.cc
+        src/listen_thread.cc
     )
     link_libraries(dl)
     target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS})
@@ -82,6 +85,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../3rdparty/spdlog/include)
 
     include_directories(../3rdparty/nlohmann-json/include)
+    include_directories(../3rdparty/httplib)
 
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
@@ -90,6 +94,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
       common/logger.cc
       common/profiler.cc
       common/common_defs.h
+      common/http_defs.cc
     )
     target_link_libraries(ivslogger -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov)
 
@@ -102,6 +107,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
         src/element_factory.cc
         src/engine.cc
         src/connector.cc
+        src/listen_thread.cc
     )
     link_libraries(dl)
     target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov)

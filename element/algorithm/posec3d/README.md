@@ -1,13 +1,15 @@
 # sophon-stream posec3d element
 
-sophon-stream posec3d element 是 sophon-stream 框架中的一个插件，是一个简单、快速、强大的车牌识别模型。本项目已提供Alphapose + PoseC3D 检测和识别行为的插件例程，详情请参见 [yolov5_fastpose_posec3d](../../../samples/yolov5_fastpose_posec3d/README.md)
+[English](README_EN.md) | 简体中文
+
+sophon-stream posec3d element 是 sophon-stream 框架中的一个插件，是一个简单、快速、强大的行为识别模型。本项目已提供Alphapose + PoseC3D 检测和识别行为的插件例程，详情请参见 [yolov5_fastpose_posec3d](../../../samples/yolov5_fastpose_posec3d/README.md)
 
 ## 特性
 
 - 支持多路视频流
 - 支持多线程处理
 
-## ## 2. 配置参数
+## 2. 配置参数
 
 sophon-stream posec3d 插件分为预处理、推理、后处理三个部分，均具有一些可配置的参数，可以根据需求进行设置。以推理为例，是一些常用的参数：
 
