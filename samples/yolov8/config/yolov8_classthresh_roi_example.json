@@ -1,6 +1,6 @@
 {
   "configure": {
-    "model_path": "../yolov5/data/models/BM1684X_tpukernel/yolov5s_tpukernel_int8_1b.bmodel",
+    "model_path": "../yolov8/data/models/BM1684X/yolov8s_int8_1b.bmodel",
     "threshold_conf": {
       "person": 0.3,
       "bicycle": 0.5,
@@ -96,16 +96,15 @@
       255
     ],
     "roi":{
-      "left": 600,
-      "top": 400,
-      "width": 800,
-      "height": 600
+      "left": 0,
+      "top": 0,
+      "width": 1000,
+      "height": 1080
     },
-    "class_names_file": "../yolov5/data/coco.names",
-    "use_tpu_kernel": true
+    "class_names_file": "../yolov8/data/coco.names"
   },
-  "shared_object": "../../build/lib/libyolov5.so",
-  "name": "yolov5_group",
+  "shared_object": "../../build/lib/libyolov8.so",
+  "name": "yolov8_group",
   "side": "sophgo",
   "thread_number": 1
 }

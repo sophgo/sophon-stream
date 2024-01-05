@@ -41,6 +41,7 @@ checkAndAddElement(element/algorithm/openpose)
 checkAndAddElement(element/algorithm/retinaface)
 checkAndAddElement(element/algorithm/lprnet)
 checkAndAddElement(element/algorithm/ppocr)
+checkAndAddElement(element/algorithm/yolov8)
 
 checkAndAddElement(element/multimedia/decode)
 checkAndAddElement(element/multimedia/osd)
