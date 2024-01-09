@@ -119,9 +119,8 @@ const VideoDisplayBlend = () => {
       <label>码流选择:</label>
 
       <Select className='DisplayTypeSelector' value={displayType} onChange={handleDisplayType}>
-      <MenuItem value={0}> 原图+BLEND </MenuItem>
-      <MenuItem value={1}> DWA+BLEND </MenuItem>
-      <MenuItem value={2}> 仅BLEND </MenuItem>
+      <MenuItem value={0}> 原图 </MenuItem>
+      <MenuItem value={1}> DWA_BLEND </MenuItem>
       </Select>
     </div>
 

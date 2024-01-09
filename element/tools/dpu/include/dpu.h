@@ -45,7 +45,7 @@ class Dpu : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_MAPU_FILED = "ive_mapu";
   static constexpr const char* CONFIG_INTERNAL_MAPV_FILED = "ive_mapv";
 
-  DisplayType dis_type = RAW_DPU_DIS;
+  DisplayType dis_type = DWA_DPU_DIS;
   int subId = 0;
 
   int dev_id = 0;

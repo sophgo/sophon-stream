@@ -1,0 +1,22 @@
+{
+    "channels": [
+      {
+        "channel_id": 2,
+        "url": "/dev/video0",
+        "source_type": "CAMERA",
+        "loop_num": -1,
+        "fps": -1,
+        "decode_idx": 0
+      },
+      {
+        "channel_id": 3,
+        "url": "/dev/video1",
+        "source_type": "CAMERA",
+        "loop_num": -1,
+        "fps": -1,
+        "decode_idx": 1
+      }
+    ],
+    "download_image": false,
+    "engine_config_path": "../dwa_blend_encode/config/engine.json"
+}

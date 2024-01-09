@@ -30,6 +30,11 @@ then
     rm -f videos.zip
     mv ./videos ../data/
 
+    python3 -m dfss --url=open@sophgo.com:/sophon-stream/dwa_dpu_encode/gridinfo.zip
+    unzip gridinfo.zip
+    rm -f gridinfo.zip
+    mv ./gridinfo ../data/
+
     python3 -m dfss --url=open@sophgo.com:/sophon-stream/dwa_dpu_encode/maps.zip
     unzip maps.zip
     rm -f maps.zip

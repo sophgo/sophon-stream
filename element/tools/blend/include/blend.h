@@ -21,7 +21,7 @@ namespace sophon_stream {
 namespace element {
 namespace blend {
 
-enum DisplayType { RAW_BLEND_DIS = 0, DWA_BLEND_DIS = 1, ONLY_BLEND_DIS = 2 };
+enum DisplayType { ONLY_RAW_DIS =0, DWA_BLEND_DIS = 1 };
 class Blend : public ::sophon_stream::framework::Element {
  public:
   Blend();
@@ -51,7 +51,7 @@ class Blend : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_WET_MODE_FILED = "wgt_mode";
 
 
-  DisplayType dis_type = RAW_BLEND_DIS;
+  DisplayType dis_type = DWA_BLEND_DIS;
   bool isDwa = false;
   int dev_id = 0;
   bm_handle_t handle = NULL;

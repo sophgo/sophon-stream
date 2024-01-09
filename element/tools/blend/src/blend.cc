@@ -105,7 +105,7 @@ common::ErrorCode Blend::initInternal(const std::string& json) {
 
   bm_status_t ret = bm_dev_request(&handle, dev_id);
 
-  src_h = 1080;
+  src_h = 2240;
   // src_w = configure.find(CONFIG_INTERNAL_WEIGHT_FILED)->get<std::int>();
   auto wgt1 = configure.find(CONFIG_INTERNAL_WGT1_FILED)->get<std::string>();
   auto wgt2 = configure.find(CONFIG_INTERNAL_WGT2_FILED)->get<std::string>();
@@ -152,22 +152,11 @@ common::ErrorCode Blend::blend_work(
     std::shared_ptr<common::ObjectMetadata> blendObj) {
   std::lock_guard<std::mutex> lk(mtx);
   IVS_INFO("Now DisplayType is {0}", dis_type);
-  std::shared_ptr<bm_image> blend_image = nullptr;
-  blend_image.reset(new bm_image, [](bm_image* p) {
-    bm_image_destroy(*p);
-    delete p;
-    p = nullptr;
-  });
-  bm_status_t ret =
-      bm_image_create(handle, leftObj->mFrame->mSpData->height,
-                      ALIGN(leftObj->mFrame->mSpData->width * 2 - 224, 32),
-                      FORMAT_YUV420P, DATA_TYPE_EXT_1N_BYTE, blend_image.get());
-  bm_image_alloc_dev_mem(*blend_image, 1);
 
   // select display type
   std::shared_ptr<bm_image> blend_image_left = nullptr;
   std::shared_ptr<bm_image> blend_image_right = nullptr;
-  if (dis_type == ONLY_BLEND_DIS || dis_type == DWA_BLEND_DIS) {
+  if (dis_type == DWA_BLEND_DIS) {
     blend_image_left = leftObj->mFrame->mSpDataDwa;
     blend_image_right = rightObj->mFrame->mSpDataDwa;
   } else {
@@ -175,60 +164,27 @@ common::ErrorCode Blend::blend_work(
     blend_image_right = rightObj->mFrame->mSpData;
   }
 
-  //
-  bool need_convert = (blend_image_left->image_format != FORMAT_YUV420P ||
-                       blend_image_right->image_format != FORMAT_YUV420P);
-
-  bm_image blend_img[2];
-  if (need_convert) {
-    ret = bm_image_create(leftObj->mFrame->mHandle, blend_image_left->height,
-                          blend_image_left->width, FORMAT_YUV420P,
-                          DATA_TYPE_EXT_1N_BYTE, &blend_img[0], NULL);
-    ret = bm_image_create(rightObj->mFrame->mHandle, blend_image_right->height,
-                          blend_image_right->width, FORMAT_YUV420P,
-                          DATA_TYPE_EXT_1N_BYTE, &blend_img[1], NULL);
-
-    bm_image_alloc_dev_mem(blend_img[0], 1);
-    bm_image_alloc_dev_mem(blend_img[1], 1);
-
-    ret = bmcv_image_storage_convert(leftObj->mFrame->mHandle, 1,
-                                     blend_image_left.get(), &blend_img[0]);
-    ret = bmcv_image_storage_convert(rightObj->mFrame->mHandle, 1,
-                                     blend_image_right.get(), &blend_img[1]);
-  } else {
-    blend_img[0] = *blend_image_left;
-    blend_img[1] = *blend_image_right;
-  }
-
-  // blend
-
-  ret = bmcv_blending(handle, input_num, blend_img, *blend_image, blend_config);
-
   // dispaly image
-  if (dis_type != ONLY_BLEND_DIS) {
-    std::shared_ptr<bm_image> all_image = nullptr;
-    all_image.reset(new bm_image, [](bm_image* p) {
+  if (dis_type == ONLY_RAW_DIS) {
+    std::shared_ptr<bm_image> two_raw_image = nullptr;
+    two_raw_image.reset(new bm_image, [](bm_image* p) {
       bm_image_destroy(*p);
       delete p;
       p = nullptr;
     });
-    ret = bm_image_create(handle, blend_image_left->height * 3 + 200,
-                          blend_image->width, FORMAT_YUV420P,
-                          DATA_TYPE_EXT_1N_BYTE, all_image.get());
-    bm_image_alloc_dev_mem(*all_image, 1);
+    bm_image_create(handle, blend_image_left->height,
+                    blend_image_left->width * 2 + 100,
+                    blend_image_left->image_format, DATA_TYPE_EXT_1N_BYTE,
+                    two_raw_image.get());
+    bm_image_alloc_dev_mem(*two_raw_image, 1);
 
-    bm_device_mem_t blend_mem[3] = {0};
-    bm_image_get_device_mem(*all_image, blend_mem);
-    bm_memset_device(handle, 0, blend_mem[0]);
-    bm_memset_device(handle, 0, blend_mem[1]);
-    bm_memset_device(handle, 0, blend_mem[2]);
+    bm_device_mem_t blend_mem;
+    bm_image_get_device_mem(*two_raw_image, &blend_mem);
+    bm_memset_device(handle, 0, blend_mem);
 
-    bm_image src_img[3] = {blend_img[0], blend_img[1], *blend_image};
+    bm_image src_img[2] = {*blend_image_left, *blend_image_right};
 
-    // bmcv_rect_t rect = {0, 0, all_image->width, all_image->height};
-    // ret = bmcv_image_fill_rectangle(handle, *all_image, 1, &rect, 0, 0, 0);
-
-    int input_num = 3;
+    int input_num = 2;
     bmcv_rect_t dst_crop[input_num];
 
     dst_crop[0] = {.start_x = 0,
@@ -236,37 +192,73 @@ common::ErrorCode Blend::blend_work(
                    .crop_w = (unsigned int)blend_image_left->width,
                    .crop_h = (unsigned int)blend_image_left->height};
 
-    dst_crop[1] = {.start_x = 0,
-                   .start_y = (unsigned int)blend_image_right->height + 100,
+    dst_crop[1] = {.start_x = (unsigned int)blend_image_left->width + 100,
+                   .start_y = 0,
                    .crop_w = (unsigned int)blend_image_right->width,
                    .crop_h = (unsigned int)blend_image_right->height};
 
-    dst_crop[2] = {.start_x = 0,
-                   .start_y = (unsigned int)blend_image_left->height +
-                              (unsigned int)blend_image_right->height + 200,
-                   .crop_w = (unsigned int)blend_image->width,
-                   .crop_h = (unsigned int)blend_image->height};
-
-    bmcv_image_vpp_stitch(handle, input_num, src_img, *all_image, dst_crop,
+    bmcv_image_vpp_stitch(handle, input_num, src_img, *two_raw_image, dst_crop,
                           NULL);
-    blendObj->mFrame->mSpData = all_image;
-    blendObj->mFrame->mWidth = all_image->width;
-    blendObj->mFrame->mHeight = all_image->height;
+    blendObj->mFrame->mSpData = two_raw_image;
+    blendObj->mFrame->mWidth = two_raw_image->width;
+    blendObj->mFrame->mHeight = two_raw_image->height;
   } else {
+    std::shared_ptr<bm_image> blend_image = nullptr;
+    blend_image.reset(new bm_image, [](bm_image* p) {
+      bm_image_destroy(*p);
+      delete p;
+      p = nullptr;
+    });
+
+    bm_status_t ret = bm_image_create(
+        handle, blend_image_left->height,
+        ALIGN(blend_image_left->width * 2 - 128, 32), FORMAT_YUV420P,
+        DATA_TYPE_EXT_1N_BYTE, blend_image.get());
+    bm_image_alloc_dev_mem(*blend_image, 1);
+
+    bool need_convert = (blend_image_left->image_format != FORMAT_YUV420P ||
+                         blend_image_right->image_format != FORMAT_YUV420P);
+
+    bm_image blend_img[2];
+    if (need_convert) {
+      ret = bm_image_create(leftObj->mFrame->mHandle, blend_image_left->height,
+                            blend_image_left->width, FORMAT_YUV420P,
+                            DATA_TYPE_EXT_1N_BYTE, &blend_img[0], NULL);
+      ret =
+          bm_image_create(rightObj->mFrame->mHandle, blend_image_right->height,
+                          blend_image_right->width, FORMAT_YUV420P,
+                          DATA_TYPE_EXT_1N_BYTE, &blend_img[1], NULL);
+
+      bm_image_alloc_dev_mem(blend_img[0], 1);
+      bm_image_alloc_dev_mem(blend_img[1], 1);
+
+      ret = bmcv_image_storage_convert(leftObj->mFrame->mHandle, 1,
+                                       blend_image_left.get(), &blend_img[0]);
+      ret = bmcv_image_storage_convert(rightObj->mFrame->mHandle, 1,
+                                       blend_image_right.get(), &blend_img[1]);
+    } else {
+      blend_img[0] = *blend_image_left;
+      blend_img[1] = *blend_image_right;
+    }
+
+    // blend
+    ret =
+        bmcv_blending(handle, input_num, blend_img, *blend_image, blend_config);
+
     blendObj->mFrame->mSpData = blend_image;
     blendObj->mFrame->mWidth = blend_image->width;
     blendObj->mFrame->mHeight = blend_image->height;
+
+    if (need_convert) {
+      bm_image_destroy(&blend_img[0]);
+      bm_image_destroy(&blend_img[1]);
+    }
   }
 
   blendObj->mFrame->mChannelId = leftObj->mFrame->mChannelId;
   blendObj->mFrame->mFrameId = leftObj->mFrame->mFrameId;
   blendObj->mFrame->mChannelIdInternal = leftObj->mFrame->mChannelIdInternal;
   blendObj->mFrame->mHandle = leftObj->mFrame->mHandle;
-  
-  if (need_convert) {
-    bm_image_destroy(&blend_img[0]);
-    bm_image_destroy(&blend_img[1]);
-  }
 
   return common::ErrorCode::SUCCESS;
 }
@@ -303,9 +295,10 @@ common::ErrorCode Blend::doWork(int dataPipeId) {
         std::make_shared<common::ObjectMetadata>();
 
     blendObj->mFrame = std::make_shared<sophon_stream::common::Frame>();
-
+    // bm_image_write_to_bmp(*inputs[0]->mFrame->mSpDataDwa, "left.bmp");
+    // bm_image_write_to_bmp(*inputs[1]->mFrame->mSpDataDwa, "right.bmp");
     blend_work(inputs[0], inputs[1], blendObj);
-
+    // bm_image_write_to_bmp(*blendObj->mFrame->mSpData, "blend.bmp");
     int channel_id_internal = blendObj->mFrame->mChannelIdInternal;
     int outDataPipeId =
         getSinkElementFlag()
