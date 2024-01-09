@@ -31,6 +31,9 @@ namespace resnet {
 
 #define MAX_BATCH 16
 
+// resnet TaskType枚举
+enum class TaskType { SingleLabel, FeatureExtract, MultiLabel };
+
 struct ResNetContext {
   int deviceId;  // 设备ID
 
@@ -38,11 +41,14 @@ struct ResNetContext {
   std::shared_ptr<BMNNNetwork> bmNetwork;
   bm_handle_t handle;
 
-  std::vector<float> mean;  // 前处理均值， 长度为3，顺序为rgb
-  std::vector<float> stdd;  // 前处理方差， 长度为3，顺序为rgb
-  bool bgr2rgb;             // 是否将bgr图像转成rgb推理
-  bool bgr2gray;            // 是否将bgr图像转成gray推理
-  bool extract_feature=false;     // 是否直接提取特征
+  std::vector<float> mean;       // 前处理均值， 长度为3，顺序为rgb
+  std::vector<float> stdd;       // 前处理方差， 长度为3，顺序为rgb
+  bool bgr2rgb;                  // 是否将bgr图像转成rgb推理
+  bool bgr2gray;                 // 是否将bgr图像转成gray推理
+  // bool extract_feature = false;  // 是否直接提取特征
+
+  TaskType taskType = TaskType::SingleLabel;
+  std::vector<float> class_thresh;
 
   int m_frame_h, m_frame_w;
   int net_h, net_w, m_net_channel;

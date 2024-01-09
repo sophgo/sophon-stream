@@ -71,11 +71,13 @@ common::ErrorCode ResNetMultiTask::multiTask(
     return errorCode;
   }
 
-  if (context->extract_feature) {
+  if (context->taskType == TaskType::FeatureExtract) {
     // 3. post process
     errorCode = post_process_extract(context, objectMetadatas);
-  } else {
+  } else if (context->taskType == TaskType::SingleLabel) {
     errorCode = post_process_classfy(context, objectMetadatas);
+  } else if (context->taskType == TaskType::MultiLabel) {
+    errorCode = post_process_multilabel(context, objectMetadatas);
   }
   if (common::ErrorCode::SUCCESS != errorCode) {
     IVS_ERROR("ResNet post_process error");
@@ -253,7 +255,7 @@ common::ErrorCode ResNetMultiTask::predict(
         objectMetadatas[0]->mOutputBMtensors->tensors);
   }
 
-  for(auto obj : objectMetadatas) {
+  for (auto obj : objectMetadatas) {
     obj->mInputBMtensors = nullptr;
   }
 
@@ -326,7 +328,7 @@ common::ErrorCode ResNetMultiTask::post_process_extract(
     std::shared_ptr<common::RecognizedObjectMetadata> RecogObj =
         std::make_shared<common::RecognizedObjectMetadata>();
 
-    if (context->extract_feature) {
+    if (context->taskType == TaskType::FeatureExtract) {
       RecogObj->feature_vector.reset(new float[512]);
       std::memcpy(RecogObj->feature_vector.get(), output_data,
                   sizeof(float) * 512);
@@ -334,6 +336,42 @@ common::ErrorCode ResNetMultiTask::post_process_extract(
       IVS_DEBUG("recognizition succeed, frame_id: {0}", obj->mFrame->mFrameId);
       continue;
     }
+  }
+  return common::ErrorCode::SUCCESS;
+}
+
+common::ErrorCode ResNetMultiTask::post_process_multilabel(
+    std::shared_ptr<ResNetContext> context,
+    common::ObjectMetadatas& objectMetadatas) {
+  if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
+  for (auto obj : objectMetadatas) {
+    if (obj->mFrame->mEndOfStream) break;
+    std::shared_ptr<BMNNTensor> outputTensor = std::make_shared<BMNNTensor>(
+        obj->mOutputBMtensors->handle,
+        context->bmNetwork->m_netinfo->output_names[context->output_num - 1],
+        context->bmNetwork->m_netinfo->output_scales[context->output_num - 1],
+        obj->mOutputBMtensors->tensors[context->output_num - 1].get(),
+        context->bmNetwork->is_soc);
+
+    float* output_data = (float*)outputTensor->get_cpu_data();
+
+    std::shared_ptr<common::RecognizedObjectMetadata> RecogObj =
+        std::make_shared<common::RecognizedObjectMetadata>();
+
+    auto output_scale =
+        context->bmNetwork->m_netinfo->output_scales[context->output_num - 1];
+    // sigmoid
+    float exp_sum = 0;
+    for (int j = 0; j < context->class_num; j++) {
+      exp_sum += std::exp(*(output_data + j) * output_scale);
+    }
+    for (int j = 0; j < context->class_num; j++) {
+      float score = 0;
+      score = std::exp(*(output_data + j) * output_scale) / exp_sum;
+      RecogObj->mScores.push_back(score);
+      RecogObj->mTopKLabels.push_back((score > context->class_thresh[j]) ? 1 : 0);
+    }
+    obj->mRecognizedObjectMetadatas.push_back(RecogObj);
   }
   return common::ErrorCode::SUCCESS;
 }

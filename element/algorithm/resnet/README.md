@@ -31,7 +31,9 @@ sophon-stream resnet插件具有一些可配置的参数，可以根据需求进
       "top": 400,
       "width": 800,
       "height": 600
-    }
+    },
+    "task_type": "SingleLabel",
+    "class_thresh": [0.5, 0.3, 0.7]
   },
   "shared_object": "../../../build/lib/libresnet.so",
   "name": "resnet",
@@ -47,6 +49,8 @@ sophon-stream resnet插件具有一些可配置的参数，可以根据需求进
 |  mean  |   浮点数组   | [0.229,0.224,0.225] | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  std  |   浮点数组   | [0.485,0.456,0.406] | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
 | roi | map | 无 | 预设的ROI，配置了此参数时，只会对ROI框取的区域进行处理 |
+| task_type | 字符串 | "SingleLabel" | resnet的工作方式，`SingleLabel`表示输出分值最大的标签；`FeatureExtract`表示抽取特征向量，不进行分类；`MultiLabel`表示多标签输出，需要搭配`class_thresh`字段使用 |
+| class_thresh | list | 无 | 当`task_type`为`MultiLabel`时生效，配置了每个类别的过滤阈值。如果不设置，则默认所有类别阈值均为0.5 |
 |  shared_object |   字符串   |  "../../../build/lib/libresnet.so"  | libresnet 动态库路径 |
 |     id      |    整数       | 0  | element id |
 |  device_id  |    整数       |  0 | tpu 设备号 |

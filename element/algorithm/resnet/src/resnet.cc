@@ -14,6 +14,7 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 
+#include "common/common_defs.h"
 #include "common/logger.h"
 #include "element_factory.h"
 using namespace std::chrono_literals;
@@ -21,6 +22,12 @@ using namespace std::chrono_literals;
 namespace sophon_stream {
 namespace element {
 namespace resnet {
+
+// json的task_type --> resnet的TaskType映射
+std::unordered_map<std::string, TaskType> taskMap{
+    {"SingleLabel", TaskType::SingleLabel},
+    {"FeatureExtract", TaskType::FeatureExtract},
+    {"MultiLabel", TaskType::MultiLabel}};
 
 ResNet::ResNet() {}
 
@@ -48,12 +55,14 @@ common::ErrorCode ResNet::initContext(const std::string& json) {
       mContext->bgr2gray = false;
     }
 
-    auto extract_featureIt =
-        configure.find(CONFIG_INTERNAL_EXTRACT_FEATURE_FIELD);
-    if (extract_featureIt != configure.end()) {
-      mContext->extract_feature = extract_featureIt->get<bool>();
-    } else {
-      mContext->extract_feature = false;
+    // 如果没有这个字段，那么默认采用单分类后处理
+    auto task_it = configure.find(CONFIG_INTERNAL_TASK_TYPE_FIELD);
+    if (task_it != configure.end()) {
+      std::string taskName = task_it->get<std::string>();
+      // 保证json里的task_type字段必须是预设的值之一
+      STREAM_CHECK(taskMap.count(taskName) != 0,
+                   "Invalid Task Type in Resnet Config File!");
+      mContext->taskType = taskMap[taskName];
     }
 
     auto meanIt = configure.find(CONFIG_INTERNAL_THRESHOLD_MEAN_FIELD);
@@ -86,6 +95,19 @@ common::ErrorCode ResNet::initContext(const std::string& json) {
         mContext->bmNetwork->outputTensor(0)->get_shape()->num_dims;
     mContext->class_num =
         mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1];
+
+    if (mContext->taskType == TaskType::MultiLabel) {
+      // 多标签输出的任务下，可以为每个任务配置输出的阈值
+      auto class_thresh_it = configure.find(CONFIG_INTERNAL_CLASS_THRESH_FIELD);
+      // 如果未配置，则默认全0.5，否则按照配置值设置
+      if (class_thresh_it == configure.end()) {
+        mContext->class_thresh = std::vector<float>(mContext->output_num, 0.5);
+      } else {
+        mContext->class_thresh = class_thresh_it->get<std::vector<float>>();
+        STREAM_CHECK(mContext->class_thresh.size() == mContext->output_num,
+                     "Invalid Model or ClassThresh List!");
+      }
+    }
 
     // 4.converto
     float input_scale = inputTensor->get_scale();

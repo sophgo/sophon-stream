@@ -31,7 +31,9 @@ The sophon-stream resnet plugin has some configurable parameters that can be set
       "top": 400,
       "width": 800,
       "height": 600
-    }
+    },
+    "task_type": "SingleLabel",
+    "class_thresh": [0.5, 0.3, 0.7]
   },
   "shared_object": "../../../build/lib/libresnet.so",
   "name": "resnet",
@@ -47,6 +49,8 @@ The sophon-stream resnet plugin has some configurable parameters that can be set
 | mean | Float Array | [0.229,0.224,0.225] | Mean values for image preprocessing, with a length of 3. The calculation is y=(x-mean)/std. If bgr2rgb=true, the order of the array should be R, G, B; otherwise, it should be B, G, R |
 | std | Float Array | [0.485,0.456,0.406] | Standard deviations for image preprocessing, with a length of 3. The calculation is the same as above. If bgr2rgb=true, the order of the array should be R, G, B; otherwise, it should be B, G, R |
 | roi | Map | None | Preset ROI; when this parameter is configured, only the region defined by the ROI will be processed |
+| task_type | String | Work type of resnet. `SingleLabel` means output a label with max score; `FeatureExtract` means output the feature vector; and `MultiLabel` means output multi-labels, which needs `class_thresh` in use. |
+| class_thresh | list | None |  |
 | shared_object | String | "../../../build/lib/libresnet.so" | Path to the libresnet dynamic library |
 | id | Integer | 0 | Element ID |
 | device_id | Integer | 0 | TPU device number |

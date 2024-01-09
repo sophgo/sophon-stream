@@ -21,8 +21,6 @@ namespace sophon_stream {
 namespace framework {
 
 Graph::Graph() : mId(-1), mThreadStatus(ThreadStatus::STOP) {
-  // listenThreadPtr =
-  // std::make_shared<ListenThread>(*ListenThread::getInstance());
   listenThreadPtr = ListenThread::getInstance();
   listenThreadPtr->init(defaultPort);
 }

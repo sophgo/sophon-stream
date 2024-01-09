@@ -34,16 +34,6 @@ void ListenThread::init(int port) {
     abort();
   }
   port_ = port;
-  // server.Options(R"(\*)", [](const auto& req, auto& res) {
-  //   res.set_header("Access-Control-Allow-Methods", "*");
-  //   res.set_header("Access-Control-Allow-Headers", "*");
-  //   res.set_header("Access-Control-Allow-Origin", "*");
-  // });
-  // server.set_default_headers(
-  //     {{"Access-Control-Allow-Origin", "*"},
-  //      {"Access-Control-Allow-Methods", "POST, GET, PUT"},
-  //      {"Access-Control-Max-Age", "3600"},
-  //      {"Access-Control-Allow-Headers", "*"}});
   server.Post("/task/test", ListenThread::handle_task_interact);
   listen_thread_ = std::thread(&ListenThread::listen_loop);
   IVS_INFO("Complete to Init Listen Thread... Port is {0}", port);

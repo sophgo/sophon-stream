@@ -440,6 +440,7 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   if (this->is_camera) {
     av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
     av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
+    av_dict_set_int(&dict, "use_isp", 0, 0);           // int isusemw = 0
   }
 
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
