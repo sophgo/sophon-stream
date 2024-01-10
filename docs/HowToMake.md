@@ -38,7 +38,7 @@ cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
 make -j4
 ```
 
-如果您需要的SDK版本上文未提供，需要自己打包soc-sdk，可以参考以下流程进行打包。需要注意的是，对于SE9设备，下列命令中的sophon-img需要改为sophon-img-se9，sophon-mw目录应改为sophon_media。
+如果您需要的SDK版本上文未提供，需要自己打包soc-sdk，可以参考以下流程进行打包。需要注意的是，对于SE9设备，下列命令中的sophon-img需要改为sophon-img-edge-lpddr，sophon-mw目录应改为sophon_media。
 
  1. 解压SDK目录下，sophon-img包里的libsophon_soc_<x.y.z>_aarch64.tar.gz，将lib和include的所有内容分别拷贝到您的soc-sdk目录
  ```bash
