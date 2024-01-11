@@ -13,6 +13,8 @@ typedef struct demo_config_ {
   int num_graphs;
   int num_channels_per_graph;
   std::vector<nlohmann::json> channel_configs;
+  nlohmann::json report_config;
+  nlohmann::json listen_config;
   bool download_image;
   std::string engine_config_file;
   std::vector<std::string> class_names;
@@ -45,6 +47,11 @@ constexpr const char* JSON_CONFIG_CAR_ATTRIBUTES_FILED = "car_attributes";
 constexpr const char* JSON_CONFIG_PERSON_ATTRIBUTES_FILED = "person_attributes";
 constexpr const char* JSON_CONFIG_CHANNEL_DECODE_IDX_FILED = "decode_idx";
 constexpr const char* JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED = "heatmap_loss";
+constexpr const char* JSON_CONFIG_HTTP_REPORT_CONFIG_FILED = "http_report";
+constexpr const char* JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED = "http_listen";
+constexpr const char* JSON_CONFIG_HTTP_CONFIG_IP_FILED = "ip";
+constexpr const char* JSON_CONFIG_HTTP_CONFIG_PORT_FILED = "port";
+constexpr const char* JSON_CONFIG_HTTP_CONFIG_PATH_FILED = "path";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -181,7 +188,32 @@ demo_config parse_demo_json(std::string& json_path) {
 
     config.channel_configs.push_back(channel_json);
   }
-
+  if (demo_json.contains(JSON_CONFIG_HTTP_REPORT_CONFIG_FILED)) {
+    auto http_report_it =
+        demo_json.find(JSON_CONFIG_HTTP_REPORT_CONFIG_FILED);
+    config.report_config["port"] =
+      http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)
+        ->get<int>();
+    config.report_config["ip"] =
+      http_report_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
+        ->get<std::string>();
+    config.report_config["path"] =
+      http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
+        ->get<std::string>();
+  }
+  if (demo_json.contains(JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED)) {
+    auto http_listen_it =
+        demo_json.find(JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED);
+    config.listen_config["port"] =
+      http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)
+        ->get<int>();
+    config.listen_config["ip"] =
+      http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
+        ->get<std::string>();
+    config.listen_config["path"] =
+      http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
+        ->get<std::string>();
+  }
   return config;
 }
 
@@ -274,7 +306,10 @@ int main(int argc, char *argv[]) {
     if (demo_json.download_image)
         draw_func(objectMetadata);
   };
-
+  sophon_stream::framework::ListenThread* listenthread =
+      sophon_stream::framework::ListenThread::getInstance();
+  listenthread->init(demo_json.report_config,demo_json.listen_config);
+  engine.setListener(listenthread);
   std::map<int, std::vector<std::pair<int, int>>> graph_src_id_port_map;
   init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
 
