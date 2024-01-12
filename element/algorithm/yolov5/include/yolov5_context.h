@@ -93,6 +93,7 @@ class Yolov5Context : public ::sophon_stream::framework::Context {
   bmcv_rect_t roi;
   bool roi_predefined = false;
   int thread_number;
+  unsigned int m_max_det = UINT_MAX, m_min_det = 0;
 };
 }  // namespace yolov5
 }  // namespace element

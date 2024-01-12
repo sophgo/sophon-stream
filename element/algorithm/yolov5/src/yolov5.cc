@@ -99,6 +99,14 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
+    auto max_detIt = configure.find(CONFIG_INTERNAL_MAX_DET_FILED);
+    auto min_detIt = configure.find(CONFIG_INTERNAL_MIN_DET_FILED);
+    if (configure.end() != max_detIt) {
+      mContext->m_max_det = max_detIt->get<unsigned int>();
+    }
+    if (configure.end() != min_detIt) {
+      mContext->m_min_det = min_detIt->get<unsigned int>();
+    }
     mContext->use_tpu_kernel = tpu_kernelIt->get<bool>();
 
     // 1. get network
@@ -361,8 +369,8 @@ void Yolov5::setPostprocess(
 }
 
 REGISTER_WORKER("yolov5", Yolov5)
-REGISTER_GROUP_WORKER("yolov5_group",
-                         sophon_stream::framework::Group<Yolov5>, Yolov5)
+REGISTER_GROUP_WORKER("yolov5_group", sophon_stream::framework::Group<Yolov5>,
+                      Yolov5)
 
 }  // namespace yolov5
 }  // namespace element

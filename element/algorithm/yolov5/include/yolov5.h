@@ -81,6 +81,8 @@ class Yolov5 : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_TOP_FILED = "top";
   static constexpr const char* CONFIG_INTERNAL_WIDTH_FILED = "width";
   static constexpr const char* CONFIG_INTERNAL_HEIGHT_FILED = "height";
+  static constexpr const char* CONFIG_INTERNAL_MAX_DET_FILED = "maxdet";
+  static constexpr const char* CONFIG_INTERNAL_MIN_DET_FILED = "mindet";
 
  private:
   std::shared_ptr<Yolov5Context> mContext;          // context对象

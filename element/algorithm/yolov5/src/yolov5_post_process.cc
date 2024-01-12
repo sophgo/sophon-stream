@@ -276,7 +276,11 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
         detData->mBox.mX += context->roi.start_x;
         detData->mBox.mY += context->roi.start_y;
       }
-      objectMetadatas[i]->mDetectedObjectMetadatas.push_back(detData);
+      if (detData->mBox.mWidth > context->m_min_det &&
+          detData->mBox.mHeight > context->m_min_det &&
+          detData->mBox.mWidth < context->m_max_det &&
+          detData->mBox.mHeight < context->m_max_det)
+        objectMetadatas[i]->mDetectedObjectMetadatas.push_back(detData);
     }
   }
 }
@@ -489,7 +493,11 @@ void Yolov5PostProcess::postProcessCPU(
       if (context->class_thresh_valid) {
         detData->mLabelName = context->class_names[detData->mClassify];
       }
-      obj->mDetectedObjectMetadatas.push_back(detData);
+      if (detData->mBox.mWidth > context->m_min_det &&
+          detData->mBox.mHeight > context->m_min_det &&
+          detData->mBox.mWidth < context->m_max_det &&
+          detData->mBox.mHeight < context->m_max_det)
+        obj->mDetectedObjectMetadatas.push_back(detData);
     }
     ++idx;
   }
