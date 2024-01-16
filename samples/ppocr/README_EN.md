@@ -2,7 +2,7 @@
 English | [简体中文](README.md)
 ## Catalogs
 - [PP-OCR Demo](#PP-OCR-demo)
-  - [目录](#Catalogs)
+  - [Directory](#Catalogs)
   - [1. Introduction](#1-Introduction)
   - [2. Feature](#2-Feature)
   - [3. Prepare Models and Data](#3-prepare-models-and-data)
@@ -271,14 +271,15 @@ The test dataset is train_full_images_0，The compilation was done in Release mo
 
 |Device|Model|Number of Channels|Algorithm Thread Count|CPU Utilization(%)|System Memory(M)|TPU Utilization(%)|Device Memory(M)|Average FPS|
 |----|----|----|-----|-----|-----|-----|-----|-----|
-|SE5-16|fp32|1|1-1-1|227.8|2682.7|90|1066|23.14|
-|SE7|fp32|1|1-1-1|313.6|6916.6|88|1085|38.67|
-|SE7|fp16|2|2-2-2|519.6|6916.6 |52|1046|66.96|
+|SE5-16|fp32|1|1-1-1|227.8|410.1|90|1066|23.14|
+|SE7|fp32|1|1-1-1|313.6|438.0|88|1085|38.67|
+|SE7|fp16|2|2-2-2|519.6|445.1 |52|1046|66.96|
 
 
 
-> **测试说明**：
+> **Test Description**：
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.
 2. Both BM1684 and BM1684X SoC devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz.
 3. For the settings of input channels and algorithm thread count in the table, please refer to JSON configuration explanation. CPU utilization and system memory can be checked using the top command. TPU utilization and device memory can be checked using the bm-smi command. FPS can be obtained from the logs printed during program execution.
 4. Performance testing is not currently supported on the BM1688 device.
+5. In this test data, SDK version on SE5 is 0.4.8; SDK version on SE7 is 0.4.9. Different version may bring different performance.
