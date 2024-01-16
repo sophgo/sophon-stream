@@ -28,9 +28,6 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
             255,
             255
         ],
-        "stage": [
-            "pre"
-        ],
         "use_tpu_kernel": true,
         "roi": {
             "left": 600,
@@ -42,7 +39,7 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
     "shared_object":"../../../build/lib/libyolov5.so",
     "id":0,
     "device_id":0,
-    "name":"yolov5",
+    "name":"yolov5_group",
     "side":"sophgo",
     "thread_number":1
 }

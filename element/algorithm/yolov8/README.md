@@ -1,5 +1,7 @@
 # sophon-stream yolov8 element
 
+[English](README_EN.md) | 简体中文
+
 sophon-stream yolov8 element是sophon-stream框架中的一个插件，是一个简单、快速、强大的检测模型。本项目已提供此插件例程，详情请参见 [yolov8 Demo](../../../samples/yolov8/README.md)
 
 ## 1. 特性
@@ -25,7 +27,13 @@ sophon-stream yolov8插件具有一些可配置的参数，可以根据需求进
             255,
             255,
             255
-        ]
+        ],
+        "roi": {
+            "left": 600,
+            "top": 400,
+            "width": 800,
+            "height": 600
+        }
     },
     "shared_object": "../../build/lib/libyolov8.so",
     "name": "yolov8_group",

@@ -1,7 +1,9 @@
-# yolov8 Demo
+# YOLOv8 Demo
+
+[English](README_EN.md) | 简体中文
 
 ## 目录
-- [yolov8 Demo](#yolov8-demo)
+- [YOLOv8 Demo](#yolov8-demo)
   - [目录](#目录)
   - [1. 简介](#1-简介)
   - [2. 特性](#2-特性)
@@ -27,7 +29,7 @@
 
 ## 2. 特性
 
-* 支持BM1684X、BM1684(x86 PCIe、SoC)
+* 支持BM1684X、BM1684(x86 PCIe、SoC)、BM1688(SoC)
 * 支持多路视频流
 * 支持多线程
 
@@ -121,7 +123,7 @@ yolov8 demo中各部分参数位于 [config](./config/) 目录，结构如下所
 ```bash
 ./config/
 ├── decode.json                 # 解码配置
-├── engine_group.json           # sophon-stream 简化的graph配置
+├── engine_group.json           # sophon-stream graph配置
 ├── yolov8_classthresh_roi_example.json  # yolov8按照类别设置阈值的参考配置文件，需要注意，按类别设置阈值仅支持非tpu_kernel的后处理模式
 ├── yolov8_demo.json            # demo输入配置文件
 ├── yolov8_group.json           # 简化的yolov8配置文件，将yolov8的前处理、推理、后处理合到一个配置文件中
@@ -230,8 +232,6 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
 
 [yolov8_group.json](./config/yolov8_group.json)等配置文件是对具体某个element的配置细节，设置了模型参数、动态库路径、阈值等信息。该配置文件不需要指定`id`字段和`device_id`字段，例程会将`engine_group.json`中指定的`element_id`和`device_id`传入。其中，`thread_number`是`element`内部的工作线程数量，一个线程会对应一个数据队列，多路输入情况下，需要合理设置数据队列数目，来保证线程工作压力均匀且合理。
 
-
-
 ```json
 {
     "configure": {
@@ -279,7 +279,7 @@ frame count is 1424 | fps is 103.83 fps.
 ## 7. 性能测试
 
 
-目前，yolov8例程支持在BM1684X和BM1684的PCIe、SoC模式下进行推理。
+目前，yolov8例程支持在BM1684X和BM1684的PCIe、SoC模式，BM1688的SoC模式下进行推理。
 
 在不同的设备上可能需要修改json配置，例如模型路径、输入路数等。json的配置方法参考6.1节，程序运行方法参考上文6.2节。
 
@@ -291,6 +291,7 @@ frame count is 1424 | fps is 103.83 fps.
 |----|----|-----|-----|-----|-----|-----|---|
 |SE7|4|4-4-4|470|96|40|2388|95.24|
 |SE5-16|4|4-4-4|453|96|90|2700|89.02|
+|SE9-16|4|4-4-4|489|111|70|2700|72|
 
 > **测试说明**：
 1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
