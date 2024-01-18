@@ -12,6 +12,7 @@ Main Directory Structure and Module Descriptions:
 | ------------------------|-------------------------------------------------------------------|---------------------| 
 | [framework](./framework)| [framework](./framework)                                          | framework                       |
 | [element](./element)    | [yolov5](./element/algorithm/yolov5)                              | yolov5 plugin              |
+|                         | [yolov7](./element/algorithm/yolov7)                              | yolov7 plugin          |
 |                         | [yolox](./element/algorithm/yolox)                                | yolox plugin                |
 |                         | [bytetrack](./element/algorithm/bytetrack)                        | bytetrack plugin        |
 |                         | [resnet](./element/algorithm/resnet)                              | resnet plugin              |
@@ -26,6 +27,7 @@ Main Directory Structure and Module Descriptions:
 |                         | [faiss](./element/tools/faiss)                                    | faiss plugin          |
 |                         | [blank](./element/tools/blank)                                    | blank plugin                 |
 | [samples](./samples)    | [yolov5](./samples/yolov5)                                        | yolov5 demo                             |
+|                         | [yolov7](./samples/yolov7)                                        | yolov7 demo                            |
 |                         | [yolox](./samples/yolox)                                          | yolox demo                              |
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo                          |
 |                         | [resnet](./samples/resnet)                                        | resnet demo                             |

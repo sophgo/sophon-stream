@@ -247,6 +247,7 @@ int main(int argc, char *argv[]) {
   else if (demo_json.draw_func_name == "draw_yolov5_results") draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir, demo_json.class_names);
   else if (demo_json.draw_func_name == "draw_yolov5_bytetrack_distributor_resnet_converger_results") draw_func = std::bind(draw_yolov5_bytetrack_distributor_resnet_converger_results, std::placeholders::_1, out_dir, demo_json.car_attr, demo_json.person_attr);
   else if (demo_json.draw_func_name == "draw_yolox_results") draw_func = std::bind(draw_yolox_results, std::placeholders::_1, out_dir, demo_json.class_names);
+  else if (demo_json.draw_func_name == "draw_yolov7_results") draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir, demo_json.class_names);
   else if (demo_json.draw_func_name == "save_only") draw_func = std::bind(save_only, std::placeholders::_1, out_dir);
   else if (demo_json.draw_func_name == "draw_yolov5_fastpose_posec3d_results") draw_func = std::bind(draw_yolov5_fastpose_posec3d_results, std::placeholders::_1, out_dir, demo_json.heatmap_loss);
   else if (demo_json.draw_func_name == "default") draw_func = std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>(draw_default);
