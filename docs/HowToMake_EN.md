@@ -21,13 +21,21 @@ make -j4
 ## SoC Platform
 Usually, when cross-compiling programs on an x86 host, you need to set up a cross-compilation environment using the SOPHON SDK on the x86 host. You will package the required header files and library files into the `sophon_sdk_soc` directory. You can either download the SOPHON SDK and package it yourself or download our pre-packaged files (choose one based on your SOC environment).
 
-The following three files correspond to the v23.03.01, v23.05.01, and v23.07.01 versions of the official SDK.
+The following three files correspond to the v23.03.01, v23.05.01, and v23.07.01 versions of the official SDK, for BM1684/BM1684X.
 
 ```bash
 pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0301.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0501.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0701.tar.gz
+```
+
+For BM1688, these files are available:
+```bash
+pip3 install dfss
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.2.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.3.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.4.tar.gz
 ```
 
 When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC`:
