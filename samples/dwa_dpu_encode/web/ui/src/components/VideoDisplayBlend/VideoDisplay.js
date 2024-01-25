@@ -124,7 +124,7 @@ const VideoDisplayBlend = () => {
       </Select>
     </div>
 
-      <div className='CanvasContanier' id='canvasContainer'>
+      <div className='CanvasContainer' id='canvasContainer'>
         <canvas ref={canvasRef} ></canvas>
       </ div>
     </div>
