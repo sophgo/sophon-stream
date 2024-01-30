@@ -6,8 +6,9 @@
 // third-party components.
 //
 //===----------------------------------------------------------------------===//
-#include "draw_funcs.h"
 #include <functional>
+
+#include "draw_funcs.h"
 
 typedef struct demo_config_ {
   int num_graphs;
@@ -19,7 +20,7 @@ typedef struct demo_config_ {
   std::string engine_config_file;
   std::vector<std::string> class_names;
   std::string draw_func_name;
-  std::vector<std::string> car_attr; 
+  std::vector<std::string> car_attr;
   std::vector<std::string> person_attr;
   std::string heatmap_loss;
 } demo_config;
@@ -45,7 +46,7 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED =
 constexpr const char* JSON_CONFIG_DRAW_FUNC_NAME_FILED = "draw_func_name";
 constexpr const char* JSON_CONFIG_CAR_ATTRIBUTES_FILED = "car_attributes";
 constexpr const char* JSON_CONFIG_PERSON_ATTRIBUTES_FILED = "person_attributes";
-constexpr const char* JSON_CONFIG_CHANNEL_DECODE_IDX_FILED = "decode_idx";
+constexpr const char* JSON_CONFIG_CHANNEL_DECODE_IDX_FILED = "decode_id";
 constexpr const char* JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED = "heatmap_loss";
 constexpr const char* JSON_CONFIG_HTTP_REPORT_CONFIG_FILED = "http_report";
 constexpr const char* JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED = "http_listen";
@@ -67,7 +68,8 @@ demo_config parse_demo_json(std::string& json_path) {
 
   config.download_image = false;
   if (demo_json.contains(JSON_CONFIG_DOWNLOAD_IMAGE_FILED))
-      config.download_image = demo_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
+    config.download_image =
+        demo_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
   config.engine_config_file =
       demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)->get<std::string>();
   std::string class_names_file;
@@ -75,7 +77,7 @@ demo_config parse_demo_json(std::string& json_path) {
     class_names_file =
         demo_json.find(JSON_CONFIG_CLASS_NAMES_FILED)->get<std::string>();
   if (demo_json.contains(JSON_CONFIG_DRAW_FUNC_NAME_FILED))
-      config.draw_func_name =
+    config.draw_func_name =
         demo_json.find(JSON_CONFIG_DRAW_FUNC_NAME_FILED)->get<std::string>();
   else
     config.draw_func_name = "default";
@@ -88,8 +90,8 @@ demo_config parse_demo_json(std::string& json_path) {
     person_attr_file =
         demo_json.find(JSON_CONFIG_PERSON_ATTRIBUTES_FILED)->get<std::string>();
   if (demo_json.contains(JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED))
-    config.heatmap_loss =
-      demo_json.find(JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED)->get<std::string>();
+    config.heatmap_loss = demo_json.find(JSON_CONFIG_HEATMAP_LOSS_CONFIG_FILED)
+                              ->get<std::string>();
 
   if (config.download_image) {
     const char* dir_path = "./results";
@@ -180,46 +182,45 @@ demo_config parse_demo_json(std::string& json_path) {
       channel_json["skip_element"] = skip_element_it->get<std::vector<int>>();
     }
 
-    channel_json["decode_idx"] = 0;
+    channel_json["decode_id"] = -1;
     auto decode_idx_it = channel_it.find(JSON_CONFIG_CHANNEL_DECODE_IDX_FILED);
     if (decode_idx_it != channel_it.end()) {
-      channel_json["decode_idx"] = decode_idx_it->get<int>();
+      channel_json["decode_id"] = decode_idx_it->get<int>();
     }
 
     config.channel_configs.push_back(channel_json);
   }
   if (demo_json.contains(JSON_CONFIG_HTTP_REPORT_CONFIG_FILED)) {
-    auto http_report_it =
-        demo_json.find(JSON_CONFIG_HTTP_REPORT_CONFIG_FILED);
+    auto http_report_it = demo_json.find(JSON_CONFIG_HTTP_REPORT_CONFIG_FILED);
     config.report_config["port"] =
-      http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)
-        ->get<int>();
+        http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)->get<int>();
     config.report_config["ip"] =
-      http_report_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
-        ->get<std::string>();
+        http_report_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
+            ->get<std::string>();
     config.report_config["path"] =
-      http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
-        ->get<std::string>();
+        http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
+            ->get<std::string>();
   }
   if (demo_json.contains(JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED)) {
-    auto http_listen_it =
-        demo_json.find(JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED);
+    auto http_listen_it = demo_json.find(JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED);
     config.listen_config["port"] =
-      http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)
-        ->get<int>();
+        http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)->get<int>();
     config.listen_config["ip"] =
-      http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
-        ->get<std::string>();
+        http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
+            ->get<std::string>();
     config.listen_config["path"] =
-      http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
-        ->get<std::string>();
+        http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
+            ->get<std::string>();
   }
   return config;
 }
 
-int main(int argc, char *argv[]) {
-  const char *keys="{demo_config_path | ../license_plate_recognition/config/license_plate_recognition_demo.json | demo config path}"
-                    "{help | 0 | print help information.}";
+int main(int argc, char* argv[]) {
+  const char* keys =
+      "{demo_config_path | "
+      "../license_plate_recognition/config/license_plate_recognition_demo.json "
+      "| demo config path}"
+      "{help | 0 | print help information.}";
   cv::CommandLineParser parser(argc, argv, keys);
   if (parser.get<bool>("help")) {
     parser.printMessage();
@@ -251,17 +252,17 @@ int main(int argc, char *argv[]) {
 
   demo_json.num_graphs = engine_json.size();
   demo_json.num_channels_per_graph = demo_json.channel_configs.size();
-  int num_channels =
-      demo_json.num_channels_per_graph * demo_json.num_graphs;
+  int num_channels = demo_json.num_channels_per_graph * demo_json.num_graphs;
 
-// #if BMCV_VERSION_MAJOR > 1
+  // #if BMCV_VERSION_MAJOR > 1
 
-//   STREAM_CHECK(
-//       num_channels <= 1,
-//       "In order to ensure that the program can be run properly on the 1688, it "
-//       "is required that the number of input channels is less than 2.");
+  //   STREAM_CHECK(
+  //       num_channels <= 1,
+  //       "In order to ensure that the program can be run properly on the 1688,
+  //       it " "is required that the number of input channels is less
+  //       than 2.");
 
-// #endif
+  // #endif
 
   std::vector<::sophon_stream::common::FpsProfiler> fpsProfilers(num_channels);
   for (int i = 0; i < num_channels; ++i) {
@@ -269,22 +270,54 @@ int main(int argc, char *argv[]) {
     fpsProfilers[i].config(fpsName, 100);
   }
 
-  std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)> draw_func;
+  std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>
+      draw_func;
   std::string out_dir = "./results";
-  if (demo_json.draw_func_name == "draw_bytetrack_results") draw_func = std::bind(draw_bytetrack_results, std::placeholders::_1, out_dir);
-  else if (demo_json.draw_func_name == "draw_license_plate_recognition_results") draw_func = std::bind(draw_license_plate_recognition_results, std::placeholders::_1, out_dir);
-  else if (demo_json.draw_func_name == "draw_openpose_results") draw_func = std::bind(draw_openpose_results, std::placeholders::_1, out_dir);
-  else if (demo_json.draw_func_name == "draw_retinaface_results") draw_func = std::bind(draw_retinaface_results, std::placeholders::_1, out_dir);
-  else if (demo_json.draw_func_name == "draw_retinaface_distributor_resnet_faiss_converger_results") draw_func = std::bind(draw_retinaface_distributor_resnet_faiss_converger_results, std::placeholders::_1, out_dir);
-  else if (demo_json.draw_func_name == "draw_yolov5_results") draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir, demo_json.class_names);
-  else if (demo_json.draw_func_name == "draw_yolov5_bytetrack_distributor_resnet_converger_results") draw_func = std::bind(draw_yolov5_bytetrack_distributor_resnet_converger_results, std::placeholders::_1, out_dir, demo_json.car_attr, demo_json.person_attr);
-  else if (demo_json.draw_func_name == "draw_yolox_results") draw_func = std::bind(draw_yolox_results, std::placeholders::_1, out_dir, demo_json.class_names);
-  else if (demo_json.draw_func_name == "draw_yolov7_results") draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir, demo_json.class_names);
-  else if (demo_json.draw_func_name == "save_only") draw_func = std::bind(save_only, std::placeholders::_1, out_dir);
-  else if (demo_json.draw_func_name == "draw_yolov5_fastpose_posec3d_results") draw_func = std::bind(draw_yolov5_fastpose_posec3d_results, std::placeholders::_1, out_dir, demo_json.heatmap_loss);
-  else if (demo_json.draw_func_name == "default") draw_func = std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>(draw_default);
-  else if (demo_json.draw_func_name == "draw_ppocr_results") draw_func = std::bind(draw_ppocr_results, std::placeholders::_1, out_dir);
-  else IVS_ERROR("No such function! Please check your 'draw_func_name'.");
+  if (demo_json.draw_func_name == "draw_bytetrack_results")
+    draw_func =
+        std::bind(draw_bytetrack_results, std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name == "draw_license_plate_recognition_results")
+    draw_func = std::bind(draw_license_plate_recognition_results,
+                          std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name == "draw_openpose_results")
+    draw_func =
+        std::bind(draw_openpose_results, std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name == "draw_retinaface_results")
+    draw_func =
+        std::bind(draw_retinaface_results, std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name ==
+           "draw_retinaface_distributor_resnet_faiss_converger_results")
+    draw_func =
+        std::bind(draw_retinaface_distributor_resnet_faiss_converger_results,
+                  std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name == "draw_yolov5_results")
+    draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir,
+                          demo_json.class_names);
+  else if (demo_json.draw_func_name ==
+           "draw_yolov5_bytetrack_distributor_resnet_converger_results")
+    draw_func =
+        std::bind(draw_yolov5_bytetrack_distributor_resnet_converger_results,
+                  std::placeholders::_1, out_dir, demo_json.car_attr,
+                  demo_json.person_attr);
+  else if (demo_json.draw_func_name == "draw_yolox_results")
+    draw_func = std::bind(draw_yolox_results, std::placeholders::_1, out_dir,
+                          demo_json.class_names);
+  else if (demo_json.draw_func_name == "draw_yolov7_results")
+    draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir,
+                          demo_json.class_names);
+  else if (demo_json.draw_func_name == "save_only")
+    draw_func = std::bind(save_only, std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name == "draw_yolov5_fastpose_posec3d_results")
+    draw_func =
+        std::bind(draw_yolov5_fastpose_posec3d_results, std::placeholders::_1,
+                  out_dir, demo_json.heatmap_loss);
+  else if (demo_json.draw_func_name == "default")
+    draw_func = std::function<void(
+        std::shared_ptr<sophon_stream::common::ObjectMetadata>)>(draw_default);
+  else if (demo_json.draw_func_name == "draw_ppocr_results")
+    draw_func = std::bind(draw_ppocr_results, std::placeholders::_1, out_dir);
+  else
+    IVS_ERROR("No such function! Please check your 'draw_func_name'.");
 
   auto sinkHandler = [&, draw_func](std::shared_ptr<void> data) {
     // write stop data handler here
@@ -303,12 +336,11 @@ int main(int argc, char *argv[]) {
       }
       return;
     }
-    if (demo_json.download_image)
-        draw_func(objectMetadata);
+    if (demo_json.download_image) draw_func(objectMetadata);
   };
   sophon_stream::framework::ListenThread* listenthread =
       sophon_stream::framework::ListenThread::getInstance();
-  listenthread->init(demo_json.report_config,demo_json.listen_config);
+  listenthread->init(demo_json.report_config, demo_json.listen_config);
   engine.setListener(listenthread);
   std::map<int, std::vector<std::pair<int, int>>> graph_src_id_port_map;
   init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
@@ -319,13 +351,22 @@ int main(int argc, char *argv[]) {
           std::make_shared<sophon_stream::element::decode::ChannelTask>();
       channelTask->request.operation = sophon_stream::element::decode::
           ChannelOperateRequest::ChannelOperate::START;
-        channelTask->request.channelId = channel_config["channel_id"];
+      channelTask->request.channelId = channel_config["channel_id"];
       channelTask->request.json = channel_config.dump();
-      int decode_idx = channel_config["decode_idx"];
-      std::pair<int, int> src_id_port = graph_src_id_port_map[graph_id][decode_idx];
-      sophon_stream::common::ErrorCode errorCode =
-          engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
-                                std::static_pointer_cast<void>(channelTask));
+      int decode_id = channel_config["decode_id"];
+      // std::pair<int, int> src_id_port =
+      // graph_src_id_port_map[graph_id][decode_id];
+
+      auto src_id_port_vec = graph_src_id_port_map[graph_id];
+      for (auto& src_id_port : src_id_port_vec) {
+        // decode_id == -1为默认情况，即只有一个解码器
+        // decode_id != -1，即有多个解码器，要求每个都写清参数
+        if ((decode_id == -1 && src_id_port_vec.size() == 1) || src_id_port.first == decode_id) {
+          sophon_stream::common::ErrorCode errorCode = engine.pushSourceData(
+              graph_id, src_id_port.first, src_id_port.second,
+              std::static_pointer_cast<void>(channelTask));
+        }
+      }
     }
   }
 

@@ -97,6 +97,7 @@ Additionally, attention should be paid to the setting of the input data channels
 |base64_port | int  | 12348 | Base64 corresponds to the HTTP port |
 |skip_element| list | \ | Set whether to skip certain elements for this data stream. Currently, this only applies to OSD and Encode. When not specified, it's assumed that no elements are to be skipped.|
 |sample_strategy|string|"DROP"|When frames are being filtered, set whether the filtered frames are to be kept or discarded. "DROP" indicates discarding the frames, while "KEEP" indicates retaining them.|
+|decode_id|int|-1|In the case of a single decode element, it is not necessary to fill in the form; in the case of multiple decode elements, it identifies that a certain way is decoded by the decode element with the corresponding id.|
 
 
 Where `channel_id` stands for the channel number of the input video, corresponding to the `channel_id` output by the [encoder](../encode/README.md). For instance, if the input `channel_id` is 20 and the encoder is used to save the results as a local video, the file name will be `20.avi`.

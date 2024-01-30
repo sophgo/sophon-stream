@@ -99,6 +99,7 @@ sophon-stream demo具有一些可配置的参数，可以根据需求进行设�
 |base64_port | 整数  | 12348 | base64对应http端口 |
 |skip_element| list | 无 | 设置该路数据是否跳过某些element，目前只对osd和encode生效。不设置时，认为不跳过任何element|
 |sample_strategy|字符串|"DROP"|在有抽帧的情况下，设置被抽掉的帧是保留还是直接丢弃。"DROP"表示丢弃，"KEEP"表示保留|
+|decode_id|整数|-1|单个decode element的情况不需要填写；多个decode element情况下，标识了某一路由对应id的decode element进行解码|
 
 
 其中，channel_id为输入视频的通道编号，与[编码器](../element/multimedia/encode/README.md)输出channel_id相对应。例如，输入channel_id为20，使用编码器保存结果为本地视频时，文件名为20.avi。
