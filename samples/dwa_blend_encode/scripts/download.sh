@@ -35,6 +35,11 @@ then
     rm -f gridinfo.zip
     mv ./gridinfo ../data/
 
+    python3 -m dfss --url=open@sophgo.com:/sophon-stream/dwa_blend_encode/param.zip
+    unzip param.zip
+    rm -f param.zip
+    mv ./param ../data/
+
 else
     echo "test image exist!"
 fi

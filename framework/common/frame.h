@@ -76,6 +76,7 @@ struct Frame {
   std::shared_ptr<bm_image> mSpData;
   std::shared_ptr<bm_image> mSpDataOsd;
   std::shared_ptr<bm_image> mSpDataDwa;
+  std::shared_ptr<bm_image> mSpDataDpu;
 };
 
 }  // namespace common

@@ -1,11 +1,11 @@
 {
   "configure": {
-    "ive_mapy": "../dwa_dpu_encode/data/maps/mapY.txt",
-    "ive_mapu": "../dwa_dpu_encode/data/maps/mapU.txt",
-    "ive_mapv": "../dwa_dpu_encode/data/maps/mapV.txt"
+    "dpu_type": "DPU_SGBM",
+    "dpu_mode": "DPU_SGBM_MUX0",
+    "is_ive":false
   },
   "shared_object": "../../build/lib/libdpu.so",
   "name": "dpu",
   "side": "sophgo",
-  "thread_number": 1
+  "thread_number": 2
 }

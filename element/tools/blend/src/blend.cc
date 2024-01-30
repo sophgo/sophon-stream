@@ -102,7 +102,7 @@ common::ErrorCode Blend::initInternal(const std::string& json) {
   if (!configure.is_object()) {
     errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
   }
-
+  mFpsProfiler.config("fps_blend:", 100);
   bm_status_t ret = bm_dev_request(&handle, dev_id);
 
   src_h = 2240;
@@ -129,10 +129,10 @@ common::ErrorCode Blend::initInternal(const std::string& json) {
   blend_config.bd_attr.bd_rx[1] =
       configure.find(CONFIG_INTERNAL_BD_RX1_FILED)->get<int>();
 
-  blend_config.wgt_mode =
-      (bm_stitch_wgt_mode)configure.find(CONFIG_INTERNAL_BD_RX1_FILED)
-          ->get<int>();
-
+  // blend_config.wgt_mode =
+  //     (bm_stitch_wgt_mode)configure.find(CONFIG_INTERNAL_BD_RX1_FILED)
+  //         ->get<int>();
+  blend_config.wgt_mode = BM_STITCH_WGT_YUV_SHARE;
   int wgtwidth = ALIGN(blend_config.ovlap_attr.ovlp_rx[0] -
                            blend_config.ovlap_attr.ovlp_lx[0] + 1,
                        16);
@@ -143,6 +143,7 @@ common::ErrorCode Blend::initInternal(const std::string& json) {
                     wgt_len);
   }
 
+  width_minus = configure.find(CONFIG_INTERNAL_WIDTH_MINUS_DIS)->get<int>();
   return common::ErrorCode::SUCCESS;
 }
 
@@ -153,56 +154,90 @@ common::ErrorCode Blend::blend_work(
   std::lock_guard<std::mutex> lk(mtx);
   IVS_INFO("Now DisplayType is {0}", dis_type);
 
-  // select display type
-  std::shared_ptr<bm_image> blend_image_left = nullptr;
-  std::shared_ptr<bm_image> blend_image_right = nullptr;
-  if (dis_type == DWA_BLEND_DIS) {
-    blend_image_left = leftObj->mFrame->mSpDataDwa;
-    blend_image_right = rightObj->mFrame->mSpDataDwa;
-  } else {
-    blend_image_left = leftObj->mFrame->mSpData;
-    blend_image_right = rightObj->mFrame->mSpData;
-  }
-
   // dispaly image
   if (dis_type == ONLY_RAW_DIS) {
+    auto start = std::chrono::high_resolution_clock::now();
+
     std::shared_ptr<bm_image> two_raw_image = nullptr;
     two_raw_image.reset(new bm_image, [](bm_image* p) {
       bm_image_destroy(*p);
       delete p;
       p = nullptr;
     });
-    bm_image_create(handle, blend_image_left->height,
-                    blend_image_left->width * 2 + 100,
-                    blend_image_left->image_format, DATA_TYPE_EXT_1N_BYTE,
-                    two_raw_image.get());
+    bm_image_create(handle, leftObj->mFrame->mSpData->height,
+                    leftObj->mFrame->mSpData->width * 2 + 0,
+                    leftObj->mFrame->mSpData->image_format,
+                    DATA_TYPE_EXT_1N_BYTE, two_raw_image.get());
     bm_image_alloc_dev_mem(*two_raw_image, 1);
 
     bm_device_mem_t blend_mem;
     bm_image_get_device_mem(*two_raw_image, &blend_mem);
     bm_memset_device(handle, 0, blend_mem);
 
-    bm_image src_img[2] = {*blend_image_left, *blend_image_right};
+    bm_image src_img[2] = {*leftObj->mFrame->mSpData,
+                           *rightObj->mFrame->mSpData};
 
     int input_num = 2;
     bmcv_rect_t dst_crop[input_num];
 
     dst_crop[0] = {.start_x = 0,
                    .start_y = 0,
-                   .crop_w = (unsigned int)blend_image_left->width,
-                   .crop_h = (unsigned int)blend_image_left->height};
+                   .crop_w = (unsigned int)leftObj->mFrame->mSpData->width,
+                   .crop_h = (unsigned int)leftObj->mFrame->mSpData->height};
 
-    dst_crop[1] = {.start_x = (unsigned int)blend_image_left->width + 100,
+    dst_crop[1] = {.start_x = (unsigned int)leftObj->mFrame->mSpData->width + 0,
                    .start_y = 0,
-                   .crop_w = (unsigned int)blend_image_right->width,
-                   .crop_h = (unsigned int)blend_image_right->height};
+                   .crop_w = (unsigned int)rightObj->mFrame->mSpData->width,
+                   .crop_h = (unsigned int)rightObj->mFrame->mSpData->height};
 
     bmcv_image_vpp_stitch(handle, input_num, src_img, *two_raw_image, dst_crop,
                           NULL);
     blendObj->mFrame->mSpData = two_raw_image;
     blendObj->mFrame->mWidth = two_raw_image->width;
     blendObj->mFrame->mHeight = two_raw_image->height;
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    std::cout << "stitch程序执行时间：" << duration.count() << " ms"
+              << std::endl;
+
   } else {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    bool need_convert =
+        (leftObj->mFrame->mSpDataDwa->image_format != FORMAT_YUV420P ||
+         rightObj->mFrame->mSpDataDwa->image_format != FORMAT_YUV420P);
+
+    bm_image blend_img[2];
+    if (need_convert) {
+      bm_image_create(leftObj->mFrame->mHandle,
+                            leftObj->mFrame->mSpDataDwa->height,
+                            leftObj->mFrame->mSpDataDwa->width, FORMAT_YUV420P,
+                            DATA_TYPE_EXT_1N_BYTE, &blend_img[0], NULL);
+      bm_image_create(rightObj->mFrame->mHandle,
+                            rightObj->mFrame->mSpDataDwa->height,
+                            rightObj->mFrame->mSpDataDwa->width, FORMAT_YUV420P,
+                            DATA_TYPE_EXT_1N_BYTE, &blend_img[1], NULL);
+
+      bm_image_alloc_dev_mem(blend_img[0], 1);
+      bm_image_alloc_dev_mem(blend_img[1], 1);
+
+      bmcv_image_storage_convert(leftObj->mFrame->mHandle, 1,
+                                       leftObj->mFrame->mSpDataDwa.get(),
+                                       &blend_img[0]);
+      bmcv_image_storage_convert(rightObj->mFrame->mHandle, 1,
+                                       rightObj->mFrame->mSpDataDwa.get(),
+                                       &blend_img[1]);
+    } else {
+      blend_img[0] = *leftObj->mFrame->mSpDataDwa;
+      blend_img[1] = *rightObj->mFrame->mSpDataDwa;
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    std::cout << "blend格式转换程序执行时间：" << duration.count() << " ms"
+              << std::endl;
+
     std::shared_ptr<bm_image> blend_image = nullptr;
     blend_image.reset(new bm_image, [](bm_image* p) {
       bm_image_destroy(*p);
@@ -211,40 +246,20 @@ common::ErrorCode Blend::blend_work(
     });
 
     bm_status_t ret = bm_image_create(
-        handle, blend_image_left->height,
-        ALIGN(blend_image_left->width * 2 - 128, 32), FORMAT_YUV420P,
-        DATA_TYPE_EXT_1N_BYTE, blend_image.get());
+        handle, leftObj->mFrame->mSpDataDwa->height,
+        ALIGN(leftObj->mFrame->mSpDataDwa->width * 2 - width_minus, 32),
+        FORMAT_YUV420P, DATA_TYPE_EXT_1N_BYTE, blend_image.get());
     bm_image_alloc_dev_mem(*blend_image, 1);
+    {
+      auto start = std::chrono::high_resolution_clock::now();
+      // blend
+      bmcv_blending(handle, input_num, blend_img, *blend_image, blend_config);
 
-    bool need_convert = (blend_image_left->image_format != FORMAT_YUV420P ||
-                         blend_image_right->image_format != FORMAT_YUV420P);
-
-    bm_image blend_img[2];
-    if (need_convert) {
-      ret = bm_image_create(leftObj->mFrame->mHandle, blend_image_left->height,
-                            blend_image_left->width, FORMAT_YUV420P,
-                            DATA_TYPE_EXT_1N_BYTE, &blend_img[0], NULL);
-      ret =
-          bm_image_create(rightObj->mFrame->mHandle, blend_image_right->height,
-                          blend_image_right->width, FORMAT_YUV420P,
-                          DATA_TYPE_EXT_1N_BYTE, &blend_img[1], NULL);
-
-      bm_image_alloc_dev_mem(blend_img[0], 1);
-      bm_image_alloc_dev_mem(blend_img[1], 1);
-
-      ret = bmcv_image_storage_convert(leftObj->mFrame->mHandle, 1,
-                                       blend_image_left.get(), &blend_img[0]);
-      ret = bmcv_image_storage_convert(rightObj->mFrame->mHandle, 1,
-                                       blend_image_right.get(), &blend_img[1]);
-    } else {
-      blend_img[0] = *blend_image_left;
-      blend_img[1] = *blend_image_right;
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double, std::milli> duration = end - start;
+      std::cout << "bmcv_blending程序执行时间：" << duration.count() << " ms"
+                << std::endl;
     }
-
-    // blend
-    ret =
-        bmcv_blending(handle, input_num, blend_img, *blend_image, blend_config);
-
     blendObj->mFrame->mSpData = blend_image;
     blendObj->mFrame->mWidth = blend_image->width;
     blendObj->mFrame->mHeight = blend_image->height;
@@ -295,10 +310,10 @@ common::ErrorCode Blend::doWork(int dataPipeId) {
         std::make_shared<common::ObjectMetadata>();
 
     blendObj->mFrame = std::make_shared<sophon_stream::common::Frame>();
-    // bm_image_write_to_bmp(*inputs[0]->mFrame->mSpDataDwa, "left.bmp");
-    // bm_image_write_to_bmp(*inputs[1]->mFrame->mSpDataDwa, "right.bmp");
+
     blend_work(inputs[0], inputs[1], blendObj);
-    // bm_image_write_to_bmp(*blendObj->mFrame->mSpData, "blend.bmp");
+
+    mFpsProfiler.add(1);
     int channel_id_internal = blendObj->mFrame->mChannelIdInternal;
     int outDataPipeId =
         getSinkElementFlag()
