@@ -329,19 +329,19 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
   int plane = 0;
   bm_image* yuv_image = (bm_image*)malloc(sizeof(bm_image));
   bm_image_format_info info;
-  int encode_stride = ((image->width + 31) >> 5) << 5;
+  int encode_stride = ((params_map_["width"] + 31) >> 5) << 5;
 
   if (is_rtsp_ || is_video_file_) {
     if (pix_fmt_ == AV_PIX_FMT_YUV420P) {
       plane = 3;
       int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride / 2};
-      bm_image_create(handle, image->height, image->width, FORMAT_YUV420P,
+      bm_image_create(handle, params_map_["height"], params_map_["width"], FORMAT_YUV420P,
                       DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
     }
     if (pix_fmt_ == AV_PIX_FMT_NV12) {
       plane = 2;
       int stride_bmi[2] = {encode_stride, encode_stride};
-      bm_image_create(handle, image->height, image->width, FORMAT_NV12,
+      bm_image_create(handle, params_map_["height"],  params_map_["width"], FORMAT_NV12,
                       DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
     }
 #if BMCV_VERSION_MAJOR > 1

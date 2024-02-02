@@ -136,6 +136,18 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         break;
       }
 
+      auto widthIt = configure.find(CONFIG_INTERNAL_WIDTH_FIELD);
+      auto heightIt = configure.find(CONFIG_INTERNAL_HEIGHT_FIELD);
+      if (widthIt != configure.end() && heightIt != configure.end()) {
+        width = widthIt->get<int>();
+        height = heightIt->get<int>();
+      }
+
+      auto ipIt = configure.find(CONFIG_INTERNAL_IP_FIELD);
+      if (ipIt != configure.end()) {
+        ip = ipIt->get<std::string>();
+      }
+
       std::map<std::string, int> mEncodeParams;
       mEncodeParams["framerate"] = mFps;
 
@@ -265,11 +277,11 @@ void Encode::processVideoStream(
       std::string output_path;
       switch (mEncodeType) {
         case EncodeType::RTSP:
-          output_path = "rtsp://localhost:" + mRtspPort + "/" +
+          output_path = "rtsp://" + ip + ":" + mRtspPort + "/" +
                         std::to_string(channel_id);
           break;
         case EncodeType::RTMP:
-          output_path = "rtmp://localhost:" + mRtmpPort + "/" +
+          output_path = "rtsp://" + ip + ":" + mRtmpPort + "/" +
                         std::to_string(channel_id);
           break;
         case EncodeType::VIDEO: {
@@ -292,17 +304,15 @@ void Encode::processVideoStream(
 
       mChannelOutputPath[channel_id] = output_path;
       encodeIt->second->set_output_path(output_path);
-      encodeIt->second->set_enc_params_width(objectMetadata->mFrame->mWidth);
-      encodeIt->second->set_enc_params_height(objectMetadata->mFrame->mHeight);
+      encodeIt->second->set_enc_params_width(
+          width == -1 ? objectMetadata->mFrame->mWidth : width);
+      encodeIt->second->set_enc_params_height(
+          height == -1 ? objectMetadata->mFrame->mHeight : height);
       encodeIt->second->init_writer();
     }
     if (objectMetadata->mFrame->mSpDataOsd) {
-      // encodeIt->second->isRunning = true;
-      // encodeIt->second->pushQueue(objectMetadata->mFrame->mSpDataOsd);
       encodeIt->second->video_write(*(objectMetadata->mFrame->mSpDataOsd));
     } else {
-      // encodeIt->second->isRunning = true;
-      // encodeIt->second->pushQueue(objectMetadata->mFrame->mSpData);
       encodeIt->second->video_write(*(objectMetadata->mFrame->mSpData));
     }
   }

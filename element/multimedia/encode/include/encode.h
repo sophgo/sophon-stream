@@ -39,6 +39,11 @@ class Encode : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_PIX_FMT_FIELD = "pix_fmt";
   static constexpr const char* CONFIG_INTERNAL_WSS_PORT_FIELD = "wss_port";
   static constexpr const char* CONFIG_INTERNAL_FPS_FIELD = "fps";
+  
+  // for customizing shape and ip
+  static constexpr const char* CONFIG_INTERNAL_WIDTH_FIELD = "width";
+  static constexpr const char* CONFIG_INTERNAL_HEIGHT_FIELD = "height";
+  static constexpr const char* CONFIG_INTERNAL_IP_FIELD = "ip";
 
  private:
   std::map<int, std::shared_ptr<Encoder>> mEncoderMap;
@@ -51,6 +56,11 @@ class Encode : public ::sophon_stream::framework::Element {
   std::string encFmt;
   std::string pixFmt;
   double mFps;
+
+  int width = -1;
+  int height = -1;
+
+  std::string ip = "localhost";
 
   std::map<int, std::shared_ptr<WSS>> mWSSMap;
   std::vector<std::thread> mWSSThreads;
