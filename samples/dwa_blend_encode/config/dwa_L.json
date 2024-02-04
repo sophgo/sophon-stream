@@ -1,0 +1,16 @@
+{
+  "configure": {
+    "is_gray": false,
+    "is_resize": false,
+    "dst_h": 2240,
+    "dst_w": 2240,
+    "dwa_mode": "DWA_FISHEYE_MODE",
+    "dis_mode": "BMCV_MODE_PANORAMA_360",
+    "use_grid": true,
+    "grid_name": "../dwa_blend_encode/data/gridinfo/L_grid_info_68_68_4624_70_70_dst_2240x2240_src_2240x2240.dat"
+  },
+  "shared_object": "../../build/lib/libdwa.so",
+  "name": "dwa",
+  "side": "sophgo",
+  "thread_number": 1
+}

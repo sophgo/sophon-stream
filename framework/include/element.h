@@ -23,9 +23,9 @@
 #include <vector>
 
 #include "common/error_code.h"
+#include "common/http_defs.h"
 #include "common/logger.h"
 #include "common/no_copyable.h"
-#include "common/http_defs.h"
 #include "connector.h"
 #include "datapipe.h"
 #include "listen_thread.h"

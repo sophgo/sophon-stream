@@ -32,11 +32,11 @@
             },
             {
                 "element_id": 5002,
-                "element_config": "../dwa_blend_encode/config/dwa.json"
+                "element_config": "../dwa_blend_encode/config/dwa_L.json"
             },
             {
                 "element_id": 5003,
-                "element_config": "../dwa_blend_encode/config/dwa.json"
+                "element_config": "../dwa_blend_encode/config/dwa_R.json"
             },
             {
                 "element_id": 5004,

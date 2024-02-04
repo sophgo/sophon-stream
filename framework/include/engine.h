@@ -63,6 +63,10 @@ class Engine : public ::sophon_stream::common::NoCopyable {
 
   std::vector<int> getGraphIds();
 
+  inline ListenThread* getListener() { return listenThreadPtr; }
+
+  inline void setListener(ListenThread* p) { listenThreadPtr = p; }
+
   static constexpr const char* JSON_GRAPH_ID_FIELD = "graph_id";
 
  private:
@@ -76,6 +80,8 @@ class Engine : public ::sophon_stream::common::NoCopyable {
   std::mutex mGraphMapLock;
 
   std::vector<int> mGraphIds;
+
+  ListenThread* listenThreadPtr;
 };
 
 using SingletonEngine = common::Singleton<Engine>;

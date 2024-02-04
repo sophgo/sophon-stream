@@ -28,21 +28,20 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
             255,
             255
         ],
-        "stage": [
-            "pre"
-        ],
         "use_tpu_kernel": true,
         "roi": {
             "left": 600,
             "top": 400,
             "width": 800,
             "height": 600
-    }
+        },
+        "maxdet":1280,
+        "mindet":50
     },
     "shared_object":"../../../build/lib/libyolov5.so",
     "id":0,
     "device_id":0,
-    "name":"yolov5",
+    "name":"yolov5_group",
     "side":"sophgo",
     "thread_number":1
 }
@@ -66,6 +65,8 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
 |     name    |    字符串     | "yolov5" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
 | thread_number |    整数     | 1 | 启动线程数 |
+|   maxdet    |    整数     | MAX_INT| 仅接受宽高都小于maxdet的检测框 |
+|   mindet    |    整数     | 0 | 仅接受宽高都大于mindet的检测框 |
 
 > **注意**：
 1. stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用tpu和cpu资源，提高检测效率。

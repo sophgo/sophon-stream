@@ -12,6 +12,7 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 | ------------------------|-------------------------------------------------------------------|---------------------| 
 | [framework](./framework)| [framework](./framework)                                          | 框架                        |
 | [element](./element)    | [yolov5](./element/algorithm/yolov5)                              | yolov5插件             |
+|                         | [yolov7](./element/algorithm/yolov7)                              | yolov7插件             |
 |                         | [yolox](./element/algorithm/yolox)                                | yolox插件               |
 |                         | [bytetrack](./element/algorithm/bytetrack)                        | bytetrack插件       |
 |                         | [resnet](./element/algorithm/resnet)                              | resnet插件             |
@@ -26,6 +27,7 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [faiss](./element/tools/faiss)                                    | faiss数据库插件         |
 |                         | [blank](./element/tools/blank)                                    | 空白插件                |
 | [samples](./samples)    | [yolov5](./samples/yolov5)                                        | yolov5 demo                             |
+|                         | [yolov7](./samples/yolov7)                                        | yolov7 demo                            |
 |                         | [yolox](./samples/yolox)                                          | yolox demo                              |
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo                          |
 |                         | [resnet](./samples/resnet)                                        | resnet demo                             |

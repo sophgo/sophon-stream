@@ -56,6 +56,9 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 |    enc_fmt    | 字符串 |                无                 |           编码格式，包括 "h264_bm"，“h265_bm”           |
 |    pix_fmt    | 字符串 |                无                 |              像素格式，包括 "I420"，"NV12"              |
 |      fps      |  整数  |                25                 |                  RTSP、RTMP、VIDEO帧率                  |
+|      ip       | 字符串 |             "localhost"           |                       流服务器地址                      |
+|     width     | 整数   |                -1                 |         编码器输出的宽度，默认和输入图片相同              |
+|     height     | 整数   |                -1                 |         编码器输出的高度，默认和输入图片相同              |
 | shared_object | 字符串 | "../../../build/lib/libencode.so" |                  libencode 动态库路径                   |
 |   device_id   |  整数  |                 0                 |                       tpu 设备号                        |
 |      id       |  整数  |                 0                 |                       element id                        |

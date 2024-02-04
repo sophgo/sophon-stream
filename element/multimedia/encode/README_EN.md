@@ -57,6 +57,9 @@ sophon-stream encoder plugin has several configurable parameters that can be adj
 |    enc_fmt    | string |                \                 |       encode format，include "h264_bm"，"h265_bm"       |
 |    pix_fmt    | string |                \                 |             pixel format，include "I420"，"NV12"        |
 |      fps      |  int  |                25                 |                  RTSP,RTMP,VIDEO frame rate             |
+|      ip       | string |             "localhost"           |                       ip of stream server              |
+|     width     | int    |               -1                 |           width of encoder output, default to img.width  |
+|     height     | int    |               -1                 |           width of encoder output, default to img.height  |
 | shared_object | string | "../../../build/lib/libencode.so" |                  libencode dynamic library path        |
 |   device_id   |  int  |                 0                 |                       tpu device id                     |
 |      id       |  int  |                 0                 |                       element id                        |

@@ -203,6 +203,10 @@ source /etc/profile
 
 ### 4.1 交叉编译环境搭建
 需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至soc-sdk目录中。
+
+需要注意的是，对于SE9设备，下列命令中的sophon-mw目录应改为sophon-media。
+
+
 1. 安装交叉编译工具链
     ```bash
     sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu

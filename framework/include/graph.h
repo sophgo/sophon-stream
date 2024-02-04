@@ -20,7 +20,6 @@
 #include "common/logger.h"
 #include "common/no_copyable.h"
 #include "element.h"
-#include "listen_thread.h"
 
 namespace sophon_stream {
 namespace framework {
@@ -67,6 +66,10 @@ class Graph : public ::sophon_stream::common::NoCopyable {
 
   int getId() const;
 
+  inline ListenThread* getListener() { return listenThreadPtr; }
+
+  inline void setListener(ListenThread* p) { listenThreadPtr = p; }
+
   static constexpr const char* JSON_GRAPH_ID_FIELD = "graph_id";
   static constexpr const char* JSON_WORKERS_FIELD = "elements";
   static constexpr const char* JSON_CONNECTIONS_FIELD = "connections";
@@ -93,8 +96,6 @@ class Graph : public ::sophon_stream::common::NoCopyable {
 
   // friend class ListenThread;
   ListenThread* listenThreadPtr;
-
-  int defaultPort = 8000;
 };
 
 }  // namespace framework

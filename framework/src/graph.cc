@@ -13,6 +13,7 @@
 
 #include <nlohmann/json.hpp>
 #include <set>
+#include <string>
 
 #include "common/logger.h"
 #include "element_factory.h"
@@ -20,10 +21,7 @@
 namespace sophon_stream {
 namespace framework {
 
-Graph::Graph() : mId(-1), mThreadStatus(ThreadStatus::STOP) {
-  listenThreadPtr = ListenThread::getInstance();
-  listenThreadPtr->init(defaultPort);
-}
+Graph::Graph() : mId(-1), mThreadStatus(ThreadStatus::STOP) {}
 
 Graph::~Graph() {
   auto& elementFactory = framework::SingletonElementFactory::getInstance();

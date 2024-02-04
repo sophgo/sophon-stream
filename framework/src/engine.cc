@@ -98,14 +98,17 @@ common::ErrorCode Engine::addGraph(const std::string& json) {
     std::lock_guard<std::mutex> lk(mGraphMapLock);
 
     auto graph = std::make_shared<framework::Graph>();
-
+    graph->setListener(listenThreadPtr);
     errorCode = graph->init(json);
+    listenThreadPtr->report_status(errorCode);
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_ERROR("Graph init fail, json: {0}", json);
       return errorCode;
     }
 
     errorCode = graph->start();
+    listenThreadPtr->report_status(errorCode);
+
     if (common::ErrorCode::SUCCESS != errorCode) {
       IVS_ERROR("Graph start fail");
       return errorCode;
@@ -158,8 +161,9 @@ void Engine::setSinkHandler(int graphId, int elementId, int outputPort,
   graph->setSinkHandler(elementId, outputPort, sinkHandler);
 }
 
-common::ErrorCode Engine::pushSourceData(
-    int graphId, int elementId, int inputPort, std::shared_ptr<void> data) {
+common::ErrorCode Engine::pushSourceData(int graphId, int elementId,
+                                         int inputPort,
+                                         std::shared_ptr<void> data) {
   IVS_DEBUG(
       "send data, graph id: {0:d}, element id: {1:d}, input port: {2:d}, "
       "data: {3:p}",
@@ -200,10 +204,7 @@ std::pair<std::string, int> Engine::getSideAndDeviceId(int graphId,
   return graph->getSideAndDeviceId(elementId);
 }
 
-
-std::vector<int> Engine::getGraphIds() {
-  return mGraphIds;
-}
+std::vector<int> Engine::getGraphIds() { return mGraphIds; }
 
 }  // namespace framework
 }  // namespace sophon_stream

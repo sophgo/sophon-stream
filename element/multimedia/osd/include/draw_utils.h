@@ -182,12 +182,20 @@ void draw_bmcv_track_result(
 
 void draw_opencv_det_result(
     std::shared_ptr<common::ObjectMetadata> objectMetadata,
-    std::vector<std::string>& class_names, cv::Mat& frame, bool put_text_flag) {
+    std::vector<std::string>& class_names, cv::Mat& frame, bool put_text_flag, bool draw_interval) {
   // Draw a rectangle displaying the bounding box
   int colors_num = colors.size();
   int thickness = 2;
   float fontScale = 1;
-  for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
+  std::shared_ptr<common::ObjectMetadata> objData;
+  {
+    std::lock_guard<std::mutex> lk(mLastObjectMetaDataMtx);
+    objData = (objectMetadata->mFilter && draw_interval)
+                  ? lastObjectMetadataMap[objectMetadata->mFrame->mChannelId]
+                  : objectMetadata;
+    lastObjectMetadataMap[objectMetadata->mFrame->mChannelId] = objData;
+  }
+  for (auto detObj : objData->mDetectedObjectMetadatas) {
     int classId = detObj->mClassify;
     cv::Scalar color(colors[classId % colors_num][0],
                      colors[classId % colors_num][1],

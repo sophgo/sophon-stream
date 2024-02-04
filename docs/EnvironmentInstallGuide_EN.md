@@ -168,6 +168,10 @@ For SoC platforms, the SophonSDK (>=v22.09.02) has been installed with the corre
 
 ### 4.1 Cross-compiling Environment Construction
 You need to build a cross-compilation environment on an x86 host using SOPHON SDK and package the header and library files that the program depends on into the soc-sdk directory.
+
+Note that for SE9 devices, sophon-mw needs to be changed to sophon-media.
+
+
 1. Install the cross-compilation tool chain
     ```bash
     sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu

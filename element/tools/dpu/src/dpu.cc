@@ -583,7 +583,7 @@ common::ErrorCode Dpu::dpu_work(
       p = nullptr;
     });
     ret = bm_image_create(handle, dpu_image_map->height,
-                          dpu_image_map->width *2+100, FORMAT_YUV444P,
+                          dpu_image_map->width *3+200, FORMAT_YUV444P,
                           DATA_TYPE_EXT_1N_BYTE, all_image.get());
     bm_image_alloc_dev_mem(*all_image, 1);
 
@@ -593,20 +593,24 @@ common::ErrorCode Dpu::dpu_work(
     bm_memset_device(handle, 0, dpu_mem[1]);
     bm_memset_device(handle, 0, dpu_mem[2]);
 
-    int input_num = 2;
+    int input_num = 3;
     bmcv_rect_t dst_crop[input_num];
 
     dst_crop[0] = {.start_x = 0,
                    .start_y = 0,
                    .crop_w = (unsigned int)dpu_image_left->width,
                    .crop_h = (unsigned int)dpu_image_left->height};
-
     dst_crop[1] = {.start_x = (unsigned int)dpu_image_left->width + 100,
+                   .start_y = 0,
+                   .crop_w = (unsigned int)dpu_image_left->width,
+                   .crop_h = (unsigned int)dpu_image_left->height};
+
+    dst_crop[2] = {.start_x = (unsigned int)dpu_image_left->width*2 + 200,
                    .start_y = 0,
                    .crop_w = (unsigned int)dpu_image_map->width,
                    .crop_h = (unsigned int)dpu_image_map->height};
 
-    bm_image src_img[2] = {dpu_img[0], *dpu_image_map};
+    bm_image src_img[3] = {dpu_img[0],dpu_img[1], *dpu_image_map};
 
     bmcv_image_vpp_stitch(handle, input_num, src_img, *all_image, dst_crop,
                           NULL);
@@ -665,8 +669,10 @@ common::ErrorCode Dpu::doWork(int dataPipeId) {
     std::shared_ptr<common::ObjectMetadata> dpuObj =
         std::make_shared<common::ObjectMetadata>();
     dpuObj->mFrame = std::make_shared<sophon_stream::common::Frame>();
+    // bm_image_write_to_bmp(*inputs[0]->mFrame->mSpDataDwa, "left.bmp");
+    // bm_image_write_to_bmp(*inputs[1]->mFrame->mSpDataDwa, "right.bmp");
     dpu_work(inputs[0], inputs[1], dpuObj);
-
+    //  bm_image_write_to_bmp(*dpuObj->mFrame->mSpData, "dpuObj.bmp");
     IVS_INFO("Now Flag is {0}", dis_type);
 
     int channel_id_internal = dpuObj->mFrame->mChannelIdInternal;

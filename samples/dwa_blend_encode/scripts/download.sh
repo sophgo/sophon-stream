@@ -30,6 +30,11 @@ then
     rm -f wgt.zip
     mv ./wgt ../data/
 
+    python3 -m dfss --url=open@sophgo.com:/sophon-stream/dwa_blend_encode/gridinfo.zip
+    unzip gridinfo.zip
+    rm -f gridinfo.zip
+    mv ./gridinfo ../data/
+
 else
     echo "test image exist!"
 fi

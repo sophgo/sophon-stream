@@ -1,31 +1,43 @@
+/* 通用样式，定义一个视频展示容器 */
 .VideoDisplayBlend {
   margin: 20px;
-  padding: 0px;
+  padding: 10px; /* 增加内边距，使内容离边框有一些空隙 */
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 8px; /* 增加边框圆角 */
   background-color: #f9f9f9;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.CanvasContanier {
+/* 画布容器样式 */
+.CanvasContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 56vw;
-  height: 35vw;
-  margin-top: 3vh;
-  border: 1px solid black;
-  /* 边框宽度为 2px，颜色为黑色 */
-  padding: 1px;
-  /* 设置 padding 来增加内边距，使边框不紧贴内容 */
+  width: 60vw; /* 调整宽度，使其更大一些 */
+  height: 40vw; /* 调整高度，使其更大一些 */
+  margin-top: 20px; /* 调整上边距 */
+  padding: 10px; /* 增加内边距 */
+  border: 1px solid #ddd; /* 使用浅一些的边框颜色 */
+  border-radius: 8px; /* 增加边框圆角 */
 }
 
+/* 显示类型选择器样式 */
 .DisplayTypeSelector {
   width: 12vw;
-  height: 2vw;
-  margin-left: 2.5vw;
+  height: 3vw; /* 调整高度，使其更显眼 */
+  margin-left: 20px; /* 调整左边距 */
+  padding: 5px; /* 增加内边距 */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333; /* 设置字体颜色为深灰色 */
+  font-weight: bold; /* 加粗字体 */
+  cursor: pointer; /* 鼠标悬停时显示手型 */
 }
 
-
+/* 鼠标悬停时改变样式 */
+.DisplayTypeSelector:hover {
+  background-color: #f0f0f0;
+}

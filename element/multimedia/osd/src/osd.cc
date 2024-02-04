@@ -165,7 +165,7 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
     switch (mOsdType) {
       case OsdType::DET:
         draw_opencv_det_result(objectMetadata, mClassNames, frame_to_draw,
-                               mPutText);
+                               mPutText, mDrawInterval);
         break;
 
       case OsdType::TRACK:

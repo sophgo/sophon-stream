@@ -426,6 +426,7 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
     this->is_camera = 1;
     this->camera_url = input;
   }
+  inputUrl = input;
   this->handle = dec_handle;
   this->dev_id = bm_get_devid(*dec_handle);
   int ret = 0;
@@ -439,9 +440,13 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
 
   if (this->is_camera) {
     av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
-    av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
+    // av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
     av_dict_set_int(&dict, "use_isp", 0, 0);           // int isusemw = 0
   }
+
+  av_dict_set(
+      &dict, "stimeout", "5*1000*1000",
+      0);  // Returns (Connection timed out) every  5 seconds ,when disconnect
 
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
@@ -591,7 +596,6 @@ void VideoDecFFM::reConnectVideoStream() {
     auto url = this->is_rtsp
                    ? this->rtsp_url
                    : (this->is_rtmp ? this->rtmp_url : this->gb28181_url);
-
     av_log(video_dec_ctx, AV_LOG_ERROR, "Start reconnected, url: %s.\n", url);
     auto ret = avformat_open_input(&ifmt_ctx, url, NULL, &dict);
     if (ret < 0) {
@@ -660,15 +664,7 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     av_packet_unref(pkt);
     ret = av_read_frame(ifmt_ctx, pkt);
     if (ret < 0) {
-      if ((this->is_rtsp || this->is_rtmp || this->is_gb28181 ||
-           this->is_camera) &&
-          isNetworkError(ret)) {
-        avformat_close_input(&ifmt_ctx);  // 关闭当前连接
-        av_log(video_dec_ctx, AV_LOG_ERROR,
-               "RTSP or RTMP network error ret(%d), start retry.\n", ret);
-        reConnectVideoStream();
-        continue;
-      } else if (ret == AVERROR(EAGAIN)) {
+      if (ret == AVERROR(EAGAIN)) {
         gettimeofday(&tv2, NULL);
         if (((tv2.tv_sec - tv1.tv_sec) * 1000 +
              (tv2.tv_usec - tv1.tv_usec) / 1000) > 1000 * 60) {
@@ -678,14 +674,20 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
         }
         // usleep(10 * 1000);
         continue;
+      } else if (ret == AVERROR_EOF) {
+        AVFrame* flush_frame = flushDecoder();
+        if (flush_frame) return flush_frame;
+        av_log(video_dec_ctx, AV_LOG_ERROR,
+               "av_read_frame ret(%d) maybe eof...\n", ret);
+        quit_flag = true;
+        eof = 1;
+        return NULL;
+      } else {
+        AVFrame* flush_frame = flushDecoder();
+        if (flush_frame) return flush_frame;
+        quit_flag = true;
+        return NULL;
       }
-      AVFrame* flush_frame = flushDecoder();
-      if (flush_frame) return flush_frame;
-      av_log(video_dec_ctx, AV_LOG_ERROR,
-             "av_read_frame ret(%d) maybe eof...\n", ret);
-      quit_flag = true;
-      eof = 1;
-      return NULL;
     }
 
     if (pkt->stream_index != video_stream_idx) {
@@ -748,6 +750,31 @@ std::shared_ptr<bm_image> VideoDecFFM::grab(int& frameId, int& eof,
   }
   std::shared_ptr<bm_image> spBmImage = nullptr;
   AVFrame* avframe = grabFrame(eof);
+  // 没有取到avframe，尝试重连
+  if ((!avframe) && (this->is_rtsp || this->is_rtmp || this->is_gb28181)) {
+    // 第一个while，关闭并重新访问url。如果失败，则再次尝试
+    while (1) {
+      IVS_INFO("grabFrame failed! Try to reconnect...");
+      this->closeDec();
+      int ret = this->openDec(handle, inputUrl.c_str());
+      if (ret < 0) continue;
+      // 第二个while，尝试重新获取一帧。如果获取失败，则再次获取
+      // 由于ctrl+C取消推流时会返回EOF，导致stream直接结束，所以这里判断不能是eof
+      while (1) {
+        avframe = grabFrame(eof);
+        if (eof) {
+          IVS_INFO("reopen eof!");
+        }
+        if (avframe) {
+          IVS_INFO("Successfully reconnected, now continue...");
+          // 如果不改变这个eof，ctrl+C取消然后再次推流，会一直返回eof
+          eof = 0;
+          break;
+        }
+      }
+      break;
+    }
+  }
   frameId = frame_id++;
   if (1 == eof) return spBmImage;
 

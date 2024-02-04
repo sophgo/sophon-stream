@@ -82,7 +82,7 @@
       "teddy bear": 0.5,
       "hair drier": 0.5,
       "toothbrush": 0.5
-  },
+    },
     "threshold_nms": 0.5,
     "bgr2rgb": true,
     "mean": [
@@ -91,24 +91,23 @@
       0
     ],
     "std": [
-      1,
-      1,
-      1
+      255,
+      255,
+      255
     ],
-    "stage": [
-      "xxx"
-    ],
-    "roi":{
+    "roi": {
       "left": 600,
       "top": 400,
       "width": 800,
       "height": 600
     },
+    "maxdet": 640,
+    "mindet": 50,
     "class_names_file": "../yolov5/data/coco.names",
     "use_tpu_kernel": true
   },
   "shared_object": "../../build/lib/libyolov5.so",
-  "name": "yolov5",
+  "name": "yolov5_group",
   "side": "sophgo",
   "thread_number": 1
 }

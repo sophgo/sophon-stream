@@ -2,11 +2,11 @@
     {
         "graph_id": 0,
         "device_id": 0,
-        "graph_name": "dwa_dpu_encode",
+        "graph_name": "yolov8",
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../dwa_dpu_encode/config/decode.json",
+                "element_config": "../yolov8/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -19,20 +19,8 @@
             },
             {
                 "element_id": 5001,
-                "element_config": "../dwa_dpu_encode/config/decode.json",
-                "ports": {
-                    "input": [
-                        {
-                            "port_id": 0,
-                            "is_sink": false,
-                            "is_src": true
-                        }
-                    ]
-                }
-            },
-            {
-                "element_id": 5005,
-                "element_config": "../dwa_dpu_encode/config/encode.json",
+                "element_config": "../yolov8/config/yolov8_group.json",
+                "inner_elements_id": [10001, 10002, 10003],
                 "ports": {
                     "output": [
                         {
@@ -48,13 +36,7 @@
             {
                 "src_element_id": 5000,
                 "src_port": 0,
-                "dst_element_id": 5005,
-                "dst_port": 0
-            },
-            {
-                "src_element_id": 5001,
-                "src_port": 0,
-                "dst_element_id": 5005,
+                "dst_element_id": 5001,
                 "dst_port": 0
             }
         ]

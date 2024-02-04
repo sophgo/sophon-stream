@@ -34,7 +34,6 @@ In this example, the pre-processing, inference, and post-processing of the YOLOv
 ## 2. Feature
 
 * Supports BM1684X, BM1684(x86 PCIe、SoC), supports BM1688(SoC)
-* On the BM1684X platform, the TPU_kernel post-processing is supported.
 * Supports multiple video streams.
 * Supports multi-threading.
 
@@ -76,7 +75,7 @@ The downloaded models include:
 
 Model description:
 
-The above models are ported from the official [yolov5 repository](https://github.com/ultralytics/yolov5). The plugin configuration includes `mean=[0,0,0]`, `std=[1,1,1]`, supporting 80-class detection tasks from the COCO dataset.
+The above models are ported from the official [yolov5 repository](https://github.com/ultralytics/yolov5). The plugin configuration includes `mean=[0,0,0]`, `std=[255,255,255]`, supporting 80-class detection tasks from the COCO dataset.
 
 
 The downloaded data include:

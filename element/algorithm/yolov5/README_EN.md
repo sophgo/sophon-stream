@@ -24,12 +24,9 @@ The Sophon-Stream YOLOv5 plugin has several configurable parameters that can be 
             0
         ],
         "std": [
-            1,
-            1,
-            1
-        ],
-        "stage": [
-            "pre"
+            255,
+            255,
+            255
         ],
         "use_tpu_kernel": true,
         "roi": {
@@ -37,12 +34,14 @@ The Sophon-Stream YOLOv5 plugin has several configurable parameters that can be 
             "top": 400,
             "width": 800,
             "height": 600
-    }
+        },
+        "maxdet":1280,
+        "mindet":50
     },
     "shared_object":"../../../build/lib/libyolov5.so",
     "id":0,
     "device_id":0,
-    "name":"yolov5",
+    "name":"yolov5_group",
     "side":"sophgo",
     "thread_number":1
 }
@@ -66,6 +65,8 @@ The Sophon-Stream YOLOv5 plugin has several configurable parameters that can be 
 |     name    |    string     | "yolov5" | element name |
 |     side    |    string     | "sophgo"| device type |
 | thread_number |    int     | 1 | Number of the thread |
+|Maxdet | integer | MAX_ INT | Only accepts detection boxes with width and height less than maxdet|
+|Mindet | integer | 0 | Only accept detection boxes with width and height greater than mindet|
 
 > **notes**：
 1. The `stage` parameter should be set as one of the following: "pre", "infer", "post", or their adjacent combinations. These stages should be connected in sequence to the elements, aligning with the order of preprocessing, inference, and post-processing. Distributing these three stages across three elements aims to maximize the utilization of TPU and CPU resources, enhancing detection efficiency.

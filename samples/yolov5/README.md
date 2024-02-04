@@ -76,7 +76,7 @@ chmod -R +x scripts/
 
 模型说明:
 
-以上模型移植于[yolov5官方](https://github.com/ultralytics/yolov5)，插件配置`mean=[0,0,0]`，`std=[1,1,1]`，支持COCO数据集的80分类检测任务。
+以上模型移植于[yolov5官方](https://github.com/ultralytics/yolov5)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`，支持COCO数据集的80分类检测任务。
 
 下载的数据包括：
 

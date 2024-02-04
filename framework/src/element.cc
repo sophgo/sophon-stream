@@ -202,6 +202,7 @@ common::ErrorCode Element::pushInputData(int inputPort, int dataPipeId,
   }
   while (mInputConnectorMap[inputPort]->pushData(dataPipeId, data) !=
          common::ErrorCode::SUCCESS) {
+    listenThreadPtr->report_status(common::ErrorCode::DECODE_CHANNEL_PIPE_FULL);
     IVS_DEBUG("Input DataPipe is full, now sleeping...");
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
@@ -237,6 +238,7 @@ common::ErrorCode Element::pushOutputData(int outputPort, int dataPipeId,
   }
   while (mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) !=
          common::ErrorCode::SUCCESS) {
+    listenThreadPtr->report_status(common::ErrorCode::DATA_PIPE_FULL);
     IVS_DEBUG(
         "DataPipe is full, now sleeping. ElementID is {0}, outputPort is {1}, "
         "dataPipeId is {2}",
