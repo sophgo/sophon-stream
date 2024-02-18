@@ -37,4 +37,4 @@ The sophon-stream lprnet plugin is divided into three parts: preprocessing, infe
 
 > **Note**:
 
-1. For the `stage` parameter, it needs to be set to one or a combination of "pre", "infer", "post", and should be connected in order of preprocessing, inference, and post-processing stages. Allocating these three stages to three elements aims to make full use of TPU and CPU resources, improving detection efficiency.
+1. For the `stage` parameter, it needs to be set to one or a combination of "pre", "infer", "post", and should be connected in order of preprocessing, inference, and post-processing stages. Allocating these three stages to three elements aims to make full use of resources, improving detection efficiency.

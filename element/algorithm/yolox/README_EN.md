@@ -66,4 +66,4 @@ The Sophon-Stream YOLOX plugin has several configurable parameters that can be a
 | thread_number  | Integer          | 1                                                | Number of threads to launch                              |
 
 > **notes**：
-1. The `stage` parameter should be set as one of the following: "pre", "infer", "post", or their adjacent combinations. These stages should be connected in sequence to the elements, aligning with the order of preprocessing, inference, and post-processing. Distributing these three stages across three elements aims to maximize the utilization of TPU and CPU resources, enhancing detection efficiency.
+1. The `stage` parameter should be set as one of the following: "pre", "infer", "post", or their adjacent combinations. These stages should be connected in sequence to the elements, aligning with the order of preprocessing, inference, and post-processing. Distributing these three stages across three elements aims to maximize the utilization of resources, enhancing detection efficiency.
