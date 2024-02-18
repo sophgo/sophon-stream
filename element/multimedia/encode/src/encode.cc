@@ -103,6 +103,13 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
           CONFIG_INTERNAL_FPS_FIELD, json);
     }
 
+    auto widthIt = configure.find(CONFIG_INTERNAL_WIDTH_FIELD);
+    auto heightIt = configure.find(CONFIG_INTERNAL_HEIGHT_FIELD);
+    if (widthIt != configure.end() && heightIt != configure.end()) {
+      width = widthIt->get<int>();
+      height = heightIt->get<int>();
+    }
+
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
       auto encFmtIt = configure.find(CONFIG_INTERNAL_ENC_FMT_FIELD);
@@ -134,13 +141,6 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
             "{1}",
             CONFIG_INTERNAL_PIX_FMT_FIELD, json);
         break;
-      }
-
-      auto widthIt = configure.find(CONFIG_INTERNAL_WIDTH_FIELD);
-      auto heightIt = configure.find(CONFIG_INTERNAL_HEIGHT_FIELD);
-      if (widthIt != configure.end() && heightIt != configure.end()) {
-        width = widthIt->get<int>();
-        height = heightIt->get<int>();
       }
 
       auto ipIt = configure.find(CONFIG_INTERNAL_IP_FIELD);
@@ -281,7 +281,7 @@ void Encode::processVideoStream(
                         std::to_string(channel_id);
           break;
         case EncodeType::RTMP:
-          output_path = "rtsp://" + ip + ":" + mRtmpPort + "/" +
+          output_path = "rtmp://" + ip + ":" + mRtmpPort + "/" +
                         std::to_string(channel_id);
           break;
         case EncodeType::VIDEO: {
@@ -334,16 +334,18 @@ void Encode::processImgDir(
       IVS_INFO("Error creating directory.");
     }
   }
-  int width = objectMetadata->mFrame->mWidth;
-  int height = objectMetadata->mFrame->mHeight;
+  int width = this->width == -1 ? objectMetadata->mFrame->mWidth : this->width;
+  int height =
+      this->height == -1 ? objectMetadata->mFrame->mHeight : this->height;
   bm_image image = objectMetadata->mFrame->mSpDataOsd
                        ? *objectMetadata->mFrame->mSpDataOsd
                        : *objectMetadata->mFrame->mSpData;
   bm_image imageStorage;
   bm_image_create(objectMetadata->mFrame->mHandle, height, width,
                   FORMAT_YUV420P, image.data_type, &imageStorage);
-  bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
-                             &imageStorage);
+  bmcv_rect_t crop_rect = {0, 0, image.width, image.height};
+  bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, image,
+                         &imageStorage, &crop_rect);
   // save image
   void* jpeg_data = NULL;
   size_t out_size = 0;
@@ -387,12 +389,15 @@ void Encode::processWS(int dataPipeId,
     img_to_enc.reset(new bm_image,
                      [&](bm_image* img) { bm_image_destroy(*img); });
     bm_image image = *(objectMetadata->mFrame->mSpData);
-    bm_image_create(objectMetadata->mFrame->mHandle,
-                    objectMetadata->mFrame->mHeight,
-                    objectMetadata->mFrame->mWidth, FORMAT_YUV420P,
-                    image.data_type, &(*img_to_enc));
-    bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, img.get(),
-                               img_to_enc.get());
+    int width =
+        this->width == -1 ? objectMetadata->mFrame->mWidth : this->width;
+    int height =
+        this->height == -1 ? objectMetadata->mFrame->mHeight : this->height;
+    bm_image_create(objectMetadata->mFrame->mHandle, height, width,
+                    FORMAT_YUV420P, image.data_type, &(*img_to_enc));
+    bmcv_rect_t crop_rect = {0, 0, img->width, img->height};
+    bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *img,
+                           img_to_enc.get(), &crop_rect);
   }
   bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
                       &jpeg_data, &out_size);
