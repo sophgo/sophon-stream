@@ -56,4 +56,4 @@ sophon-stream retinaface插件具有一些可配置的参数，可以根据需�
 | thread_number |    整数     | 1 | 启动线程数 |
 
 > **注意**：
-1. stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用tpu和cpu资源，提高检测效率。
+1. stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用各项资源，提高检测效率。

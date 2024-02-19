@@ -168,7 +168,7 @@ common::ErrorCode stop();
 // push数据，用于启动DecoderElement的解码任务
 common::ErrorCode pushInputData(int inputPort, int dataPipeId, std::shared_ptr<void> data);
 
-// 线程函数，负责循环调用doWork()并分配CPU时间片资源
+// 线程函数，负责循环调用doWork()并分配处理器时间片资源
 void run(int dataPipeId)
 
 // 纯虚函数，派生类中用于初始化自定义的属性，例如算法相关内容
@@ -307,7 +307,7 @@ sophon-stream/element/tools 目录是功能性插件的集合，目前包括数�
  - element每个线程都与输入connector的一个datapipe绑定。组batch发生在doWork()函数的开始，从当前线程对应的datapipe中获取数据
  - 发送数据时，保证下游element各个线程负载均衡
  - 如果两个模块之间只有模型内部参数的差异，前处理、推理、后处理的流程完全相同时，可以复用前处理和后处理element
- - 支持将前处理、推理和后处理分别配置在不同的element上。如此配置的目的是充分利用cpu和tpu资源，提高算法效率
+ - 支持将前处理、推理和后处理分别配置在不同的element上。如此配置的目的是充分利用各项资源，提高算法效率
 
 #### 4.1.2 yolox
 

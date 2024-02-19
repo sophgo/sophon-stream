@@ -112,13 +112,13 @@ sophon-stream is a data stream processing tool designed for the Sophon developme
 sophon-stream has the following advantages:
 
 - Robust and flexible foundational framework. While ensuring the robustness of the sophon-stream foundational framework, it also offers considerable flexibility. Users can easily configure JSON files to accurately and conveniently build complex business pipelines.
-- Comprehensive software-hardware ecosystem. Based on the underlying characteristics of Sophon chips, sophon-stream includes hardware acceleration for encoding, conventional image processing acceleration, and inference acceleration, effectively leveraging the performance advantages of Sophon chips and significantly improving overall throughput efficiency.
+- Comprehensive software-hardware ecosystem. Based on the underlying characteristics of Sophon devices, sophon-stream includes hardware acceleration for encoding, conventional image processing acceleration, and inference acceleration, effectively leveraging the performance advantages of Sophon devices and significantly improving overall throughput efficiency.
 - Rich algorithm library. sophon-stream supports various object detection and tracking algorithms, such as yolox, yolov5, bytetrack, and more.
-- Easy deployment. sophon-stream is suitable for Sophon BM1684, BM1684X and BM1688 chips, and can be flexibly deployed in PCIe and SOC modes.
+- Easy deployment. sophon-stream is suitable for Sophon BM1684, BM1684X and BM1688 devices, and can be flexibly deployed in PCIe and SOC modes.
 
 ### 2.2 sophon-stream Software Stack
 
-sophon-stream is designed based on SophonSDK. SophonSDK is a deep learning SDK customized by Sophgo Technologies for its self-developed Deep Learning chips. It encompasses capabilities required for neural network inference, such as model optimization and efficient runtime support, providing an easy-to-use and efficient end-to-end solution for deep learning application development and deployment.
+sophon-stream is designed based on SophonSDK. SophonSDK is a deep learning SDK customized by Sophgo Technologies for its self-developed Deep Learning devices. It encompasses capabilities required for neural network inference, such as model optimization and efficient runtime support, providing an easy-to-use and efficient end-to-end solution for deep learning application development and deployment.
 
 ![stream_and_sdk](./pics/stream_sdk.png)
 

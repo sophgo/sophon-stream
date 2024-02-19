@@ -548,9 +548,11 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
   if (is_rtmp_) {
     cv::Mat write_mat;
     cv::bmcv::toMAT(&image, write_mat, true);
+    cv::Mat resized;
+    cv::resize(write_mat, resized, cv::Size(params_map_["width"], params_map_["height"]));
     mFpsProfiler.add(1);
     pushQueue(
-        std::static_pointer_cast<void>(std::make_shared<cv::Mat>(write_mat)));
+        std::static_pointer_cast<void>(std::make_shared<cv::Mat>(resized)));
     return 0;
   }
 }

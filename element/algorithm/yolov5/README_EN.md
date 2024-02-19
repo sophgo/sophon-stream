@@ -69,5 +69,5 @@ The Sophon-Stream YOLOv5 plugin has several configurable parameters that can be 
 |Mindet | integer | 0 | Only accept detection boxes with width and height greater than mindet|
 
 > **notes**：
-1. The `stage` parameter should be set as one of the following: "pre", "infer", "post", or their adjacent combinations. These stages should be connected in sequence to the elements, aligning with the order of preprocessing, inference, and post-processing. Distributing these three stages across three elements aims to maximize the utilization of TPU and CPU resources, enhancing detection efficiency.
+1. The `stage` parameter should be set as one of the following: "pre", "infer", "post", or their adjacent combinations. These stages should be connected in sequence to the elements, aligning with the order of preprocessing, inference, and post-processing. Distributing these three stages across three elements aims to maximize the utilization of resources, enhancing detection efficiency.
 2. TPU kernel post-processing is specifically designed for BM1684X devices. If it's not enabled, it should be set to false.

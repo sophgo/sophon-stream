@@ -191,7 +191,7 @@ class Element : public ::sophon_stream::common::NoCopyable {
   virtual void onStop() {}
 
   /**
-   * @brief 线程函数，循环调用doWork()，分配CPU时间片资源
+   * @brief 线程函数，循环调用doWork()，分配处理器时间片资源
    * @param[in] dataPipeId :
    * 每个线程都与一个datapipe绑定，只处理来自该datapipe的数据
    */

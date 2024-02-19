@@ -36,4 +36,4 @@ The sophon-stream posec3d plugin has some configurable parameters that can be se
 | thread_number    | Integer| 1                                                                   | Number of threads to start       |
 
 > **Note**:
-1. For the stage parameter, it needs to be set as one of "pre," "infer," "post," or a combination of adjacent items. These stages should be connected in the order of pre-processing, inference, and post-processing to elements. The purpose of allocating these three stages to three elements is to maximize the utilization of TPU and CPU resources, enhancing the efficiency of detection.
+1. For the stage parameter, it needs to be set as one of "pre," "infer," "post," or a combination of adjacent items. These stages should be connected in the order of pre-processing, inference, and post-processing to elements. The purpose of allocating these three stages to three elements is to maximize the utilization of resources, enhancing the efficiency of detection.

@@ -69,5 +69,5 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
 |   mindet    |    整数     | 0 | 仅接受宽高都大于mindet的检测框 |
 
 > **注意**：
-1. stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用tpu和cpu资源，提高检测效率。
+1. stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用各项资源，提高检测效率。
 3. tpu_kernel后处理仅适配BM1684X设备，若不启用，则需要设置为false
