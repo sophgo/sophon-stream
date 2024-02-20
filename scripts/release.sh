@@ -38,6 +38,9 @@ cp -r element/algorithm/retinaface $result_dir/element/algorithm
 cp -r element/algorithm/fastpose $result_dir/element/algorithm
 cp -r element/algorithm/posec3d $result_dir/element/algorithm
 cp -r element/algorithm/ppocr $result_dir/element/algorithm
+cp -r element/algorithm/yolov7 $result_dir/element/algorithm
+cp -r element/algorithm/yolov8 $result_dir/element/algorithm
+
 
 mkdir $result_dir/element/tools
 cp -r element/tools/converger $result_dir/element/tools
