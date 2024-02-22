@@ -65,12 +65,13 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0501.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0701.tar.gz
 ```
 
-下面两个文件，分别对应BM1688 SDK的1.2、1.3、1.4版本。
+下面四个文件，分别对应BM1688 SDK的1.2、1.3、1.4、1.5版本。
 ```bash
 pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.2.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.3.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.4.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.5.tar.gz
 ```
 
 交叉编译时，`SOPHON_SDK_SOC`需要填写绝对路径
