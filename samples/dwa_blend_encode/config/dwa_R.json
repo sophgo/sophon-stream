@@ -7,7 +7,8 @@
     "dwa_mode": "DWA_FISHEYE_MODE",
     "dis_mode": "BMCV_MODE_PANORAMA_360",
     "use_grid": true,
-    "grid_name": "../dwa_blend_encode/data/gridinfo/R_grid_info_68_68_4624_70_70_dst_2240x2240_src_2240x2240.dat"
+    "grid_name": "../dwa_blend_encode/data/gridinfo/Rgrid_info_69_68_4692_70_70_dst_2240x2240_src_2240x2240.dat",
+    "grid_size":453040
   },
   "shared_object": "../../build/lib/libdwa.so",
   "name": "dwa",

@@ -38,19 +38,19 @@ bm_status_t set_sgbm_default_param(bmcv_dpu_sgbm_attrs* grp_) {
 bm_status_t set_online_default_param(bmcv_dpu_sgbm_attrs* grp_,
                                      bmcv_dpu_fgs_attrs* fgs_grp) {
   grp_->bfw_mode_en = DPU_BFW_MODE_7x7;
-  grp_->disp_range_en = BMCV_DPU_DISP_RANGE_16;
-  grp_->disp_start_pos = 0;
-  grp_->dcc_dir_en = BMCV_DPU_DCC_DIR_A12;
+  grp_->disp_range_en = BMCV_DPU_DISP_RANGE_128;
+  grp_->disp_start_pos = 30;
+  grp_->dcc_dir_en = BMCV_DPU_DCC_DIR_A13;
   grp_->dpu_census_shift = 1;
   grp_->dpu_rshift1 = 3;
   grp_->dpu_rshift2 = 2;
   grp_->dpu_ca_p1 = 1800;
   grp_->dpu_ca_p2 = 14400;
-  grp_->dpu_uniq_ratio = 25;
+  grp_->dpu_uniq_ratio = 10;
   grp_->dpu_disp_shift = 4;
   fgs_grp->depth_unit_en = BMCV_DPU_DEPTH_UNIT_MM;
   fgs_grp->fgs_max_count = 19;
-  fgs_grp->fgs_max_t = 2;
+  fgs_grp->fgs_max_t = 4;
   fgs_grp->fxbase_line = 864000;
   return BM_SUCCESS;
 }
@@ -266,7 +266,7 @@ void Dpu::getConfig(const httplib::Request& request,
   ResponseGetConfig resp;
   {
     std::lock_guard<std::mutex> lk(mtx);
-    resp.rgcMap["DpuMode"] = rDpuModeMap[dpu_mode];
+    resp.rgcMap["DpuMode"] = rDpuModeMap[dpu_online_mode];
     resp.rgcMap["MaskMode"] = rMaskModeMap[dpu_sgbm_attr.bfw_mode_en];
     resp.rgcMap["DispRange"] = rDispRangeMap[dpu_sgbm_attr.disp_range_en];
     resp.rgcMap["DispStartPos"] = std::to_string(dpu_sgbm_attr.disp_start_pos);
@@ -305,7 +305,7 @@ void Dpu::setConfig(const httplib::Request& request,
   // 这里从json取出了各个需要set的属性，然后做赋值
   {
     std::lock_guard<std::mutex> lk(mtx);
-    dpu_mode = rsc.DpuMode;
+    dpu_online_mode = rsc.DpuMode;
     dpu_sgbm_attr.bfw_mode_en = rsc.MaskMode;
     dpu_sgbm_attr.disp_range_en = rsc.DispRange;
     dpu_sgbm_attr.disp_start_pos = rsc.DispStartPos;
@@ -327,7 +327,7 @@ void Dpu::setConfig(const httplib::Request& request,
   ResponseGetConfig resp;
   {
     std::lock_guard<std::mutex> lk(mtx);
-    resp.rgcMap["DpuMode"] = rDpuModeMap[dpu_mode];
+    resp.rgcMap["DpuMode"] = rDpuModeMap[dpu_online_mode];
     resp.rgcMap["MaskMode"] = rMaskModeMap[dpu_sgbm_attr.bfw_mode_en];
     resp.rgcMap["DispRange"] = rDispRangeMap[dpu_sgbm_attr.disp_range_en];
     resp.rgcMap["DispStartPos"] = std::to_string(dpu_sgbm_attr.disp_start_pos);
@@ -388,10 +388,10 @@ void Dpu::registListenFunc(sophon_stream::framework::ListenThread* listener) {
                        sophon_stream::framework::RequestType::PUT,
                        std::bind(&Dpu::setConfig, this, std::placeholders::_1,
                                  std::placeholders::_2));
-  listener->setHandler(dispTypeStr.c_str(),
-                       sophon_stream::framework::RequestType::PUT,
-                       std::bind(&Dpu::setDispType, this, std::placeholders::_1,
-                                 std::placeholders::_2));
+  // listener->setHandler(dispTypeStr.c_str(),
+  //                      sophon_stream::framework::RequestType::PUT,
+  //                      std::bind(&Dpu::setDispType, this, std::placeholders::_1,
+  //                                std::placeholders::_2));
   return;
 }
 
@@ -401,240 +401,125 @@ common::ErrorCode Dpu::initInternal(const std::string& json) {
   if (!configure.is_object()) {
     errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
   }
+  mFpsProfiler.config("fps_dpu:", 100);
 
-  bm_status_t ret = bm_dev_request(&handle, dev_id);
+  dpu_online_mode = DPU_ONLINE_MUX0;
+  dpu_sgbm_mode = DPU_SGBM_MUX2;
+  dpu_fgs_mode = DPU_FGS_MUX0;
 
-  dpu_mode = DPU_ONLINE_MUX0;
   // set_sgbm_default_param(&dpu_sgbm_attr);
   set_online_default_param(&dpu_sgbm_attr, &dpu_fgs_attr);
 
-  auto mapY_path =
-      configure.find(CONFIG_INTERNAL_MAPY_FILED)->get<std::string>();
-  auto mapU_path =
-      configure.find(CONFIG_INTERNAL_MAPU_FILED)->get<std::string>();
-  auto mapV_path =
-      configure.find(CONFIG_INTERNAL_MAPV_FILED)->get<std::string>();
-
-  FILE* fp;
-  char str[256];
-  int i = 0;
-  fp = fopen(mapY_path.c_str(), "r");
-  STREAM_CHECK(fp != NULL,"open map table failed!");
-  while (fgets(str, 256, fp) != NULL) {
-    FixMapY[i] = atoi(str);
-    i++;
+  auto dpu_type_str =
+      configure.find(CONFIG_INTERNAL_DPU_TYPE_FILED)->get<std::string>();
+  dpu_type = dpu_type_map[dpu_type_str];
+  auto dpu_mode_str =
+      configure.find(CONFIG_INTERNAL_DPU_MODE_FILED)->get<std::string>();
+  if (dpu_type == DPU_ONLINE) {
+    dpu_online_mode = online_mode_map[dpu_mode_str];
+  } else if (dpu_type == DPU_SGBM) {
+    dpu_sgbm_mode = sgbm_mode_map[dpu_mode_str];
+  } else if (dpu_type == DPU_FGS) {
+    dpu_fgs_mode = fgs_mode_map[dpu_mode_str];
   }
-  fclose(fp);
-  fp = fopen(mapU_path.c_str(), "r");
-  STREAM_CHECK(fp != NULL,"open map table failed!");
-  i = 0;
-  while (fgets(str, 256, fp) != NULL) {
-    FixMapU[i] = atoi(str);
-    i++;
-  }
-  fclose(fp);
-  fp = fopen(mapV_path.c_str(), "r");
-  STREAM_CHECK(fp != NULL,"open map table failed!");
-  i = 0;
-  while (fgets(str, 256, fp) != NULL) {
-    FixMapV[i] = atoi(str);
-    i++;
-  }
-  fclose(fp);
-
-  bm_malloc_device_byte(handle, &mapTableY, MAP_TABLE_SIZE);
-  ret = bm_memcpy_s2d(handle, mapTableY, FixMapY);
-  if (ret != BM_SUCCESS) {
-    IVS_DEBUG("bm_memcpy_s2d failed . ret = %d\n", ret);
-    return common::ErrorCode::UNKNOWN;
-  }
-
-  bm_malloc_device_byte(handle, &mapTableU, MAP_TABLE_SIZE);
-  ret = bm_memcpy_s2d(handle, mapTableU, FixMapU);
-  if (ret != BM_SUCCESS) {
-    IVS_DEBUG("bm_memcpy_s2d failed . ret = %d\n", ret);
-    return common::ErrorCode::UNKNOWN;
-  }
-
-  bm_malloc_device_byte(handle, &mapTableV, MAP_TABLE_SIZE);
-  ret = bm_memcpy_s2d(handle, mapTableV, FixMapV);
-  if (ret != BM_SUCCESS) {
-    IVS_DEBUG("bm_memcpy_s2d failed . ret = %d\n", ret);
-    return common::ErrorCode::UNKNOWN;
-  }
-
-  map_mode = IVE_MAP_U8;
 
   return common::ErrorCode::SUCCESS;
-}
-
-void Dpu::dpu_ive_map(bm_image& dpu_image, bm_image& dpu_image_map,
-                      int ive_src_stride[]) {
-  bm_ive_image_calc_stride(handle, dpu_image_map.height, dpu_image_map.width,
-                           FORMAT_YUV444P, DATA_TYPE_EXT_1N_BYTE,
-                           ive_src_stride);
-  bm_image dpu_image_map_y;
-  bm_image dpu_image_map_u;
-  bm_image dpu_image_map_v;
-
-  bm_image_create(handle, dpu_image_map.height, dpu_image_map.width, dpu_fmt,
-                  DATA_TYPE_EXT_1N_BYTE, &dpu_image_map_y, ive_src_stride);
-  bm_image_create(handle, dpu_image_map.height, dpu_image_map.width, dpu_fmt,
-                  DATA_TYPE_EXT_1N_BYTE, &dpu_image_map_u, ive_src_stride);
-  bm_image_create(handle, dpu_image_map.height, dpu_image_map.width, dpu_fmt,
-                  DATA_TYPE_EXT_1N_BYTE, &dpu_image_map_v, ive_src_stride);
-
-  // output
-  bm_device_mem_t dpu_image_map_mem[3] = {0};
-  bm_image_get_device_mem(dpu_image_map, dpu_image_map_mem);
-  bm_image_attach(dpu_image_map_y, &dpu_image_map_mem[0]);  // y
-  bm_image_attach(dpu_image_map_u, &dpu_image_map_mem[1]);  // uv
-  bm_image_attach(dpu_image_map_v, &dpu_image_map_mem[2]);  // uv
-
-  // ive
-  bmcv_image_ive_map(handle, map_mode, mapTableY, &dpu_image, &dpu_image_map_y);
-  bmcv_image_ive_map(handle, map_mode, mapTableU, &dpu_image, &dpu_image_map_u);
-  bmcv_image_ive_map(handle, map_mode, mapTableV, &dpu_image, &dpu_image_map_v);
-
-  // bm_image_destroy
-  bm_image_destroy(&dpu_image_map_y);
-  bm_image_destroy(&dpu_image_map_u);
-  bm_image_destroy(&dpu_image_map_v);
 }
 
 common::ErrorCode Dpu::dpu_work(
     std::shared_ptr<common::ObjectMetadata> leftObj,
     std::shared_ptr<common::ObjectMetadata> rightObj,
     std::shared_ptr<common::ObjectMetadata> dpuObj) {
+  auto start = std::chrono::high_resolution_clock::now();
+
   bm_status_t ret;
-  // select display type
-  std::shared_ptr<bm_image> dpu_image_left = nullptr;
-  std::shared_ptr<bm_image> dpu_image_right = nullptr;
-  if (dis_type == ONLY_DPU_DIS || dis_type == DWA_DPU_DIS) {
-    dpu_image_left = leftObj->mFrame->mSpDataDwa;
-    dpu_image_right = rightObj->mFrame->mSpDataDwa;
-  } else {
-    dpu_image_left = leftObj->mFrame->mSpData;
-    dpu_image_right = rightObj->mFrame->mSpData;
-  }
+  // // select display type
+  // std::shared_ptr<bm_image> dpu_image_left = nullptr;
+  // std::shared_ptr<bm_image> dpu_image_right = nullptr;
+  // if (dis_type == ONLY_DPU_DIS || dis_type == DWA_DPU_DIS) {
+  //   dpu_image_left = leftObj->mFrame->mSpDataDwa;
+  //   dpu_image_right = rightObj->mFrame->mSpDataDwa;
+  // } else {
+  //   dpu_image_left = leftObj->mFrame->mSpData;
+  //   dpu_image_right = rightObj->mFrame->mSpData;
+  // }
 
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::milli> duration = end - start;
+  std::cout << "dpu初始化程序执行时间：" << duration.count() << " ms"
+            << std::endl;
+
+  // dpu
+  start = std::chrono::high_resolution_clock::now();
+  std::shared_ptr<bm_image> dpu_out = nullptr;
   // dpu输出结果
-  bm_image dpu_out;
-  bm_image_create(handle, dpu_image_left->height, dpu_image_left->width,
-                  dpu_fmt, DATA_TYPE_EXT_1N_BYTE, &dpu_out);
-  bm_image_alloc_dev_mem(dpu_out, BMCV_HEAP_ANY);
-
-  // ive_map结果
-  std::shared_ptr<bm_image> dpu_image_map = nullptr;
-  dpu_image_map.reset(new bm_image, [](bm_image* p) {
+  dpu_out.reset(new bm_image, [](bm_image* p) {
     bm_image_destroy(*p);
     delete p;
     p = nullptr;
   });
 
-  int ive_src_stride[4];
-  bm_ive_image_calc_stride(handle, dpu_image_left->height,
-                           dpu_image_left->width, FORMAT_YUV444P,
-                           DATA_TYPE_EXT_1N_BYTE, ive_src_stride);
-  bm_image_create(handle, leftObj->mFrame->mSpData->height,
-                  leftObj->mFrame->mSpData->width, FORMAT_YUV444P,
-                  DATA_TYPE_EXT_1N_BYTE, dpu_image_map.get(), ive_src_stride);
+  bm_image_create(leftObj->mFrame->mHandle, leftObj->mFrame->mSpDataDwa->height,
+                  leftObj->mFrame->mSpDataDwa->width, dpu_fmt,
+                  DATA_TYPE_EXT_1N_BYTE, dpu_out.get());
+  bm_image_alloc_dev_mem(*dpu_out, 1);
 
-  bm_image_alloc_dev_mem(*dpu_image_map, 1);
+  if (dpu_type == DPU_ONLINE) {
+    // std::lock_guard<std::mutex> lk(mtx);
+    bmcv_dpu_online_disp(leftObj->mFrame->mHandle,
+                         leftObj->mFrame->mSpDataDwa.get(),
+                         rightObj->mFrame->mSpDataDwa.get(), dpu_out.get(),
+                         &dpu_sgbm_attr, &dpu_fgs_attr, dpu_online_mode);
+    std::cout << "bmcv_dpu_online_disp" << std::endl;
+  } else if (dpu_type == DPU_SGBM) {
+    dpu_sgbm_mode = DPU_SGBM_MUX2;
+    bmcv_dpu_sgbm_disp(leftObj->mFrame->mHandle,
+                       leftObj->mFrame->mSpDataDwa.get(),
+                       rightObj->mFrame->mSpDataDwa.get(), dpu_out.get(),
+                       &dpu_sgbm_attr, dpu_sgbm_mode);
+    std::cout << "bmcv_dpu_sgbm_disp" << std::endl;
+  } else if (dpu_type == DPU_FGS) {
+    bm_image sgbm_out;
 
-  //
-  bool need_convert = (dpu_image_left->image_format != dpu_fmt ||
-                       dpu_image_right->image_format != dpu_fmt);
-  bm_image dpu_img[2];
-  if (need_convert) {
-    bm_image_create(leftObj->mFrame->mHandle, dpu_image_left->height,
-                          dpu_image_left->width, dpu_fmt, DATA_TYPE_EXT_1N_BYTE,
-                          &dpu_img[0], NULL);
-    bm_image_create(rightObj->mFrame->mHandle, dpu_image_right->height,
-                          dpu_image_right->width, dpu_fmt,
-                          DATA_TYPE_EXT_1N_BYTE, &dpu_img[1], NULL);
+    bm_image_create(leftObj->mFrame->mHandle,
+                    leftObj->mFrame->mSpDataDwa->height,
+                    leftObj->mFrame->mSpDataDwa->width, dpu_fmt,
+                    DATA_TYPE_EXT_1N_BYTE, &sgbm_out, NULL);
+    bm_image_alloc_dev_mem(sgbm_out, 1);
 
-    bm_image_alloc_dev_mem(dpu_img[0], 1);
-    bm_image_alloc_dev_mem(dpu_img[1], 1);
-
-    bmcv_image_storage_convert(leftObj->mFrame->mHandle, 1,
-                                     dpu_image_left.get(), &dpu_img[0]);
-    bmcv_image_storage_convert(rightObj->mFrame->mHandle, 1,
-                                     dpu_image_right.get(), &dpu_img[1]);
-  } else {
-    dpu_img[0] = *dpu_image_left;
-    dpu_img[1] = *dpu_image_right;
+    dpu_sgbm_mode = DPU_SGBM_MUX2;
+    bmcv_dpu_sgbm_disp(leftObj->mFrame->mHandle,
+                       leftObj->mFrame->mSpDataDwa.get(),
+                       rightObj->mFrame->mSpDataDwa.get(), &sgbm_out,
+                       &dpu_sgbm_attr, dpu_sgbm_mode);
+    bmcv_dpu_fgs_disp(leftObj->mFrame->mHandle,
+                      leftObj->mFrame->mSpDataDwa.get(), &sgbm_out,
+                      dpu_out.get(), &dpu_fgs_attr, dpu_fgs_mode);
+    bm_image_destroy(sgbm_out);
   }
 
-  // dpu and ive map
+  end = std::chrono::high_resolution_clock::now();
+  duration = end - start;
+  std::cout << "bmcv_dpu_online_disp/bmcv_dpu_sgbm_disp程序执行时间："
+            << duration.count() << " ms" << std::endl;
+  if (co%100==0)
   {
-    std::lock_guard<std::mutex> lk(mtx);
-    bmcv_dpu_online_disp(handle, &dpu_img[0], &dpu_img[1], &dpu_out,
-                               &dpu_sgbm_attr, &dpu_fgs_attr, dpu_mode);
-    dpu_ive_map(dpu_out, *dpu_image_map, ive_src_stride);
+    char filename[20];
+    sprintf(filename, "dpu_out%d.bmp", co);
+    bm_image_write_to_bmp(*dpu_out, filename);
   }
+  
+  dpuObj->mFrame->mSpDataDpu = dpu_out;
+  dpuObj->mFrame->mWidth = dpuObj->mFrame->mSpDataDpu->width;
+  dpuObj->mFrame->mHeight = dpuObj->mFrame->mSpDataDpu->height;
 
-  // dispaly image
-  if (dis_type != ONLY_DPU_DIS) {
-    std::shared_ptr<bm_image> all_image = nullptr;
-    all_image.reset(new bm_image, [](bm_image* p) {
-      bm_image_destroy(*p);
-      delete p;
-      p = nullptr;
-    });
-    ret = bm_image_create(handle, dpu_image_map->height,
-                          dpu_image_map->width *3+200, FORMAT_YUV444P,
-                          DATA_TYPE_EXT_1N_BYTE, all_image.get());
-    bm_image_alloc_dev_mem(*all_image, 1);
-
-    bm_device_mem_t dpu_mem[3];
-    bm_image_get_device_mem(*all_image, dpu_mem);
-    bm_memset_device(handle, 0, dpu_mem[0]);
-    bm_memset_device(handle, 0, dpu_mem[1]);
-    bm_memset_device(handle, 0, dpu_mem[2]);
-
-    int input_num = 3;
-    bmcv_rect_t dst_crop[input_num];
-
-    dst_crop[0] = {.start_x = 0,
-                   .start_y = 0,
-                   .crop_w = (unsigned int)dpu_image_left->width,
-                   .crop_h = (unsigned int)dpu_image_left->height};
-    dst_crop[1] = {.start_x = (unsigned int)dpu_image_left->width + 100,
-                   .start_y = 0,
-                   .crop_w = (unsigned int)dpu_image_left->width,
-                   .crop_h = (unsigned int)dpu_image_left->height};
-
-    dst_crop[2] = {.start_x = (unsigned int)dpu_image_left->width*2 + 200,
-                   .start_y = 0,
-                   .crop_w = (unsigned int)dpu_image_map->width,
-                   .crop_h = (unsigned int)dpu_image_map->height};
-
-    bm_image src_img[3] = {dpu_img[0],dpu_img[1], *dpu_image_map};
-
-    bmcv_image_vpp_stitch(handle, input_num, src_img, *all_image, dst_crop,
-                          NULL);
-
-    dpuObj->mFrame->mSpData = all_image;
-    dpuObj->mFrame->mWidth = all_image->width;
-    dpuObj->mFrame->mHeight = all_image->height;
-  } else {
-    dpuObj->mFrame->mSpData = dpu_image_map;
-    dpuObj->mFrame->mWidth = dpu_image_map->width;
-    dpuObj->mFrame->mHeight = dpu_image_map->height;
-  }
+  dpuObj->mFrame->mSpData = leftObj->mFrame->mSpData;
+  dpuObj->mFrame->mSpDataDwa = leftObj->mFrame->mSpDataDwa;
 
   dpuObj->mFrame->mChannelId = leftObj->mFrame->mChannelId;
   dpuObj->mFrame->mFrameId = leftObj->mFrame->mFrameId;
   dpuObj->mFrame->mChannelIdInternal = leftObj->mFrame->mChannelIdInternal;
   dpuObj->mFrame->mHandle = leftObj->mFrame->mHandle;
-
-    bm_image_destroy(&dpu_out);
-  if (need_convert) {
-    bm_image_destroy(&dpu_img[0]);
-    bm_image_destroy(&dpu_img[1]);
-  }
-
   return common::ErrorCode::SUCCESS;
 }
 
@@ -669,10 +554,11 @@ common::ErrorCode Dpu::doWork(int dataPipeId) {
     std::shared_ptr<common::ObjectMetadata> dpuObj =
         std::make_shared<common::ObjectMetadata>();
     dpuObj->mFrame = std::make_shared<sophon_stream::common::Frame>();
-    // bm_image_write_to_bmp(*inputs[0]->mFrame->mSpDataDwa, "left.bmp");
-    // bm_image_write_to_bmp(*inputs[1]->mFrame->mSpDataDwa, "right.bmp");
+
     dpu_work(inputs[0], inputs[1], dpuObj);
-    //  bm_image_write_to_bmp(*dpuObj->mFrame->mSpData, "dpuObj.bmp");
+
+    mFpsProfiler.add(1);
+
     IVS_INFO("Now Flag is {0}", dis_type);
 
     int channel_id_internal = dpuObj->mFrame->mChannelIdInternal;

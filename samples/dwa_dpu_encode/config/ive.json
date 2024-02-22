@@ -1,0 +1,12 @@
+{
+  "configure": {
+    "ive_mapy": "../dwa_dpu_encode/data/maps/maps/mapY.txt",
+    "ive_mapu": "../dwa_dpu_encode/data/maps/maps/mapU.txt",
+    "ive_mapv": "../dwa_dpu_encode/data/maps/maps/mapV.txt",
+    "is_ive":true
+  },
+  "shared_object": "../../build/lib/libive.so",
+  "name": "ive",
+  "side": "sophgo",
+  "thread_number": 4
+}

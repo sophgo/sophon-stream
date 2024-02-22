@@ -8,7 +8,7 @@
     "bd_rx0": 0,
     "bd_lx1": 0,
     "bd_rx1": 0,
-    "wgt_mode": 2
+    "width_minus":128 
   },
   "shared_object": "../../build/lib/libblend.so",
   "name": "blend",

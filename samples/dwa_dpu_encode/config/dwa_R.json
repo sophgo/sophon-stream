@@ -6,8 +6,8 @@
       "dst_w":1920,
       "dwa_mode":"DWA_GDC_MODE",
       "use_grid": true,
-      "grid_name": "../dwa_dpu_encode/data/gridinfo/fileGridInfoR.dat",
-      "grid_size":171760
+      "grid_name": "../dwa_dpu_encode/data/gridinfo/rr0126.dat",
+      "grid_size":183120
     },
     "shared_object": "../../build/lib/libdwa.so",
     "name": "dwa",

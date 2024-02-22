@@ -1,0 +1,11 @@
+{
+    "configure": {
+      "ratio":0.4,
+      "dst_h":1536,
+      "dst_w":432
+    },
+    "shared_object": "../../build/lib/libresize.so",
+    "name": "resize",
+    "side": "sophgo",
+    "thread_number": 1
+  }

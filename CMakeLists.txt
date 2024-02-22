@@ -57,7 +57,10 @@ checkAndAddElement(element/tools/faiss)
 checkAndAddElement(element/tools/dwa)
 checkAndAddElement(element/tools/dpu)
 checkAndAddElement(element/tools/blend)
+checkAndAddElement(element/tools/ive)
+checkAndAddElement(element/tools/stitch)
 checkAndAddElement(element/tools/fisheye)
+checkAndAddElement(element/tools/resize)
 
 checkAndAddElement(3rdparty/freetype2)
 

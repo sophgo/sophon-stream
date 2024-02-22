@@ -77,6 +77,7 @@ pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.2.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.3.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.4.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.5.tar.gz
 ```
 
 When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC`:

@@ -12,6 +12,7 @@
 
 #include "common/object_metadata.h"
 #include "element.h"
+#include "common/profiler.h"
 #define MAP_TABLE_SIZE 256
 extern "C" {
 extern bm_status_t bm_ive_image_calc_stride(bm_handle_t handle, int img_h,
@@ -25,6 +26,12 @@ namespace element {
 namespace dpu {
 
 enum DisplayType { RAW_DPU_DIS = 0, DWA_DPU_DIS = 1, ONLY_DPU_DIS = 2 };
+
+enum DpuType {
+  DPU_ONLINE,
+  DPU_FGS,
+  DPU_SGBM
+}; 
 
 class Dpu : public ::sophon_stream::framework::Element {
  public:
@@ -41,15 +48,12 @@ class Dpu : public ::sophon_stream::framework::Element {
   void dpu_ive_map(bm_image& dpu_image, bm_image& dpu_image_map,
                    int ive_src_stride[]);
 
-  static constexpr const char* CONFIG_INTERNAL_MAPY_FILED = "ive_mapy";
-  static constexpr const char* CONFIG_INTERNAL_MAPU_FILED = "ive_mapu";
-  static constexpr const char* CONFIG_INTERNAL_MAPV_FILED = "ive_mapv";
+  static constexpr const char* CONFIG_INTERNAL_DPU_TYPE_FILED = "dpu_type";
+  static constexpr const char* CONFIG_INTERNAL_DPU_MODE_FILED = "dpu_mode";
+  static constexpr const char* CONFIG_INTERNAL_IS_IVE_FILED = "is_ive";
 
   DisplayType dis_type = DWA_DPU_DIS;
   int subId = 0;
-
-  int dev_id = 0;
-  bm_handle_t handle = NULL;
 
   // DPU FGS attrs
   bmcv_dpu_fgs_attrs dpu_fgs_attr;
@@ -57,18 +61,15 @@ class Dpu : public ::sophon_stream::framework::Element {
   bmcv_dpu_sgbm_attrs dpu_sgbm_attr;
   bmcv_dpu_sgbm_mode dpu_sgbm_mode;
 
-  bmcv_dpu_online_mode dpu_mode;
+  bmcv_dpu_online_mode dpu_online_mode;
 
-  unsigned char FixMapU[256];
-  unsigned char FixMapV[256];
-  unsigned char FixMapY[256];
-
-  bm_device_mem_t mapTable;
-  bm_device_mem_t mapTableY;
-  bm_device_mem_t mapTableU;
-  bm_device_mem_t mapTableV;
   bm_ive_map_mode map_mode;
   bm_image_format_ext dpu_fmt = FORMAT_GRAY;
+
+  bool is_ive;
+
+  int co=1;
+  DpuType dpu_type;
 
  private:
   void getConfig(const httplib::Request& request, httplib::Response& response);
@@ -79,6 +80,31 @@ class Dpu : public ::sophon_stream::framework::Element {
       sophon_stream::framework::ListenThread* listener) override;
 
   std::mutex mtx;
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
+
+  std::unordered_map<std::string,DpuType> dpu_type_map = {
+    {"DPU_ONLINE", DpuType::DPU_ONLINE},
+    {"DPU_FGS", DpuType::DPU_FGS},
+    {"DPU_SGBM",DpuType::DPU_SGBM}
+  };
+
+   std::unordered_map<std::string, bmcv_dpu_online_mode_> online_mode_map{
+    {"DPU_ONLINE_MUX0",bmcv_dpu_online_mode_::DPU_ONLINE_MUX0},
+    {"DPU_ONLINE_MUX1",bmcv_dpu_online_mode_::DPU_ONLINE_MUX1},
+    {"DPU_ONLINE_MUX2",bmcv_dpu_online_mode_::DPU_ONLINE_MUX2}
+  };
+
+  std::unordered_map<std::string, bmcv_dpu_fgs_mode_> fgs_mode_map{
+    {"DPU_FGS_MUX0",bmcv_dpu_fgs_mode_::DPU_FGS_MUX0},
+    {"DPU_FGS_MUX1",bmcv_dpu_fgs_mode_::DPU_FGS_MUX1}
+  };
+
+   std::unordered_map<std::string, bmcv_dpu_sgbm_mode_> sgbm_mode_map{
+    {"DPU_SGBM_MUX0",bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX0},
+    {"DPU_SGBM_MUX1",bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX1},
+    {"DPU_SGBM_MUX2",bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX2}
+  };
+
 };
 
 }  // namespace dpu

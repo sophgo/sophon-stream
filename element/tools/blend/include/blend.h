@@ -12,6 +12,7 @@
 
 #include "common/object_metadata.h"
 #include "element.h"
+#include "common/profiler.h"
 void bm_read_bin(bm_image src, const char* input_name);
 void bm_dem_read_bin(bm_handle_t handle, bm_device_mem_t* dmem,
                      const char* input_name, unsigned int size);
@@ -21,7 +22,7 @@ namespace sophon_stream {
 namespace element {
 namespace blend {
 
-enum DisplayType { ONLY_RAW_DIS =0, DWA_BLEND_DIS = 1 };
+enum DisplayType { ONLY_RAW_DIS = 0, DWA_BLEND_DIS = 1 };
 class Blend : public ::sophon_stream::framework::Element {
  public:
   Blend();
@@ -49,7 +50,7 @@ class Blend : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_BD_RX1_FILED = "bd_rx1";
 
   static constexpr const char* CONFIG_INTERNAL_WET_MODE_FILED = "wgt_mode";
-
+  static constexpr const char* CONFIG_INTERNAL_WIDTH_MINUS_DIS = "width_minus";
 
   DisplayType dis_type = DWA_BLEND_DIS;
   bool isDwa = false;
@@ -59,6 +60,7 @@ class Blend : public ::sophon_stream::framework::Element {
   int subId = 0;
   int input_num = 2;
   int src_h, src_w;
+  int width_minus;
   std::mutex mtx;
   struct stitch_param blend_config;
 
@@ -68,6 +70,8 @@ class Blend : public ::sophon_stream::framework::Element {
 
   void registListenFunc(
       sophon_stream::framework::ListenThread* listener) override;
+
+  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 
 }  // namespace blend
