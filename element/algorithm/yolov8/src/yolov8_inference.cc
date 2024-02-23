@@ -83,7 +83,6 @@ Yolov8Inference::getOutputDeviceMem(std::shared_ptr<Yolov8Context> context) {
       });
   outputTensors->handle = context->handle;
   outputTensors->tensors.resize(context->output_num);
-  IVS_INFO("context->output_num {0} ", context->output_num);
   for (int i = 0; i < context->output_num; ++i) {
     outputTensors->tensors[i] = std::make_shared<bm_tensor_t>();
     outputTensors->tensors[i]->dtype =

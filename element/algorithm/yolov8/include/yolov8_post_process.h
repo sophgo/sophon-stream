@@ -27,6 +27,7 @@ struct YoloV8Box {
   int x1, y1, x2, y2;
   float score;
   int class_id;
+  std::vector<float> kps;
 };
 
 using YoloV8BoxVec = std::vector<YoloV8Box>;
@@ -48,10 +49,15 @@ class Yolov8PostProcess : public ::sophon_stream::framework::PostProcess {
   float sigmoid(float x);
   int argmax(float* data, int num);
   void NMS(YoloV8BoxVec& dets, float nmsConfidence);
+
   float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
                                 bool* pIsAligWidth);
-  void postProcessCPU(std::shared_ptr<Yolov8Context> context,
+  void postProcessDet(std::shared_ptr<Yolov8Context> context,
                       common::ObjectMetadatas& objectMetadatas);
+  void postProcessPose(std::shared_ptr<Yolov8Context> context,
+                       common::ObjectMetadatas& objectMetadatas);
+  void postProcessCls(std::shared_ptr<Yolov8Context> context,
+                       common::ObjectMetadatas& objectMetadatas);
   void clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w, int src_h);
 };
 

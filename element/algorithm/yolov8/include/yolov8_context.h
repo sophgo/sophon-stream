@@ -31,6 +31,12 @@ namespace yolov8 {
 #define USE_ASPECT_RATIO 1
 #define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
+enum class TaskType {
+  Detect = 0,
+  Pose,
+  Cls
+};
+
 class Yolov8Context : public ::sophon_stream::framework::Context {
  public:
   int deviceId;  // 设备ID
@@ -42,6 +48,8 @@ class Yolov8Context : public ::sophon_stream::framework::Context {
   std::vector<float> mean;  // 前处理均值， 长度为3，顺序为rgb
   std::vector<float> stdd;  // 前处理方差， 长度为3，顺序为rgb
   bool bgr2rgb;             // 是否将bgr图像转成rgb推理
+
+  TaskType taskType = TaskType::Detect;
 
   float thresh_conf_min = -1;
   std::unordered_map<std::string, float> thresh_conf;  // 置信度阈值

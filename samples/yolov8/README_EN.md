@@ -52,10 +52,16 @@ The downloaded models include:
 ```bash
 ./models/
 ├── BM1684
+|   ├── yolov8n_cls_fp32_1b.bmodel  # Compile with TPU-MLIR，FP32 yolov8-cls BModel for BM1684，batch_size=1
+│   ├── yolov8n_pose_fp32_1b.bmodel # Compile with TPU-MLIR，FP32 yolov8-pose BModel for BM1684，batch_size=1
+│   ├── yolov8n_pose_int8_1b.bmodel # Compile with TPU-MLIR，INT8 yolov8-pose BModel for BM1684，batch_size=1
 │   ├── yolov8s_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1684, batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684, batch_size=1
 │   └── yolov8s_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684, batch_size=4
 ├── BM1684X
+|   ├── yolov8n_cls_fp32_1b.bmodel  # Compile with TPU-MLIR，FP32 yolov8-cls BModel for BM1684X，batch_size=1
+│   ├── yolov8n_pose_fp32_1b.bmodel # Compile with TPU-MLIR，FP32 yolov8-pose BModel for BM1684X，batch_size=1
+│   ├── yolov8n_pose_int8_1b.bmodel # Compile with TPU-MLIR，INT8 yolov8-pose BModel for BM1684X，batch_size=1
 │   ├── yolov8s_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1684X, batch_size=1
 │   ├── yolov8s_fp16_1b.bmodel   # Compile with TPU-MLIR, FP16 BModel for BM1684X, batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684X, batch_size=1
