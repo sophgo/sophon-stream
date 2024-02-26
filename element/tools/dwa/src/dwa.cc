@@ -75,6 +75,10 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
   auto use_grid = configure.find(CONFIG_INTERNAL_USE_GRIDE_FILED)->get<bool>();
 
   if (dwa_mode == DWA_GDC_MODE) {  // 用于04a10 dpu 2560x1440 需要resize
+    is_rot = configure.find(CONFIG_INTERNAL_IS_ROT_FILED)->get<bool>();
+    if (is_rot == true) {
+      rot_mode = BMCV_ROTATION_180;
+    }
 
     if (use_grid) {
       grid_name =
@@ -99,7 +103,7 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
       rewind(fp);
       fread(buffer, grid_size, 1, fp);
       fclose(fp);
-      ldc_attr.grid_info.u.system.system_addr = (void *)buffer;
+      ldc_attr.grid_info.u.system.system_addr = (void*)buffer;
       ldc_attr.grid_info.size = grid_size;
     }
 
@@ -139,7 +143,7 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
       rewind(fp);
       fread(buffer, grid_size, 1, fp);
       fclose(fp);
-      fisheye_attr.grid_info.u.system.system_addr = (void *)buffer;
+      fisheye_attr.grid_info.u.system.system_addr = (void*)buffer;
       fisheye_attr.grid_info.size = grid_size;
       fisheye_attr.bEnable = true;
     }
@@ -225,8 +229,6 @@ common::ErrorCode Dwa::dwa_gdc_work(
   if (dwaObj != nullptr) {
     // resize
     if (is_resize == true) {
-      auto start = std::chrono::high_resolution_clock::now();
-
       // resize 2560x1440 -->1920x1090
       std::shared_ptr<bm_image> resized_img = nullptr;
       resized_img.reset(new bm_image, [](bm_image* p) {
@@ -289,23 +291,30 @@ common::ErrorCode Dwa::dwa_gdc_work(
       bm_image_create(dwaObj->mFrame->mHandle, dst_h, dst_w, src_fmt,
                       DATA_TYPE_EXT_1N_BYTE, resized_img.get(), strides);
 
-#if BMCV_VERSION_MAJOR > 1
-      bm_image_alloc_dev_mem_heap_mask(*resized_img, 2);
-#else
-      bm_image_alloc_dev_mem_heap_mask(*resized_img, 4);
-#endif
+      bm_image_alloc_dev_mem(*resized_img, 2);
 
       bm_status_t ret = bmcv_image_vpp_convert_padding(
           dwaObj->mFrame->mHandle, 1, *dwaObj->mFrame->mSpData,
           resized_img.get(), &padding_attr, &crop_rect);
       assert(BM_SUCCESS == ret);
 
-      auto end = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double, std::milli> duration = end - start;
-      std::cout << "resize程序执行时间：" << duration.count() << " ms"
-                << std::endl;
+      if (is_rot == true) {
+        std::shared_ptr<bm_image> input_rot = nullptr;
+        input_rot.reset(new bm_image, [](bm_image* p) {
+          bm_image_destroy(*p);
+          delete p;
+          p = nullptr;
+        });
 
-      start = std::chrono::high_resolution_clock::now();
+        bm_image_create(dwaObj->mFrame->mHandle, resized_img->height,
+                        resized_img->width, src_fmt, DATA_TYPE_EXT_1N_BYTE,
+                        input_rot.get(), NULL);
+        bm_image_alloc_dev_mem(*input_rot, 2);
+
+        bmcv_dwa_rot(dwaObj->mFrame->mHandle, *resized_img, *input_rot,
+                     rot_mode);
+        resized_img = input_rot;
+      }
 
       // dwa doing
       std::shared_ptr<bm_image> dwa_image = nullptr;
@@ -318,29 +327,18 @@ common::ErrorCode Dwa::dwa_gdc_work(
       ret = bm_image_create(dwaObj->mFrame->mHandle, resized_img->height,
                             resized_img->width, src_fmt, DATA_TYPE_EXT_1N_BYTE,
                             dwa_image.get());
-#if BMCV_VERSION_MAJOR > 1
-      bm_image_alloc_dev_mem_heap_mask(*dwa_image, 2);
-#else
-      bm_image_alloc_dev_mem_heap_mask(*dwa_image, 4);
-#endif
+      bm_image_alloc_dev_mem(*dwa_image, 2);
 
       {
-        auto start = std::chrono::high_resolution_clock::now();
         bmcv_dwa_gdc(dwaObj->mFrame->mHandle, *resized_img, *dwa_image,
                      ldc_attr);
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> duration = end - start;
-        std::cout << "bmcv_dwa_gdc程序执行时间：" << duration.count() << " ms"
-                  << std::endl;
       }
 
-      
       dwaObj->mFrame->mSpData = resized_img;
       dwaObj->mFrame->mSpDataDwa = dwa_image;
       dwaObj->mFrame->mWidth = resized_img->width;
       dwaObj->mFrame->mHeight = resized_img->height;
 
-      
       if (need_copy) bm_image_destroy(image_aligned);
 
     } else {  // dont need resize
@@ -368,7 +366,6 @@ common::ErrorCode Dwa::dwa_gdc_work(
       bmcv_dwa_gdc(dwaObj->mFrame->mHandle, input, *dwa_image, ldc_attr);
 
       dwaObj->mFrame->mSpDataDwa = dwa_image;  // dwa
-
 
       bm_image_destroy(input);
     }

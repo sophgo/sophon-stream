@@ -23,6 +23,26 @@
                         }
                     ]
                 }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../dwa_dpu_encode/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": true
+                        }
+                    ],
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": true
+                        }
+                    ]
+                }
             }
         ],
         "connections": []

@@ -2,11 +2,11 @@
     {
         "graph_id": 0,
         "device_id": 0,
-        "graph_name": "fisheye",
+        "graph_name": "dwa_dpu_encode",
         "elements": [
             {
                 "element_id": 5000,
-                "element_config": "../fisheye/config/decode.json",
+                "element_config": "../dwa_dpu_encode/config/decode.json",
                 "ports": {
                     "input": [
                         {
@@ -18,8 +18,16 @@
                 }
             },
             {
-                "element_id": 5001,
-                "element_config": "../fisheye/config/fisheye.json",
+                "element_id": 5002,
+                "element_config": "../dwa_dpu_encode/config/dwa_L.json"
+            },
+            {
+                "element_id": 5004,
+                "element_config": "../dwa_dpu_encode/config/resize.json"
+            },
+            {
+                "element_id": 5007,
+                "element_config": "../dwa_dpu_encode/config/encode.json",
                 "ports": {
                     "output": [
                         {
@@ -35,7 +43,19 @@
             {
                 "src_element_id": 5000,
                 "src_port": 0,
-                "dst_element_id": 5001,
+                "dst_element_id": 5002,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5002,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 0,
+                "dst_element_id": 5007,
                 "dst_port": 0
             }
         ]

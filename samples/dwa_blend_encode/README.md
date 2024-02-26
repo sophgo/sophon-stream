@@ -123,7 +123,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 ### 8.2 web ui编译
 
-进入sophon-stream/sample/dwa_dpu_encode/web_ui目录，执行以下命令：
+进入sophon-stream/sample/dwa_dpu_encode/web/ui目录，执行以下命令：
 ```bash
 npm install
 npm run build
@@ -131,7 +131,7 @@ npm run build
 编译完成后会在该目录下产生build文件夹。最后，将编译生成的文件拷贝到SoC平台中运行。
 ### 8.3 运行web ui
 
-进入sophon-stream/sample/dwa_dpu_encode/web_ui/build目录，执行以下命令：
+进入sophon-stream/sample/dwa_dpu_encode/web/ui/build目录，执行以下命令：
 ```bash
 python3 -m http.server 3000
 ```

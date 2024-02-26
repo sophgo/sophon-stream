@@ -24,7 +24,7 @@ bm_status_t set_sgbm_default_param(bmcv_dpu_sgbm_attrs* grp_) {
   grp_->bfw_mode_en = DPU_BFW_MODE_7x7;
   grp_->disp_range_en = BMCV_DPU_DISP_RANGE_128;
   grp_->disp_start_pos = 0;
-  grp_->dcc_dir_en = BMCV_DPU_DCC_DIR_A14;
+  grp_->dcc_dir_en = BMCV_DPU_DCC_DIR_A13;
   grp_->dpu_census_shift = 1;
   grp_->dpu_rshift1 = 0;
   grp_->dpu_rshift2 = 2;
@@ -50,7 +50,7 @@ bm_status_t set_online_default_param(bmcv_dpu_sgbm_attrs* grp_,
   grp_->dpu_disp_shift = 4;
   fgs_grp->depth_unit_en = BMCV_DPU_DEPTH_UNIT_MM;
   fgs_grp->fgs_max_count = 19;
-  fgs_grp->fgs_max_t = 4;
+  fgs_grp->fgs_max_t = 3;
   fgs_grp->fxbase_line = 864000;
   return BM_SUCCESS;
 }
@@ -390,7 +390,8 @@ void Dpu::registListenFunc(sophon_stream::framework::ListenThread* listener) {
                                  std::placeholders::_2));
   // listener->setHandler(dispTypeStr.c_str(),
   //                      sophon_stream::framework::RequestType::PUT,
-  //                      std::bind(&Dpu::setDispType, this, std::placeholders::_1,
+  //                      std::bind(&Dpu::setDispType, this,
+  //                      std::placeholders::_1,
   //                                std::placeholders::_2));
   return;
 }
@@ -410,17 +411,47 @@ common::ErrorCode Dpu::initInternal(const std::string& json) {
   // set_sgbm_default_param(&dpu_sgbm_attr);
   set_online_default_param(&dpu_sgbm_attr, &dpu_fgs_attr);
 
+  dpu_sgbm_attr.disp_start_pos =
+      configure.find(CONFIG_INTERNAL_DISP_START_POS_FIELD)->get<int>();
+  dpu_sgbm_attr.dpu_census_shift =
+      configure.find(CONFIG_INTERNAL_DPU_CENSUS_SHIFT_FIELD)->get<int>();
+  dpu_sgbm_attr.dpu_rshift1 =
+      configure.find(CONFIG_INTERNAL_DPU_RSHIFT1_FIELD)->get<int>();
+  dpu_sgbm_attr.dpu_rshift2 =
+      configure.find(CONFIG_INTERNAL_DPU_RSHIFT2_FIELD)->get<int>();
+  dpu_sgbm_attr.dpu_ca_p1 =
+      configure.find(CONFIG_INTERNAL_DPU_CA_P1_FIELD)->get<int>();
+  dpu_sgbm_attr.dpu_ca_p2 =
+      configure.find(CONFIG_INTERNAL_DPU_CA_P2_FIELD)->get<int>();
+  dpu_sgbm_attr.dpu_uniq_ratio =
+      configure.find(CONFIG_INTERNAL_DPU_UNIQ_RATIO_FIELD)->get<int>();
+  dpu_sgbm_attr.dpu_disp_shift =
+      configure.find(CONFIG_INTERNAL_DPU_DISP_SHIFT_FIELD)->get<int>();
+
   auto dpu_type_str =
       configure.find(CONFIG_INTERNAL_DPU_TYPE_FILED)->get<std::string>();
   dpu_type = dpu_type_map[dpu_type_str];
   auto dpu_mode_str =
       configure.find(CONFIG_INTERNAL_DPU_MODE_FILED)->get<std::string>();
+
   if (dpu_type == DPU_ONLINE) {
     dpu_online_mode = online_mode_map[dpu_mode_str];
+    dpu_fgs_attr.fgs_max_count =
+        configure.find(CONFIG_INTERNAL_FGS_MAX_COUNT_FIELD)->get<int>();
+    dpu_fgs_attr.fgs_max_t =
+        configure.find(CONFIG_INTERNAL_FGS_MAX_T_FIELD)->get<int>();
+    dpu_fgs_attr.fxbase_line =
+        configure.find(CONFIG_INTERNAL_FXBASE_LINE_FIELD)->get<int>();
   } else if (dpu_type == DPU_SGBM) {
     dpu_sgbm_mode = sgbm_mode_map[dpu_mode_str];
   } else if (dpu_type == DPU_FGS) {
     dpu_fgs_mode = fgs_mode_map[dpu_mode_str];
+    dpu_fgs_attr.fgs_max_count =
+        configure.find(CONFIG_INTERNAL_FGS_MAX_COUNT_FIELD)->get<int>();
+    dpu_fgs_attr.fgs_max_t =
+        configure.find(CONFIG_INTERNAL_FGS_MAX_T_FIELD)->get<int>();
+    dpu_fgs_attr.fxbase_line =
+        configure.find(CONFIG_INTERNAL_FXBASE_LINE_FIELD)->get<int>();
   }
 
   return common::ErrorCode::SUCCESS;
@@ -430,27 +461,8 @@ common::ErrorCode Dpu::dpu_work(
     std::shared_ptr<common::ObjectMetadata> leftObj,
     std::shared_ptr<common::ObjectMetadata> rightObj,
     std::shared_ptr<common::ObjectMetadata> dpuObj) {
-  auto start = std::chrono::high_resolution_clock::now();
-
   bm_status_t ret;
-  // // select display type
-  // std::shared_ptr<bm_image> dpu_image_left = nullptr;
-  // std::shared_ptr<bm_image> dpu_image_right = nullptr;
-  // if (dis_type == ONLY_DPU_DIS || dis_type == DWA_DPU_DIS) {
-  //   dpu_image_left = leftObj->mFrame->mSpDataDwa;
-  //   dpu_image_right = rightObj->mFrame->mSpDataDwa;
-  // } else {
-  //   dpu_image_left = leftObj->mFrame->mSpData;
-  //   dpu_image_right = rightObj->mFrame->mSpData;
-  // }
-
-  auto end = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double, std::milli> duration = end - start;
-  std::cout << "dpu初始化程序执行时间：" << duration.count() << " ms"
-            << std::endl;
-
   // dpu
-  start = std::chrono::high_resolution_clock::now();
   std::shared_ptr<bm_image> dpu_out = nullptr;
   // dpu输出结果
   dpu_out.reset(new bm_image, [](bm_image* p) {
@@ -465,19 +477,18 @@ common::ErrorCode Dpu::dpu_work(
   bm_image_alloc_dev_mem(*dpu_out, 1);
 
   if (dpu_type == DPU_ONLINE) {
-    // std::lock_guard<std::mutex> lk(mtx);
     bmcv_dpu_online_disp(leftObj->mFrame->mHandle,
                          leftObj->mFrame->mSpDataDwa.get(),
                          rightObj->mFrame->mSpDataDwa.get(), dpu_out.get(),
                          &dpu_sgbm_attr, &dpu_fgs_attr, dpu_online_mode);
-    std::cout << "bmcv_dpu_online_disp" << std::endl;
+
   } else if (dpu_type == DPU_SGBM) {
-    dpu_sgbm_mode = DPU_SGBM_MUX2;
+    // dpu_sgbm_mode = DPU_SGBM_MUX2;
     bmcv_dpu_sgbm_disp(leftObj->mFrame->mHandle,
                        leftObj->mFrame->mSpDataDwa.get(),
                        rightObj->mFrame->mSpDataDwa.get(), dpu_out.get(),
                        &dpu_sgbm_attr, dpu_sgbm_mode);
-    std::cout << "bmcv_dpu_sgbm_disp" << std::endl;
+
   } else if (dpu_type == DPU_FGS) {
     bm_image sgbm_out;
 
@@ -487,7 +498,7 @@ common::ErrorCode Dpu::dpu_work(
                     DATA_TYPE_EXT_1N_BYTE, &sgbm_out, NULL);
     bm_image_alloc_dev_mem(sgbm_out, 1);
 
-    dpu_sgbm_mode = DPU_SGBM_MUX2;
+    // dpu_sgbm_mode = DPU_SGBM_MUX2;
     bmcv_dpu_sgbm_disp(leftObj->mFrame->mHandle,
                        leftObj->mFrame->mSpDataDwa.get(),
                        rightObj->mFrame->mSpDataDwa.get(), &sgbm_out,
@@ -498,23 +509,14 @@ common::ErrorCode Dpu::dpu_work(
     bm_image_destroy(sgbm_out);
   }
 
-  end = std::chrono::high_resolution_clock::now();
-  duration = end - start;
-  std::cout << "bmcv_dpu_online_disp/bmcv_dpu_sgbm_disp程序执行时间："
-            << duration.count() << " ms" << std::endl;
-  if (co%100==0)
-  {
-    char filename[20];
-    sprintf(filename, "dpu_out%d.bmp", co);
-    bm_image_write_to_bmp(*dpu_out, filename);
-  }
-  
   dpuObj->mFrame->mSpDataDpu = dpu_out;
   dpuObj->mFrame->mWidth = dpuObj->mFrame->mSpDataDpu->width;
   dpuObj->mFrame->mHeight = dpuObj->mFrame->mSpDataDpu->height;
 
-  dpuObj->mFrame->mSpData = leftObj->mFrame->mSpData;
+  // dpuObj->mFrame->mSpData = leftObj->mFrame->mSpData;
+  dpuObj->mFrame->mSpData = dpu_out;
   dpuObj->mFrame->mSpDataDwa = leftObj->mFrame->mSpDataDwa;
+  dpuObj->mFrame->mSpDataDwaR = rightObj->mFrame->mSpDataDwa;
 
   dpuObj->mFrame->mChannelId = leftObj->mFrame->mChannelId;
   dpuObj->mFrame->mFrameId = leftObj->mFrame->mFrameId;
@@ -550,7 +552,8 @@ common::ErrorCode Dpu::doWork(int dataPipeId) {
   }
 
   if (inputs[0]->mFrame->mSpData != nullptr &&
-      inputs[1]->mFrame->mSpData != nullptr) {
+      inputs[1]->mFrame->mSpData != nullptr &&
+      inputs[0]->mFrame->mFrameId == inputs[1]->mFrame->mFrameId) {
     std::shared_ptr<common::ObjectMetadata> dpuObj =
         std::make_shared<common::ObjectMetadata>();
     dpuObj->mFrame = std::make_shared<sophon_stream::common::Frame>();

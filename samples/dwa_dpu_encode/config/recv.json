@@ -1,7 +1,7 @@
 {
-    "configure": {},
-    "shared_object": "../../build/lib/libblend.so",
-    "name": "blend",
-    "side": "sophgo",
-    "thread_number": 1
-  }
+  "configure": {},
+  "shared_object": "../../build/lib/libblend.so",
+  "name": "blend",
+  "side": "sophgo",
+  "thread_number": 1
+}

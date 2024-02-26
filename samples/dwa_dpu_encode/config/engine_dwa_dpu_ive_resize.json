@@ -48,14 +48,10 @@
             },
             {
                 "element_id": 5006,
-                "element_config": "../dwa_dpu_encode/config/stitch.json"
-            },
-            {
-                "element_id": 5007,
                 "element_config": "../dwa_dpu_encode/config/resize.json"
             },
             {
-                "element_id": 5008,
+                "element_id": 5007,
                 "element_config": "../dwa_dpu_encode/config/encode.json",
                 "ports": {
                     "output": [
@@ -109,12 +105,6 @@
                 "src_element_id": 5006,
                 "src_port": 0,
                 "dst_element_id": 5007,
-                "dst_port": 0
-            },
-            {
-                "src_element_id": 5007,
-                "src_port": 0,
-                "dst_element_id": 5008,
                 "dst_port": 0
             }
         ]

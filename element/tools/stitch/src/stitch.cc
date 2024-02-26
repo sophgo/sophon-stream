@@ -32,10 +32,8 @@ common::ErrorCode Stitch::initInternal(const std::string& json) {
 
 common::ErrorCode Stitch::stitch_work(
     std::shared_ptr<bm_image> left_image, std::shared_ptr<bm_image> right_image,std::shared_ptr<common::ObjectMetadata> stitchObj) {
-  auto start = std::chrono::high_resolution_clock::now();
 
   bm_status_t ret;
-
   std::shared_ptr<bm_image> stitch_image = nullptr;
   stitch_image.reset(new bm_image, [](bm_image* p) {
     bm_image_destroy(*p);
@@ -71,11 +69,6 @@ common::ErrorCode Stitch::stitch_work(
                          *right_image};
   bmcv_image_vpp_stitch(stitchObj->mFrame->mHandle, input_num, src_img, *stitch_image, dst_crop,
                         NULL);
-
-  auto end = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double, std::milli> duration = end - start;
-  std::cout << "bmcv_image_vpp_stitch程序执行时间：" << duration.count()
-            << " ms" << std::endl;
 
   stitchObj->mFrame->mSpData = stitch_image;
 

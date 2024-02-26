@@ -2,7 +2,17 @@
   "configure": {
     "dpu_type": "DPU_SGBM",
     "dpu_mode": "DPU_SGBM_MUX0",
-    "is_ive":false
+    "disp_start_pos": 0,
+    "dpu_census_shift": 1,
+    "dpu_rshift1": 0,
+    "dpu_rshift2": 2,
+    "dpu_ca_p1": 1800,
+    "dpu_ca_p2": 38800,
+    "dpu_uniq_ratio": 10,
+    "dpu_disp_shift": 4,
+    "fgs_max_count": 19,
+    "fgs_max_t": 3,
+    "fxbase_line": 864000
   },
   "shared_object": "../../build/lib/libdpu.so",
   "name": "dpu",

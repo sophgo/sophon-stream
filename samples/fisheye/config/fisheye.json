@@ -1,9 +1,0 @@
-{
-    "configure": {
-      "is_gray":false
-    },
-    "shared_object": "../../build/lib/libfisheye.so",
-    "name": "fisheye",
-    "side": "sophgo",
-    "thread_number": 1
-  }
