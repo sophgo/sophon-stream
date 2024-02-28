@@ -40,7 +40,6 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
   STracks resa, resb;
   STracks temp_tracked_stracks;
   STracks temp_lost_stracks;
-  STracks temp_removed_stracks;
   STracks unconfirmed;
   STracks strack_pool;
   STracks r_tracked_stracks;
@@ -58,12 +57,13 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
       float score = subObj->mScores[0];
       int class_id = subObj->mClassify;
 
-      std::shared_ptr<STrack> strack = std::make_shared<STrack>(
-          STrack::tlbr_to_tlwh(tlbr_), score, class_id);
-      if (score >= track_thresh) {
-        detections.push_back(strack);
-      } else {
-        detections_low.push_back(strack);
+      if (score > 0.1){
+        std::shared_ptr<STrack> strack = std::make_shared<STrack>(
+            STrack::tlbr_to_tlwh(tlbr_), score, class_id);
+        if (score >= track_thresh)
+          detections.push_back(strack);
+        else
+          detections_low.push_back(strack);
       }
     }
   }
@@ -166,7 +166,7 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
   for (int i = 0; i < u_unconfirmed.size(); i++) {
     std::shared_ptr<STrack> track = unconfirmed[u_unconfirmed[i]];
     track->mark_removed();
-    temp_removed_stracks.push_back(track);
+    this->removed_stracks.push_back(track);
   }
   ////////////////// Step 4: Init new stracks //////////////////
   for (int i = 0; i < u_detection.size(); i++) {
@@ -180,7 +180,7 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
     if (this->frame_id - this->lost_stracks[i]->end_frame() >
         this->max_time_lost) {
       this->lost_stracks[i]->mark_removed();
-      temp_removed_stracks.push_back(this->lost_stracks[i]);
+      this->removed_stracks.push_back(this->lost_stracks[i]);
     }
   }
 
@@ -203,9 +203,7 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
   }
 
   sub_stracks(this->lost_stracks, this->removed_stracks);
-  for (int i = 0; i < temp_removed_stracks.size(); i++) {
-    this->removed_stracks.push_back(temp_removed_stracks[i]);
-  }
+  this->removed_stracks.clear();
   remove_duplicate_stracks(resa, resb, this->tracked_stracks,
                            this->lost_stracks);
 
@@ -252,14 +250,14 @@ void BYTETracker::joint_stracks(STracks& tlista, STracks& tlistb,
 
   for (int i = 0; i < tlista.size(); i++) {
     int tid = tlista[i]->track_id;
-    if (!exists[tid] || exists.count(tid) == 0) {
+    if (exists.count(tid) == 0) {
       exists[tid] = 1;
       results.push_back(tlista[i]);
     }
   }
   for (int i = 0; i < tlistb.size(); i++) {
     int tid = tlistb[i]->track_id;
-    if (!exists[tid] || exists.count(tid) == 0) {
+    if (exists.count(tid) == 0) {
       exists[tid] = 1;
       results.push_back(tlistb[i]);
     }
