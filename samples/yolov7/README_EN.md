@@ -294,7 +294,7 @@ The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was do
 
 | Device | Number of Channels | Algorithm Thread Count | CPU Utilization (%) | System Memory (M) | Peak System Memory (M) | TPU Utilization (%) | Device Memory (M) | Peak Device Memory (M) | Average FPS |
 |-------|----|---------|------------|----------|--------------|------------|-----------|--------------|-------|
-|SE9-16 |4   |4-4-4    | 247.1      | 178.02   | 193.64       | 94         |  2700     | 1869         | 49.79 |
+|SE9-16 |4   |4-4-4    | 247.1      | 178.02   | 193.64       | 94         |  1869     | 2700         | 49.79 |
 |SE9-8  |4   |4-4-4    | 140.0      | 192.25   | 196.45       | 94         | 1655      | 2836         | 28.38 |
 |SE7    |4   |4-4-4    | 70.40      | 121.48   | 130.70       | 100        |1853       | 1890         |107.96 |
 |SE5-16 |4   |4-4-4    | 149.50     | 185.40   | 186.96       | 99         | 1400      | 1526         | 47.69 |
@@ -307,3 +307,4 @@ The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was do
 4. Running models with a batch size of 4 on the BM1684 device can achieve higher FPS.
 5. On the BM1684X device, utilizing a batch size of 1 for the model and enabling the tpu_kernel for post-processing can yield higher FPS.
 6. For the settings of input channels and algorithm thread count in the table, please refer to [JSON configuration explanation](#61-json-configuration). CPU utilization and system memory can be checked using the `top` command. TPU utilization and device memory can be checked using the `bm-smi` command. FPS can be obtained from the logs printed during program execution.
+7. In the above table, all the data were obtained by testing without saving the images.
