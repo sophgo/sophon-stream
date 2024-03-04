@@ -14,14 +14,14 @@ rm -rf videos.zip
 mv ./videos ../data/
 
 mkdir ../data/models
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/BM1684X.zip
-unzip BM1684X.zip
-rm -rf BM1684X.zip
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/BM1684X.tar.gz
+tar -zxvf BM1684X.tar.gz
+rm -rf BM1684X.tar.gz
 mv ./BM1684X ../data/models/BM1684X
 
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/BM1684.zip
-unzip BM1684.zip
-rm -rf BM1684.zip
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/BM1684.tar.gz
+tar -zxvf BM1684.tar.gz
+rm -rf BM1684.tar.gz
 mv ./BM1684 ../data/models/BM1684
 
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/BM1688.zip
