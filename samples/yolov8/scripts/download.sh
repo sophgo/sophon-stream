@@ -24,9 +24,9 @@ tar -zxvf BM1684.tar.gz
 rm -rf BM1684.tar.gz
 mv ./BM1684 ../data/models/BM1684
 
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/BM1688.zip
-unzip BM1688.zip
-rm -rf BM1688.zip
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/BM1688.tar.gz
+tar -zxvf BM1688.tar.gz
+rm -rf BM1688.tar.gz
 mv ./BM1688 ../data/models/BM1688
 
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
