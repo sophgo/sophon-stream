@@ -94,8 +94,12 @@ void Yolov8PostProcess::postProcess(std::shared_ptr<Yolov8Context> context,
                                     common::ObjectMetadatas& objectMetadatas,
                                     int dataPipeId) {
   if (objectMetadatas.size() == 0) return;
-
-  postProcessCPU(context, objectMetadatas);
+  if (context->taskType == TaskType::Detect)
+    postProcessDet(context, objectMetadatas);
+  else if (context->taskType == TaskType::Pose)
+    postProcessPose(context, objectMetadatas);
+  else if (context->taskType == TaskType::Cls)
+    postProcessCls(context, objectMetadatas);
 }
 
 void Yolov8PostProcess::clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w,
@@ -120,10 +124,189 @@ void Yolov8PostProcess::clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w,
   }
 }
 
-void Yolov8PostProcess::postProcessCPU(
+void Yolov8PostProcess::postProcessCls(
     std::shared_ptr<Yolov8Context> context,
     common::ObjectMetadatas& objectMetadatas) {
-  if (objectMetadatas.size() == 0) return;
+  int idx = 0;
+  for (auto obj : objectMetadatas) {
+    if (obj->mFrame->mEndOfStream) break;
+    std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
+    for (int i = 0; i < context->output_num; i++) {
+      outputTensors[i] = std::make_shared<BMNNTensor>(
+          obj->mOutputBMtensors->handle,
+          context->bmNetwork->m_netinfo->output_names[i],
+          context->bmNetwork->m_netinfo->output_scales[i],
+          obj->mOutputBMtensors->tensors[i].get(), context->bmNetwork->is_soc);
+    }
+    auto out_tensor = outputTensors[0];
+    int feature_num = out_tensor->get_shape()->dims[1];  // 1000
+
+    float* output_data = nullptr;
+    std::vector<float> decoded_data;
+
+    output_data = (float*)out_tensor->get_cpu_data();
+
+    // argmax
+    float max_score = 0;
+    int max_idx = 0;
+    for (int i = 0; i < feature_num; ++i) {
+      if (output_data[i] > max_score) {
+        max_score = output_data[i];
+        max_idx = i;
+      }
+    }
+
+    IVS_INFO("ChannelId = {0}, FrameId = {1}, Class = {2}, Score = {3}",
+             obj->mFrame->mChannelId, obj->mFrame->mFrameId, max_idx,
+             max_score);
+
+    auto clsData = std::make_shared<common::RecognizedObjectMetadata>();
+    clsData->mScores.push_back(max_score);
+    clsData->mTopKLabels.push_back(max_idx);
+    obj->mRecognizedObjectMetadatas.push_back(clsData);
+    ++idx;
+  }
+  return;
+}
+
+void Yolov8PostProcess::postProcessPose(
+    std::shared_ptr<Yolov8Context> context,
+    common::ObjectMetadatas& objectMetadatas) {
+  YoloV8BoxVec yolobox_vec;
+  // single class patch
+  constexpr int PATCH = 10000;
+
+  int idx = 0;
+  for (auto obj : objectMetadatas) {
+    if (obj->mFrame->mEndOfStream) break;
+    std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
+    for (int i = 0; i < context->output_num; i++) {
+      outputTensors[i] = std::make_shared<BMNNTensor>(
+          obj->mOutputBMtensors->handle,
+          context->bmNetwork->m_netinfo->output_names[i],
+          context->bmNetwork->m_netinfo->output_scales[i],
+          obj->mOutputBMtensors->tensors[i].get(), context->bmNetwork->is_soc);
+    }
+
+    yolobox_vec.clear();
+    int frame_width = obj->mFrame->mSpData->width;
+    int frame_height = obj->mFrame->mSpData->height;
+#ifdef USE_ASPECT_RATIO
+    bool isAlignWidth = false;
+    float ratio =
+        context->roi_predefined
+            ? get_aspect_scaled_ratio(context->roi.crop_w, context->roi.crop_h,
+                                      context->net_w, context->net_h,
+                                      &isAlignWidth)
+            : get_aspect_scaled_ratio(frame_width, frame_height, context->net_w,
+                                      context->net_h, &isAlignWidth);
+#endif
+    int dw = context->roi_predefined
+                 ? (context->net_w - (context->roi.crop_w * ratio))
+                 : (context->net_w - (frame_width * ratio));
+    int dh = context->roi_predefined
+                 ? (context->net_h - (context->roi.crop_h * ratio))
+                 : (context->net_h - (frame_height * ratio));
+    dw /= 2;
+    dh /= 2;
+
+    int min_idx = 0;
+    for (int i = 0; i < context->output_num; ++i) {
+      auto output_shape = context->bmNetwork->outputTensor(i)->get_shape();
+      auto output_dims = output_shape->num_dims;
+
+      if (context->min_dim > output_dims) {
+        min_idx = i;
+        context->min_dim = output_dims;
+      }
+    }
+
+    for (int tensor_idx = 0; tensor_idx < context->output_num; ++tensor_idx) {
+      auto out_tensor = outputTensors[tensor_idx];
+      int feature_num = out_tensor->get_shape()->dims[2];  // 8400
+      int num_channels = out_tensor->get_shape()->dims[1];
+
+      float* output_data = nullptr;
+      std::vector<float> decoded_data;
+
+      output_data = (float*)out_tensor->get_cpu_data();
+
+      for (int i = 0; i < feature_num; i++) {
+        float max_value = output_data[i + 4 * feature_num];
+
+        float cur_class_thresh =
+            context->class_thresh_valid
+                ? context->thresh_conf[context->class_names[0]]
+                : context->thresh_conf_min;
+
+        if (max_value > cur_class_thresh) {
+          YoloV8Box box;
+          box.score = max_value;
+          box.class_id = 0;
+          float centerX = output_data[i + 0 * feature_num] - dw;
+          float centerY = output_data[i + 1 * feature_num] - dh;
+          float width = output_data[i + 2 * feature_num];
+          float height = output_data[i + 3 * feature_num];
+
+          box.x1 = (centerX - 0.5 * width) / ratio + PATCH;
+          box.y1 = (centerY - 0.5 * height) / ratio + PATCH;
+          box.x2 = (centerX + 0.5 * width) / ratio + PATCH;
+          box.y2 = (centerY + 0.5 * height) / ratio + PATCH;
+
+          for (int k = 0; k < 17; ++k) {
+            float kps_x =
+                (output_data[i + (5 + 3 * k) * feature_num] - dw) / ratio;
+            float kps_y =
+                (output_data[i + (5 + 3 * k + 1) * feature_num] - dh) / ratio;
+            float kps_s = output_data[i + (5 + 3 * k + 2) * feature_num];
+            box.kps.push_back(kps_x);
+            box.kps.push_back(kps_y);
+            box.kps.push_back(kps_s);
+          }
+          yolobox_vec.push_back(box);
+        }
+      }
+    }
+
+    NMS(yolobox_vec, context->thresh_nms);
+    if (yolobox_vec.size() > max_det) {
+      yolobox_vec.erase(yolobox_vec.begin(),
+                        yolobox_vec.begin() + (yolobox_vec.size() - max_det));
+    }
+
+    for (auto bbox : yolobox_vec) {
+      std::shared_ptr<common::DetectedObjectMetadata> detData =
+          std::make_shared<common::DetectedObjectMetadata>();
+
+      detData->mBox.mX = bbox.x1 - PATCH;
+      detData->mBox.mY = bbox.y1 - PATCH;
+      detData->mBox.mWidth = bbox.x2 - bbox.x1;
+      detData->mBox.mHeight = bbox.y2 - bbox.y1;
+      detData->mScores.push_back(bbox.score);
+      detData->mClassify = bbox.class_id;
+
+      std::shared_ptr<common::PosedObjectMetadata> poseData =
+          std::make_shared<common::PosedObjectMetadata>();
+      poseData->keypoints = bbox.kps;
+
+      if (context->roi_predefined) {
+        detData->mBox.mX += context->roi.start_x;
+        detData->mBox.mY += context->roi.start_y;
+      }
+
+      if (context->class_thresh_valid) {
+        detData->mLabelName = context->class_names[detData->mClassify];
+      }
+      obj->mDetectedObjectMetadatas.push_back(detData);
+      obj->mPosedObjectMetadatas.push_back(poseData);
+    }
+    ++idx;
+  }
+}
+
+void Yolov8PostProcess::postProcessDet(
+    std::shared_ptr<Yolov8Context> context,
+    common::ObjectMetadatas& objectMetadatas) {
   // Yolov8 vec
   YoloV8BoxVec yolobox_vec;
 

@@ -79,6 +79,7 @@ class Yolov8 : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_TOP_FILED = "top";
   static constexpr const char* CONFIG_INTERNAL_WIDTH_FILED = "width";
   static constexpr const char* CONFIG_INTERNAL_HEIGHT_FILED = "height";
+  static constexpr const char* CONFIG_INTERNAL_TASK_TYPE_FILED = "task_type";
 
  private:
   std::shared_ptr<Yolov8Context> mContext;          // context对象

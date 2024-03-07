@@ -281,5 +281,5 @@ The test dataset is train_full_images_0，The compilation was done in Release mo
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.
 2. Both BM1684 and BM1684X SoC devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz.
 3. For the settings of input channels and algorithm thread count in the table, please refer to JSON configuration explanation. CPU utilization and system memory can be checked using the top command. TPU utilization and device memory can be checked using the bm-smi command. FPS can be obtained from the logs printed during program execution.
-4. Performance testing is not currently supported on the BM1688 device.
+4. Performance testing is not currently available on the BM1688 device.
 5. In this test data, SDK version on SE5 is 0.4.8; SDK version on SE7 is 0.4.9. Different version may bring different performance.

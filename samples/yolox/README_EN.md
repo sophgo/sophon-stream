@@ -310,4 +310,4 @@ The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was do
 4. Running models with a batch size of 4 on the BM1684 device can achieve higher FPS.
 5. On the BM1684X device, utilizing a batch size of 1 for the model can yield higher FPS.
 6. For the settings of input channels and algorithm thread count in the table, please refer to [JSON configuration explanation](#61-json-configuration). CPU utilization and system memory can be checked using the `top` command. TPU utilization and device memory can be checked using the `bm-smi` command. FPS can be obtained from the logs printed during program execution.
-7. Performance testing is not currently supported on the BM1688 device.
+7. Performance testing is not currently available on the BM1688 device.

@@ -52,11 +52,9 @@ std::pair<cv::Mat, cv::Mat> KalmanFilter::initiate(const cv::Mat& measurement) {
   cv::Mat mean_vel = cv::Mat::zeros(1, 4, CV_32F);
 
   cv::Mat mean(1, 8, CV_32F);
-  for (int i = 0; i < 8; i++) {
-    if (i < 4)
-      mean.at<float>(0, i) = mean_pos.at<float>(0, i);
-    else
-      mean.at<float>(0, i) = mean_vel.at<float>(0, i - 4);
+  for (int i = 0; i != 4; i++) {
+    mean.at<float>(0, i) = mean_pos.at<float>(0, i);
+    mean.at<float>(0, i + 4) = mean_vel.at<float>(0, i);
   }
 
   cv::Mat std(1, 8, CV_32F);

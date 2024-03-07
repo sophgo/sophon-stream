@@ -29,6 +29,10 @@ Yolov8::~Yolov8() {}
 
 const std::string Yolov8::elementName = "yolov8";
 
+std::unordered_map<std::string, TaskType> taskMap{{"Detect", TaskType::Detect},
+                                                  {"Pose", TaskType::Pose},
+                                                  {"Cls", TaskType::Cls}};
+
 common::ErrorCode Yolov8::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
@@ -39,6 +43,14 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
     }
 
     auto modelPathIt = configure.find(CONFIG_INTERNAL_MODEL_PATH_FIELD);
+
+    auto task_it = configure.find(CONFIG_INTERNAL_TASK_TYPE_FILED);
+    if (task_it != configure.end()) {
+      std::string taskName = task_it->get<std::string>();
+      STREAM_CHECK(taskMap.count(taskName) != 0,
+                   "Invalid Task Type in Yolov8 Config File!");
+      mContext->taskType = taskMap[taskName];
+    }
 
     auto threshConfIt = configure.find(CONFIG_INTERNAL_THRESHOLD_CONF_FIELD);
     if (threshConfIt->is_number_float()) {
@@ -117,8 +129,14 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
       mContext->class_num =
           mContext->bmNetwork->outputTensor(0)->get_shape()->dims[4] - 4 - 1;
     } else {
-      mContext->class_num =
-          mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] - 4;
+      if (mContext->taskType == TaskType::Detect)
+        mContext->class_num =
+            mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] - 4;
+      else if (mContext->taskType == TaskType::Cls)
+        mContext->class_num =
+            mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1];
+      else if (mContext->taskType == TaskType::Pose)
+        mContext->class_num = 1;
     }
 
     if (mContext->class_thresh_valid) {

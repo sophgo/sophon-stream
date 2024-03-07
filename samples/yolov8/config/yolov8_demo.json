@@ -34,7 +34,7 @@
     }
   ],
   "class_names": "../yolov8/data/coco.names",
-  "download_image": true,
+  "download_image": false,
   "draw_func_name": "draw_yolov5_results",
   "engine_config_path": "../yolov8/config/engine_group.json"
 }
