@@ -13,6 +13,7 @@
 #include <nlohmann/json.hpp>
 
 #include "common/logger.h"
+#include "common/common_defs.h"
 
 namespace sophon_stream {
 namespace element {
@@ -83,6 +84,13 @@ common::ErrorCode Decoder::init(int deviceId,
     mSourceType = request.sourceType;
     mImgIndex = 0;
     assert(BM_SUCCESS == ret);
+    mRoiPredefined = request.roi_predefined;
+    if (mRoiPredefined){
+      mRoi.start_x = request.roi.start_x;
+      mRoi.start_y = request.roi.start_y;
+      mRoi.crop_w = request.roi.crop_w;
+      mRoi.crop_h = request.roi.crop_h; 
+    }
 
     if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
       decoder.mFrameCount(mUrl.c_str(), mFrameCount);
@@ -240,6 +248,36 @@ common::ErrorCode Decoder::process(
   // if (objectMetadata->mFilter) printf("%d filter \n",
   // objectMetadata->mFrame->mFrameId); else printf("%d keep \n",
   // objectMetadata->mFrame->mFrameId);
+
+  if (objectMetadata->mFrame->mSpData && mRoiPredefined){
+
+    std::shared_ptr<bm_image> cropped = nullptr;
+    cropped.reset(new bm_image, [](bm_image* p) {
+      bm_image_destroy(*p);
+      delete p;
+      p = nullptr;
+    });
+    bm_status_t ret =
+        bm_image_create(objectMetadata->mFrame->mHandle, mRoi.crop_h, mRoi.crop_w,
+                        objectMetadata->mFrame->mSpData->image_format,
+                        objectMetadata->mFrame->mSpData->data_type, cropped.get());
+
+#if BMCV_VERSION_MAJOR > 1
+    ret = bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *objectMetadata->mFrame->mSpData,
+                                cropped.get(), &mRoi);
+#else
+    ret = bmcv_image_crop(objectMetadata->mFrame->mHandle, 1, &mRoi, *objectMetadata->mFrame->mSpData,
+                          cropped.get());
+#endif
+    if (!ret){
+      bm_image2Frame(objectMetadata->mFrame, *cropped);
+      objectMetadata->mFrame->mSpData = cropped;
+    }
+
+
+    else
+      IVS_ERROR("Decoder roi unreasonable");
+  }
 
   return errorCode;
 }

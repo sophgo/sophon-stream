@@ -249,6 +249,42 @@ common::ErrorCode Decode::parse_channel_task(
               : ChannelOperateRequest::SampleStrategy::DROP;
     }
 
+    auto roi_it = configure.find(JSON_ROI_FILED);
+    if (roi_it == configure.end()) {
+      channelTask->request.roi_predefined = false;
+    } else {
+      channelTask->request.roi_predefined = true;
+
+      auto roi_left_it = roi_it->find(JSON_LEFT_FILED);
+      if (roi_left_it != roi_it->end())
+        channelTask->request.roi.start_x =
+          roi_left_it->get<int>();
+      else
+        IVS_ERROR("Missing decoder roi left");
+      
+      auto roi_top_it = roi_it->find(JSON_TOP_FILED);
+      if (roi_top_it != roi_it->end())
+        channelTask->request.roi.start_y =
+          roi_top_it->get<int>();
+      else
+        IVS_ERROR("Missing decoder roi top");
+
+      auto roi_w_it = roi_it->find(JSON_WIDTH_FILED);
+      if (roi_w_it != roi_it->end())
+        channelTask->request.roi.crop_w =
+          roi_w_it->get<int>();
+      else
+        IVS_ERROR("Missing decoder roi width");
+
+      auto roi_h_it = roi_it->find(JSON_HEIGHT_FILED);
+      if (roi_h_it != roi_it->end())
+        channelTask->request.roi.crop_h =
+          roi_h_it->get<int>();
+      else
+        IVS_ERROR("Missing decoder roi height");
+
+    }
+
   } while (false);
 
   return errorCode;
