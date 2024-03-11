@@ -53,11 +53,6 @@ pip3_install_package() {
     
     for i in {1..5}; do
         echo "Attempt $i: Installing $package_name"
-        
-        if pip3 show $package_name > /dev/null 2>&1; then
-            echo "$package_name is already installed."
-            return
-        fi
 
         pip3 install $package_name --upgrade
 
