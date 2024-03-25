@@ -51,8 +51,7 @@ The benefit of this design is the segregation between users and the underlying c
 * For detailed information about each routine, please refer to the `README_EN.md` file located within each routine's directory.
 
 ## 2. Configuration
-Additionally, attention should be paid to the setting of the input data channels in the decode module. For example, in [yolox_bytetrack_osd_encode](../../../samples/yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json):
-
+Additionally, attention should be paid to the setting of the input data channels in the decode module. 
 ```json
   "channels": [
     {
@@ -63,7 +62,13 @@ Additionally, attention should be paid to the setting of the input data channels
       "skip_element": [5005, 5006],
       "fps": 1,
       "sample_interval": 5,
-      "sample_strategy": "KEEP"
+      "sample_strategy": "KEEP",
+      "roi":{
+        "left": 0,
+        "top": 0,
+        "width": 800,
+        "height": 600
+      }
     },
     {
       "channel_id": 3,
@@ -98,6 +103,7 @@ Additionally, attention should be paid to the setting of the input data channels
 |skip_element| list | \ | Set whether to skip certain elements for this data stream. Currently, this only applies to OSD and Encode. When not specified, it's assumed that no elements are to be skipped.|
 |sample_strategy|string|"DROP"|When frames are being filtered, set whether the filtered frames are to be kept or discarded. "DROP" indicates discarding the frames, while "KEEP" indicates retaining them.|
 |decode_id|int|-1|In the case of a single decode element, it is not necessary to fill in the form; in the case of multiple decode elements, it identifies that a certain way is decoded by the decode element with the corresponding id.|
+|roi| dict| \ | When roi is set, the frame from decoder will be cropped according to the roi range, otherwise passing the original frame.| 
 
 
 Where `channel_id` stands for the channel number of the input video, corresponding to the `channel_id` output by the [encoder](../encode/README.md). For instance, if the input `channel_id` is 20 and the encoder is used to save the results as a local video, the file name will be `20.avi`.

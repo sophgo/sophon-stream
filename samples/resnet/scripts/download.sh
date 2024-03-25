@@ -8,7 +8,7 @@ pushd $scripts_dir
 
 mkdir -p ../data
 
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/resnet/models.zip
+python3 -m dfss --url=open@sophgo.com:sophon-demo/ResNet/models_0918/models.zip
 unzip models.zip
 rm -rf models.zip
 mv ./models ../data/

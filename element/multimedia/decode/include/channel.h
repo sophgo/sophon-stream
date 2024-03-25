@@ -42,6 +42,9 @@ struct ChannelOperateRequest {
   int base64Port;
   std::vector<int> skip_element;
   SampleStrategy sampleStrategy;
+  bool roi_predefined = false;
+  bmcv_rect_t roi;
+
 };
 
 struct ChannelOperateResponse {

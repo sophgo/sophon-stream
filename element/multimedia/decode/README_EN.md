@@ -37,8 +37,7 @@ sophon-stream decoder plugin has several configurable parameters that can be adj
 
 
 
-Additionally, attention should be paid to the setting of the input data channels in the decode module. For example, in [yolox_bytetrack_osd_encode](../../../samples/yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json):
-
+Additionally, attention should be paid to the setting of the input data channels in the decode module. 
 ```json
   "channels": [
     {
@@ -49,7 +48,13 @@ Additionally, attention should be paid to the setting of the input data channels
       "skip_element": [5005, 5006],
       "fps": 1,
       "sample_interval": 5,
-      "sample_strategy": "KEEP"
+      "sample_strategy": "KEEP",
+      "roi":{
+        "left": 0,
+        "top": 0,
+        "width": 800,
+        "height": 600
+      }
     },
     {
       "channel_id": 3,
@@ -83,6 +88,7 @@ Additionally, attention should be paid to the setting of the input data channels
 |base64_port | int  | 12348 | Base64 corresponds to the HTTP port |
 |skip_element| list | \ | Set whether to skip certain elements for this data stream. Currently, this only applies to OSD and Encode. When not specified, it's assumed that no elements are to be skipped.|
 |sample_strategy|string|"DROP"|When frames are being filtered, set whether the filtered frames are to be kept or discarded. "DROP" indicates discarding the frames, while "KEEP" indicates retaining them.|
+|roi| dict| \ | When roi is set, the frame from decoder will be cropped according to the roi range, otherwise passing the original frame.| 
 
 
 Where `channel_id` stands for the channel number of the input video, corresponding to the `channel_id` output by the [encoder](../encode/README.md). For instance, if the input `channel_id` is 20 and the encoder is used to save the results as a local video, the file name will be `20.avi`.

@@ -51,9 +51,8 @@
 * 关于每个例程的详细信息，请参考每个例程目录下的README.md文件。
 
 ## 2. 配置参数
-sophon-stream demo具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
+sophon-stream demo的输入具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
 
-需要注意输入数据channel的设置，以[yolox_bytetrack_osd_encode](yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json)为例
 
 ```json
   "channels": [
@@ -65,7 +64,13 @@ sophon-stream demo具有一些可配置的参数，可以根据需求进行设�
       "skip_element": [5005, 5006],
       "fps": 1,
       "sample_interval": 5,
-      "sample_strategy": "KEEP"
+      "sample_strategy": "KEEP",
+      "roi":{
+        "left": 0,
+        "top": 0,
+        "width": 800,
+        "height": 600
+      }
     },
     {
       "channel_id": 3,
@@ -100,6 +105,7 @@ sophon-stream demo具有一些可配置的参数，可以根据需求进行设�
 |skip_element| list | 无 | 设置该路数据是否跳过某些element，目前只对osd和encode生效。不设置时，认为不跳过任何element|
 |sample_strategy|字符串|"DROP"|在有抽帧的情况下，设置被抽掉的帧是保留还是直接丢弃。"DROP"表示丢弃，"KEEP"表示保留|
 |decode_id|整数|-1|单个decode element的情况不需要填写；多个decode element情况下，标识了某一路由对应id的decode element进行解码|
+|roi|字典|无|设置ROI时，将把解码结果进行裁剪并向下传递；否则默认传递原图|
 
 
 其中，channel_id为输入视频的通道编号，与[编码器](../element/multimedia/encode/README.md)输出channel_id相对应。例如，输入channel_id为20，使用编码器保存结果为本地视频时，文件名为20.avi。

@@ -58,6 +58,8 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   ChannelOperateRequest::SourceType mSourceType;
   std::vector<std::string> mImagePaths;
   HTTP_Base64_Mgr* mgr;
+  bmcv_rect_t mRoi;
+  bool mRoiPredefined = false;  
 
   double mFps;
   int mSampleInterval;

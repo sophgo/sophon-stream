@@ -43,6 +43,8 @@ constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SKIP_ELEMENT_FILED =
     "skip_element";
 constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_STRATEGY_FILED =
     "sample_strategy";
+constexpr const char* JSON_CONFIG_CHANNEL_CONFIG_ROI_FILED = "roi";
+
 constexpr const char* JSON_CONFIG_DRAW_FUNC_NAME_FILED = "draw_func_name";
 constexpr const char* JSON_CONFIG_CAR_ATTRIBUTES_FILED = "car_attributes";
 constexpr const char* JSON_CONFIG_PERSON_ATTRIBUTES_FILED = "person_attributes";
@@ -165,6 +167,9 @@ demo_config parse_demo_json(std::string& json_path) {
 
     auto fps_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_FPS_FILED);
     if (channel_it.end() != fps_it) channel_json["fps"] = fps_it->get<double>();
+
+    auto roi_it = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_ROI_FILED);
+    if (channel_it.end() != roi_it) channel_json["roi"] = *roi_it;
 
     auto sample_interval_it =
         channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_SAMPLE_INTERVAL_FILED);

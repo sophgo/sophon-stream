@@ -149,6 +149,11 @@ class Decode : public ::sophon_stream::framework::Element {
   static constexpr const char* JSON_BASE64_PORT = "base64_port";
   static constexpr const char* JSON_SKIP_ELEMENT = "skip_element";
   static constexpr const char* JSON_SAMPLE_STRATEGY = "sample_strategy";
+  static constexpr const char* JSON_ROI_FILED = "roi";
+  static constexpr const char* JSON_LEFT_FILED = "left";
+  static constexpr const char* JSON_TOP_FILED = "top";
+  static constexpr const char* JSON_WIDTH_FILED = "width";
+  static constexpr const char* JSON_HEIGHT_FILED = "height";
 
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
