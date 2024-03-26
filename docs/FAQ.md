@@ -67,3 +67,20 @@ ulimit -n 20480
 #### 9. 有的图片没有识别/检测结果
 
 图片/视频存在少数的漏检误检是正常情况，因为原模型精度也无法达到100%。stream暂时未提供精度评估功能，观察大部分图片识别/检测结果正常即可。
+
+#### 10. 推流失败
+
+推流失败最常见的原因是未开启流服务器，此种情况下，终端会有如下打印：
+
+```bash
+[tcp @ 0x7f6cbe4a00] Connection to tcp://localhost:1935?tcp_nodelay=0 failed: Connection refused
+[rtmp @ 0x7f6cbe4580] Cannot open connection tcp://localhost:1935?tcp_nodelay=0
+```
+
+或：
+
+```bash
+[tcp @ 0x7f40104eb0] Connection to tcp://localhost:8554?timeout=0 failed: Connection refused
+```
+
+此种情况下，请参考 [encode element](../element/multimedia/encode/README.md)，开启流服务器后重试。
