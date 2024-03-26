@@ -68,6 +68,10 @@ chmod -R +x scripts/
 └── BM1688
     ├── yolov8n_cls_fp32_1b.bmodel    # 使用TPU-MLIR编译，用于BM1688的FP32 yolov8-cls BModel，batch_size=1
     ├── yolov8n_cls_fp32_1b_2core.bmodel    # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-cls BModel，batch_size=1
+    ├── yolov8n_pose_fp32_1b_1core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 单核 yolov8-pose BModel，batch_size=1
+    ├── yolov8n_pose_fp32_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-pose BModel，batch_size=1
+    ├── yolov8n_pose_int8_1b_1core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 单核 yolov8-pose BModel，batch_size=1
+    ├── yolov8n_pose_int8_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 双核 yolov8-pose BModel，batch_size=1
     ├── yolov8s_fp16_1b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP16 双核 yolov8-detect BModel，batch_size=1
     ├── yolov8s_fp16_1b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP16 单核 yolov8-detect BModel，batch_size=1
     ├── yolov8s_fp16_4b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP16 双核 yolov8-detect BModel，batch_size=4
