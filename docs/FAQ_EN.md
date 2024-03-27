@@ -69,3 +69,20 @@ ulimit -n 20480
 #### 9. Some pictures are not recognized/detected.
 
 It is normal that there are a few false detections in pictures/videos, because the original model's accuracy cannot reach 100%. Now stream does not provide accuracy evaluation function for the time being, so it is enough to observe that most of the pictures are recognized/detected normally.
+
+#### 10. Failed to push streaming
+
+The most common reason for failing to push streaming is that the stream server is not on work. In this case, the terminal will print the following:
+
+```bash
+[tcp @ 0x7f6cbe4a00] Connection to tcp://localhost:1935?tcp_nodelay=0 failed: Connection refused
+[rtmp @ 0x7f6cbe4580] Cannot open connection tcp://localhost:1935?tcp_nodelay=0
+```
+
+or:
+
+```bash
+[tcp @ 0x7f40104eb0] Connection to tcp://localhost:8554?timeout=0 failed: Connection refused
+```
+
+Please refer to [encode element](../element/multimedia/encode/README_EN.md), and retry after opening the streaming server.

@@ -69,6 +69,10 @@ The downloaded models include:
 └── BM1688
     ├── yolov8n_cls_fp32_1b.bmodel    # Compile with TPU-MLIR，FP32 1 core yolov8-cls BModel for BM1688 batch_size=1
     ├── yolov8n_cls_fp32_1b_2core.bmodel    # Compile with TPU-MLIR，FP32 2 core yolov8-cls BModel for BM1688，batch_size=1
+    ├── yolov8n_pose_fp32_1b_1core.bmodel   # Compile with TPU-MLIR, FP32 1core yolov8-pose BModel for BM1688, batch_size=1
+    ├── yolov8n_pose_fp32_1b_2core.bmodel   # Compile with TPU-MLIR, FP32 2core yolov8-pose BModel for BM1688, batch_size=1
+    ├── yolov8n_pose_int8_1b_1core.bmodel   # Compile with TPU-MLIR, INT8 1core yolov8-pose BModel for BM1688, batch_size=1
+    ├── yolov8n_pose_int8_1b_2core.bmodel   # Compile with TPU-MLIR, INT8 2core yolov8-pose BModel for BM1688, batch_size=1
     ├── yolov8s_fp16_1b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=1
     ├── yolov8s_fp16_1b.bmodel        # Compile with TPU-MLIR, FP16 1 core BModel for BM1688, batch_size=1
     ├── yolov8s_fp16_4b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=4

@@ -68,9 +68,15 @@ The downloaded models include:
 │   ├── yolov5s_tpukernel_fp32_1b.bmodel            # FP32 BModel for BM1684X, with a batch size of 1. Post-processing utilizes the tpu_kernel.
 │   ├── yolov5s_tpukernel_int8_1b.bmodel            # INT8 BModel for BM1684X, with a batch size of 1. Post-processing utilizes the tpu_kernel.
 │   └── yolov5s_tpukernel_int8_4b.bmodel            # INT8 BModel for BM1684X, with a batch size of 4. Post-processing utilizes the tpu_kernel.
-└── BM1688_2cores
-    ├── yolov5s_v6.1_3output_int8_1b_2core.bmodel   # INT8 BModel for BM1688, with a batch size of 1.
-    └── yolov5s_v6.1_3output_int8_4b_2core.bmodel   # INT8 BModel for BM1688, with a batch size of 4.
+└── BM1688
+    ├── yolov5s_v6.1_3output_fp16_1b_2core.bmodel   # FP16 BModel for BM1688, batch_size=1
+    ├── yolov5s_v6.1_3output_fp16_1b.bmodel         # FP16 BModel for BM1688 and CV186AH, batch_size=1
+    ├── yolov5s_v6.1_3output_fp32_1b_2core.bmodel   # FP32 BModel for BM1688, batch_size=1
+    ├── yolov5s_v6.1_3output_fp32_1b.bmodel         # FP32 BModel for BM1688 and CV186AH, batch_size=1
+    ├── yolov5s_v6.1_3output_int8_1b_2core.bmodel   # INT8 BModel for BM1688, batch_size=1
+    ├── yolov5s_v6.1_3output_int8_1b.bmodel         # INT8 BModel for BM1688 and CV186AH, batch_size=1
+    ├── yolov5s_v6.1_3output_int8_4b_2core.bmodel   # INT8 BModel for BM1688, batch_size=4
+    └── yolov5s_v6.1_3output_int8_4b.bmodel         # INT8 BModel for BM1688 and CV186AH, batch_size=4
 ```
 
 Model description:
