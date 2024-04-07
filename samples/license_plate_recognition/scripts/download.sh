@@ -48,6 +48,7 @@ then
     python3 -m dfss --url=open@sophgo.com:/sophon-stream/license_plate_recognition/yolov5s-licensePlate.7z
     7z x yolov5s-licensePlate.7z -o../models
     rm yolov5s-licensePlate.7z
+    mv ../models/yolov5s-licensePlate ../models/yolov5s-licensePLate
 
     python3 -m dfss --url=open@sophgo.com:/sophon-stream/license_plate_recognition/BM1688.tar.gz
     tar -zxvf ./BM1688.tar.gz
