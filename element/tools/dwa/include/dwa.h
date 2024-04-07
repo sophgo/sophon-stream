@@ -44,6 +44,7 @@ class Dwa : public ::sophon_stream::framework::Element {
                                 bool* pIsAligWidth);
   static constexpr const char* CONFIG_INTERNAL_IS_GRAY_FILED = "is_gray";
   static constexpr const char* CONFIG_INTERNAL_IS_RESIZE_FILED = "is_resize";
+  static constexpr const char* CONFIG_INTERNAL_IS_ROT_FILED = "is_rot";
   static constexpr const char* CONFIG_INTERNAL_DIS_MODE_FILED = "dis_mode";
   static constexpr const char* CONFIG_INTERNAL_GRID_NAME_FILED = "grid_name";
   static constexpr const char* CONFIG_INTERNAL_USE_GRIDE_FILED = "use_grid";
@@ -61,6 +62,7 @@ class Dwa : public ::sophon_stream::framework::Element {
   bm_image_format_ext_ src_fmt;
   int subId = 0;
   bool is_resize = false;
+  bool is_rot = false;
 
   bmcv_usage_mode dis_mode;
   DwaMode dwa_mode;

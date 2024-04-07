@@ -123,6 +123,7 @@ struct ObjectMetadata {
       mSpDataInformation;  // 包含mTransFromFrame和原detect原recognize
   std::shared_ptr<common::Frame> mTransformFrame;
   std::vector<std::shared_ptr<ObjectMetadata>> mSubObjectMetadatas;
+  int tag;
 
   int numBranches;
   int mSubId;

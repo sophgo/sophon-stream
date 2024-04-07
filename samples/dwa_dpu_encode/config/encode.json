@@ -6,7 +6,7 @@
     "wss_port": "8999",
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420",
-    "fps": 25
+    "fps": 30
   },
   "shared_object": "../../build/lib/libencode.so",
   "name": "encode",

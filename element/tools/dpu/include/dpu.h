@@ -11,8 +11,8 @@
 #define SOPHON_STREAM_ELEMENT_DPU_H_
 
 #include "common/object_metadata.h"
-#include "element.h"
 #include "common/profiler.h"
+#include "element.h"
 #define MAP_TABLE_SIZE 256
 extern "C" {
 extern bm_status_t bm_ive_image_calc_stride(bm_handle_t handle, int img_h,
@@ -27,11 +27,7 @@ namespace dpu {
 
 enum DisplayType { RAW_DPU_DIS = 0, DWA_DPU_DIS = 1, ONLY_DPU_DIS = 2 };
 
-enum DpuType {
-  DPU_ONLINE,
-  DPU_FGS,
-  DPU_SGBM
-}; 
+enum DpuType { DPU_ONLINE, DPU_FGS, DPU_SGBM };
 
 class Dpu : public ::sophon_stream::framework::Element {
  public:
@@ -51,6 +47,30 @@ class Dpu : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_DPU_TYPE_FILED = "dpu_type";
   static constexpr const char* CONFIG_INTERNAL_DPU_MODE_FILED = "dpu_mode";
   static constexpr const char* CONFIG_INTERNAL_IS_IVE_FILED = "is_ive";
+  static constexpr const char* CONFIG_INTERNAL_DISP_RANGE_EN_FIELD =
+      "disp_range_en";
+  static constexpr const char* CONFIG_INTERNAL_DISP_START_POS_FIELD =
+      "disp_start_pos";
+  static constexpr const char* CONFIG_INTERNAL_DCC_DIR_EN_FIELD = "dcc_dir_en";
+  static constexpr const char* CONFIG_INTERNAL_DPU_CENSUS_SHIFT_FIELD =
+      "dpu_census_shift";
+  static constexpr const char* CONFIG_INTERNAL_DPU_RSHIFT1_FIELD =
+      "dpu_rshift1";
+  static constexpr const char* CONFIG_INTERNAL_DPU_RSHIFT2_FIELD =
+      "dpu_rshift2";
+  static constexpr const char* CONFIG_INTERNAL_DPU_CA_P1_FIELD = "dpu_ca_p1";
+  static constexpr const char* CONFIG_INTERNAL_DPU_CA_P2_FIELD = "dpu_ca_p2";
+  static constexpr const char* CONFIG_INTERNAL_DPU_UNIQ_RATIO_FIELD =
+      "dpu_uniq_ratio";
+  static constexpr const char* CONFIG_INTERNAL_DPU_DISP_SHIFT_FIELD =
+      "dpu_disp_shift";
+  static constexpr const char* CONFIG_INTERNAL_DEPTH_UNIT_EN_FIELD =
+      "depth_unit_en";
+  static constexpr const char* CONFIG_INTERNAL_FGS_MAX_COUNT_FIELD =
+      "fgs_max_count";
+  static constexpr const char* CONFIG_INTERNAL_FGS_MAX_T_FIELD = "fgs_max_t";
+  static constexpr const char* CONFIG_INTERNAL_FXBASE_LINE_FIELD =
+      "fxbase_line";
 
   DisplayType dis_type = DWA_DPU_DIS;
   int subId = 0;
@@ -68,7 +88,7 @@ class Dpu : public ::sophon_stream::framework::Element {
 
   bool is_ive;
 
-  int co=1;
+  int co = 0;
   DpuType dpu_type;
 
  private:
@@ -82,29 +102,24 @@ class Dpu : public ::sophon_stream::framework::Element {
   std::mutex mtx;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
 
-  std::unordered_map<std::string,DpuType> dpu_type_map = {
-    {"DPU_ONLINE", DpuType::DPU_ONLINE},
-    {"DPU_FGS", DpuType::DPU_FGS},
-    {"DPU_SGBM",DpuType::DPU_SGBM}
-  };
+  std::unordered_map<std::string, DpuType> dpu_type_map = {
+      {"DPU_ONLINE", DpuType::DPU_ONLINE},
+      {"DPU_FGS", DpuType::DPU_FGS},
+      {"DPU_SGBM", DpuType::DPU_SGBM}};
 
-   std::unordered_map<std::string, bmcv_dpu_online_mode_> online_mode_map{
-    {"DPU_ONLINE_MUX0",bmcv_dpu_online_mode_::DPU_ONLINE_MUX0},
-    {"DPU_ONLINE_MUX1",bmcv_dpu_online_mode_::DPU_ONLINE_MUX1},
-    {"DPU_ONLINE_MUX2",bmcv_dpu_online_mode_::DPU_ONLINE_MUX2}
-  };
+  std::unordered_map<std::string, bmcv_dpu_online_mode_> online_mode_map{
+      {"DPU_ONLINE_MUX0", bmcv_dpu_online_mode_::DPU_ONLINE_MUX0},
+      {"DPU_ONLINE_MUX1", bmcv_dpu_online_mode_::DPU_ONLINE_MUX1},
+      {"DPU_ONLINE_MUX2", bmcv_dpu_online_mode_::DPU_ONLINE_MUX2}};
 
   std::unordered_map<std::string, bmcv_dpu_fgs_mode_> fgs_mode_map{
-    {"DPU_FGS_MUX0",bmcv_dpu_fgs_mode_::DPU_FGS_MUX0},
-    {"DPU_FGS_MUX1",bmcv_dpu_fgs_mode_::DPU_FGS_MUX1}
-  };
+      {"DPU_FGS_MUX0", bmcv_dpu_fgs_mode_::DPU_FGS_MUX0},
+      {"DPU_FGS_MUX1", bmcv_dpu_fgs_mode_::DPU_FGS_MUX1}};
 
-   std::unordered_map<std::string, bmcv_dpu_sgbm_mode_> sgbm_mode_map{
-    {"DPU_SGBM_MUX0",bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX0},
-    {"DPU_SGBM_MUX1",bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX1},
-    {"DPU_SGBM_MUX2",bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX2}
-  };
-
+  std::unordered_map<std::string, bmcv_dpu_sgbm_mode_> sgbm_mode_map{
+      {"DPU_SGBM_MUX0", bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX0},
+      {"DPU_SGBM_MUX1", bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX1},
+      {"DPU_SGBM_MUX2", bmcv_dpu_sgbm_mode_::DPU_SGBM_MUX2}};
 };
 
 }  // namespace dpu

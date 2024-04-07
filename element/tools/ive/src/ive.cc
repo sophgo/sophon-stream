@@ -149,8 +149,6 @@ common::ErrorCode Ive::ive_work(
     std::shared_ptr<common::ObjectMetadata> iveObj) {
   bm_status_t ret;
   if (is_ive == true) {
-    auto start = std::chrono::high_resolution_clock::now();
-
     std::shared_ptr<bm_image> dpu_image_map = nullptr;
     dpu_image_map.reset(new bm_image, [](bm_image* p) {
       bm_image_destroy(*p);
@@ -203,13 +201,9 @@ common::ErrorCode Ive::ive_work(
 
     iveObj->mFrame->mSpDataDpu = dpu_image_map;
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    std::cout << "dpu_ive_map程序执行时间：" << duration.count() << " ms"
-              << std::endl;
   }
 
-  auto start = std::chrono::high_resolution_clock::now();
+  
   std::shared_ptr<bm_image> stitch_image = nullptr;
   if (dis_type != ONLY_DPU_DIS) {
     stitch_image.reset(new bm_image, [](bm_image* p) {
@@ -253,13 +247,6 @@ common::ErrorCode Ive::ive_work(
                             NULL);
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    std::cout << "bmcv_image_vpp_stitch程序执行时间：" << duration.count()
-              << " ms" << std::endl;
-
-    // bm_image_write_to_bmp(*iveObj->mFrame->mSpDataDpu,"dpumSpData.bmp");
-    // bm_image_write_to_bmp(*stitch_image,"stitch_image.bmp");
     iveObj->mFrame->mSpData = stitch_image;
   } else {
     iveObj->mFrame->mSpData = iveObj->mFrame->mSpDataDpu;
@@ -291,12 +278,7 @@ common::ErrorCode Ive::doWork(int dataPipeId) {
 
   if (objectMetadata->mFrame != nullptr &&
       objectMetadata->mFrame->mSpData != nullptr) {
-    auto start = std::chrono::high_resolution_clock::now();
-    ive_work(objectMetadata);
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    std::cout << "ive_work程序执行时间：" << duration.count() << " ms"
-              << std::endl;
+    ive_work(objectMetadata); 
   }
 
   mFpsProfiler.add(1);

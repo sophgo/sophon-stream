@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -g")
 if (NOT DEFINED TARGET_ARCH)
     set(TARGET_ARCH pcie)
 endif()
-set(CMAKE_BUILD_TYPE "debug")
+
 if (${TARGET_ARCH} STREQUAL "pcie")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
@@ -41,11 +41,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../../../3rdparty/httplib)
 
     include_directories(include)
-    add_library(fisheye SHARED
-        src/fisheye.cc
+    add_library(filter SHARED
+        src/filter.cc
     )
 
-    target_link_libraries(fisheye ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
+    target_link_libraries(filter ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
@@ -72,8 +72,8 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../../3rdparty/httplib)
 
     include_directories(include)
-    add_library(fisheye SHARED
-        src/fisheye.cc
+    add_library(filter SHARED
+        src/filter.cc
     )
-    target_link_libraries(fisheye ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    target_link_libraries(filter ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
 endif()

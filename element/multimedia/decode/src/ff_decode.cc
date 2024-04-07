@@ -441,7 +441,7 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   if (this->is_camera) {
     av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
     // av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
-    av_dict_set_int(&dict, "use_isp", 0, 0);           // int isusemw = 0
+    av_dict_set_int(&dict, "use_isp", 0, 0);  // int isusemw = 0
   }
 
   av_dict_set(
@@ -570,7 +570,9 @@ int VideoDecFFM::openCodecContext(int* stream_idx, AVCodecContext** dec_ctx,
 
   av_dict_free(&opts);
   if (fps != -1) {
-    fps = av_q2d(st->r_frame_rate);
+    if (is_camera == false) {
+      fps = av_q2d(st->r_frame_rate);
+    }
     frame_interval_time = 1 / fps * 1000;
   }
 

@@ -1,16 +1,18 @@
 {
-    "configure": {
-      "is_gray":true,
-      "is_resize":true,
-      "dst_h":1080,
-      "dst_w":1920,
-      "dwa_mode":"DWA_GDC_MODE",
-      "use_grid": true,
-      "grid_name": "../dwa_dpu_encode/data/gridinfo/rr0126.dat",
-      "grid_size":183120
-    },
-    "shared_object": "../../build/lib/libdwa.so",
-    "name": "dwa",
-    "side": "sophgo",
-    "thread_number": 1
-  }
+  "configure": {
+    "is_gray": true,
+    "is_resize": true,
+    "dst_h": 1080,
+    "dst_w": 1920,
+    "dwa_mode": "DWA_GDC_MODE",
+    "is_rot": false,
+    "dis_mode": "BMCV_MODE_PANORAMA_360",
+    "use_grid": true,
+    "grid_name": "../dwa_dpu_encode/data/gridinfo/RR.dat",
+    "grid_size": 183120
+  },
+  "shared_object": "../../build/lib/libdwa.so",
+  "name": "dwa",
+  "side": "sophgo",
+  "thread_number": 1
+}

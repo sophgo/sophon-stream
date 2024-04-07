@@ -95,8 +95,8 @@ common::ErrorCode FastposePreProcess::preProcess(
     int j = 0;
     // filter noise box
     while (j < objMetadata->mDetectedObjectMetadatas.size()) {
-      if (objMetadata->mDetectedObjectMetadatas[j]->mBox.mWidth < 8 ||
-          objMetadata->mDetectedObjectMetadatas[j]->mBox.mHeight < 8)
+      if (objMetadata->mDetectedObjectMetadatas[j]->mBox.mWidth < 16 ||
+          objMetadata->mDetectedObjectMetadatas[j]->mBox.mHeight < 16)
         objMetadata->mDetectedObjectMetadatas.erase(
             objMetadata->mDetectedObjectMetadatas.begin() + j,
             objMetadata->mDetectedObjectMetadatas.begin() + j + 1);
