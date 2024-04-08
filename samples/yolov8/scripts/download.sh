@@ -32,4 +32,10 @@ mv ./BM1688 ../data/models/BM1688
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data/
 
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/yolov8_data.tar.gz
+tar -zxvf yolov8_data.tar.gz
+mv ./yolov8_data/pics ../data/
+mv ./yolov8_data/videos/* ../data/videos/
+rm -rf yolov8_data*
+
 popd
