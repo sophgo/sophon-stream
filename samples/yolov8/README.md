@@ -88,13 +88,21 @@ chmod -R +x scripts/
 
 模型说明:
 
-以上模型移植于[yolov8官方](https://github.com/ultralytics/ultralytics)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`，支持COCO数据集的80分类检测任务。
+以上模型移植于[yolov8官方](https://github.com/ultralytics/ultralytics)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`。
+
+其中，名为`yolov8n_cls`的模型支持基于`ImageNet`的1000类分类任务，名为`yolov8n_pose`的模型支持人体姿态检测任务，其它模型支持COCO数据集的80分类检测任务。
+
+任务配置时，需要参考[yolov8_element](../../element/algorithm/yolov8/README.md)的说明来修改配置文件。
+
+目前，默认的配置方式实现的是目标检测功能。如果希望运行姿态检测算法，则除了需要将模型和任务修改外，还需要将[yolov8_demo.json](./config/yolov8_demo.json)中可视化算法名称修改为`draw_yolov8_det_pose`。对于分类算法，因为分类任务没有可视化的结果，因此不需要配置可视化算法名称，也不需要保存图片，观察程序运行中的日志即可。
 
 下载的数据包括：
 
 ```bash
 videos/
-├── carvana_video.mp4   # 测试视频
+├── demo_skeleton.mp4     # 姿态检测测试视频1
+├── yaotou.mp4            # 姿态检测测试视频2
+├── carvana_video.mp4     # 目标检测测试视频
 ├── elevator-1080p-25fps-4000kbps.h264
 ├── mot17_01_frcnn.mp4
 ├── mot17_03_frcnn.mp4
@@ -106,6 +114,18 @@ videos/
 ├── sample_1080p_h265.mp4
 └── test_car_person_1080P.avi
 
+./pics/                     # 分类任务测试数据
+├── bus.jpg
+├── n01440764_10043.jpg
+├── n01440764_10470.jpg
+├── n01440764_10744.jpg
+├── n01440764_10845.jpg
+├── n01440764_11170.jpg
+├── n01440764_12021.jpg
+├── n01440764_12063.jpg
+├── n01440764_12090.jpg
+├── n01440764_12329.jpg
+└── n01440764_12435.jpg
 ```
 
 ## 4. 环境准备

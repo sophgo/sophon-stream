@@ -89,13 +89,21 @@ The downloaded models include:
 
 Model description:
 
-The above models are ported from the official [yolov8 repository](https://github.com/ultralytics/ultralytics). The plugin configuration includes `mean=[0,0,0]`, `std=[255,255,255]`, supporting 80-class detection tasks from the COCO dataset.
+The above models are ported from the official [yolov8 repository](https://github.com/ultralytics/ultralytics). The plugin configuration includes `mean=[0,0,0]`, `std=[255,255,255]`.
+
+Among them, the model named `yolov8n_cls` supports a 1000-class classification task based on `ImageNet`, the model named `yolov8n_pose` supports a human pose detection task, and the other models support an 80-classification detection task for the COCO dataset.
+
+For task configuration, you need to refer to [yolov8_element](../../element/algorithm/yolov8/README.md) for instructions on how to modify the configuration file.
+
+Currently, the default configuration implements the target detection function. If you wish to run the attitude detection algorithm, you will need to change the name of the visualisation algorithm in [yolov8_demo.json](./config/yolov8_demo.json) in the visualisation algorithm name to `draw_yolov8_det_pose`. For the classification algorithm, since the classification task does not visualise the results, there is no need to configure the visualisation algorithm name or to save the image; it is sufficient to observe the logs as the program runs.
 
 The downloaded data include:
 
 ```bash
 videos/
-├── carvana_video.mp4   # test video
+├── demo_skeleton.mp4     # test video 1 for pose models
+├── yaotou.mp4            # test video 2 for pose models
+├── carvana_video.mp4     # test videos for detect models
 ├── elevator-1080p-25fps-4000kbps.h264
 ├── mot17_01_frcnn.mp4
 ├── mot17_03_frcnn.mp4
@@ -106,6 +114,20 @@ videos/
 ├── mot17_14_frcnn.mp4
 ├── sample_1080p_h265.mp4
 └── test_car_person_1080P.avi
+
+./pics/                     # test images for classification models
+├── bus.jpg
+├── n01440764_10043.jpg
+├── n01440764_10470.jpg
+├── n01440764_10744.jpg
+├── n01440764_10845.jpg
+├── n01440764_11170.jpg
+├── n01440764_12021.jpg
+├── n01440764_12063.jpg
+├── n01440764_12090.jpg
+├── n01440764_12329.jpg
+└── n01440764_12435.jpg
+```
 ```
 
 ## 4. Prepare Environment
