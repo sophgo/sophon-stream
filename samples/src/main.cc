@@ -372,6 +372,8 @@ int main(int argc, char* argv[]) {
           sophon_stream::common::ErrorCode errorCode = engine.pushSourceData(
               graph_id, src_id_port.first, src_id_port.second,
               std::static_pointer_cast<void>(channelTask));
+        } else {
+          IVS_ERROR("Push Source Data Failed! Please Check Input Json!");
         }
       }
     }

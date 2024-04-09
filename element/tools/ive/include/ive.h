@@ -59,7 +59,7 @@ class Ive : public ::sophon_stream::framework::Element {
   bm_device_mem_t mapTableY;
   bm_device_mem_t mapTableU;
   bm_device_mem_t mapTableV;
-  bm_ive_map_mode map_mode;
+  bmcv_ive_map_mode map_mode;
 
   bool is_ive;
   std::mutex mtx;

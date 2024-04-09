@@ -29,7 +29,7 @@
 
 ## 2. 特性
 
-* 支持BM1684X、BM1684(x86 PCIe、SoC)
+* 支持BM1684X、BM1684(x86 PCIe、SoC)、BM1688(SoC)、CV186X(SoC)
 * 支持多路视频流
 * 支持多线程
 
@@ -57,6 +57,15 @@ chmod -R +x scripts/
 │   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel # 用于BM1684X的FP32 BModel，batch_size=1，后处理在CPU上进行
 │   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel # 用于BM1684X的INT8 BModel，batch_size=1，后处理在CPU上进行
 │   │   └── retinaface_mobilenet0.25_int8_4b.bmodel # 用于BM1684X的INT8 BModel，batch_size=4，后处理在CPU上进行
+│   ├── BM1688
+│   │   ├── retinaface_mobilenet0.25_fp16_1b_2core.bmodel # 用于BM1688的FP16 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_fp16_1b.bmodel       # 用于BM1688和CV186X的FP16 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_fp32_1b_2core.bmodel # 用于BM1688的FP32 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # 用于BM1688和CV186X的FP32 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_int8_1b_2core.bmodel # 用于BM1688的INT8 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel       # 用于BM1688和CV186X的INT8 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_int8_4b_2core.bmodel # 用于BM1688的FP16 BModel，batch_size=4，后处理在CPU上进行
+│   │   └── retinaface_mobilenet0.25_int8_4b.bmodel       # 用于BM1688和CV186X的INT8 BModel，batch_size=4，后处理在CPU上进行
 │   └── onnx
 │       └── retinaface_mobilenet0.25.onnx # 原模型
 ```
@@ -68,8 +77,13 @@ chmod -R +x scripts/
 下载的数据包括：
 
 ```bash
-videos/
-├── station.avi   # 测试视频
+./images/
+├── face            # 测试图片和视频
+│   └── test
+│       ├── face
+│       └── videos
+├── WIDERVAL
+└── wind
 ```
 
 ## 4. 环境准备
@@ -251,13 +265,15 @@ frame count is 920 | fps is 191.723 fps.
 
 ## 7. 性能测试
 
-目前，retinaface例程支持在BM1684X和BM1684的PCIE、SOC模式下进行推理。
+目前，retinaface例程支持在BM1684X和BM1684的PCIE、SOC模式下进行推理，支持在BM1688和CV186X的SOC模式下进行推理。
 
-测试数据`/data/images/wind`，编译选项为Release模式，使用fp32模型，结果如下:
+测试数据`/data/images/wind`，编译选项为Release模式，使用int8模型，结果如下:
 
-|设备|路数|算法线程数|CPU利用率(%)|平均FPS|峰值FPS|
-|SE7|8|4-4-4|146.7|191.964|192.321|
+|设备|路数|算法线程数|CPU利用率(%)|平均FPS|
+|----|----|-----|-----|-----|
+|SE7    |4  |4-4-4  |381  |428.797|
+|SE9-16 |4  |4-4-4  |400  |263.333|
 
 > **测试说明**：
 1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
-2. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；
+2. SE5/SE7主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz，SE9-16为8核CA53@1.6GHz，SE9-8为6核CA53@1.6GH；

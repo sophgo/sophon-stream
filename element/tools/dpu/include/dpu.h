@@ -83,7 +83,7 @@ class Dpu : public ::sophon_stream::framework::Element {
 
   bmcv_dpu_online_mode dpu_online_mode;
 
-  bm_ive_map_mode map_mode;
+  bmcv_ive_map_mode map_mode;
   bm_image_format_ext dpu_fmt = FORMAT_GRAY;
 
   bool is_ive;

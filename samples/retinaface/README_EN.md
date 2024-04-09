@@ -29,7 +29,7 @@ In this example, the pre-processing, inference, and post-processing of the YOLOv
 
 ## 2. Features
 
-* Supports BM1684X, BM1684(x86 PCIe、SoC).
+* Supports BM1684X, BM1684(x86 PCIe、SoC), BM1688(SoC), CV186X(SoC).
 * Supports multiple video streams.
 * Supports multi-threading.
 
@@ -59,6 +59,15 @@ The downloaded models include:
 │   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel # FP32 BModel for BM1684X，batch_size=1，post-process on CPU
 │   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel # INT8 BModel for BM1684X，batch_size=1，post-process on CPU
 │   │   └── retinaface_mobilenet0.25_int8_4b.bmodel # INT8 BModel for BM1684X，batch_size=4，post-process on CPU
+│   ├── BM1688
+│   │   ├── retinaface_mobilenet0.25_fp16_1b_2core.bmodel # FP16 BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_fp16_1b.bmodel       # FP16 BModel for BM1688 and CV186X, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_fp32_1b_2core.bmodel # FP32 BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # FP32 BModel for BM1688 and CV186X, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_int8_1b_2core.bmodel # INT8 BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel       # INT8 BModel for BM1688 and CV186X, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_int8_4b_2core.bmodel # FP16 BModel for BM1688, batch_size=4, post-process on CPU
+│   │   └── retinaface_mobilenet0.25_int8_4b.bmodel       # INT8 BModel for BM1688 and CV186X, batch_size=4, post-process on CPU
 │   └── onnx
 │       └── retinaface_mobilenet0.25.onnx # origin model
 ```
@@ -66,8 +75,13 @@ The downloaded models include:
 The downloaded data include:
 
 ```bash
-videos/
-├── station.avi   # test video
+./images/
+├── face            # images and video for test
+│   └── test
+│       ├── face
+│       └── videos
+├── WIDERVAL
+└── wind
 ```
 
 ## 4. Prepare Environment
@@ -253,13 +267,15 @@ frame count is 920 | fps is 191.723 fps.
 
 ## 7. Performance Testing
 
-Currently, the retinaface example supports inference on BM1684X and BM1684 in PCIe and SOC modes.
+Currently, the retinaface example supports inference on BM1684X and BM1684 in PCIe and SOC modes, BM1688 and CV186X in SoC.
 
-The tested data is `/data/images/wind`. The compilation was done in Release mode. Using the fp32 model, the results are as follows:
+The tested data is `/data/images/wind`. The compilation was done in Release mode. Using the int8 model, the results are as follows:
 
-|Device|Number of Channels|Algorithm Thread Count|CPU Utilization(%)|Average FPS|Peak FPS|
-|SE7|8|4-4-4|146.7|191.964|192.321|
+|Device|Number of Channels|Algorithm Thread Count|CPU Utilization(%)|Average FPS|
+|----|----|-----|-----|-----|
+|SE7    |4  |4-4-4  |381  |428.797|
+|SE9-16 |4  |4-4-4  |400  |263.333|
 
 > **Test Description**:
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.
-2. Both BM1684 and BM1684X SoC devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz.
+2. Both SE5 and SE7 devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz. SE9-16 device utilizes an 8-core ARM A53 processor @ 1.6GHz, and SE9-8 device utilizes an 6-core ARM A53 processor @ 1.6GHz
