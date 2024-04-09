@@ -14,7 +14,6 @@ scripts_dir=$(dirname $(readlink -f "$0"))
 pushd $scripts_dir
 
 mkdir -p ../data/images
-mkdir -p ../data/videos
 mkdir -p ../data/images/face
 
 # 测试集wind
@@ -38,5 +37,9 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/retinaface/models.zip
 unzip models.zip -d ../data/
 rm models.zip
 
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/retinaface/BM1688.tar.gz
+tar -zxvf BM1688.tar.gz
+mv ./BM1688 ../data/models/
+rm -rf BM1688.tar.gz
 
 popd
