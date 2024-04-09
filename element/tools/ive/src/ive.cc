@@ -187,12 +187,12 @@ common::ErrorCode Ive::ive_work(
     bm_image_attach(dpu_image_map_v, &dpu_image_map_mem[2]);  // uv
 
     // ive
-    bmcv_image_ive_map(handle, map_mode, mapTableY,
-                       iveObj->mFrame->mSpDataDpu.get(), &dpu_image_map_y);
-    bmcv_image_ive_map(handle, map_mode, mapTableU,
-                       iveObj->mFrame->mSpDataDpu.get(), &dpu_image_map_u);
-    bmcv_image_ive_map(handle, map_mode, mapTableV,
-                       iveObj->mFrame->mSpDataDpu.get(), &dpu_image_map_v);
+    bmcv_ive_map(handle, *iveObj->mFrame->mSpDataDpu.get(), dpu_image_map_y,
+                 mapTableY);
+    bmcv_ive_map(handle, *iveObj->mFrame->mSpDataDpu.get(), dpu_image_map_u,
+                 mapTableU);
+    bmcv_ive_map(handle, *iveObj->mFrame->mSpDataDpu.get(), dpu_image_map_v,
+                 mapTableV);
 
     // bm_image_destroy
     bm_image_destroy(&dpu_image_map_y);
@@ -200,10 +200,8 @@ common::ErrorCode Ive::ive_work(
     bm_image_destroy(&dpu_image_map_v);
 
     iveObj->mFrame->mSpDataDpu = dpu_image_map;
-
   }
 
-  
   std::shared_ptr<bm_image> stitch_image = nullptr;
   if (dis_type != ONLY_DPU_DIS) {
     stitch_image.reset(new bm_image, [](bm_image* p) {
@@ -278,7 +276,7 @@ common::ErrorCode Ive::doWork(int dataPipeId) {
 
   if (objectMetadata->mFrame != nullptr &&
       objectMetadata->mFrame->mSpData != nullptr) {
-    ive_work(objectMetadata); 
+    ive_work(objectMetadata);
   }
 
   mFpsProfiler.add(1);

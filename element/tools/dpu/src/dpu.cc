@@ -516,7 +516,6 @@ common::ErrorCode Dpu::dpu_work(
   // dpuObj->mFrame->mSpData = leftObj->mFrame->mSpData;
   dpuObj->mFrame->mSpData = dpu_out;
   dpuObj->mFrame->mSpDataDwa = leftObj->mFrame->mSpDataDwa;
-  dpuObj->mFrame->mSpDataDwaR = rightObj->mFrame->mSpDataDwa;
 
   dpuObj->mFrame->mChannelId = leftObj->mFrame->mChannelId;
   dpuObj->mFrame->mFrameId = leftObj->mFrame->mFrameId;
