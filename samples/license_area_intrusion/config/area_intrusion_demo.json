@@ -1,0 +1,21 @@
+{
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "../license_area_intrusion/datasets/1080_1920_5s.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 2100000,
+      "fps": 25,
+      "sample_interval": 5
+    }
+  ],
+  "class_names": "../license_area_intrusion/data/coco.names",
+  "download_image": false,
+  "draw_func_name": "draw_license_plate_recognition_results",
+  "engine_config_path": "../license_area_intrusion/config/engine_group.json",
+  "http_report": {
+    "ip": "0.0.0.0",
+    "port": 10001,
+    "path": "/flask_test/"
+  }
+}

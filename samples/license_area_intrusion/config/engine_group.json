@@ -1,0 +1,109 @@
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "license_plate_distrib",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../license_area_intrusion/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../license_area_intrusion/config/yolov5_group.json",
+                "inner_elements_id": [
+                    10001,
+                    10002,
+                    10003
+                ]
+            },
+            {
+                "element_id": 5004,
+                "element_config": "../license_area_intrusion/config/distributor_time_class.json"
+            },
+            {
+                "element_id": 6001,
+                "element_config": "../license_area_intrusion/config/lprnet_group.json",
+                "inner_elements_id": [
+                    20001,
+                    20002,
+                    20003
+                ]
+            },
+            {
+                "element_id": 5005,
+                "element_config": "../license_area_intrusion/config/converger.json"
+            },
+            {
+                "element_id": 6002,
+                "element_config": "../license_area_intrusion/config/filter.json"
+            },
+            {
+                "element_id": 6003,
+                "element_config": "../license_area_intrusion/config/http_push.json",
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 0,
+                "dst_element_id": 5005,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 1,
+                "dst_element_id": 6001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 6001,
+                "src_port": 0,
+                "dst_element_id": 5005,
+                "dst_port": 1
+            },
+            {
+                "src_element_id": 5005,
+                "src_port": 0,
+                "dst_element_id": 6002,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 6002,
+                "src_port": 0,
+                "dst_element_id": 6003,
+                "dst_port": 0
+            }
+        ]
+    }
+]
