@@ -208,19 +208,22 @@ common::ErrorCode Filter::doWork(int dataPipeId) {
       std::unordered_map<std::string, int> names;
 
       if (objectMetadata->mSubObjectMetadatas.size())
-        for (int i = 0; i < objectMetadata->mSubObjectMetadatas.size(); i++) {
-          std::string name = objectMetadata->mSubObjectMetadatas[i]
-                                 ->mRecognizedObjectMetadatas[0]
-                                 ->mLabelName;
+        for (int j = 0; j < objectMetadata->mSubObjectMetadatas.size(); j++) {
+          if(objectMetadata->mSubObjectMetadatas[j]->mRecognizedObjectMetadatas.size()==1){
+            std::string name = objectMetadata->mSubObjectMetadatas[j]
+                                  ->mRecognizedObjectMetadatas[0]
+                                  ->mLabelName;
 
-          continue_frame_num[channel_id_internal][name]++;
-          names[name] = continue_frame_num[channel_id_internal][name];
+            continue_frame_num[channel_id_internal][name]++;
+            names[name] = continue_frame_num[channel_id_internal][name];
+          }
+
         }
       if (objectMetadata->mTrackedObjectMetadatas.size())
-        for (int i = 0; i < objectMetadata->mTrackedObjectMetadatas.size();
-             i++) {
+        for (int j = 0; j < objectMetadata->mTrackedObjectMetadatas.size();
+             j++) {
           std::string name = std::to_string(
-              objectMetadata->mTrackedObjectMetadatas[i]->mTrackId);
+              objectMetadata->mTrackedObjectMetadatas[j]->mTrackId);
           continue_frame_num[channel_id_internal][name]++;
           names[name] = continue_frame_num[channel_id_internal][name];
         }
@@ -346,7 +349,10 @@ bool Filter_Imp::isInPolygon(
 
     for (int i = 0; i < areas.size(); ++i) {
       flag |= isRectangleInsidePolygon(rectangle, areas[i].points);
-      if (flag) break;
+      if (flag) {
+        objectMetadata->areas.push_back(areas[i].points);
+        break;
+      }
     }
     if (flag) {
       new_mDetectedObjectMetadatas.push_back(

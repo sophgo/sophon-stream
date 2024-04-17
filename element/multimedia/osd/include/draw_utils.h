@@ -354,7 +354,28 @@ void draw_opencv_pose_result(
     }
   }
 }
-
+void draw_opencv_areas(std::shared_ptr<common::ObjectMetadata> objectMetadata,cv::Mat &frame_to_draw){
+  for(int i=0;i<objectMetadata->areas.size();i++){
+    if(objectMetadata->areas[i].size()==2){
+      const cv::Point start={objectMetadata->areas[i][0].mY,objectMetadata->areas[i][0].mX};
+      const cv::Point end={objectMetadata->areas[i][1].mY,objectMetadata->areas[i][1].mX};
+      const cv::Scalar color={255,0,0};
+      cv::line(frame_to_draw, start,end, color, 3, 8, 0);
+    }
+  }
+}
+void draw_bmcv_areas(std::shared_ptr<common::ObjectMetadata> objectMetadata,bm_image &frame_to_draw){
+  for(int i=0;i<objectMetadata->areas.size();i++){
+    if(objectMetadata->areas[i].size()==2){
+      bmcv_point_t start={objectMetadata->areas[i][0].mY,objectMetadata->areas[i][0].mX};
+      bmcv_point_t end={objectMetadata->areas[i][1].mY,objectMetadata->areas[i][1].mX};
+      bmcv_color_t color={255,0,0};
+      bmcv_image_draw_lines(objectMetadata->mFrame->mHandle,frame_to_draw,&start,&end,1,color,3);
+    }
+    
+  }
+  
+}
 }  // namespace osd
 }  // namespace element
 }  // namespace sophon_stream

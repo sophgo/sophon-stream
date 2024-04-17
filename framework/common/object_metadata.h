@@ -170,7 +170,7 @@ struct ObjectMetadata {
    * @brief ocr预处理，以net_w为最长边，进行resize后的宽高
    */
   std::vector<int> resize_vector;
-
+  std::vector<std::vector<common::Point<int>>> areas;
 };
 
 using ObjectMetadatas = std::vector<std::shared_ptr<ObjectMetadata>>;
