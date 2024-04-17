@@ -37,7 +37,7 @@ Main Directory Structure and Module Descriptions:
 |                         | [retinaface](./samples/retinaface)                                | retinaface demo                         |
 |                         | [yolox_bytetrack_osd_encode](./samples/yolox_bytetrack_osd_encode)| detect-track-encode demo|
 |                         | [yolov5_bytetrack_distributor_resnet_converger](./samples/yolov5_bytetrack_distributor_resnet_converger)| detect-track-distribute-recognize demo|
-|                         | [retinaface_distributor_resnet_faiss_converger](./samples/retinaface_distributor_resnet_faiss_converge)| face detect-distribute-face recognize demo|
+|                         | [retinaface_distributor_resnet_faiss_converger](./samples/retinaface_distributor_resnet_faiss_converger)| face detect-distribute-face recognize demo|
 |                         | [license_plate_recognition](./samples/license_plate_recognition/) | car detect-license plate recognize demo |
 |                         | [ppocr](./samples/ppocr/)                                         | PPOCR demo |
 |                         | [yolov5_fastpose_posec3d](./samples/yolov5_fastpose_posec3d/)     | gesture recognition - behavior recognition demo |
