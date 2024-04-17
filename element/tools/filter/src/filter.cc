@@ -446,7 +446,7 @@ bool Filter_Imp::onSegment(const common::Point<int>& p,
 int Filter_Imp::orientation(const common::Point<int>& p,
                             const common::Point<int>& q,
                             const common::Point<int>& r) {
-  double val = (q.mY - p.mY) * (r.mX - q.mX) - (q.mX - p.mX) * (r.mY - q.mY);
+  double val = 1.0 * (q.mY - p.mY) * (r.mX - q.mX) - 1.0 * (q.mX - p.mX) * (r.mY - q.mY);
   if (val == 0) return 0;    // colinear
   return (val > 0) ? 1 : 2;  // clockwise or counterclockwise
 }
