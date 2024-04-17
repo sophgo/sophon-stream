@@ -89,7 +89,6 @@ common::ErrorCode Faiss::initInternal(const std::string& json) {
     std::memcpy(db_data, db_vec.data(), db_vec.size() * sizeof(float));
 
     bm_dev_request(&handle, 0);
-    bm_memcpy_s2d(handle, db_data_dev_mem, db_data);
     bm_malloc_device_byte(handle, &buffer_dev_mem,
                           query_vecs_num * db_vecs_num * sizeof(float));
     bm_malloc_device_byte(handle, &sorted_similarity_dev_mem,
@@ -100,6 +99,7 @@ common::ErrorCode Faiss::initInternal(const std::string& json) {
                           query_vecs_num * vec_dims * sizeof(float));
     bm_malloc_device_byte(handle, &db_data_dev_mem,
                           db_vecs_num * vec_dims * sizeof(float));
+    bm_memcpy_s2d(handle, db_data_dev_mem, db_data);
 
   } while (false);
   return errorCode;
