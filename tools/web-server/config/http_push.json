@@ -1,0 +1,11 @@
+{
+  "configure": {
+    "ip": "0.0.0.0",
+    "port": 10002,
+    "path": "/flask_test/1"
+  },
+  "shared_object": "../../build/lib/libhttp_push.so",
+  "name": "http_push",
+  "side": "sophgo",
+  "thread_number": 1
+}
