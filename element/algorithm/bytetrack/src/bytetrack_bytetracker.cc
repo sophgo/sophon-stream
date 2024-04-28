@@ -229,8 +229,8 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
     std::shared_ptr<common::TrackedObjectMetadata> mTrackedObjectMetadata =
         std::make_shared<common::TrackedObjectMetadata>();
 
-    mDetectedObjectMetadata->mBox.mX = track_box->tlwh[0];
-    mDetectedObjectMetadata->mBox.mY = track_box->tlwh[1];
+    mDetectedObjectMetadata->mBox.mX = track_box->tlwh[0]<0?0:track_box->tlwh[0];
+    mDetectedObjectMetadata->mBox.mY = track_box->tlwh[1]<0?0:track_box->tlwh[1];
     mDetectedObjectMetadata->mBox.mWidth = track_box->tlwh[2];
     mDetectedObjectMetadata->mBox.mHeight = track_box->tlwh[3];
     mDetectedObjectMetadata->mClassify = track_box->class_id;
