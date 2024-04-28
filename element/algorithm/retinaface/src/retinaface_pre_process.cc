@@ -144,7 +144,11 @@ common::ErrorCode RetinafacePreProcess::preProcess(
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
+#if BMCV_VERSION_MAJOR > 1
+    bm_image_alloc_dev_mem_heap_mask(resized_img, 2);
+#else
     bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
+#endif
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
     bm_status_t ret = BM_SUCCESS;
 

@@ -60,16 +60,17 @@ The downloaded models include:
 │   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel # INT8 BModel for BM1684X，batch_size=1，post-process on CPU
 │   │   └── retinaface_mobilenet0.25_int8_4b.bmodel # INT8 BModel for BM1684X，batch_size=4，post-process on CPU
 │   ├── BM1688
-│   │   ├── retinaface_mobilenet0.25_fp16_1b_2core.bmodel # FP16 BModel for BM1688, batch_size=1, post-process on CPU
-│   │   ├── retinaface_mobilenet0.25_fp16_1b.bmodel       # FP16 BModel for BM1688 and CV186X, batch_size=1, post-process on CPU
-│   │   ├── retinaface_mobilenet0.25_fp32_1b_2core.bmodel # FP32 BModel for BM1688, batch_size=1, post-process on CPU
-│   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # FP32 BModel for BM1688 and CV186X, batch_size=1, post-process on CPU
-│   │   ├── retinaface_mobilenet0.25_int8_1b_2core.bmodel # INT8 BModel for BM1688, batch_size=1, post-process on CPU
-│   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel       # INT8 BModel for BM1688 and CV186X, batch_size=1, post-process on CPU
-│   │   ├── retinaface_mobilenet0.25_int8_4b_2core.bmodel # FP16 BModel for BM1688, batch_size=4, post-process on CPU
-│   │   └── retinaface_mobilenet0.25_int8_4b.bmodel       # INT8 BModel for BM1688 and CV186X, batch_size=4, post-process on CPU
-│   └── onnx
-│       └── retinaface_mobilenet0.25.onnx # origin model
+│   │   ├── retinaface_mobilenet0.25_fp16_1b_2core.bmodel # FP16 2cores BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_fp16_1b.bmodel       # FP16 BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_fp32_1b_2core.bmodel # FP32 2cores BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # FP32 BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_int8_1b_2core.bmodel # INT8 2cores BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel       # INT8 BModel for BM1688, batch_size=1, post-process on CPU
+│   │   ├── retinaface_mobilenet0.25_int8_4b_2core.bmodel # FP16 2cores BModel for BM1688, batch_size=4, post-process on CPU
+│   │   └── retinaface_mobilenet0.25_int8_4b.bmodel       # INT8 BModel for BM1688, batch_size=4, post-process on CPU
+│   └── CV186X
+│       ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # FP32 BModel for BM1688, batch_size=1, post-process on CPU
+│       └── retinaface_mobilenet0.25_int8_1b.bmodel       # INT8 BModel for BM1688, batch_size=1, post-process on CPU
 ```
 
 The downloaded data include:

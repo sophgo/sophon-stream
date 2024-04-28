@@ -58,16 +58,17 @@ chmod -R +x scripts/
 │   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel # 用于BM1684X的INT8 BModel，batch_size=1，后处理在CPU上进行
 │   │   └── retinaface_mobilenet0.25_int8_4b.bmodel # 用于BM1684X的INT8 BModel，batch_size=4，后处理在CPU上进行
 │   ├── BM1688
-│   │   ├── retinaface_mobilenet0.25_fp16_1b_2core.bmodel # 用于BM1688的FP16 BModel，batch_size=1，后处理在CPU上进行
-│   │   ├── retinaface_mobilenet0.25_fp16_1b.bmodel       # 用于BM1688和CV186X的FP16 BModel，batch_size=1，后处理在CPU上进行
-│   │   ├── retinaface_mobilenet0.25_fp32_1b_2core.bmodel # 用于BM1688的FP32 BModel，batch_size=1，后处理在CPU上进行
-│   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # 用于BM1688和CV186X的FP32 BModel，batch_size=1，后处理在CPU上进行
-│   │   ├── retinaface_mobilenet0.25_int8_1b_2core.bmodel # 用于BM1688的INT8 BModel，batch_size=1，后处理在CPU上进行
-│   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel       # 用于BM1688和CV186X的INT8 BModel，batch_size=1，后处理在CPU上进行
-│   │   ├── retinaface_mobilenet0.25_int8_4b_2core.bmodel # 用于BM1688的FP16 BModel，batch_size=4，后处理在CPU上进行
-│   │   └── retinaface_mobilenet0.25_int8_4b.bmodel       # 用于BM1688和CV186X的INT8 BModel，batch_size=4，后处理在CPU上进行
-│   └── onnx
-│       └── retinaface_mobilenet0.25.onnx # 原模型
+│   │   ├── retinaface_mobilenet0.25_fp16_1b_2core.bmodel # 用于BM1688的双核FP16 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_fp16_1b.bmodel       # 用于BM1688的FP16 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_fp32_1b_2core.bmodel # 用于BM1688的双核FP32 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # 用于BM1688的FP32 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_int8_1b_2core.bmodel # 用于BM1688的双核INT8 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_int8_1b.bmodel       # 用于BM1688的INT8 BModel，batch_size=1，后处理在CPU上进行
+│   │   ├── retinaface_mobilenet0.25_int8_4b_2core.bmodel # 用于BM1688的双核FP16 BModel，batch_size=4，后处理在CPU上进行
+│   │   └── retinaface_mobilenet0.25_int8_4b.bmodel       # 用于BM1688的INT8 BModel，batch_size=4，后处理在CPU上进行
+│   └── CV186X
+│       ├── retinaface_mobilenet0.25_fp32_1b.bmodel       # 用于CV186X的FP32 BModel，batch_size=1，后处理在CPU上进行
+│       └── retinaface_mobilenet0.25_int8_1b.bmodel       # 用于CV186X的INT8 BModel，batch_size=1，后处理在CPU上进行
 ```
 
 模型说明:

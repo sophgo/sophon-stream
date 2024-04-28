@@ -317,7 +317,7 @@ Modifications in JSON configurations might be necessary when switching between d
 
 Due to significant differences in CPU capabilities among PCIe devices, performance data is not meaningful. Therefore, only provide the test results for SOC mode.
 
-The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was done in Release mode. The results are as follows:
+The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was done in Release mode. Model is yolov8 det. The results are as follows:
 
 
 | Device | Number of Channels | Algorithm Thread Count | CPU Utilization (%) | System Memory (M) | TPU Utilization (%) |  Peak Device Memory (M) | Average FPS | 

@@ -42,4 +42,9 @@ tar -zxvf BM1688.tar.gz
 mv ./BM1688 ../data/models/
 rm -rf BM1688.tar.gz
 
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/retinaface/CV186X.tar.gz
+tar -zxvf CV186X.tar.gz
+mv ./CV186X ../data/models/
+rm -rf CV186X.tar.gz
+
 popd
