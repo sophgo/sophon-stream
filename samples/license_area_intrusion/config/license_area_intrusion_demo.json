@@ -9,7 +9,7 @@
       "sample_interval": 5
     }
   ],
-  "class_names": "../license_area_intrusion/data/coco.names",
+  "class_names": "../license_area_intrusion/datasets/coco.names",
   "download_image": false,
   "draw_func_name": "draw_license_plate_recognition_results",
   "engine_config_path": "../license_area_intrusion/config/engine_group.json",

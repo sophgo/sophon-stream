@@ -1,8 +1,8 @@
-from samples.area_intrusion.config_logic import *
+from samples.license_area_intrusion.config_logic import *
 import json
 import os
 import glob
-def area_intrusion_build_config(algorithm_name,stream_path,data,port,i):
+def license_area_intrusion_build_config(algorithm_name,stream_path,data,port,i):
     config_path=stream_path+'/samples/'+algorithm_name+'/config/'
     # stream_run_path=stream_path+"/samples/build"
 
@@ -104,7 +104,7 @@ def area_intrusion_build_config(algorithm_name,stream_path,data,port,i):
     
     return demo_config_path
 
-def area_intrusion_trans_json(json_data,task_id,Type,up_list):
+def license_area_intrusion_trans_json(json_data,task_id,Type,up_list):
     results={}
     frame_id=int(json_data["mFrame"]["mFrameId"])
     results["FrameIndex"]=frame_id
@@ -145,7 +145,7 @@ def area_intrusion_trans_json(json_data,task_id,Type,up_list):
                 results["AnalyzeEvents"].append(result)
     return results
                 
-def area_intrusion_logic(json_data,up_list,rm_list):
+def license_area_intrusion_logic(json_data,up_list,rm_list):
     if("mSubObjectMetadatas" in json_data.keys()):
         names=[str(i["mRecognizedObjectMetadatas"][0]["mLabelName"]) for i in json_data["mSubObjectMetadatas"]]
     else:
