@@ -1,0 +1,21 @@
+{
+    "configure": {
+        "default_port": 0,
+        "rules": [
+            {
+                "frame_interval": 1,
+                "routes": [
+                    {
+                        "classes":["license_plate"],
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "class_names_file": "../license_area_intrusion/datasets/coco.names"
+    },
+    "shared_object": "../../build/lib/libdistributor.so",
+    "name": "distributor",
+    "side": "sophgo",
+    "thread_number": 1
+}

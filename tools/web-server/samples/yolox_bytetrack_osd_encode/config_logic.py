@@ -1,0 +1,3 @@
+yolox_bytetrack_osd_encode_infos={}
+yolox_bytetrack_osd_encode_in_thresh=3
+yolox_bytetrack_osd_encode_out_thresh=5

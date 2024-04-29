@@ -1,0 +1,9 @@
+{
+  "configure": {
+    "model_path": "../license_area_intrusion/models/lprnet/BM1688/lprnet_new_int8_4b_2core.bmodel"
+  },
+  "shared_object": "../../build/lib/liblprnet.so",
+  "name": "lprnet_group",
+  "side": "sophgo",
+  "thread_number": 1
+}

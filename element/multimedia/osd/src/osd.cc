@@ -14,10 +14,7 @@
 #include <chrono>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/videoio.hpp>
+
 
 #include "common/common_defs.h"
 #include "common/logger.h"
@@ -47,6 +44,7 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
     if (osd_type == "DET") mOsdType = OsdType::DET;
     if (osd_type == "TRACK") mOsdType = OsdType::TRACK;
     if (osd_type == "POSE") mOsdType = OsdType::POSE;
+    if (osd_type == "AREA") mOsdType = OsdType::AREA;
 
     if (mOsdType == OsdType::DET) {
       std::string class_names_file =
@@ -152,7 +150,6 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
 
   return common::ErrorCode::SUCCESS;
 }
-
 void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
   std::shared_ptr<bm_image> imageStorage;
   imageStorage.reset(new bm_image,
@@ -176,6 +173,11 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
       case OsdType::POSE:
         draw_opencv_pose_result(objectMetadata->mFrame->mHandle, objectMetadata,
                                 frame_to_draw, mDrawInterval);
+        break;
+
+      case OsdType::AREA:
+        draw_opencv_areas(objectMetadata,frame_to_draw);
+       
         break;
 
       default:
@@ -214,6 +216,11 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
       case OsdType::POSE:
         draw_bmcv_pose_result(objectMetadata->mFrame->mHandle, objectMetadata,
                               *imageStorage, mDrawInterval);
+        break;
+
+      case OsdType::AREA:
+          draw_bmcv_areas(objectMetadata,*imageStorage);
+
         break;
 
       default:

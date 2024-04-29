@@ -36,7 +36,7 @@ void FpsProfiler::add(int cnts) {
   }
   double ts = cv::getTickCount() / cv::getTickFrequency();
   if (ts - last_print_ts_ > print_step_ && print_step_ != 0) {
-    IVS_DEBUG("[{}] tmp_fps: {}, avg_fps: {}", name_, tmp_fps_, avg_fps_);
+    IVS_INFO("[{}] tmp_fps: {}, avg_fps: {}", name_, tmp_fps_, avg_fps_);
     last_print_ts_ = ts;
   }
 }

@@ -1,0 +1,13 @@
+{
+    "configure": {
+        "osd_type": "AREA",
+        "class_names_file": "../yolox_bytetrack_osd_encode/data/coco.names",
+        "draw_utils": "BMCV",
+        "draw_interval": false,
+        "put_text": false
+    },
+    "shared_object": "../../build/lib/libosd.so",
+    "name": "osd",
+    "side": "sophgo",
+    "thread_number": 1
+}

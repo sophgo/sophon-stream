@@ -1,0 +1,18 @@
+{
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "../tripwire/data/test.mp4",
+      "source_type": "RTSP",
+      "loop_num": 2100000,
+      "fps": 25,
+      "sample_interval": 3
+    }
+  ],
+  "engine_config_path": "../tripwire/config/engine_group.json",
+  "http_report": {
+    "ip": "0.0.0.0",
+    "port": 10001,
+    "path": "/flask_test/"
+  }
+}

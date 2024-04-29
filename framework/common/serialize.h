@@ -136,8 +136,12 @@ std::string frame_to_base64(Frame& frame) {
 #endif
   unsigned char* jpegData = nullptr;
   size_t nBytes = 0;
-
-  bm_image bgr_ = *(frame.mSpData);
+  bm_image bgr_;
+  if(frame.mSpDataOsd!=nullptr){
+    bgr_ = *(frame.mSpDataOsd);
+  }else{
+    bgr_ = *(frame.mSpData);
+  }
   bm_handle_t handle_ = bm_image_get_handle(&bgr_);
 
   bm_image yuv_;

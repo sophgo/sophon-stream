@@ -12,7 +12,6 @@
 
 #include <memory>
 #include <mutex>
-
 #include "common/object_metadata.h"
 #include "common/profiler.h"
 #include "element.h"
@@ -23,11 +22,10 @@ namespace osd {
 
 class Osd : public ::sophon_stream::framework::Element {
  public:
-  enum class OsdType { DET, TRACK, REC, POSE, UNKNOWN };
+  enum class OsdType { DET, TRACK, REC, POSE, AREA, UNKNOWN };
   enum class DrawUtils { OPENCV, BMCV, UNKNOWN };
   Osd();
   ~Osd() override;
-
   common::ErrorCode initInternal(const std::string& json) override;
 
   common::ErrorCode doWork(int dataPipeId) override;
