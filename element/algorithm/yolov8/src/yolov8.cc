@@ -129,10 +129,16 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
       mContext->class_num =
           mContext->bmNetwork->outputTensor(0)->get_shape()->dims[4] - 4 - 1;
     } else {
-      if (mContext->taskType == TaskType::Detect)
-        mContext->class_num =
-            mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] - 4;
-      else if (mContext->taskType == TaskType::Cls)
+      if (mContext->taskType == TaskType::Detect) {
+        int ndim1 = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1];
+        int ndim2 = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2];
+        if (ndim1 > ndim2) {
+          mContext->use_post_opt = true;
+          mContext->class_num = ndim2 - 4;
+        } else {
+          mContext->class_num = ndim1 - 4;
+        }
+      } else if (mContext->taskType == TaskType::Cls)
         mContext->class_num =
             mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1];
       else if (mContext->taskType == TaskType::Pose)

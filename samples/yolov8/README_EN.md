@@ -57,7 +57,10 @@ The downloaded models include:
 │   ├── yolov8n_pose_int8_1b.bmodel # Compile with TPU-MLIR，INT8 yolov8-pose BModel for BM1684，batch_size=1
 │   ├── yolov8s_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1684, batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684, batch_size=1
-│   └── yolov8s_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684, batch_size=4
+│   ├── yolov8s_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684, batch_size=4
+│   ├── yolov8s_opt_fp32_1b.bmodel  # Compile with TPU-MLIR, FP32 yolov8-detect BModel for BM1684, batch_size=1, optimized the post-process
+│   ├── yolov8s_opt_int8_1b.bmodel  # Compile with TPU-MLIR, INT8 yolov8-detect BModel for BM1684, batch_size=1, optimized the post-process
+│   └── yolov8s_opt_int8_4b.bmodel  # Compile with TPU-MLIR, INT8 yolov8-detect BModel for BM1684, batch_size=4, optimized the post-process
 ├── BM1684X
 |   ├── yolov8n_cls_fp32_1b.bmodel  # Compile with TPU-MLIR，FP32 yolov8-cls BModel for BM1684X，batch_size=1
 │   ├── yolov8n_pose_fp32_1b.bmodel # Compile with TPU-MLIR，FP32 yolov8-pose BModel for BM1684X，batch_size=1
@@ -65,26 +68,47 @@ The downloaded models include:
 │   ├── yolov8s_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1684X, batch_size=1
 │   ├── yolov8s_fp16_1b.bmodel   # Compile with TPU-MLIR, FP16 BModel for BM1684X, batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684X, batch_size=1
-│   └── yolov8s_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684X, batch_size=4
-└── BM1688
-    ├── yolov8n_cls_fp32_1b.bmodel    # Compile with TPU-MLIR，FP32 1 core yolov8-cls BModel for BM1688 batch_size=1
-    ├── yolov8n_cls_fp32_1b_2core.bmodel    # Compile with TPU-MLIR，FP32 2 core yolov8-cls BModel for BM1688，batch_size=1
-    ├── yolov8n_pose_fp32_1b_1core.bmodel   # Compile with TPU-MLIR, FP32 1core yolov8-pose BModel for BM1688, batch_size=1
-    ├── yolov8n_pose_fp32_1b_2core.bmodel   # Compile with TPU-MLIR, FP32 2core yolov8-pose BModel for BM1688, batch_size=1
-    ├── yolov8n_pose_int8_1b_1core.bmodel   # Compile with TPU-MLIR, INT8 1core yolov8-pose BModel for BM1688, batch_size=1
-    ├── yolov8n_pose_int8_1b_2core.bmodel   # Compile with TPU-MLIR, INT8 2core yolov8-pose BModel for BM1688, batch_size=1
-    ├── yolov8s_fp16_1b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=1
-    ├── yolov8s_fp16_1b.bmodel        # Compile with TPU-MLIR, FP16 1 core BModel for BM1688, batch_size=1
-    ├── yolov8s_fp16_4b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=4
-    ├── yolov8s_fp16_4b.bmodel        # Compile with TPU-MLIR, FP16 1 core BModel for BM1688, batch_size=4
-    ├── yolov8s_fp32_1b_2core.bmodel  # Compile with TPU-MLIR, FP32 2 core BModel for BM1688, batch_size=1
-    ├── yolov8s_fp32_1b.bmodel        # Compile with TPU-MLIR, FP32 1 core BModel for BM1688, batch_size=1
-    ├── yolov8s_fp32_4b_2core.bmodel  # Compile with TPU-MLIR, FP32 2 core BModel for BM1688, batch_size=4
-    ├── yolov8s_fp32_4b.bmodel        # Compile with TPU-MLIR, FP32 1 core BModel for BM1688, batch_size=4
-    ├── yolov8s_int8_1b_2core.bmodel  # Compile with TPU-MLIR, INT8 2 core BModel for BM1688, batch_size=1
-    ├── yolov8s_int8_1b.bmodel        # Compile with TPU-MLIR, INT8 1 core BModel for BM1688, batch_size=1
-    ├── yolov8s_int8_4b_2core.bmodel  # Compile with TPU-MLIR, INT8 2 core BModel for BM1688, batch_size=4
-    └── yolov8s_int8_4b.bmodel        # Compile with TPU-MLIR, INT8 1 core BModel for BM1688, batch_size=4
+│   ├── yolov8s_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684X, batch_size=4
+│   ├── yolov8s_opt_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1684X, batch_size=1, optimized the post-process
+│   ├── yolov8s_opt_fp16_1b.bmodel   # Compile with TPU-MLIR, FP16 BModel for BM1684X, batch_size=1, optimized the post-process
+│   ├── yolov8s_opt_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684X, batch_size=1, optimized the post-process
+│   └── yolov8s_opt_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684X, batch_size=4, optimized the post-process
+├── BM1688
+|   ├── yolov8n_cls_fp32_1b.bmodel    # Compile with TPU-MLIR，FP32 1 core yolov8-cls BModel for BM1688 batch_size=1
+│   ├── yolov8n_cls_fp32_1b_2core.bmodel    # Compile with TPU-MLIR，FP32 2 core yolov8-cls BModel for BM1688，batch_size=1
+│   ├── yolov8n_pose_fp32_1b_1core.bmodel   # Compile with TPU-MLIR, FP32 1core yolov8-pose BModel for BM1688, batch_size=1
+│   ├── yolov8n_pose_fp32_1b_2core.bmodel   # Compile with TPU-MLIR, FP32 2core yolov8-pose BModel for BM1688, batch_size=1
+│   ├── yolov8n_pose_int8_1b_1core.bmodel   # Compile with TPU-MLIR, INT8 1core yolov8-pose BModel for BM1688, batch_size=1
+│   ├── yolov8n_pose_int8_1b_2core.bmodel   # Compile with TPU-MLIR, INT8 2core yolov8-pose BModel for BM1688, batch_size=1
+│   ├── yolov8s_fp16_1b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=1
+│   ├── yolov8s_fp16_1b.bmodel        # Compile with TPU-MLIR, FP16 1 core BModel for BM1688, batch_size=1
+│   ├── yolov8s_fp16_4b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=4
+│   ├── yolov8s_fp16_4b.bmodel        # Compile with TPU-MLIR, FP16 1 core BModel for BM1688, batch_size=4
+│   ├── yolov8s_fp32_1b_2core.bmodel  # Compile with TPU-MLIR, FP32 2 core BModel for BM1688, batch_size=1
+|   ├── yolov8s_fp32_1b.bmodel        # Compile with TPU-MLIR, FP32 1 core BModel for BM1688, batch_size=1
+│   ├── yolov8s_fp32_4b_2core.bmodel  # Compile with TPU-MLIR, FP32 2 core BModel for BM1688, batch_size=4
+│   ├── yolov8s_fp32_4b.bmodel        # Compile with TPU-MLIR, FP32 1 core BModel for BM1688, batch_size=4
+│   ├── yolov8s_int8_1b_2core.bmodel  # Compile with TPU-MLIR, INT8 2 core BModel for BM1688, batch_size=1
+│   ├── yolov8s_int8_1b.bmodel        # Compile with TPU-MLIR, INT8 1 core BModel for BM1688, batch_size=1
+│   ├── yolov8s_int8_4b_2core.bmodel  # Compile with TPU-MLIR, INT8 2 core BModel for BM1688, batch_size=4
+│   └── yolov8s_int8_4b.bmodel        # Compile with TPU-MLIR, INT8 1 core BModel for BM1688, batch_size=4
+│   ├── yolov8s_opt_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1688, batch_size=1, num_core=1, optimized the post-process
+│   ├── yolov8s_opt_fp16_1b.bmodel   # Compile with TPU-MLIR, FP16 BModel for BM1688, batch_size=1, num_core=1, optimized the post-process
+│   ├── yolov8s_opt_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1688, batch_size=1, num_core=1, optimized the post-process
+│   ├── yolov8s_opt_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1688, batch_size=4, num_core=1, optimized the post-process
+│   ├── yolov8s_opt_fp32_1b_2core.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1688, batch_size=1, num_core=2, optimized the post-process
+│   ├── yolov8s_opt_fp16_1b_2core.bmodel   # Compile with TPU-MLIR, FP16 BModel for BM1688, batch_size=1, num_core=2, optimized the post-process
+│   ├── yolov8s_opt_int8_1b_2core.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1688, batch_size=1, num_core=2, optimized the post-process
+│   └── yolov8s_opt_int8_4b_2core.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1688, batch_size=4, num_core=2, optimized the post-process
+└── CV186X
+    ├── yolov8s_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for CV186X, batch_size=1
+    ├── yolov8s_fp16_1b.bmodel   # Compile with TPU-MLIR, FP16 BModel for CV186X, batch_size=1
+    ├── yolov8s_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for CV186X, batch_size=1
+    ├── yolov8s_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for CV186X, batch_size=4
+    ├── yolov8s_opt_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for CV186X, batch_size=1, optimized the post-process
+    ├── yolov8s_opt_fp16_1b.bmodel   # Compile with TPU-MLIR, FP16 BModel for CV186X, batch_size=1, optimized the post-process
+    ├── yolov8s_opt_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for CV186X, batch_size=1, optimized the post-process
+    └── yolov8s_opt_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for CV186X, batch_size=4, optimized the post-process
 ```
 
 Model description:
@@ -320,16 +344,16 @@ Due to significant differences in CPU capabilities among PCIe devices, performan
 The tested video is `elevator-1080p-25fps-4000kbps.h264`. The compilation was done in Release mode. Model is yolov8 det. The results are as follows:
 
 
-| Device | Number of Channels | Algorithm Thread Count | CPU Utilization (%) | System Memory (M) | TPU Utilization (%) |  Peak Device Memory (M) | Average FPS | 
-|----|----|-----|-----|-----|-----|-----|-----|
-|SE7|4|4-4-4|470|96|40|2388|95.24|
-|SE5-16|4|4-4-4|453|96|90|2700|89.02|
-|SE9-16|4|4-4-4|489|111|70|2700|72|
+| Device | Number of Channels | Algorithm Thread Count | CPU Utilization (%) |  TPU Utilization (%) |  Peak Device Memory (M) | Average FPS | 
+|----|----|-----|-----|-----|-----|-----|
+|SE7|6|6-6-6|672|60|3500|149.891|
+|SE5-16|3|3-3-3|306|90|1012|95.19|
+|SE9-16|4|4-4-4|504|85|2578|96.05|
 
 > **Test Description**:
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.
 2. Both BM1684 and BM1684X SoC devices utilize an 8-core ARM A53 processor, offering 42320 DMIPS @ 2.3GHz.
-3. All aforementioned performance tests are based on the INT8 model.
+3. All aforementioned performance tests are based on the INT8 model with optimized post-process.
 4. Running models with a batch size of 4 on the BM1684 device can achieve higher FPS.
 5. On the BM1684X device, utilizing a batch size of 1 for the model and enabling the tpu_kernel for post-processing can yield higher FPS.
 6. For the settings of input channels and algorithm thread count in the table, please refer to [JSON configuration explanation](#61-json-configuration). CPU utilization and system memory can be checked using the `top` command. TPU utilization and device memory can be checked using the `bm-smi` command. FPS can be obtained from the logs printed during program execution.

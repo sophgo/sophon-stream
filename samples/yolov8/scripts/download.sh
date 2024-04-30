@@ -38,4 +38,15 @@ mv ./yolov8_data/pics ../data/
 mv ./yolov8_data/videos/* ../data/videos/
 rm -rf yolov8_data*
 
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/yolov8/models_opt.tar.gz
+tar -zxvf ./models_opt.tar.gz
+rsync -auv ./models/ ../data/models/
+rm -rf ./models/
+rm -rf ./models_opt.tar.gz
+
+python3 -m dfss --url=open@sophgo.com:sophon-demo/YOLOv8/models_240403/CV186X.zip
+unzip CV186X.zip
+rm -r CV186X.zip
+mv ./CV186X ../data/models/
+
 popd

@@ -56,7 +56,10 @@ chmod -R +x scripts/
 │   ├── yolov8n_pose_int8_1b.bmodel # 使用TPU-MLIR编译，用于BM1684的INT8 yolov8-pose BModel，batch_size=1
 │   ├── yolov8s_fp32_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684的FP32 yolov8-detect BModel，batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684的INT8 yolov8-detect BModel，batch_size=1
-│   └── yolov8s_int8_4b.bmodel   # 使用TPU-MLIR编译，用于BM1684的INT8 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_int8_4b.bmodel   # 使用TPU-MLIR编译，用于BM1684的INT8 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_opt_fp32_1b.bmodel  # 使用TPU-MLIR编译，用于BM1684的FP32 yolov8-detect BModel，batch_size=1，针对后处理做了优化
+│   ├── yolov8s_opt_int8_1b.bmodel  # 使用TPU-MLIR编译，用于BM1684的INT8 yolov8-detect BModel，batch_size=1，针对后处理做了优化
+│   └── yolov8s_opt_int8_4b.bmodel  # 使用TPU-MLIR编译，用于BM1684的INT8 yolov8-detect BModel，batch_size=4，针对后处理做了优化
 ├── BM1684X
 |   ├── yolov8n_cls_fp32_1b.bmodel  # 使用TPU-MLIR编译，用于BM1684X的FP32 yolov8-cls BModel，batch_size=1
 │   ├── yolov8n_pose_fp32_1b.bmodel # 使用TPU-MLIR编译，用于BM1684X的FP32 yolov8-pose BModel，batch_size=1
@@ -64,26 +67,47 @@ chmod -R +x scripts/
 │   ├── yolov8s_fp32_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的FP32 yolov8-detect BModel，batch_size=1
 │   ├── yolov8s_fp16_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的FP16 yolov8-detect BModel，batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的INT8 yolov8-detect BModel，batch_size=1
-│   └── yolov8s_int8_4b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的INT8 yolov8-detect BModel，batch_size=4
-└── BM1688
-    ├── yolov8n_cls_fp32_1b.bmodel    # 使用TPU-MLIR编译，用于BM1688的FP32 yolov8-cls BModel，batch_size=1
-    ├── yolov8n_cls_fp32_1b_2core.bmodel    # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-cls BModel，batch_size=1
-    ├── yolov8n_pose_fp32_1b_1core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 单核 yolov8-pose BModel，batch_size=1
-    ├── yolov8n_pose_fp32_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-pose BModel，batch_size=1
-    ├── yolov8n_pose_int8_1b_1core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 单核 yolov8-pose BModel，batch_size=1
-    ├── yolov8n_pose_int8_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 双核 yolov8-pose BModel，batch_size=1
-    ├── yolov8s_fp16_1b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP16 双核 yolov8-detect BModel，batch_size=1
-    ├── yolov8s_fp16_1b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP16 单核 yolov8-detect BModel，batch_size=1
-    ├── yolov8s_fp16_4b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP16 双核 yolov8-detect BModel，batch_size=4
-    ├── yolov8s_fp16_4b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP16 单核 yolov8-detect BModel，batch_size=4
-    ├── yolov8s_fp32_1b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-detect BModel，batch_size=1
-    ├── yolov8s_fp32_1b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP32 单核 yolov8-detect BModel，batch_size=1
-    ├── yolov8s_fp32_4b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-detect BModel，batch_size=4
-    ├── yolov8s_fp32_4b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP32 单核 yolov8-detect BModel，batch_size=4
-    ├── yolov8s_int8_1b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的INT8 双核 yolov8-detect BModel，batch_size=1
-    ├── yolov8s_int8_1b.bmodel        # 使用TPU-MLIR编译，用于BM1688的INT8 单核 yolov8-detect BModel，batch_size=1
-    ├── yolov8s_int8_4b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的INT8 双核 yolov8-detect BModel，batch_size=4
-    └── yolov8s_int8_4b.bmodel        # 使用TPU-MLIR编译，用于BM1688的INT8 单核 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_int8_4b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的INT8 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_opt_fp32_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的FP32 BModel，batch_size=1，针对后处理做了优化
+│   ├── yolov8s_opt_fp16_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的FP16 BModel，batch_size=1，针对后处理做了优化
+│   ├── yolov8s_opt_int8_1b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的INT8 BModel，batch_size=1，针对后处理做了优化
+│   └── yolov8s_opt_int8_4b.bmodel   # 使用TPU-MLIR编译，用于BM1684X的INT8 BModel，batch_size=4，针对后处理做了优化
+├── BM1688
+|   ├── yolov8n_cls_fp32_1b.bmodel    # 使用TPU-MLIR编译，用于BM1688的FP32 yolov8-cls BModel，batch_size=1
+│   ├── yolov8n_cls_fp32_1b_2core.bmodel    # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-cls BModel，batch_size=1
+│   ├── yolov8n_pose_fp32_1b_1core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 单核 yolov8-pose BModel，batch_size=1
+│   ├── yolov8n_pose_fp32_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-pose BModel，batch_size=1
+│   ├── yolov8n_pose_int8_1b_1core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 单核 yolov8-pose BModel，batch_size=1
+│   ├── yolov8n_pose_int8_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 双核 yolov8-pose BModel，batch_size=1
+│   ├── yolov8s_fp16_1b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP16 双核 yolov8-detect BModel，batch_size=1
+│   ├── yolov8s_fp16_1b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP16 单核 yolov8-detect BModel，batch_size=1
+│   ├── yolov8s_fp16_4b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP16 双核 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_fp16_4b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP16 单核 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_fp32_1b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-detect BModel，batch_size=1
+|   ├── yolov8s_fp32_1b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP32 单核 yolov8-detect BModel，batch_size=1
+│   ├── yolov8s_fp32_4b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的FP32 双核 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_fp32_4b.bmodel        # 使用TPU-MLIR编译，用于BM1688的FP32 单核 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_int8_1b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的INT8 双核 yolov8-detect BModel，batch_size=1
+│   ├── yolov8s_int8_1b.bmodel        # 使用TPU-MLIR编译，用于BM1688的INT8 单核 yolov8-detect BModel，batch_size=1
+│   ├── yolov8s_int8_4b_2core.bmodel  # 使用TPU-MLIR编译，用于BM1688的INT8 双核 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_int8_4b.bmodel        # 使用TPU-MLIR编译，用于BM1688的INT8 单核 yolov8-detect BModel，batch_size=4
+│   ├── yolov8s_opt_fp32_1b.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 BModel，batch_size=1, num_core=1，针对后处理做了优化
+│   ├── yolov8s_opt_fp16_1b.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP16 BModel，batch_size=1, num_core=1，针对后处理做了优化
+│   ├── yolov8s_opt_int8_1b.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 BModel，batch_size=1, num_core=1，针对后处理做了优化
+│   ├── yolov8s_opt_int8_4b.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 BModel，batch_size=4, num_core=1，针对后处理做了优化
+│   ├── yolov8s_opt_fp32_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP32 BModel，batch_size=1, num_core=2，针对后处理做了优化
+│   ├── yolov8s_opt_fp16_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的FP16 BModel，batch_size=1, num_core=2，针对后处理做了优化
+│   ├── yolov8s_opt_int8_1b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 BModel，batch_size=1, num_core=2，针对后处理做了优化
+│   └── yolov8s_opt_int8_4b_2core.bmodel   # 使用TPU-MLIR编译，用于BM1688的INT8 BModel，batch_size=4, num_core=2，针对后处理做了优化
+└── CV186X
+    ├── yolov8s_fp32_1b.bmodel   # 使用TPU-MLIR编译，用于CV186X的FP32 BModel，batch_size=1
+    ├── yolov8s_fp16_1b.bmodel   # 使用TPU-MLIR编译，用于CV186X的FP16 BModel，batch_size=1
+    ├── yolov8s_int8_1b.bmodel   # 使用TPU-MLIR编译，用于CV186X的INT8 BModel，batch_size=1
+    ├── yolov8s_int8_4b.bmodel   # 使用TPU-MLIR编译，用于CV186X的INT8 BModel，batch_size=4
+    ├── yolov8s_opt_fp32_1b.bmodel   # 使用TPU-MLIR编译，用于CV186X的FP32 BModel，batch_size=1，针对后处理做了优化
+    ├── yolov8s_opt_fp16_1b.bmodel   # 使用TPU-MLIR编译，用于CV186X的FP16 BModel，batch_size=1，针对后处理做了优化
+    ├── yolov8s_opt_int8_1b.bmodel   # 使用TPU-MLIR编译，用于CV186X的INT8 BModel，batch_size=1，针对后处理做了优化
+    └── yolov8s_opt_int8_4b.bmodel   # 使用TPU-MLIR编译，用于CV186X的INT8 BModel，batch_size=4，针对后处理做了优化
 ```
 
 模型说明:
@@ -319,15 +343,16 @@ frame count is 1424 | fps is 103.83 fps.
 
 测试视频`test_car_person_1080P.avi`，编译选项为Release模式，测试yolov8 检测模型性能，结果如下:
 
-|设备|路数|算法线程数|CPU利用率(%)|系统内存(M)|TPU利用率(%)|设备内存峰值(M)|平均FPS|
-|----|----|-----|-----|-----|-----|-----|---|
-|SE7|4|4-4-4|470|96|40|2388|95.24|
-|SE5-16|4|4-4-4|453|96|90|2700|89.02|
-|SE9-16|4|4-4-4|489|111|70|2700|72|
+|设备|路数|算法线程数|CPU利用率(%)|TPU利用率(%)|设备内存峰值(M)|平均FPS|
+|----|----|-----|-----|-----|-----|---|
+|SE7|6|6-6-6|672|60|3500|149.891|
+|SE5-16|3|3-3-3|306|90|1012|95.19|
+|SE9-16|4|4-4-4|504|85|2578|96.05|
+
 
 > **测试说明**：
 1. 性能测试结果具有一定的波动性，建议多次测试取平均值；
 2. BM1684/1684X SoC的主控CPU均为8核 ARM A53 42320 DMIPS @2.3GHz；
-3. 以上性能测试均基于int8模型给出；
+3. 以上性能测试均基于int8 优化后处理的模型给出；
 4. 在BM1684设备上运行时，batch_size为4的模型可以达到更高的fps；
 5. 上表中，输入路数和算法线程数的设置请参考[json配置说明](#61-json配置说明)，CPU利用率和系统内存使用top命令可查，TPU利用率和设备内存使用bm-smi命令可查，fps可以从运行程序打印的log中获得;
