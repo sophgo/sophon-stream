@@ -30,3 +30,5 @@ __MACOSX/
 node_modules/
 yarn.lock
 package-lock.json
+
+__pycache__
