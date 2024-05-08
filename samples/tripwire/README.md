@@ -295,7 +295,7 @@ frame count is 3077 | fps is 41.2909 fps.
 
 4.
 ```
-cd ../../element/tools/web_server/stream_server
-bash start_server.sh path/to/sophon-stream
+cd ../../tools/web-server
+bash start_server.sh 
 ```
 5.通过sophon-web下发任务，启动任务
