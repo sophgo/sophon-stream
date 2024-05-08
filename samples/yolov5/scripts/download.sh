@@ -34,6 +34,11 @@ unzip BM1688.zip
 rm -rf BM1688.zip
 mv ./BM1688 ../data/models/BM1688
 
+python3 -m dfss --url=open@sophgo.com:sophon-demo/YOLOv5/models_240328/CV186X.zip
+unzip CV186X.zip
+rm -r CV186X.zip
+mv ./CV186X ../data/models/CV186X
+
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/common/coco.names
 mv ./coco.names ../data/
 
