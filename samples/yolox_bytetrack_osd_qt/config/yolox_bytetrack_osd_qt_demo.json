@@ -1,0 +1,29 @@
+{
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../yolox_bytetrack_osd_qt/data/videos/mot17_01_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    },
+    {
+      "channel_id": 3,
+      "url": "../yolox_bytetrack_osd_qt/data/videos/mot17_03_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    },
+    {
+      "channel_id": 20,
+      "url": "../yolox_bytetrack_osd_qt/data/videos/mot17_06_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    },
+    {
+      "channel_id": 30,
+      "url": "../yolox_bytetrack_osd_qt/data/videos/mot17_08_frcnn.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1
+    }
+  ],
+  "engine_config_path": "../yolox_bytetrack_osd_qt/config/engine_group.json"
+}

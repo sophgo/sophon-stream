@@ -58,6 +58,13 @@ cd build
 cmake ..
 make -j4
 ```
+If QT is needed, please download QT with official version first. Or, QT element will not be compiled.
+
+Download QT with command:
+```bash
+sudo apt install qtbase5-dev
+```
+
 
 ## SoC Platform
 Usually, when cross-compiling programs on an x86 host, you need to set up a cross-compilation environment using the SOPHON SDK on the x86 host. You will package the required header files and library files into the `sophon_sdk_soc` directory. You can either download the SOPHON SDK and package it yourself or download our pre-packaged files (choose one based on your SOC environment).
@@ -81,12 +88,24 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.4.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.5.tar.gz
 ```
 
-When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC`:
+If QT is needed, make sure to download QT of cross-compiling version on x86 device. The environment on the edge device does have QT already, there is no need to re-download/install it. Use the `QTPATH` parameter at compile time to specify the qt path: (If not using QT, this part can be ignored and `QTPATH` while cross-compiling is not necessary)
+
+For BM1684/BM1684X:
+```bash
+python3 -m dfss --url=open@sophgo.com:sophon-demo/MultiYolov5/qt-5.14-amd64-aarch64-fl2000fb_v1.1.0.tar.xz
+```
+
+For BM1688/CV186AH:
+```bash
+python3 -m dfss --url=open@sophgo.com:sophon-pipeline/a2_bringup/qtbase.zip
+```
+
+When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC` and `QTPATH`:
 
 ```bash
 mkdir build
 cd build
-cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
+cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt
 make -j4
 ```
 
