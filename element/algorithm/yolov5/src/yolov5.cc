@@ -77,7 +77,6 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
                                       ? mContext->thresh_conf_min
                                       : thresh_it->second;
     }
-    mContext->log_conf_threshold = - std::log(1 / mContext->thresh_conf_min - 1);
 
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
     mContext->thresh_nms = threshNmsIt->get<float>();

@@ -29,7 +29,6 @@ namespace element {
 namespace yolov5 {
 
 #define USE_ASPECT_RATIO 1
-#define USE_MULTICLASS_NMS 0
 #define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
 #define MAX_YOLO_INPUT_NUM 8
@@ -81,7 +80,6 @@ class Yolov5Context : public ::sophon_stream::framework::Context {
   float thresh_nms;                                    // nms iou阈值
   std::vector<std::string> class_names;
   bool class_thresh_valid = false;
-  float log_conf_threshold;                            // 应用log运算符到阈值可在box过滤时省略box置信度的sigmoid计算 
 
   int class_num = 80;  // default is coco names
   int m_frame_h, m_frame_w;
