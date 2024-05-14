@@ -63,9 +63,9 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
         while (std::getline(istream, line)) {
           line = line.substr(0, line.length());
           mContext->class_names.push_back(line);
-          if (mContext->thresh_conf_min != -1) {
-            mContext->thresh_conf.insert({line, mContext->thresh_conf_min});
-          }
+          // if (mContext->thresh_conf_min != -1) {
+          //   mContext->thresh_conf.insert({line, mContext->thresh_conf_min});
+          // }
         }
         istream.close();
       }
@@ -77,6 +77,7 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
                                       ? mContext->thresh_conf_min
                                       : thresh_it->second;
     }
+    mContext->log_conf_threshold = - std::log(1 / mContext->thresh_conf_min - 1);
 
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
     mContext->thresh_nms = threshNmsIt->get<float>();
