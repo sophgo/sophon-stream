@@ -133,3 +133,11 @@ scp -r ./sophon-stream linaro@<your ip>:<your path>
 ```
 
 You can set the IP address and file directory of your Micro Server as per your specific situation.
+
+4. Log into your Micro Server and add an environment variable to ensure that the dynamic link libraries can be found when running programs in `sample`:
+```bash
+echo 'export LD_LIBRARY_PATH=<your path>/sophon-stream/build/lib/:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Replace `<your path>` with the absolute path to `sophon-stream` on your Micro Server.

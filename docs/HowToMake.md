@@ -125,3 +125,11 @@ scp -r ./sophon-stream linaro@<your ip>:<your path>
 ```
 
 其中，盒子的ip和文件目录您可以根据实际情况进行设置。
+
+4.登录目标盒子，添加环境变量，以确保运行`sample`中的程序时能找到动态链接库：
+```bash
+echo 'export LD_LIBRARY_PATH=<your path>/sophon-stream/build/lib/:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+其中，`<your path>`替换为目标盒子中`sophon-stream`的绝对路径。
