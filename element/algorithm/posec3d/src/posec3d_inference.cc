@@ -57,6 +57,7 @@ Posec3dInference::getOutputDeviceMem(std::shared_ptr<Posec3dContext> context) {
     auto ret =
         bm_malloc_device_byte(outputTensors->handle,
                               &outputTensors->tensors[i]->device_mem, max_size);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")                              
   }
   return outputTensors;
 }

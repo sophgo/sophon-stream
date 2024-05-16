@@ -71,7 +71,8 @@ common::ErrorCode PpocrRecPreProcess::preProcess(
                       image1.image_format, image1.data_type, &image_aligned,
                       stride2);
 
-      bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
+      auto ret = bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_copy_to_atrr_t copyToAttr;
       memset(&copyToAttr, 0, sizeof(copyToAttr));
       copyToAttr.start_x = 0;
@@ -143,6 +144,7 @@ common::ErrorCode PpocrRecPreProcess::preProcess(
     bm_image_get_byte_size(converto_img, &size_byte);
     ret = bm_malloc_device_byte(context->bmContext->handle(), &input_dev_mem,
                                 size_byte);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")                                
     bm_image_attach(converto_img, &input_dev_mem);
     bmcv_image_convert_to(context->bmContext->handle(), 1,
                           context->converto_attr, &resized_img, &converto_img);

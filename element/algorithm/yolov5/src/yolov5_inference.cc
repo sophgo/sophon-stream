@@ -52,6 +52,7 @@ Yolov5Inference::mergeInputDeviceMem(std::shared_ptr<Yolov5Context> context,
     auto ret = bm_malloc_device_byte_heap(inputTensors->handle,
                                           &inputTensors->tensors[i]->device_mem,
                                           0, input_bytes);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     // d2d
     for (int j = 0; j < objectMetadatas.size(); ++j) {
       if (objectMetadatas[j]->mFrame->mEndOfStream) break;
@@ -103,6 +104,7 @@ Yolov5Inference::getOutputDeviceMem(std::shared_ptr<Yolov5Context> context) {
     auto ret = bm_malloc_device_byte_heap(
         outputTensors->handle, &outputTensors->tensors[i]->device_mem, 0,
         max_size);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
   }
   return outputTensors;
 }
@@ -153,7 +155,7 @@ void Yolov5Inference::splitOutputMemIntoObjectMetadatas(
           objectMetadatas[i]->mOutputBMtensors->handle,
           &objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem, 0,
           max_size);
-      assert(BM_SUCCESS == ret);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bm_memcpy_d2d_byte(
           context->handle,
           objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem, 0,
@@ -184,8 +186,8 @@ common::ErrorCode Yolov5Inference::predict(
         objectMetadatas[0]->mInputBMtensors->tensors,
         objectMetadatas[0]->mOutputBMtensors->tensors);
   }
-  
-  for(auto obj : objectMetadatas) {
+
+  for (auto obj : objectMetadatas) {
     obj->mInputBMtensors = nullptr;
   }
 

@@ -37,11 +37,11 @@ void Yolov7PostProcess::init(std::shared_ptr<Yolov7Context> context) {
         auto ret = bm_malloc_device_byte(
             handle_, &multi_thread_tpu_kernel[i].out_dev_mem[j],
             out_len_max * sizeof(float));
-        assert(BM_SUCCESS == ret);
+        STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
         ret = bm_malloc_device_byte(
             handle_, &multi_thread_tpu_kernel[i].detect_num_mem[j],
             batch_num * sizeof(int32_t));
-        assert(BM_SUCCESS == ret);
+        STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
         multi_thread_tpu_kernel[i].api[j].top_addr =
             bm_mem_get_device_addr(multi_thread_tpu_kernel[i].out_dev_mem[j]);
         multi_thread_tpu_kernel[i].api[j].detected_num_addr =

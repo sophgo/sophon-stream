@@ -281,7 +281,8 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
     //   mem_flags = USEING_MEM_HEAP1;
     // }
     // if (mem_flags == USEING_MEM_HEAP1 &&
-    bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP1);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP1);
+    STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
     //  !=
     //     BM_SUCCESS)
     //     {
@@ -313,7 +314,8 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
                     DATA_TYPE_EXT_1N_BYTE, &tmp, stride);
     bm_image_create(handle, in->height, in->width, FORMAT_BGR_PACKED,
                     DATA_TYPE_EXT_1N_BYTE, out);
-    bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP1);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(*out, USEING_MEM_HEAP1);
+    STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
 
     int size = in->height * stride[0];
     if (data_four_denominator != -1) {
@@ -322,7 +324,8 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
     if (data_on_device_mem) {
       input_addr[0] = bm_mem_from_device((unsigned long long)in->data[4], size);
     } else {
-      bm_malloc_device_byte(handle, &input_addr[0], size);
+      ret = bm_malloc_device_byte(handle, &input_addr[0], size);
+      STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
       bm_memcpy_s2d_partial(handle, input_addr[0], in->data[0], size);
     }
 
@@ -332,7 +335,8 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
         input_addr[1] =
             bm_mem_from_device((unsigned long long)in->data[5], size);
       } else {
-        bm_malloc_device_byte(handle, &input_addr[1], size);
+        ret = bm_malloc_device_byte(handle, &input_addr[1], size);
+        STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
         bm_memcpy_s2d_partial(handle, input_addr[1], in->data[1], size);
       }
     }
@@ -343,7 +347,8 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
         input_addr[2] =
             bm_mem_from_device((unsigned long long)in->data[6], size);
       } else {
-        bm_malloc_device_byte(handle, &input_addr[2], size);
+        ret = bm_malloc_device_byte(handle, &input_addr[2], size);
+        STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
         bm_memcpy_s2d_partial(handle, input_addr[2], in->data[2], size);
       }
     }

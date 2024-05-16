@@ -944,19 +944,19 @@ void OpenposePostProcess::getKeyPointsTPUKERNEL(
     aux_data[dataPipeId] = new bm_device_mem_t();
     output_num[dataPipeId] = new bm_device_mem_t();
     resize_output_map_whole_device_mem[dataPipeId] = new bm_device_mem_t();
-    assert(BM_SUCCESS == bm_malloc_device_byte(
-                             context->bmContext->handle(), aux_data[dataPipeId],
-                             sizeof(float) * part_nms_chan_num *
-                                 nmsSize.height * nmsSize.width));
-    assert(BM_SUCCESS ==
-           bm_malloc_device_byte(context->bmContext->handle(),
-                                 output_num[dataPipeId],
-                                 sizeof(int) * part_nms_chan_num));
-    assert(BM_SUCCESS ==
-           bm_malloc_device_byte(context->bmContext->handle(),
-                                 resize_output_map_whole_device_mem[dataPipeId],
-                                 sizeof(float) * nmsSize.height *
-                                     nmsSize.width * part_nms_chan_num));
+    auto ret = bm_malloc_device_byte(
+        context->bmContext->handle(), aux_data[dataPipeId],
+        sizeof(float) * part_nms_chan_num * nmsSize.height * nmsSize.width);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
+    ret = bm_malloc_device_byte(context->bmContext->handle(),
+                                output_num[dataPipeId],
+                                sizeof(int) * part_nms_chan_num);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
+    ret = bm_malloc_device_byte(
+        context->bmContext->handle(),
+        resize_output_map_whole_device_mem[dataPipeId],
+        sizeof(float) * nmsSize.height * nmsSize.width * part_nms_chan_num);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
   }
   bm_device_mem_t resize_output_map_device_mem;
   unsigned long long resize_output_map_whole_device_mem_addr =

@@ -83,7 +83,8 @@ common::ErrorCode Yolov8PreProcess::preProcess(
     if (image0.image_format != jsonPlanner) {
       bm_image_create(context->handle, image0.height, image0.width, jsonPlanner,
                       image0.data_type, &image1);
-      bm_image_alloc_dev_mem_heap_mask(image1, 2);
+      auto ret = bm_image_alloc_dev_mem_heap_mask(image1, 2);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_image_storage_convert(context->handle, 1, &image0, &image1);
     } else {
       image1 = image0;
@@ -100,7 +101,8 @@ common::ErrorCode Yolov8PreProcess::preProcess(
                       image1.image_format, image1.data_type, &image_aligned,
                       stride2);
 
-      bm_image_alloc_dev_mem_heap_mask(image_aligned, 2);
+      auto ret = bm_image_alloc_dev_mem_heap_mask(image_aligned, 2);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_copy_to_atrr_t copyToAttr;
       memset(&copyToAttr, 0, sizeof(copyToAttr));
       copyToAttr.start_x = 0;
@@ -153,12 +155,12 @@ common::ErrorCode Yolov8PreProcess::preProcess(
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
 #if BMCV_VERSION_MAJOR > 1
-    bm_image_alloc_dev_mem_heap_mask(resized_img, 2);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, 2);
 #else
-    bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
 #endif
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
-    bm_status_t ret = BM_SUCCESS;
     if (context->roi_predefined) {
       if (context->roi.start_x > image1.width ||
           context->roi.start_y > image1.height ||
@@ -175,7 +177,7 @@ common::ErrorCode Yolov8PreProcess::preProcess(
                                            image_aligned, &resized_img,
                                            &padding_attr, &crop_rect);
     }
-    assert(BM_SUCCESS == ret);
+    STREAM_CHECK(ret == 0, "Vpp Convert Padding Failed! Program Terminated.")
 
     if (image0.image_format != FORMAT_BGR_PLANAR) {
       bm_image_destroy(image1);
@@ -195,6 +197,7 @@ common::ErrorCode Yolov8PreProcess::preProcess(
     int size_byte = 0;
     bm_image_get_byte_size(converto_img, &size_byte);
     ret = bm_malloc_device_byte_heap(context->handle, &mem, 0, size_byte);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     bm_image_attach(converto_img, &mem);
 
     bmcv_image_convert_to(context->handle, 1, context->converto_attr,

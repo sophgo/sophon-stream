@@ -78,7 +78,8 @@ common::ErrorCode LprnetPreProcess::preProcess(
                       image0.image_format, image0.data_type, &image_aligned,
                       stride2);
 
-      bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
+      auto ret = bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_copy_to_atrr_t copyToAttr;
       memset(&copyToAttr, 0, sizeof(copyToAttr));
       copyToAttr.start_x = 0;
@@ -97,18 +98,19 @@ common::ErrorCode LprnetPreProcess::preProcess(
                     FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
                     strides);
 #if BMCV_VERSION_MAJOR > 1
-    bm_image_alloc_dev_mem_heap_mask(
+    auto ret = bm_image_alloc_dev_mem_heap_mask(
         resized_img, 2);  // Apply internal memory for the bm image object,
                           // heap mask = 4, mask code is 100, on heap2, for VPU
 #else
-    bm_image_alloc_dev_mem_heap_mask(
+    auto ret = bm_image_alloc_dev_mem_heap_mask(
         resized_img, 4);  // Apply internal memory for the bm image object,
                           // heap mask = 2, mask code is 10, on heap1, for VPSS
 #endif
-    auto ret = bmcv_image_vpp_convert(
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
+    bmcv_image_vpp_convert(
         context->bmContext->handle(), 1, image_aligned,
         &resized_img);  // heap mask = 1, mask code is 001, on heap0, for TPU
-    assert(BM_SUCCESS == ret);
+    STREAM_CHECK(ret == 0, "Vpp Convert Padding Failed! Program Terminated.")
 
     // Initialize converto_img
     bm_image_data_format_ext img_dtype = DATA_TYPE_EXT_FLOAT32;
@@ -123,9 +125,7 @@ common::ErrorCode LprnetPreProcess::preProcess(
     int size_byte = 0;
     bm_image_get_byte_size(converto_img, &size_byte);
     ret = bm_malloc_device_byte_heap(context->handle, &mem, 0, size_byte);
-    if (ret != BM_SUCCESS) {
-      assert("ERROR in malloc device memory");
-    }
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
 
     bm_image_attach(converto_img, &mem);
 
