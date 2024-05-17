@@ -64,6 +64,12 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   double mFps;
   int mSampleInterval;
   ChannelOperateRequest::SampleStrategy mSampleStrategy;
+
+  //camera synchronization
+  static std::mutex decoder_mutex;
+  static std::condition_variable decoder_cv;
+  static int numThreadsReady;
+  static std::atomic<int> numThreadsTotal;
 };
 }  // namespace decode
 }  // namespace element

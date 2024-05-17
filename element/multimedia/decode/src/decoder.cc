@@ -19,6 +19,12 @@ namespace sophon_stream {
 namespace element {
 namespace decode {
 
+//camera synchronization
+std::mutex Decoder::decoder_mutex;
+std::condition_variable Decoder::decoder_cv;
+int Decoder::numThreadsReady=0;
+std::atomic<int> Decoder::numThreadsTotal(0);
+
 bool check_path(std::string file_path,
                 std::vector<std::string> correct_postfixes) {
   auto index = file_path.rfind('.');
@@ -142,8 +148,7 @@ common::ErrorCode Decoder::process(
 
   if (mSourceType == ChannelOperateRequest::SourceType::RTSP ||
       mSourceType == ChannelOperateRequest::SourceType::RTMP ||
-      mSourceType == ChannelOperateRequest::SourceType::GB28181 ||
-      mSourceType == ChannelOperateRequest::SourceType::CAMERA) {
+      mSourceType == ChannelOperateRequest::SourceType::GB28181) {
     int frame_id = 0;
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;
@@ -238,6 +243,55 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mSpData = spBmImage;
     if (spBmImage != nullptr)
       bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+    if (common::ErrorCode::SUCCESS != errorCode) {
+      objectMetadata->mErrorCode = errorCode;
+    }
+  }else if(mSourceType == ChannelOperateRequest::SourceType::CAMERA){
+    int frame_id = 0;
+    int eof = 0;
+    std::shared_ptr<bm_image> spBmImage = nullptr;
+    int64_t pts = 0;
+
+    { // 在所有线程等待执行decoder.grab前添加一个等待点
+      std::unique_lock<std::mutex> lock(decoder_mutex);
+      numThreadsReady++;
+      if (numThreadsReady == numThreadsTotal) {
+        decoder_cv.notify_all();
+      } else {
+        decoder_cv.wait(lock,
+                        [&] { return numThreadsReady == numThreadsTotal; });
+      }
+    }
+    spBmImage =
+        decoder.grab(frame_id, eof, pts, mSampleInterval, mSampleStrategy);
+    {
+      std::unique_lock<std::mutex> lock(decoder_mutex);
+      numThreadsReady--;
+      if (numThreadsReady == 0) {
+        decoder_cv.notify_all();
+        lock.unlock();
+        // 在让最快的线程执行decoder.grab后，等待其他线程执行完毕
+        while(numThreadsReady!=numThreadsTotal-1){
+        }
+      } else {
+        decoder_cv.wait(lock, [&] { return numThreadsReady == 0; });
+      }
+    }
+
+    objectMetadata = std::make_shared<common::ObjectMetadata>();
+    objectMetadata->mFrame = std::make_shared<common::Frame>();
+    objectMetadata->mFrame->mHandle = m_handle;
+    objectMetadata->mFrame->mFrameId = frame_id;
+    objectMetadata->mFrame->mSpData = spBmImage;
+    objectMetadata->mFrame->mTimestamp = pts;
+    if (eof) {
+      objectMetadata->mFrame->mEndOfStream = true;
+      errorCode = common::ErrorCode::STREAM_END;
+    } else {
+      if (spBmImage != nullptr)
+        bm_image2Frame(objectMetadata->mFrame, *spBmImage);
+    }
+
     if (common::ErrorCode::SUCCESS != errorCode) {
       objectMetadata->mErrorCode = errorCode;
     }
