@@ -171,6 +171,7 @@ void Distributor::makeSubObjectMetadata(
     ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect, *obj->mFrame->mSpData,
                           cropped.get());
 #endif
+    STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
 
     subObj->mFrame->mSpData = cropped;
   } else {
@@ -279,6 +280,7 @@ void Distributor::makeSubFaceObjectMetadata(
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
                             *obj->mFrame->mSpData, &corp_img);
 #endif
+      STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
 
       // 得到原始图中关键点
       float left_eye_x = faceObj->points_x[0];
@@ -376,6 +378,7 @@ void Distributor::makeSubFaceObjectMetadata(
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
                             *obj->mFrame->mSpData, cropped.get());
 #endif
+      STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
       subObj->mFrame->mSpData = obj->mFrame->mSpData;
     }
 

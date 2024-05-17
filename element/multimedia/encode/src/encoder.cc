@@ -345,14 +345,15 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
                       DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
     }
 #if BMCV_VERSION_MAJOR > 1
-    bm_image_alloc_dev_mem_heap_mask(*yuv_image, 2);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(*yuv_image, 2);
 #else
-    bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
 #endif
+    STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
     bmcv_rect_t crop_rect = {0, 0, image->width, image->height};
     // timeval tv1, tv2;
     // gettimeofday(&tv1, NULL);
-    int ret = bmcv_image_vpp_convert(handle, 1, *image, yuv_image, &crop_rect);
+    bmcv_image_vpp_convert(handle, 1, *image, yuv_image, &crop_rect);
     // gettimeofday(&tv2, NULL);
     // int time_interval1 =
     //       (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec -

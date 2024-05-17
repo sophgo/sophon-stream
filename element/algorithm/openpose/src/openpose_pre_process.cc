@@ -81,7 +81,8 @@ common::ErrorCode OpenposePreProcess::preProcess(
                       image1.image_format, image1.data_type, &image_aligned,
                       stride2);
 
-      bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
+      auto ret = bm_image_alloc_dev_mem(image_aligned, BMCV_IMAGE_FOR_IN);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_copy_to_atrr_t copyToAttr;
       memset(&copyToAttr, 0, sizeof(copyToAttr));
       copyToAttr.start_x = 0;
@@ -95,7 +96,7 @@ common::ErrorCode OpenposePreProcess::preProcess(
 
     ret = bmcv_image_vpp_convert(context->bmContext->handle(), 1, image_aligned,
                                  &resized_img);
-    assert(BM_SUCCESS == ret);
+    STREAM_CHECK(ret == 0, "Vpp Convert Failed! Program Terminated.")
 
     if (need_copy) bm_image_destroy(image_aligned);
 
@@ -113,6 +114,7 @@ common::ErrorCode OpenposePreProcess::preProcess(
     int size_byte = 0;
     bm_image_get_byte_size(converto_img, &size_byte);
     ret = bm_malloc_device_byte(context->bmContext->handle(), &mem, size_byte);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     bm_image_attach(converto_img, &mem);
 
     bmcv_image_convert_to(context->bmContext->handle(), 1,

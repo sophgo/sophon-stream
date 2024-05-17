@@ -377,9 +377,7 @@ common::ErrorCode Posec3dPreProcess::preProcess(
       context->handle,
       &objectMetadatas[0]->mInputBMtensors->tensors[0]->device_mem, 0,
       size_byte);
-  if (ret != BM_SUCCESS) {
-    assert("ERROR in malloc device memory");
-  }
+  STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
 
   // generate heatmap input
   float* heatmap = nullptr;

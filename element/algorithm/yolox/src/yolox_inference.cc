@@ -48,6 +48,7 @@ YoloxInference::mergeInputDeviceMem(std::shared_ptr<YoloxContext> context,
     auto ret = bm_malloc_device_byte(inputTensors->handle,
                                      &inputTensors->tensors[i]->device_mem,
                                      input_bytes);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")                                     
     // d2d
     for (int j = 0; j < objectMetadatas.size(); ++j) {
       if (objectMetadatas[j]->mFrame->mEndOfStream) break;
@@ -99,6 +100,7 @@ YoloxInference::getOutputDeviceMem(std::shared_ptr<YoloxContext> context) {
     auto ret =
         bm_malloc_device_byte(outputTensors->handle,
                               &outputTensors->tensors[i]->device_mem, max_size);
+    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")                              
   }
   return outputTensors;
 }
@@ -149,7 +151,7 @@ void YoloxInference::splitOutputMemIntoObjectMetadatas(
           objectMetadatas[i]->mOutputBMtensors->handle,
           &objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem,
           max_size);
-      assert(BM_SUCCESS == ret);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bm_memcpy_d2d_byte(
           context->handle,
           objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem, 0,
