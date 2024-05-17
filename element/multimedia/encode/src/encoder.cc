@@ -478,10 +478,7 @@ void Encoder::Encoder_CC::flowControlFunc() {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
       continue;
     }
-    int64_t push_start_time =
-        std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::system_clock::now().time_since_epoch())
-            .count();
+
     if (is_rtsp_ || is_video_file_) {
       std::shared_ptr<AVPacket> pp = std::static_pointer_cast<AVPacket>(p);
       auto ret = av_interleaved_write_frame(enc_format_ctx_, pp.get());
@@ -489,15 +486,7 @@ void Encoder::Encoder_CC::flowControlFunc() {
       std::shared_ptr<cv::Mat> pp = std::static_pointer_cast<cv::Mat>(p);
       writer.write(*pp);
     }
-    float tmp_fps = mFpsProfiler.getTmpFps();
-    int64_t frame_interval =
-        1 * 1000 * 1000 / (tmp_fps == 0 ? params_map_["framerate"] : tmp_fps);
-    int64_t push_ok = std::chrono::duration_cast<std::chrono::microseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count();
-    int64_t diff = push_ok - push_start_time;
-    // printf("encode diff time is %lld\n", diff);
-    if (diff < frame_interval && diff > 0) av_usleep(frame_interval - diff);
+
   }
   return;
 }
