@@ -72,7 +72,10 @@ void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {
   f->mDataSize = img.width * img.height * f->mChannel * sizeof(uchar);
 }
 
-Decoder::Decoder() {}
+Decoder::Decoder() {
+// 获取线程数
+  numThreadsTotal.fetch_add(1);
+}
 
 Decoder::~Decoder() {}
 
