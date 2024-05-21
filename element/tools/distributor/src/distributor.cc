@@ -248,7 +248,7 @@ void Distributor::makeSubFaceObjectMetadata(
     int y1 = faceObj->top;
     int x2 = faceObj->right;
     int y2 = faceObj->bottom;
-    bool is_affine = false;
+    bool is_affine = true;
 
     if (is_affine) {
       std::vector<cv::Point2f> key_loc_ref = {
@@ -352,7 +352,30 @@ void Distributor::makeSubFaceObjectMetadata(
                                                      &matrix, &planar_image,
                                                      affine_image_ptr.get(), 0);
 
-      subObj->mFrame->mSpData = affine_image_ptr;
+      bmcv_rect_t rect_after_warp;
+      rect_after_warp.start_x = 0;
+      rect_after_warp.start_y = 0;
+      rect_after_warp.crop_w = 100;
+      rect_after_warp.crop_h = 120;
+      std::shared_ptr<bm_image> crop_after_warp = nullptr;
+      crop_after_warp.reset(new bm_image, [](bm_image* p) {
+        bm_image_destroy(*p);
+        delete p;
+        p = nullptr;
+      });
+      ret = bm_image_create(obj->mFrame->mHandle, 120, 100, FORMAT_BGR_PLANAR,
+                            DATA_TYPE_EXT_1N_BYTE, crop_after_warp.get());
+
+#if BMCV_VERSION_MAJOR > 1
+      ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
+                                   *affine_image_ptr, crop_after_warp.get(), &rect_after_warp);
+#else
+      ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect_after_warp,
+                            *affine_image_ptr, crop_after_warp.get());
+#endif
+      STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
+
+      subObj->mFrame->mSpData = crop_after_warp;
       // subObj->mFrame->mSpData = obj->mFrame->mSpData;
       bm_image_destroy(planar_image);
       bm_image_destroy(corp_img);
