@@ -1,0 +1,102 @@
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "gdwa_blend_encode",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../gdwa_blend_encode/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../gdwa_blend_encode/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5002,
+                "element_config": "../gdwa_blend_encode/config/dwa_L.json"
+            },
+            {
+                "element_id": 5003,
+                "element_config": "../gdwa_blend_encode/config/dwa_R.json"
+            },
+            {
+                "element_id": 5004,
+                "element_config": "../gdwa_blend_encode/config/blend.json"
+            },
+            {
+                "element_id": 5006,
+                "element_config": "../gdwa_blend_encode/config/resize.json"
+            },
+            {
+                "element_id": 5007,
+                "element_config": "../gdwa_blend_encode/config/encode.json",
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5002,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5002,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5003,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5003,
+                "src_port": 0,
+                "dst_element_id": 5004,
+                "dst_port": 1
+            },
+            {
+                "src_element_id": 5004,
+                "src_port": 0,
+                "dst_element_id": 5006,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5006,
+                "src_port": 0,
+                "dst_element_id": 5007,
+                "dst_port": 0
+            }
+        ]
+    }
+]
