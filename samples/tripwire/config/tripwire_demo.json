@@ -3,8 +3,8 @@
     {
       "channel_id": 0,
       "url": "../tripwire/data/test.mp4",
-      "source_type": "RTSP",
-      "loop_num": 2100000,
+      "source_type": "VIDEO",
+      "loop_num": 1,
       "fps": 25,
       "sample_interval": 3
     }

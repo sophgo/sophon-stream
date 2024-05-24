@@ -1,116 +1,109 @@
 from samples.yolov5.config_logic import *
+import json
 import base64
 from io import BytesIO
 from PIL import Image
-import json
-
-yolov5_dict = {
-    0: 'person',
-    1: 'bicycle',
-    2: 'car',
-    3: 'motorbike',
-    4: 'aeroplane',
-    5: 'bus',
-    6: 'train',
-    7: 'truck',
-    8: 'boat',
-    9: 'traffic light',
-    10: 'fire hydrant',
-    11: 'stop sign',
-    12: 'parking meter',
-    13: 'bench',
-    14: 'bird',
-    15: 'cat',
-    16: 'dog',
-    17: 'horse',
-    18: 'sheep',
-    19: 'cow',
-    20: 'elephant',
-    21: 'bear',
-    22: 'zebra',
-    23: 'giraffe',
-    24: 'backpack',
-    25: 'umbrella',
-    26: 'handbag',
-    27: 'tie',
-    28: 'suitcase',
-    29: 'frisbee',
-    30: 'skis',
-    31: 'snowboard',
-    32: 'sports ball',
-    33: 'kite',
-    34: 'baseball bat',
-    35: 'baseball glove',
-    36: 'skateboard',
-    37: 'surfboard',
-    38: 'tennis racket',
-    39: 'bottle',
-    40: 'wine glass',
-    41: 'cup',
-    42: 'fork',
-    43: 'knife',
-    44: 'spoon',
-    45: 'bowl',
-    46: 'banana',
-    47: 'apple',
-    48: 'sandwich',
-    49: 'orange',
-    50: 'broccoli',
-    51: 'carrot',
-    52: 'hot dog',
-    53: 'pizza',
-    54: 'donut',
-    55: 'cake',
-    56: 'chair',
-    57: 'sofa',
-    58: 'pottedplant',
-    59: 'bed',
-    60: 'diningtable',
-    61: 'toilet',
-    62: 'tvmonitor',
-    63: 'laptop',
-    64: 'mouse',
-    65: 'remote',
-    66: 'keyboard',
-    67: 'cell phone',
-    68: 'microwave',
-    69: 'oven',
-    70: 'toaster',
-    71: 'sink',
-    72: 'refrigerator',
-    73: 'book',
-    74: 'clock',
-    75: 'vase',
-    76: 'scissors',
-    77: 'teddy bear',
-    78: 'hair drier',
-    79: 'toothbrush',
-}
-
+import os
+import glob
 def yolov5_build_config(algorithm_name,stream_path,data,port,i):
     config_path=stream_path+'/samples/'+algorithm_name+'/config/'
-   
+    # stream_run_path=stream_path+"/samples/build"
+
+    # cmd="cp -rf "+config_path+' '+stream_run_path
+    # result = subprocess.run(cmd, shell=True)
+    # print("Return Code:", result.returncode)
     demo_config_path=config_path+algorithm_name+'_demo.json'
     http_config_path=config_path+'http_push.json'
-    # det_config_path=config_path+'yolov5_group.json'
+    det_config_path=glob.glob(os.path.join(config_path, 'yolo*_group.json'))[0]
+    graph_path=config_path+'engine_group.json'
+    filter_config_path=config_path+'filter.json'
     with open(demo_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)
+    # print(data["InputSrc"]["StreamSrc"]["Address"])
     json_data["channels"]=[json_data["channels"][0]]
     json_data["channels"][0]["url"]=data["InputSrc"]["StreamSrc"]["Address"]
-    json_data["channels"][0]["sample_interval"]=data["Algorithm"][0]["DetectInterval"]
-    json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
+    
+    json_data["channels"][0]["sample_interval"]=data["Algorithm"][i]["DetectInterval"]
+    if(data["InputSrc"]["StreamSrc"]["Address"][:1]=="/"):
+        json_data["channels"][0]["source_type"]="VIDEO"
+    elif(data["InputSrc"]["StreamSrc"]["Address"][:7]=="gb28181"):
+        json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:7].upper()
+    else:
+        json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
+
+    json_data["channels"][0]["fps"]=25
+    json_data["channels"][0]["loop_num"]=2100000
+
+    json_data["http_report"]={}
+    json_data["http_report"]["ip"]="0.0.0.0"
+    json_data["http_report"]["port"]=port
+    json_data["http_report"]["path"]="/flask_test/"
+
     with open(demo_config_path, 'w') as file:
         json.dump(json_data, file, indent=2)
     with open(http_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)
-    json_data["configure"]["path"]="/flask_test/"+data['TaskID']
+    # print(data["InputSrc"]["StreamSrc"]["Address"])
+    json_data["configure"]["path"]="/flask_test/"
     json_data["configure"]["port"]=port
 
     with open(http_config_path, 'w') as file:
         json.dump(json_data, file, indent=2)
-   
+        
+        
+    # with open(det_config_path, 'r') as file:
+    # # 使用 json.load 将文件内容转换为字典
+    #     json_data = json.load(file)
+    # if(data["Algorithm"][0]["DetectInfos"]!=None):
+    #     sx=min([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     sy=min([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     tx=max([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     ty=max([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     json_data["configure"]["roi"]={"left":sx,"top":sy,"width":tx-sx,"height":ty-sy}
+    #     with open(det_config_path, 'w') as file:
+    #         json.dump(json_data, file, indent=2)
+    # else:
+    #     if("roi"in json_data["configure"].keys()):
+    #         del json_data["configure"]["roi"]
+    #     with open(det_config_path, 'w') as file:
+    #         json.dump(json_data, file, indent=2)
+    
+    
+    with open(det_config_path, 'r') as file:
+    # 使用 json.load 将文件内容转换为字典
+        json_data = json.load(file)
+    json_data["configure"]["threshold_conf"]=1.0*data["Algorithm"][i]["threshold"]/100.0
+    with open(det_config_path, 'w') as file:
+        json.dump(json_data, file, indent=2)
+    with open(filter_config_path, 'r') as file:
+    # 使用 json.load 将文件内容转换为字典
+        json_data = json.load(file)
+    json_data["configure"]["rules"][0]["filters"][0]["areas"]=[]
+    json_data["configure"]["rules"][0]["filters"][0]["type"]=2
+    json_data["configure"]["rules"][0]["filters"][0]["alert_first_frame"]=data["Algorithm"][i]["TrackInterval"]
+    json_data["configure"]["rules"][0]["filters"][0]["alert_frame_skip_nums"]=data["Algorithm"][i]["AlarmInterval"]
+    if(data["Algorithm"][i]["DetectInfos"]!=None):
+        for detectinfoid in range(len(data["Algorithm"][i]["DetectInfos"])):
+            area=[{"left":i['X'],"top":i["Y"]} for i in data["Algorithm"][i]["DetectInfos"][detectinfoid]["HotArea"]]
+            json_data["configure"]["rules"][0]["filters"][0]["areas"].append(area)
+            # head=data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineStart"]
+            # end=data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineEnd"]
+            # line=[{"left":head['X'],"top":head["Y"]},{"left":end['X'],"top":end["Y"]}]
+            # json_data["configure"]["rules"][0]["filters"][0]["areas"].append(line)
+            with open(filter_config_path, 'w') as file:
+                    json.dump(json_data, file, indent=2)
+    
+    else:
+        with open(det_config_path, 'r') as file:
+    # 使用 json.load 将文件内容转换为字典
+            json_data = json.load(file)
+        if("roi"in json_data["configure"].keys()):
+            del json_data["configure"]["roi"]
+        with open(det_config_path, 'w') as file:
+            json.dump(json_data, file, indent=2)
+    
     return demo_config_path
 
 def yolov5_trans_json(json_data,task_id,Type,up_list):
@@ -118,23 +111,81 @@ def yolov5_trans_json(json_data,task_id,Type,up_list):
     frame_id=int(json_data["mFrame"]["mFrameId"])
     results["FrameIndex"]=frame_id    
     src_base64=json_data["mFrame"]["mSpData"]
-    # src_base64= " "
     results["SceneImageBase64"]=src_base64
     results["AnalyzeEvents"]=[]
     results["TaskID"]=str(task_id)
-
-    # 解码base64图片
-    image_data = base64.b64decode(src_base64)
-    # 使用Pillow打开图片
-    image = Image.open(BytesIO(image_data))
-    # 获取图像分辨率
-    width, height = image.size
-
+   
+ 
     boxes=[]
+    if("mTrackedObjectMetadatas" in json_data.keys() and len(json_data["mDetectedObjectMetadatas"])== len(json_data["mTrackedObjectMetadatas"])): 
+        image_data = base64.b64decode(src_base64)
+        # 使用Pillow打开图片
+        image = Image.open(BytesIO(image_data))
+        width, height = image.size
+        for indx in range(len(json_data["mDetectedObjectMetadatas"])):
+            tmp=json_data["mDetectedObjectMetadatas"][indx]
+            tmp2=json_data["mTrackedObjectMetadatas"][indx]
+            if str(tmp2["mTrackId"]) in up_list:
+                result={}
+                x1,y1=tmp["mBox"]["mX"],tmp["mBox"]["mY"]
+                x2=x1+tmp["mBox"]["mWidth"]
+                y2=y1+tmp["mBox"]["mHeight"]
+                boxes.append((x1,y1,x2,y2))
+                crop_box = crop_target_square(width, height, x1, y1, x2, y2)
+                cropped_image = image.crop(crop_box)
+
+                # 使用不同的 BytesIO 对象
+                buffer = BytesIO()
+                cropped_image.save(buffer, format="JPEG")  # 选择格式
+                # 将buffer内容转换为base64格式
+                buffer.seek(0)
+                small_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
+                result["ImageBase64"]=small_image
+                result["Box"]={"LeftTopY": y1,
+                                "RightBtmY": y2,
+                                "LeftTopX": x1,
+                                "RightBtmX": x2 }
+                result["Type"]=Type
+                # result["Extend"]={}
+                # result["Extend"]["VehicleLicense"]=tmp2["mRecognizedObjectMetadatas"][0]["mLabelName"]
+                results["AnalyzeEvents"].append(result)
+                
+    elif("mSubObjectMetadatas" in json_data.keys() and len(json_data["mDetectedObjectMetadatas"])== len(json_data["mSubObjectMetadatas"])):
+        for indx in range(len(json_data["mDetectedObjectMetadatas"])):
+            tmp=json_data["mDetectedObjectMetadatas"][indx]
+            tmp2=json_data["mSubObjectMetadatas"][indx]
+            if tmp2["mRecognizedObjectMetadatas"][0]["mLabelName"] in up_list:
+                result={}
+                x1,y1=tmp["mBox"]["mX"],tmp["mBox"]["mY"]
+                x2=x1+tmp["mBox"]["mWidth"]
+                y2=y1+tmp["mBox"]["mHeight"]
+                boxes.append((x1,y1,x2,y2))
+                    # print(tmp2["mFrame"]["mSpData"])
+                    # save_base64_image(tmp2["mFrame"]["mSpData"],'gg.jpg')
+                    # result["ImageBase64"]=crop_image_base64(src_base64, (x1,y1,x2,y2))
+                result["ImageBase64"]=tmp2["mFrame"]["mSpData"]
+                # print(result["ImageBase64"])
+                # save_base64_image(result["ImageBase64"],'gg2.jpg')
+
+                result["Box"]={"LeftTopY": y1,
+                                "RightBtmY": y2,
+                                "LeftTopX": x1,
+                                "RightBtmX": x2 }
+                result["Type"]=Type
+                result["Extend"]={}
+                result["Extend"]["VehicleLicense"]=tmp2["mRecognizedObjectMetadatas"][0]["mLabelName"]
+                results["AnalyzeEvents"].append(result)
     
-    result={}
-    image_pre = ""
-    if len(json_data["mDetectedObjectMetadatas"]) > 0:
+    elif len(json_data["mDetectedObjectMetadatas"]) > 0 and len(results["AnalyzeEvents"])==0:
+        # 解码base64图片
+        image_data = base64.b64decode(src_base64)
+        # 使用Pillow打开图片
+        image = Image.open(BytesIO(image_data))
+        # 获取图像分辨率
+        width, height = image.size
+
+        
+       
         for indx, item in enumerate(json_data["mDetectedObjectMetadatas"]):
             x1, y1 = item["mBox"]["mX"], item["mBox"]["mY"]
             x2 = x1 + item["mBox"]["mWidth"]
@@ -163,26 +214,25 @@ def yolov5_trans_json(json_data,task_id,Type,up_list):
                 },
                 "Type": Type,
                 "Extend": {
-                    "类别": yolov5_dict.get(item["mClassify"], 'Not found'),
+                    "类别": item["mClassify"],
                     "置信度":str(round(item["mScores"][0]*100,2)) + "%"
                 }
             }
 
             results["AnalyzeEvents"].append(result)
-
     return results
                 
 def yolov5_logic(json_data,up_list,rm_list):
-    if("mDetectedObjectMetadatas" in json_data.keys()):
-        tmp = json_data["mDetectedObjectMetadatas"]
-        # mClassify_list = [item["mClassify"] for tmp in tmp for item in tmp]
-    else:
-        names=[]
-    up_list.append(1)    
-    # print(json_data["mDetectedObjectMetadatas"])
-    # for key in json_data.keys():
-    #     print(key)
-
+    if("mTrackedObjectMetadatas" in json_data.keys() and len(json_data["mDetectedObjectMetadatas"])== len(json_data["mTrackedObjectMetadatas"])): 
+        for i in json_data["mTrackedObjectMetadatas"]:
+            up_list.append(str(i["mTrackId"]))
+        
+    if("mSubObjectMetadatas" in json_data.keys()):
+        for i in json_data["mSubObjectMetadatas"]:
+            up_list.append(str(i["mRecognizedObjectMetadatas"][0]["mLabelName"]))
+        
+    if(len(up_list)==0):
+        up_list.append(1)
 def crop_target_square(width, height, x1, y1, x2, y2):
     # 计算目标正方形的中心坐标
     center_x = (x1 + x2) // 2
