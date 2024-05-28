@@ -24,6 +24,9 @@ BYTETracker::BYTETracker(const std::shared_ptr<BytetrackContext> mContext) {
   this->frame_id = 0;
   this->max_time_lost = int(this->frame_rate / 30.0 * this->track_buffer);
   this->kalman_filter = std::make_shared<KalmanFilter>();
+  this->class_offset = 7000;
+  this->correct_box = mContext->correctBox;
+  this->agnostic = mContext->agnostic;
 }
 
 BYTETracker::~BYTETracker() {}
@@ -56,6 +59,12 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
 
       float score = subObj->mScores[0];
       int class_id = subObj->mClassify;
+      if (!(this->agnostic)) {
+        tlbr_[0] += class_id * this->class_offset;
+        tlbr_[1] += class_id * this->class_offset;
+        tlbr_[2] += class_id * this->class_offset;
+        tlbr_[3] += class_id * this->class_offset;
+      }
 
       if (score > 0.1){
         std::shared_ptr<STrack> strack = std::make_shared<STrack>(
@@ -90,10 +99,10 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
     std::shared_ptr<STrack> track = strack_pool[matches[i][0]];
     std::shared_ptr<STrack> det = detections[matches[i][1]];
     if (track->state == TrackState::Tracked) {
-      track->update(this->kalman_filter, det, this->frame_id);
+      track->update(this->kalman_filter, det, this->frame_id, this->correct_box);
       activated_stracks.push_back(track);
     } else {
-      track->re_activate(this->kalman_filter, det, this->frame_id, false);
+      track->re_activate(this->kalman_filter, det, this->frame_id, this->correct_box, false);
       refind_stracks.push_back(track);
     }
   }
@@ -126,10 +135,10 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
     std::shared_ptr<STrack> track = r_tracked_stracks[matches[i][0]];
     std::shared_ptr<STrack> det = detections[matches[i][1]];
     if (track->state == TrackState::Tracked) {
-      track->update(this->kalman_filter, det, this->frame_id);
+      track->update(this->kalman_filter, det, this->frame_id, this->correct_box);
       activated_stracks.push_back(track);
     } else {
-      track->re_activate(this->kalman_filter, det, this->frame_id, false);
+      track->re_activate(this->kalman_filter, det, this->frame_id, this->correct_box, false);
       refind_stracks.push_back(track);
     }
   }
@@ -159,7 +168,7 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
 
   for (int i = 0; i < matches.size(); i++) {
     unconfirmed[matches[i][0]]->update(
-        this->kalman_filter, detections[matches[i][1]], this->frame_id);
+        this->kalman_filter, detections[matches[i][1]], this->frame_id, this->correct_box);
     activated_stracks.push_back(unconfirmed[matches[i][0]]);
   }
 
@@ -231,6 +240,10 @@ void BYTETracker::update(std::shared_ptr<common::ObjectMetadata>& objects) {
 
     mDetectedObjectMetadata->mBox.mX = track_box->tlwh[0]<0?0:track_box->tlwh[0];
     mDetectedObjectMetadata->mBox.mY = track_box->tlwh[1]<0?0:track_box->tlwh[1];
+    if (!(this->agnostic)) {
+      mDetectedObjectMetadata->mBox.mX -= track_box->class_id * this->class_offset;
+      mDetectedObjectMetadata->mBox.mY -= track_box->class_id * this->class_offset;
+    }
     mDetectedObjectMetadata->mBox.mWidth = track_box->tlwh[2];
     mDetectedObjectMetadata->mBox.mHeight = track_box->tlwh[3];
     mDetectedObjectMetadata->mClassify = track_box->class_id;

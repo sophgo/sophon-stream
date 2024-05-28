@@ -65,20 +65,32 @@ void STrack::activate(std::shared_ptr<KalmanFilter> kalman_filter,
   this->start_frame = frame_id;
 }
 
+void STrack::kalman_correct_box(std::shared_ptr<KalmanFilter> kalman_filter,
+                         std::shared_ptr<STrack> new_track, bool correct_box) {
+  if (correct_box) {
+    std::vector<float> xyah = tlwh_to_xyah(new_track->tlwh);
+    cv::Mat xyah_box(1, 4, CV_32F);
+    xyah_box.at<float>(0) = xyah[0];
+    xyah_box.at<float>(1) = xyah[1];
+    xyah_box.at<float>(2) = xyah[2];
+    xyah_box.at<float>(3) = xyah[3];
+    auto mc = kalman_filter->update(this->mean, this->covariance, xyah_box);
+    this->mean = mc.first.clone();
+    this->covariance = mc.second.clone();
+    static_tlwh();
+  } else {
+    if (this->state == TrackState::New) {
+      this->tlwh = this->_tlwh;
+      return;
+    }
+    this->tlwh = new_track->tlwh;
+  }
+}
+
 void STrack::re_activate(std::shared_ptr<KalmanFilter> kalman_filter,
                          std::shared_ptr<STrack> new_track, int frame_id,
-                         bool new_id) {
-  std::vector<float> xyah = tlwh_to_xyah(new_track->tlwh);
-  cv::Mat xyah_box(1, 4, CV_32F);
-  xyah_box.at<float>(0) = xyah[0];
-  xyah_box.at<float>(1) = xyah[1];
-  xyah_box.at<float>(2) = xyah[2];
-  xyah_box.at<float>(3) = xyah[3];
-  auto mc = kalman_filter->update(this->mean, this->covariance, xyah_box);
-  this->mean = mc.first.clone();
-  this->covariance = mc.second.clone();
-
-  static_tlwh();
+                         bool correct_box, bool new_id) {
+  kalman_correct_box(kalman_filter, new_track, correct_box);
   static_tlbr();
 
   this->tracklet_len = 0;
@@ -90,22 +102,11 @@ void STrack::re_activate(std::shared_ptr<KalmanFilter> kalman_filter,
 }
 
 void STrack::update(std::shared_ptr<KalmanFilter> kalman_filter,
-                    std::shared_ptr<STrack> new_track, int frame_id) {
+                    std::shared_ptr<STrack> new_track, int frame_id, bool correct_box) {
   this->frame_id = frame_id;
   this->tracklet_len++;
 
-  std::vector<float> xyah = tlwh_to_xyah(new_track->tlwh);
-  cv::Mat xyah_box(1, 4, CV_32F);
-  xyah_box.at<float>(0) = xyah[0];
-  xyah_box.at<float>(1) = xyah[1];
-  xyah_box.at<float>(2) = xyah[2];
-  xyah_box.at<float>(3) = xyah[3];
-
-  auto mc = kalman_filter->update(this->mean, this->covariance, xyah_box);
-  this->mean = mc.first.clone();
-  this->covariance = mc.second.clone();
-
-  static_tlwh();
+  kalman_correct_box(kalman_filter, new_track, correct_box);
   static_tlbr();
 
   this->state = TrackState::Tracked;

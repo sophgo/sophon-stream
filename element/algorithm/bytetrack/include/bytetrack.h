@@ -36,6 +36,10 @@ class Bytetrack : public ::sophon_stream::framework::Element {
       "high_thresh";
   static constexpr const char* CONFIG_INTERNAL_MATCH_THRESH_FIELD =
       "match_thresh";
+  static constexpr const char* CONFIG_INTERNAL_CORRECT_BOX_FIELD =
+      "correct_box";
+  static constexpr const char* CONFIG_INTERNAL_AGNOSTIC_FIELD =
+      "agnostic";
 
  private:
   std::shared_ptr<BytetrackContext> mContext;  // context对象

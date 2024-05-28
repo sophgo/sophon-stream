@@ -30,6 +30,8 @@ struct BytetrackContext {
   int frameRate;
   int trackBuffer;
   int minBoxArea;
+  bool correctBox;
+  bool agnostic;
 };
 
 class BYTETracker {
@@ -74,6 +76,9 @@ class BYTETracker {
   int min_box_area;
   int frame_id;
   int max_time_lost;
+  int class_offset;
+  bool correct_box;
+  bool agnostic;
 
   STracks tracked_stracks;
   STracks lost_stracks;

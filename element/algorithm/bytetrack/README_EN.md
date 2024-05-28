@@ -20,7 +20,9 @@ The sophon-stream bytetrack plugin has some configurable parameters that can be 
         "match_thresh": 0.7,
         "min_box_area": 10,
         "frame_rate": 30,
-        "track_buffer": 30
+        "track_buffer": 30,
+        "correct_box": true,
+        "agnostic": true
     },
     "shared_object": "../../../build/lib/libbytetrack.so",
     "device_id": 0,
@@ -39,6 +41,8 @@ The sophon-stream bytetrack plugin has some configurable parameters that can be 
 | frame_rate | Float | 30 | Video frame rate, affecting the maximum disappearance time of tracked targets. Targets exceeding this time will be removed (calculation: max_time_lost = frame_rate / 30.0 * track_buffer). |
 | min_box_area | Integer | 10 | Filter out tracking boxes with an area smaller than h*w. |
 | track_buffer | Integer | 30 | Target tracking buffer, related to the maximum disappearance time. |
+|  correct_box |   Bool  | true | Whether to use Kalman filtering to correct the tracking box, and use the original target detection box when the value is false |
+|    agnostic  |   Bool  | true | Whether to perform uncategorized tracking? When the value is false, boxes of different categories will be offset by different offsets, and then calculate iou. The offset is the class id multiplied by 7000|
 | shared_object | String | "../../../build/lib/libbytetrack.so" | Path to the *libbytetrack* dynamic library. |
 | device_id | Integer | 0 | TPU device number. |
 | id | Integer | 0 | Element ID. |
