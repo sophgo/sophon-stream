@@ -607,20 +607,28 @@ void Yolov8PostProcess::postProcessDet(
       yolobox_vec[i].y2 = yolobox_vec[i].y2 - c;
     }
 
+    for (int i = 0; i < yolobox_vec.size(); i++) {
+      float centerx =
+          ((yolobox_vec[i].x2 + yolobox_vec[i].x1) / 2 - tx1) / ratio;
+      float centery =
+          ((yolobox_vec[i].y2 + yolobox_vec[i].y1) / 2 - ty1) / ratio;
+      float width = (yolobox_vec[i].x2 - yolobox_vec[i].x1) / ratio;
+      float height = (yolobox_vec[i].y2 - yolobox_vec[i].y1) / ratio;
+      yolobox_vec[i].x1 = centerx - width / 2;
+      yolobox_vec[i].y1 = centery - height / 2;
+      yolobox_vec[i].x2 = centerx + width / 2;
+      yolobox_vec[i].y2 = centery + height / 2;
+    }
+
     clip_boxes(yolobox_vec, frame_width, frame_height);
 
     for (auto bbox : yolobox_vec) {
-      float centerx = ((bbox.x2 + bbox.x1) / 2 - tx1) / ratio;
-      float centery = ((bbox.y2 + bbox.y1) / 2 - ty1) / ratio;
-      float width = (bbox.x2 - bbox.x1) / ratio;
-      float height = (bbox.y2 - bbox.y1) / ratio;
-
       std::shared_ptr<common::DetectedObjectMetadata> detData =
           std::make_shared<common::DetectedObjectMetadata>();
-      detData->mBox.mX = std::max(int(centerx - width / 2), 0);
-      detData->mBox.mY = std::max(int(centery - height / 2), 0);
-      detData->mBox.mWidth = width;
-      detData->mBox.mHeight = height;
+      detData->mBox.mX = std::max(int(bbox.x1), 0);
+      detData->mBox.mY = std::max(int(bbox.y1), 0);
+      detData->mBox.mWidth = bbox.x2 - bbox.x1;
+      detData->mBox.mHeight = bbox.y2 - bbox.y1;
       detData->mScores.push_back(bbox.score);
       detData->mClassify = bbox.class_id;
 
@@ -628,7 +636,6 @@ void Yolov8PostProcess::postProcessDet(
         detData->mBox.mX += context->roi.start_x;
         detData->mBox.mY += context->roi.start_y;
       }
-
       // check the range of box
       if (detData->mBox.mX + detData->mBox.mWidth >=
           obj->mFrame->mSpData->width) {
@@ -640,7 +647,6 @@ void Yolov8PostProcess::postProcessDet(
         detData->mBox.mHeight =
             (obj->mFrame->mSpData->height - 1 - detData->mBox.mY);
       }
-
       if (context->class_thresh_valid) {
         detData->mLabelName = context->class_names[detData->mClassify];
       }
