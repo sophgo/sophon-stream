@@ -293,6 +293,30 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 frame count is 1421 | fps is 205.991 fps.
 ```
 
+**双核TPU推理**：
+
+BM1688平台为双核TPU，可使用双核进行模型推理。当前版本的单核模型与双核模型的推理方式不同：
+
+1. 对于单核模型，即目录`./data/models/BM1688`中`num_core=1`的模型，默认使用单核进行推理，此时的TPU利用率为50%，FPS约为120。
+
+若您需要提高TPU利用率，可使用双核TPU进行推理，此时的TPU利用率可达90%左右，FPS约为160。
+具体方法是修改文件`sophon-stream/element/algorithm/yolov5/src/yolov5_inference.cc`中的代码，将第178行和第191行
+```cpp
+178    ret = context->bmNetwork->forward<false>(inputTensors->tensors,
+...
+191    int ret = context->bmNetwork->forward<false>(
+```
+改为：
+```cpp
+178    ret = context->bmNetwork->forward<true>(inputTensors->tensors,
+...
+191    int ret = context->bmNetwork->forward<true>(
+```
+然后按照步骤[5. 程序编译](#5-程序编译)重新编译并运行。
+
+2. 对于双核模型，即目录`./data/models/BM1688`中`num_core=2`的模型，默认使用双核进行推理，不需要修改代码，可直接运行。
+
+
 ## 7. 性能测试
 
 目前，yolov5例程支持在BM1684X和BM1684的PCIE、SOC模式下进行推理，支持在BM1688 SOC模式下进行推理。

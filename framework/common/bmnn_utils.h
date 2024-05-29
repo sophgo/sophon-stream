@@ -284,6 +284,7 @@ class BMNNNetwork : public ::sophon_stream::common::NoCopyable {
         m_netinfo->output_scales[index], m_outputTensors[index].get(), is_soc);
   }
 
+  template <bool dual_core = false>
   int forward(std::vector<std::shared_ptr<bm_tensor_t>> & inputTensors, std::vector<std::shared_ptr<bm_tensor_t>> & outputTensors) {
 
     bool user_mem = false; // if false, bmrt will alloc mem every time.
@@ -305,22 +306,27 @@ class BMNNNetwork : public ::sophon_stream::common::NoCopyable {
       temp_outputTensors[i] = *outputTensors[i];
     
 
-    bool ok=bmrt_launch_tensor_ex(m_bmrt, m_netinfo->name, temp_inputTensors, m_netinfo->input_num,
-        temp_outputTensors, m_netinfo->output_num, user_mem, false);
+    bool ok = false;
+    if constexpr (dual_core) {
+      // if true, use double core in inference. support in bm1688
+      int core_id = rand() % 2;
+      const int *core_list = &core_id;
+      ok = bmrt_launch_tensor_multi_cores(m_bmrt, m_netinfo->name, temp_inputTensors, m_netinfo->input_num,
+            temp_outputTensors, m_netinfo->output_num, user_mem, false, core_list, 1);
+      bool status = bm_thread_sync_from_core(m_handle, core_id);
+      assert(BM_SUCCESS == status);
+    } else {
+      // if false, use single core in inference. support in bm1684 & 1684x & 1688
+      ok = bmrt_launch_tensor_ex(m_bmrt, m_netinfo->name, temp_inputTensors, m_netinfo->input_num,
+            temp_outputTensors, m_netinfo->output_num, user_mem, false);
+      bool status = bm_thread_sync(m_handle);
+      assert(BM_SUCCESS == status);
+    }
+
     if (!ok) {
       std::cout << "bm_launch_tensor() failed=" << std::endl;
       return -1;
     }
-    bool status = bm_thread_sync(m_handle);
-    assert(BM_SUCCESS == status);
-
-#if 0
-    for(int i = 0;i < m_netinfo->output_num; ++i) {
-      auto tensor = m_outputTensors[i];
-      // dump
-      std::cout << "output_tensor [" << i << "] size=" << bmrt_tensor_device_size(&tensor) << std::endl;
-    }
-#endif
 
     return 0;
   }

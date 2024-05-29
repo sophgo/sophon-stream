@@ -24,7 +24,6 @@
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
 #include "channel.h"
-#include "common/bmnn_utils.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/no_copyable.h"
