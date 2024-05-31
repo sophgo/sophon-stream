@@ -59,12 +59,20 @@ common::ErrorCode Bytetrack::initContext(const std::string& json) {
     mContext->matchThresh =
         matchThreshIt != configure.end() ? matchThreshIt->get<float>() : 0.7;
 
+    auto correctBoxIt = configure.find(CONFIG_INTERNAL_CORRECT_BOX_FIELD);
+    mContext->correctBox =
+        correctBoxIt != configure.end() ? correctBoxIt->get<bool>() : true;
+
+    auto agnosticIt = configure.find(CONFIG_INTERNAL_AGNOSTIC_FIELD);
+    mContext->agnostic =
+        agnosticIt != configure.end() ? agnosticIt->get<bool>() : true;
+
     IVS_DEBUG(
         "Bytetrack::initContext: frameRate: {0}, trackBuffer: {1}, "
         "trackThresh: {2}, "
-        "highThresh: {3}, matchThresh: {4}",
+        "highThresh: {3}, matchThresh: {4}, correctBox: {5}, agnostic: {6}",
         mContext->frameRate, mContext->trackBuffer, mContext->trackThresh,
-        mContext->highThresh, mContext->matchThresh);
+        mContext->highThresh, mContext->matchThresh, mContext->correctBox, mContext->agnostic);
 
   } while (false);
 

@@ -66,6 +66,8 @@ class Yolov8Context : public ::sophon_stream::framework::Context {
   int min_dim;
   bmcv_convert_to_attr converto_attr;
 
+  bool use_post_opt = false;
+
   bmcv_rect_t roi;
   bool roi_predefined = false;
   int thread_number;

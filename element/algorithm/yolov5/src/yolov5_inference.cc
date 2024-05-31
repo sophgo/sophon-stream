@@ -174,17 +174,28 @@ common::ErrorCode Yolov5Inference::predict(
     auto outputTensors = getOutputDeviceMem(context);
 
     int ret = 0;
+#if BMCV_VERSION_MAJOR > 1
+    ret = context->bmNetwork->forward<false>(inputTensors->tensors,
+                                      outputTensors->tensors);
+#else
     ret = context->bmNetwork->forward(inputTensors->tensors,
                                       outputTensors->tensors);
+#endif
 
     splitOutputMemIntoObjectMetadatas(context, objectMetadatas, outputTensors);
   } else {
     if (objectMetadatas[0]->mFrame->mEndOfStream)
       return common::ErrorCode::SUCCESS;
     objectMetadatas[0]->mOutputBMtensors = getOutputDeviceMem(context);
+#if BMCV_VERSION_MAJOR > 1
+    int ret = context->bmNetwork->forward<false>(
+        objectMetadatas[0]->mInputBMtensors->tensors,
+        objectMetadatas[0]->mOutputBMtensors->tensors);
+#else
     int ret = context->bmNetwork->forward(
         objectMetadatas[0]->mInputBMtensors->tensors,
         objectMetadatas[0]->mOutputBMtensors->tensors);
+#endif
   }
 
   for (auto obj : objectMetadatas) {

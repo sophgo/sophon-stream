@@ -20,7 +20,9 @@ sophon-stream bytetrack插件具有一些可配置的参数，可以根据需求
         "match_thresh": 0.7,
         "min_box_area": 10,
         "frame_rate": 30,
-        "track_buffer": 30
+        "track_buffer": 30,
+        "correct_box": true,
+        "agnostic": true
     },
     "shared_object": "../../../build/lib/libbytetrack.so",
     "device_id": 0,
@@ -39,6 +41,8 @@ sophon-stream bytetrack插件具有一些可配置的参数，可以根据需求
 |  frame_rate    |   浮点数   | 30  | 视频帧率，影响跟踪目标的最大消失时间，超过此时间的目标将被移除，计算方式为(max_time_lost = frame_rate / 30.0 * track_buffer) |
 |  min_box_area  |   整数    |  10 | 过滤掉h*w小于min_box_area的跟踪框 |
 |  track_buffer  |   整数    |  30 | 目标跟踪缓存，与最大消失时间关联 |
+|  correct_box   |   布尔值  | true | 是否使用卡尔曼滤波矫正追踪框，值为false时使用原始目标检测框 |
+|    agnostic    |   布尔值  | true | 是否进行无类别跟踪，值为false时不同类别的box将偏移不同的偏移量，然后计算iou，偏移量为类别id乘7000|
 |  shared_object |   字符串   |  "../../../build/lib/libbytetrack.so"  | libbytetrack 动态库路径 |
 |  device_id  |    整数       |  0 | tpu 设备号 |
 |     id      |    整数       | 0  | element id |

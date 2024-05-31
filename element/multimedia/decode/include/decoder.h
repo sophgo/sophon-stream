@@ -24,7 +24,6 @@
 #include "bmlib_runtime.h"
 #include "bmruntime_interface.h"
 #include "channel.h"
-#include "common/bmnn_utils.h"
 #include "common/error_code.h"
 #include "common/logger.h"
 #include "common/no_copyable.h"
@@ -64,6 +63,12 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   double mFps;
   int mSampleInterval;
   ChannelOperateRequest::SampleStrategy mSampleStrategy;
+
+  //camera synchronization
+  static std::mutex decoder_mutex;
+  static std::condition_variable decoder_cv;
+  static int numThreadsReady;
+  static std::atomic<int> numThreadsTotal;
 };
 }  // namespace decode
 }  // namespace element

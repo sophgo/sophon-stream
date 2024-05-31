@@ -1,0 +1,14 @@
+{
+    "configure": {
+        "track_thresh": 0.5,
+        "high_thresh": 0.6,
+        "match_thresh": 0.7,
+        "min_box_area": 10,
+        "frame_rate": 30,
+        "track_buffer": 30
+    },
+    "shared_object": "../../build/lib/libbytetrack.so",
+    "name": "bytetrack",
+    "side": "sophgo",
+    "thread_number": 4
+}

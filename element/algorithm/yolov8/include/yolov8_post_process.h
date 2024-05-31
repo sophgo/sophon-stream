@@ -54,6 +54,8 @@ class Yolov8PostProcess : public ::sophon_stream::framework::PostProcess {
                                 bool* pIsAligWidth);
   void postProcessDet(std::shared_ptr<Yolov8Context> context,
                       common::ObjectMetadatas& objectMetadatas);
+  void postProcessDetOpt(std::shared_ptr<Yolov8Context> context,
+                      common::ObjectMetadatas& objectMetadatas);
   void postProcessPose(std::shared_ptr<Yolov8Context> context,
                        common::ObjectMetadatas& objectMetadatas);
   void postProcessCls(std::shared_ptr<Yolov8Context> context,

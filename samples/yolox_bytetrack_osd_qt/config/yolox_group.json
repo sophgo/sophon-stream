@@ -1,0 +1,22 @@
+{
+    "configure":{
+        "model_path":"../yolox_bytetrack_osd_qt/data/models/BM1684X/yolox_bytetrack_s_int8_1b.bmodel",
+        "threshold_conf":0.5,
+        "threshold_nms":0.5,
+        "bgr2rgb": true,
+        "mean": [
+          0,
+          0,
+          0
+        ],
+        "std": [
+          255,
+          255,
+          255
+        ]
+    },
+    "shared_object":"../../build/lib/libyolox.so",
+    "name":"yolox_group",
+    "side":"sophgo",
+    "thread_number":4
+}

@@ -38,9 +38,11 @@ class STrack {
   void activate(std::shared_ptr<KalmanFilter> kalman_filter, int frame_id);
   void re_activate(std::shared_ptr<KalmanFilter> kalman_filter,
                    std::shared_ptr<STrack> new_track, int frame_id,
-                   bool new_id = false);
+                   bool correct_box, bool new_id = false);
   void update(std::shared_ptr<KalmanFilter> kalman_filter,
-              std::shared_ptr<STrack> new_track, int frame_id);
+              std::shared_ptr<STrack> new_track, int frame_id, bool correct_box);
+  void kalman_correct_box(std::shared_ptr<KalmanFilter> kalman_filter,
+                   std::shared_ptr<STrack> new_track, bool correct_box);
 
  public:
   bool is_activated;

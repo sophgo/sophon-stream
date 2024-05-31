@@ -53,6 +53,13 @@ cd build
 cmake ..
 make -j4
 ```
+如果需要qt显示，请先下载公版qt，否则将默认不编译qt组件。
+
+可以通过以下命令下载qt：
+```bash
+sudo apt install qtbase5-dev
+```
+
 
 ## SoC平台
 通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)。
@@ -75,12 +82,24 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.4.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.5.tar.gz
 ```
 
-交叉编译时，`SOPHON_SDK_SOC`需要填写绝对路径
+如果需要使用qt，只需要在x86上下载用于交叉编译的Qt。盒子上环境已经是齐全的，不需要重新下载/安装Qt，并在编译时用`QTPATH`参数指定qt的路径：（如果不需要使用QT，可以忽略这部分，并且不添加交叉编译时的`QTPATH`参数）
+
+BM1684/BM1684X设备：
+```bash
+python3 -m dfss --url=open@sophgo.com:sophon-demo/MultiYolov5/qt-5.14-amd64-aarch64-fl2000fb_v1.1.0.tar.xz
+```
+
+BM1688/CV186AH设备：
+```bash
+python3 -m dfss --url=open@sophgo.com:sophon-pipeline/a2_bringup/qtbase.zip
+```
+
+交叉编译时，`SOPHON_SDK_SOC`、`QTPATH`需要填写绝对路径
 
 ```bash
 mkdir build
 cd build
-cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc
+cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt
 make -j4
 ```
 
