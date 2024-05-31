@@ -121,7 +121,7 @@ If you are using BM1684/BM1684X device, you will need to download and unzip soph
 
 ```bash
 python3 -m dfss --url=open@sophgo.com:sophon-demo/MultiYolov5/qt-5.14-amd64-aarch64-fl2000fb_v1.1.0.tar.xz
-tar -zxvf lib_1011.tar.gz
+tar -xaf qt-5.14-amd64-aarch64-fl2000fb_v1.1.0.tar.xz
 ```
 #### 4.2.2 BM1688
 If you are using a BM1688 device, you will need to download and extract the public qt version of arm for subsequent cross-compilation on the device you are cross-compiling on:

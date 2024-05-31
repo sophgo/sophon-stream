@@ -113,7 +113,7 @@ sudo apt install qtbase5-dev
 
 ```bash
 python3 -m dfss --url=open@sophgo.com:sophon-demo/MultiYolov5/qt-5.14-amd64-aarch64-fl2000fb_v1.1.0.tar.xz
-tar -zxvf lib_1011.tar.gz
+tar -xaf qt-5.14-amd64-aarch64-fl2000fb_v1.1.0.tar.xz
 ```
 #### 4.2.2 BM1688
 如果您使用的是BM1688设备，您需要在您进行交叉编译的设备上，通过以下命令下载并解压arm的公版qt以进行后续的交叉编译：
