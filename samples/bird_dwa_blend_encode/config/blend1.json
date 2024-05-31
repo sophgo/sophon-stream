@@ -1,0 +1,17 @@
+{
+  "configure": {
+    "wgt1": "../bird_dwa_blend_encode/data/wgt/alpha_weight_0.bin",
+    "wgt2": "../bird_dwa_blend_encode/data/wgt/beta_weight_0.bin",
+    "ovlp_lx": 0,
+    "ovlp_rx": 1919,
+    "bd_lx0": 0,
+    "bd_rx0": 0,
+    "bd_lx1": 0,
+    "bd_rx1": 0,
+    "src_h": 1920
+  },
+  "shared_object": "../../build/lib/libblend.so",
+  "name": "blend",
+  "side": "sophgo",
+  "thread_number": 1
+}

@@ -153,6 +153,9 @@ int map_avformat_to_bmformat(int avformat) {
     case AV_PIX_FMT_GBRP:
       format = FORMAT_RGBP_SEPARATE;
       break;
+    case AV_PIX_FMT_YUYV422:
+      format = FORMAT_YUV422_YUYV;
+      break;
     default:
       printf("unsupported av_pix_format %d\n", avformat);
       return -1;
@@ -229,6 +232,12 @@ bm_status_t avframe_to_bm_image(bm_handle_t& handle, AVFrame* in, bm_image* out,
       data_four_denominator = -1;
       data_five_denominator = 1;
       data_six_denominator = 1;
+      break;
+    case AV_PIX_FMT_YUYV422:
+      plane = 1;
+      data_four_denominator = 1;
+      data_five_denominator = -1;
+      data_six_denominator = -1;
       break;
     default:
       printf(
@@ -436,7 +445,7 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   if (this->is_camera) {
     av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
     // av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
-    av_dict_set_int(&dict, "use_isp", 0, 0);  // int isusemw = 0
+    // av_dict_set_int(&dict, "use_isp", 0, 0);  // int isusemw = 0
   }
 
   av_dict_set(
@@ -593,7 +602,7 @@ void VideoDecFFM::reConnectVideoStream() {
 
     if (this->is_camera) {
       av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
-      av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
+      // av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
     }
 
     // av_dict_set(&dict, "rtsp_transport", "tcp", 0);

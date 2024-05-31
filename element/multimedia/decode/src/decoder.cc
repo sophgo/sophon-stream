@@ -261,31 +261,21 @@ common::ErrorCode Decoder::process(
     std::shared_ptr<bm_image> spBmImage = nullptr;
     int64_t pts = 0;
 
-    {  // 在所有线程等待执行decoder.grab前添加一个等待点
+   {  // 在所有线程等待执行decoder.grab前添加一个等待点
       std::unique_lock<std::mutex> lock(decoder_mutex);
-      numThreadsReady++;
-      if (numThreadsReady == numThreadsTotal) {
+      numThreadsReady ++;
+      if(numThreadsReady == numThreadsTotal){
+        numThreadsReady = 0;
+        lock.unlock();
         decoder_cv.notify_all();
-      } else {
-        decoder_cv.wait(lock,
-                        [&] { return numThreadsReady == numThreadsTotal; });
+      }else{
+        decoder_cv.wait(lock);
       }
+      
     }
     spBmImage =
         decoder.grab(frame_id, eof, pts, mSampleInterval, mSampleStrategy);
-    {
-      std::unique_lock<std::mutex> lock(decoder_mutex);
-      numThreadsReady--;
-      if (numThreadsReady == 0) {
-        decoder_cv.notify_all();
-        lock.unlock();
-        // 在让最快的线程执行decoder.grab后，等待其他线程执行完毕
-        while (numThreadsReady != numThreadsTotal - 1) {
-        }
-      } else {
-        decoder_cv.wait(lock, [&] { return numThreadsReady == 0; });
-      }
-    }
+   
 
     objectMetadata = std::make_shared<common::ObjectMetadata>();
     objectMetadata->mFrame = std::make_shared<common::Frame>();
