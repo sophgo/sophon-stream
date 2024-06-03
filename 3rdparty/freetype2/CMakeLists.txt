@@ -167,8 +167,8 @@ endif()
 
 if (${TARGET_ARCH} STREQUAL "soc")
   add_compile_options(-fPIC)
-  set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
-  set(CMAKE_ASM_COMPILER aarch64-linux-gnu-gcc)
+  set(CMAKE_C_COMPILER aarch64-linux-gnu-g++)
+  set(CMAKE_ASM_COMPILER aarch64-linux-gnu-g++)
   set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 endif()
 
