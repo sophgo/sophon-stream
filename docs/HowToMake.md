@@ -80,6 +80,7 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.2.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.3.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.4.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.5.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.6.tar.gz
 ```
 
 如果需要使用qt，只需要在x86上下载用于交叉编译的Qt。盒子上环境已经是齐全的，不需要重新下载/安装Qt，并在编译时用`QTPATH`参数指定qt的路径：（如果不需要使用QT，可以忽略这部分，并且不添加交叉编译时的`QTPATH`参数）
