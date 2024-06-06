@@ -501,5 +501,6 @@ sophon-web的结果上报json格式
 
 ```
 使用方式
+pip3 install pillow
 bash start_server.sh path/to/sophon-stream
 ```

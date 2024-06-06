@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "filter.h"
-
+ 
 namespace sophon_stream {
 namespace element {
 namespace filter {
@@ -117,9 +117,9 @@ common::ErrorCode Filter::initInternal(const std::string& json) {
                      "type must be int, please check your Filter element "
                      "configuration file");
         Filter_Imp_.set_type(typeIt->get<int>());
-        STREAM_CHECK((typeIt->get<int>() == 0 || typeIt->get<int>() == 1),
-                     "type only support 0, please check your Filter element "
-                     "configuration file");
+        // STREAM_CHECK((typeIt->get<int>() == 0 || typeIt->get<int>() == 1 ),
+        //              "type only support 0, please check your Filter element "
+        //              "configuration file");
         Filter_Imp_s.push_back(Filter_Imp_);
       }
       Filter_imps.push_back(Filter_Imp_s);
@@ -402,15 +402,16 @@ bool Filter_Imp::istrack(
   std::vector<std::shared_ptr<common::TrackedObjectMetadata>>
       new_mTrackedObjectMetadatas;
 
-  if (objectMetadata->mSubObjectMetadatas.size()) {
-    for (int i = 0; i < objectMetadata->mSubObjectMetadatas.size(); i++) {
+  if (objectMetadata->mDetectedObjectMetadatas.size()) {
+    for (int i = 0; i < objectMetadata->mDetectedObjectMetadatas.size(); i++) {
       std::string name;
       if (type == 0) {
         name = objectMetadata->mSubObjectMetadatas[i]
                    ->mRecognizedObjectMetadatas[0]
                    ->mLabelName;
       } else if (type == 1) {
-        name = objectMetadata->mTrackedObjectMetadatas[i]->mTrackId;
+        name = std::to_string(
+              objectMetadata->mTrackedObjectMetadatas[i]->mTrackId);
       }
       if (up_list.find(name) != up_list.end()) {
         new_mDetectedObjectMetadatas.push_back(
