@@ -1026,210 +1026,242 @@ std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, string input_name) {
   }
 }
 
-std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, string input_name) {
+std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, std::string input_name) {
   std::shared_ptr<bm_image> spBmImage = nullptr;
   spBmImage.reset(new bm_image, [](bm_image* p) {
     bm_image_destroy(*p);
     delete p;
     p = nullptr;
   });
-  AVInputFormat* iformat = nullptr;
-  AVFormatContext* pFormatCtx = nullptr;
-  AVCodecContext* dec_ctx = nullptr;
-  AVCodec* pCodec = nullptr;
-  AVDictionary* dict = nullptr;
-  AVIOContext* avio_ctx = nullptr;
-  AVFrame* pFrame = nullptr;
-  AVFrame* I420Frame = nullptr;
-  AVPacket pkt;
 
-  int got_picture;
   FILE* infile;
   int numBytes;
-
-  uint8_t* aviobuffer = nullptr;
-  int aviobuf_size = 32 * 1024;  // 32K
   uint8_t* bs_buffer = nullptr;
-  int bs_size;
-  bs_buffer_t bs_obj = {0, 0, 0};
-  int tmp = 0;
   bm_status_t ret;
 
   infile = fopen(input_name.c_str(), "rb+");
-  if (infile == nullptr) {
-    cerr << "open file1 failed" << endl;
-    goto Func_Exit;
-  }
+  STREAM_CHECK(infile != nullptr, "Input file ", input_name,
+               " does not exist, please check it!");
 
   fseek(infile, 0, SEEK_END);
   numBytes = ftell(infile);
-  // cout << "infile size: " << numBytes << endl;
   fseek(infile, 0, SEEK_SET);
-
-  bs_buffer = (uint8_t*)av_malloc(numBytes);
-  if (bs_buffer == nullptr) {
-    cerr << "av malloc for bs buffer failed" << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  fread(bs_buffer, sizeof(uint8_t), numBytes, infile);
+  bs_buffer = (uint8_t*)malloc(numBytes);
+  fread(bs_buffer, numBytes, 1, infile);
   fclose(infile);
+
   infile = nullptr;
-
-  hardware_decode = determine_hardware_decode(bs_buffer);
-
-  aviobuffer = (uint8_t*)av_malloc(aviobuf_size);  // 32k
-  if (aviobuffer == nullptr) {
-    cerr << "av malloc for avio failed" << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  bs_obj.start = bs_buffer;
-  bs_obj.size = numBytes;
-  bs_obj.pos = 0;
-  avio_ctx = avio_alloc_context(aviobuffer, aviobuf_size, 0, (void*)(&bs_obj),
-                                read_buffer, NULL, NULL);
-  if (avio_ctx == NULL) {
-    cerr << "avio_alloc_context failed" << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  pFormatCtx = avformat_alloc_context();
-  pFormatCtx->pb = avio_ctx;
-
-  /* mjpeg demuxer */
-  iformat = av_find_input_format("mjpeg");
-  if (iformat == NULL) {
-    cerr << "av_find_input_format failed." << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  /* Open an input stream */
-  tmp = avformat_open_input(&pFormatCtx, NULL, iformat, NULL);
-  if (tmp != 0) {
-    cerr << "Couldn't open input stream.\n" << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  /* HW JPEG decoder: jpeg_bm */
-  pCodec = hardware_decode ? avcodec_find_decoder_by_name("jpeg_bm")
-                           : avcodec_find_decoder_by_name("mjpeg");
-  if (pCodec == NULL) {
-    cerr << "Codec not found." << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  dec_ctx = avcodec_alloc_context3(pCodec);
-  if (dec_ctx == NULL) {
-    cerr << "Could not allocate video codec context!" << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  av_dict_set_int(&dict, "chroma_interleave", 0, 0);
-#define BS_MASK (1024 * 16 - 1)
-  bs_size = (numBytes + BS_MASK) & (~BS_MASK);
-#undef BS_MASK
-#define JPU_PAGE_UNIT_SIZE 256
-  /* Avoid the false alarm that bs buffer is empty (SA3SW-252) */
-  if (bs_size - numBytes < JPU_PAGE_UNIT_SIZE) bs_size += 16 * 1024;
-#undef JPU_PAGE_UNIT_SIZE
-  bs_size /= 1024;
-  av_dict_set_int(&dict, "bs_buffer_size", bs_size, 0);
-  /* Extra frame buffers: "0" for still jpeg, at least "2" for mjpeg */
-  av_dict_set_int(&dict, "num_extra_framebuffers", 0, 0);
-  av_dict_set_int(&dict, "zero_copy", 0, 0);
-  av_dict_set_int(&dict, "sophon_idx", bm_get_devid(handle), 0);
-  tmp = avcodec_open2(dec_ctx, pCodec, &dict);
-  if (tmp < 0) {
-    cerr << "Could not open codec." << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  pFrame = av_frame_alloc();
-  if (pFrame == nullptr) {
-    cerr << "av frame malloc failed" << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  av_read_frame(pFormatCtx, &pkt);
-  tmp = avcodec_decode_video2(dec_ctx, pFrame, &got_picture, &pkt);
-  if (tmp < 0) {
-    cerr << "Decode Error." << endl;
-    ret = BM_ERR_FAILURE;
-    goto Func_Exit;
-  }
-
-  // vpp_convert do not support YUV422P, use libyuv to filter
-  if (AV_PIX_FMT_YUVJ422P == pFrame->format) {
-    I420Frame = av_frame_alloc();
-
-    I420Frame->width = pFrame->width;
-    I420Frame->height = pFrame->height;
-    I420Frame->format = AV_PIX_FMT_YUV420P;
-
-    I420Frame->linesize[0] = pFrame->linesize[0];
-    I420Frame->linesize[1] = pFrame->linesize[1];
-    I420Frame->linesize[2] = pFrame->linesize[2];
-
-    I420Frame->data[0] =
-        (uint8_t*)malloc(pFrame->linesize[0] * I420Frame->height * 2);
-    I420Frame->data[1] =
-        (uint8_t*)malloc(pFrame->linesize[1] * I420Frame->height / 2);
-    I420Frame->data[2] =
-        (uint8_t*)malloc(pFrame->linesize[2] * I420Frame->height / 2);
-    libyuv::I422ToI420(
-        pFrame->data[0], pFrame->linesize[0], pFrame->data[1],
-        pFrame->linesize[1], pFrame->data[2], pFrame->linesize[2],
-        I420Frame->data[0], I420Frame->linesize[0], I420Frame->data[1],
-        I420Frame->linesize[1], I420Frame->data[2], I420Frame->linesize[2],
-        I420Frame->width, I420Frame->height);
-
-    av_frame_free(&pFrame);
-    pFrame = I420Frame;
-    data_on_device_mem = false;
-  }
-
-  avframe_to_bm_image(handle, pFrame, spBmImage.get(), true);
-
-Func_Exit:
-  av_packet_unref(&pkt);
-
-  if (pFrame) {
-    av_frame_free(&pFrame);
-  }
-
-  avformat_close_input(&pFormatCtx);
-
-  if (avio_ctx) {
-    av_freep(&avio_ctx->buffer);
-    av_freep(&avio_ctx);
-  }
-
-  if (infile) {
-    fclose(infile);
-  }
-
-  if (dict) {
-    av_dict_free(&dict);
-  }
-
-  if (dec_ctx) {
-    avcodec_free_context(&dec_ctx);
-  }
-  if (bs_buffer) {
-    av_free(bs_buffer);
-  }
-  return spBmImage;  // TODO
+  ret = bmcv_image_jpeg_dec(handle, (void**)&bs_buffer, (size_t*)&numBytes, 1,
+                            spBmImage.get());
+  free(bs_buffer);
+  return spBmImage;
 }
+
+// std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, string input_name) {
+//   std::shared_ptr<bm_image> spBmImage = nullptr;
+//   spBmImage.reset(new bm_image, [](bm_image* p) {
+//     bm_image_destroy(*p);
+//     delete p;
+//     p = nullptr;
+//   });
+//   AVInputFormat* iformat = nullptr;
+//   AVFormatContext* pFormatCtx = nullptr;
+//   AVCodecContext* dec_ctx = nullptr;
+//   AVCodec* pCodec = nullptr;
+//   AVDictionary* dict = nullptr;
+//   AVIOContext* avio_ctx = nullptr;
+//   AVFrame* pFrame = nullptr;
+//   AVFrame* I420Frame = nullptr;
+//   AVPacket pkt;
+
+//   int got_picture;
+//   FILE* infile;
+//   int numBytes;
+
+//   uint8_t* aviobuffer = nullptr;
+//   int aviobuf_size = 32 * 1024;  // 32K
+//   uint8_t* bs_buffer = nullptr;
+//   int bs_size;
+//   bs_buffer_t bs_obj = {0, 0, 0};
+//   int tmp = 0;
+//   bm_status_t ret;
+
+//   infile = fopen(input_name.c_str(), "rb+");
+//   if (infile == nullptr) {
+//     cerr << "open file1 failed" << endl;
+//     goto Func_Exit;
+//   }
+
+//   fseek(infile, 0, SEEK_END);
+//   numBytes = ftell(infile);
+//   // cout << "infile size: " << numBytes << endl;
+//   fseek(infile, 0, SEEK_SET);
+
+//   bs_buffer = (uint8_t*)av_malloc(numBytes);
+//   if (bs_buffer == nullptr) {
+//     cerr << "av malloc for bs buffer failed" << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   fread(bs_buffer, sizeof(uint8_t), numBytes, infile);
+//   fclose(infile);
+//   infile = nullptr;
+
+//   hardware_decode = determine_hardware_decode(bs_buffer);
+
+//   aviobuffer = (uint8_t*)av_malloc(aviobuf_size);  // 32k
+//   if (aviobuffer == nullptr) {
+//     cerr << "av malloc for avio failed" << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   bs_obj.start = bs_buffer;
+//   bs_obj.size = numBytes;
+//   bs_obj.pos = 0;
+//   avio_ctx = avio_alloc_context(aviobuffer, aviobuf_size, 0,
+//   (void*)(&bs_obj),
+//                                 read_buffer, NULL, NULL);
+//   if (avio_ctx == NULL) {
+//     cerr << "avio_alloc_context failed" << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   pFormatCtx = avformat_alloc_context();
+//   pFormatCtx->pb = avio_ctx;
+
+//   /* mjpeg demuxer */
+//   iformat = av_find_input_format("mjpeg");
+//   if (iformat == NULL) {
+//     cerr << "av_find_input_format failed." << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   /* Open an input stream */
+//   tmp = avformat_open_input(&pFormatCtx, NULL, iformat, NULL);
+//   if (tmp != 0) {
+//     cerr << "Couldn't open input stream.\n" << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   /* HW JPEG decoder: jpeg_bm */
+//   pCodec = hardware_decode ? avcodec_find_decoder_by_name("jpeg_bm")
+//                            : avcodec_find_decoder_by_name("mjpeg");
+//   if (pCodec == NULL) {
+//     cerr << "Codec not found." << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   dec_ctx = avcodec_alloc_context3(pCodec);
+//   if (dec_ctx == NULL) {
+//     cerr << "Could not allocate video codec context!" << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   av_dict_set_int(&dict, "chroma_interleave", 0, 0);
+// #define BS_MASK (1024 * 16 - 1)
+//   bs_size = (numBytes + BS_MASK) & (~BS_MASK);
+// #undef BS_MASK
+// #define JPU_PAGE_UNIT_SIZE 256
+//   /* Avoid the false alarm that bs buffer is empty (SA3SW-252) */
+//   if (bs_size - numBytes < JPU_PAGE_UNIT_SIZE) bs_size += 16 * 1024;
+// #undef JPU_PAGE_UNIT_SIZE
+//   bs_size /= 1024;
+//   av_dict_set_int(&dict, "bs_buffer_size", bs_size, 0);
+//   /* Extra frame buffers: "0" for still jpeg, at least "2" for mjpeg */
+//   av_dict_set_int(&dict, "num_extra_framebuffers", 0, 0);
+//   av_dict_set_int(&dict, "zero_copy", 0, 0);
+//   av_dict_set_int(&dict, "sophon_idx", bm_get_devid(handle), 0);
+//   tmp = avcodec_open2(dec_ctx, pCodec, &dict);
+//   if (tmp < 0) {
+//     cerr << "Could not open codec." << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   pFrame = av_frame_alloc();
+//   if (pFrame == nullptr) {
+//     cerr << "av frame malloc failed" << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   av_read_frame(pFormatCtx, &pkt);
+//   tmp = avcodec_decode_video2(dec_ctx, pFrame, &got_picture, &pkt);
+//   if (tmp < 0) {
+//     cerr << "Decode Error." << endl;
+//     ret = BM_ERR_FAILURE;
+//     goto Func_Exit;
+//   }
+
+//   // vpp_convert do not support YUV422P, use libyuv to filter
+//   if (AV_PIX_FMT_YUVJ422P == pFrame->format) {
+//     I420Frame = av_frame_alloc();
+
+//     I420Frame->width = pFrame->width;
+//     I420Frame->height = pFrame->height;
+//     I420Frame->format = AV_PIX_FMT_YUV420P;
+
+//     I420Frame->linesize[0] = pFrame->linesize[0];
+//     I420Frame->linesize[1] = pFrame->linesize[1];
+//     I420Frame->linesize[2] = pFrame->linesize[2];
+
+//     I420Frame->data[0] =
+//         (uint8_t*)malloc(pFrame->linesize[0] * I420Frame->height * 2);
+//     I420Frame->data[1] =
+//         (uint8_t*)malloc(pFrame->linesize[1] * I420Frame->height / 2);
+//     I420Frame->data[2] =
+//         (uint8_t*)malloc(pFrame->linesize[2] * I420Frame->height / 2);
+//     libyuv::I422ToI420(
+//         pFrame->data[0], pFrame->linesize[0], pFrame->data[1],
+//         pFrame->linesize[1], pFrame->data[2], pFrame->linesize[2],
+//         I420Frame->data[0], I420Frame->linesize[0], I420Frame->data[1],
+//         I420Frame->linesize[1], I420Frame->data[2], I420Frame->linesize[2],
+//         I420Frame->width, I420Frame->height);
+
+//     av_frame_free(&pFrame);
+//     pFrame = I420Frame;
+//     data_on_device_mem = false;
+//   }
+
+//   avframe_to_bm_image(handle, pFrame, spBmImage.get(), true);
+
+// Func_Exit:
+//   av_packet_unref(&pkt);
+
+//   if (pFrame) {
+//     av_frame_free(&pFrame);
+//   }
+
+//   avformat_close_input(&pFormatCtx);
+
+//   if (avio_ctx) {
+//     av_freep(&avio_ctx->buffer);
+//     av_freep(&avio_ctx);
+//   }
+
+//   if (infile) {
+//     fclose(infile);
+//   }
+
+//   if (dict) {
+//     av_dict_free(&dict);
+//   }
+
+//   if (dec_ctx) {
+//     avcodec_free_context(&dec_ctx);
+//   }
+//   if (bs_buffer) {
+//     av_free(bs_buffer);
+//   }
+//   return spBmImage;  // TODO
+// }
 
 void VideoDecFFM::setFps(int f) {
   fps = f;
