@@ -164,14 +164,15 @@ void Distributor::makeSubObjectMetadata(
         bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
                         obj->mFrame->mSpData->image_format,
                         obj->mFrame->mSpData->data_type, cropped.get());
-#if BMCV_VERSION_MAJOR > 1
-    ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1, *obj->mFrame->mSpData,
-                                 cropped.get(), &rect);
-#else
+    // #if BMCV_VERSION_MAJOR > 1
+    //     ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
+    //     *obj->mFrame->mSpData,
+    //                                  cropped.get(), &rect);
+    // #else
     ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect, *obj->mFrame->mSpData,
                           cropped.get());
-#endif
-    STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
+    // #endif
+    // STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
 
     subObj->mFrame->mSpData = cropped;
   } else {
@@ -273,14 +274,15 @@ void Distributor::makeSubFaceObjectMetadata(
           bm_image_create(obj->mFrame->mHandle, rect.crop_h, rect.crop_w,
                           obj->mFrame->mSpData->image_format,
                           obj->mFrame->mSpData->data_type, &corp_img);
-#if BMCV_VERSION_MAJOR > 1
-      ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
-                                   *obj->mFrame->mSpData, &corp_img, &rect);
-#else
+      // #if BMCV_VERSION_MAJOR > 1
+      //       ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
+      //                                    *obj->mFrame->mSpData, &corp_img,
+      //                                    &rect);
+      // #else
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
                             *obj->mFrame->mSpData, &corp_img);
-#endif
-      STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
+      // #endif
+      // STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
 
       // 得到原始图中关键点
       float left_eye_x = faceObj->points_x[0];
@@ -366,14 +368,16 @@ void Distributor::makeSubFaceObjectMetadata(
       ret = bm_image_create(obj->mFrame->mHandle, 120, 100, FORMAT_BGR_PLANAR,
                             DATA_TYPE_EXT_1N_BYTE, crop_after_warp.get());
 
-#if BMCV_VERSION_MAJOR > 1
-      ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
-                                   *affine_image_ptr, crop_after_warp.get(), &rect_after_warp);
-#else
+      // #if BMCV_VERSION_MAJOR > 1
+      //       ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
+      //                                    *affine_image_ptr,
+      //                                    crop_after_warp.get(),
+      //                                    &rect_after_warp);
+      // #else
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect_after_warp,
                             *affine_image_ptr, crop_after_warp.get());
-#endif
-      STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
+      // #endif
+      // STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
 
       subObj->mFrame->mSpData = crop_after_warp;
       // subObj->mFrame->mSpData = obj->mFrame->mSpData;
@@ -394,14 +398,15 @@ void Distributor::makeSubFaceObjectMetadata(
       bm_status_t ret = bm_image_create(obj->mFrame->mHandle, rect.crop_h,
                                         rect.crop_w, FORMAT_BGR_PLANAR,
                                         DATA_TYPE_EXT_1N_BYTE, cropped.get());
-#if BMCV_VERSION_MAJOR > 1
-      ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
-                                   *obj->mFrame->mSpData, cropped.get(), &rect);
-#else
+      // #if BMCV_VERSION_MAJOR > 1
+      //       ret = bmcv_image_vpp_convert(obj->mFrame->mHandle, 1,
+      //                                    *obj->mFrame->mSpData,
+      //                                    cropped.get(), &rect);
+      // #else
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
                             *obj->mFrame->mSpData, cropped.get());
-#endif
-      STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
+      // #endif
+      // STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
       subObj->mFrame->mSpData = obj->mFrame->mSpData;
     }
 

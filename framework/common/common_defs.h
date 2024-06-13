@@ -15,6 +15,7 @@
 #include <string>
 
 #include "logger.h"
+#include "bmcv_api.h"
 #include "bmcv_api_ext.h"
 
 #define STREAM_LIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 1))
@@ -46,18 +47,18 @@ inline std::string concatArgs(const T& arg, const Args&... args) {
   }
 
 /* for multi version compatible */
-#if BMCV_VERSION_MAJOR > 1
-typedef bmcv_padding_attr_t bmcv_padding_atrr_t;
-/**
- * @brief To solve incompatible issue in a2 sdk
- *
- * @param image input bm_image
- * @return bm_status_t BM_SUCCESS change success, other values: change failed.
- */
-static inline bm_status_t bm_image_destroy(bm_image& image) {
-  return bm_image_destroy(&image);
-}
-#endif
+// #if BMCV_VERSION_MAJOR > 1
+// typedef bmcv_padding_attr_t bmcv_padding_atrr_t;
+// /**
+//  * @brief To solve incompatible issue in a2 sdk
+//  *
+//  * @param image input bm_image
+//  * @return bm_status_t BM_SUCCESS change success, other values: change failed.
+//  */
+// static inline bm_status_t bm_image_destroy(bm_image& image) {
+//   return bm_image_destroy(&image);
+// }
+// #endif
 
 #if LIBAVCODEC_VERSION_MAJOR > 58
 static int avcodec_decode_video2(AVCodecContext* dec_ctx, AVFrame* frame,

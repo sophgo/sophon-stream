@@ -154,11 +154,7 @@ common::ErrorCode Yolov8PreProcess::preProcess(
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
-#if BMCV_VERSION_MAJOR > 1
-    auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, 2);
-#else
     auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
-#endif
     STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
     if (context->roi_predefined) {
