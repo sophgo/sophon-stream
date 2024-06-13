@@ -319,13 +319,13 @@ common::ErrorCode Decoder::process(
                         objectMetadata->mFrame->mSpData->image_format,
                         objectMetadata->mFrame->mSpData->data_type, cropped.get());
 
-#if BMCV_VERSION_MAJOR > 1
-    ret = bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *objectMetadata->mFrame->mSpData,
-                                cropped.get(), &mRoi);
-#else
+// #if BMCV_VERSION_MAJOR > 1
+//     ret = bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *objectMetadata->mFrame->mSpData,
+//                                 cropped.get(), &mRoi);
+// #else
     ret = bmcv_image_crop(objectMetadata->mFrame->mHandle, 1, &mRoi, *objectMetadata->mFrame->mSpData,
                           cropped.get());
-#endif
+// #endif
     if (!ret){
       bm_image2Frame(objectMetadata->mFrame, *cropped);
       objectMetadata->mFrame->mSpData = cropped;
