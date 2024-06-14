@@ -1026,6 +1026,41 @@ std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, string input_name) {
   }
 }
 
+
+// Do Not Work in SoC Mode !
+// std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, std::string input_name)
+// {
+//   std::shared_ptr<bm_image> spBmImage = nullptr;
+//   spBmImage.reset(new bm_image, [](bm_image* p) {
+//     bm_image_destroy(*p);
+//     delete p;
+//     p = nullptr;
+//   });
+
+//   FILE* infile;
+//   int numBytes;
+//   uint8_t* bs_buffer = nullptr;
+//   bm_status_t ret;
+
+//   infile = fopen(input_name.c_str(), "rb+");
+//   STREAM_CHECK(infile != nullptr, "Input file ", input_name,
+//                " does not exist, please check it!");
+
+//   fseek(infile, 0, SEEK_END);
+//   numBytes = ftell(infile);
+//   fseek(infile, 0, SEEK_SET);
+//   bs_buffer = (uint8_t*)malloc(numBytes);
+//   fread(bs_buffer, numBytes, 1, infile);
+//   fclose(infile);
+
+//   infile = nullptr;
+//   ret = bmcv_image_jpeg_dec(handle, (void**)&bs_buffer, (size_t*)&numBytes,
+//   1,
+//                             spBmImage.get());
+//   free(bs_buffer);
+//   return spBmImage;
+// }
+
 std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, string input_name) {
   std::shared_ptr<bm_image> spBmImage = nullptr;
   spBmImage.reset(new bm_image, [](bm_image* p) {
