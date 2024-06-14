@@ -70,7 +70,9 @@ The downloaded models include:
 │   ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684X，batch_size=4
 │   ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684X，batch_size=1
 │   └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684X，batch_size=4
-└── BM1688_2cores
+└── BM1688
+    ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1688，batch_size=1
+    ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1688，batch_size=1
     ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1688，batch_size=1
     └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1688，batch_size=4
 ```
@@ -277,7 +279,7 @@ On the SoC platform, maintain a directory structure for dynamic libraries, execu
 
 The parameters for testing and the method of execution remain consistent. Therefore, it'll primarily explain in terms of PCIe mode.
 
-Run the executable file
+Run the executable file,be careful to change the lines drawn in the filter.
 ```bash
 ./main --demo_config_path=../yolox_bytetrack_osd_encode/config/yolox_bytetrack_osd_encode_demo.json
 ```

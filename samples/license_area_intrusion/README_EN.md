@@ -76,9 +76,11 @@ The downloaded models include:
 └── yolov5s-licensePLate
     ├── BM1684
     │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_4b.bmodel
     │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     ├── BM1684X
     │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_4b.bmodel
     │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     └── BM1688
         ├── yolov5s_v6.1_license_3output_fp32_1b_2core.bmodel
@@ -218,7 +220,7 @@ On the SoC platform, the directory structure of dynamic libraries, executable fi
 
 The parameters and running methods for testing are the same. The following mainly introduces the PCIe mode.
 
-1. Run the executable file
+1. Run the executable file, pay attention to providing the region.
 ```bash
 ./main --demo_config_path=../license_plate_recognition/config/license_plate_recognition_demo.json
 ```

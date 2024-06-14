@@ -76,9 +76,11 @@ chmod -R +x scripts/
 └── yolov5s-licensePLate
     ├── BM1684
     │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_4b.bmodel
     │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     ├── BM1684X
     │   ├── yolov5s_v6.1_license_3output_fp32_1b.bmodel
+    │   ├── yolov5s_v6.1_license_3output_fp32_4b.bmodel
     │   └── yolov5s_v6.1_license_3output_int8_1b.bmodel
     └── BM1688
         ├── yolov5s_v6.1_license_3output_fp32_1b_2core.bmodel
@@ -265,7 +267,7 @@ SoC 平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以 PCIe 模式进行介绍。
 
-1. 运行可执行文件
+1. 运行可执行文件，注意给出区域
 ```bash
 ./main --demo_config_path=../license_area_intrusion/config/license_area_intrusion_demo.json
 ```

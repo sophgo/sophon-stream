@@ -65,7 +65,9 @@ chmod -R +x scripts/
 │   ├── yolox_s_fp32_4b.bmodel              # 用于BM1684X的FP32 BModel，batch_size=4
 │   ├── yolox_s_int8_1b.bmodel              # 用于BM1684X的INT8 BModel，batch_size=1
 │   └── yolox_s_int8_4b.bmodel              # 用于BM1684X的INT8 BModel，batch_size=4
-└── BM1688_2cores
+└── BM1688
+    ├── yolox_bytetrack_s_fp32_1b.bmodel    # 用于BM1688的bytetrack的FP32 BModel，batch_size=1
+    ├── yolox_bytetrack_s_int8_1b.bmodel    # 用于BM1688的bytetrack的INT8 BModel，batch_size=1
     ├── yolox_s_int8_1b.bmodel              # 用于BM1688的INT8 BModel，batch_size=1
     └── yolox_s_int8_4b.bmodel              # 用于BM1688的INT8 BModel，batch_size=4
 ```
@@ -271,7 +273,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 测试的参数及运行方式是一致的，下面主要以PCIe模式进行介绍。
 
-运行可执行文件
+运行可执行文件,注意要更改filter里面画出的线。
 ```bash
 ./main --demo_config_path=../tripwire/config/tripwire_demo.json
 ```
