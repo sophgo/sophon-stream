@@ -386,8 +386,11 @@ void Encode::processWS(int dataPipeId,
                                       : objectMetadata->mFrame->mSpData;
   std::shared_ptr<bm_image> img_to_enc = img;
   if (img->image_format != FORMAT_YUV420P) {
-    img_to_enc.reset(new bm_image,
-                     [&](bm_image* img) { bm_image_destroy(*img); });
+    img_to_enc.reset(new bm_image, [&](bm_image* img) {
+      bm_image_destroy(*img);
+      delete img;
+      img = nullptr;
+    });
     bm_image image = *(objectMetadata->mFrame->mSpData);
     int width =
         this->width == -1 ? objectMetadata->mFrame->mWidth : this->width;
