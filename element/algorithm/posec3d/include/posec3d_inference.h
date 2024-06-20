@@ -10,20 +10,14 @@
 #ifndef SOPHON_STREAM_ELEMENT_POSEC3D_INFERENCE_H_
 #define SOPHON_STREAM_ELEMENT_POSEC3D_INFERENCE_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/inference.h"
 #include "posec3d_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace posec3d {
 
-class Posec3dInference : public ::sophon_stream::framework::Inference {
+class Posec3dInference : public ::sophon_stream::element::Inference {
  public:
   ~Posec3dInference() override;
   /**
@@ -38,16 +32,6 @@ class Posec3dInference : public ::sophon_stream::framework::Inference {
    */
   common::ErrorCode predict(std::shared_ptr<Posec3dContext> context,
                             common::ObjectMetadatas& objectMetadatas);
-
- private:
-  /**
-   * @brief 申请outputTensors
-   * @param context context指针
-   * @return std::shared_ptr<sophon_stream::common::bmTensors>
-   * 申请的outputTensors
-   */
-  std::shared_ptr<sophon_stream::common::bmTensors> getOutputDeviceMem(
-      std::shared_ptr<Posec3dContext> context);
 };
 
 }  // namespace posec3d

@@ -10,13 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_POSEC3D_PRE_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_POSEC3D_PRE_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/pre_process.h"
 #include "posec3d_context.h"
 
 namespace sophon_stream {
@@ -27,7 +21,7 @@ using fpptr_dim3 = std::vector<
     std::shared_ptr<std::vector<std::shared_ptr<std::vector<float>>>>>;
 using fpptr_dim2 = std::vector<std::shared_ptr<std::vector<float>>>;
 
-class Posec3dPreProcess : public ::sophon_stream::framework::PreProcess {
+class Posec3dPreProcess : public ::sophon_stream::element::PreProcess {
  public:
   /**
    * @brief 对一个batch的数据做预处理

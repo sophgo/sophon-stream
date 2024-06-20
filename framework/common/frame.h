@@ -14,9 +14,8 @@
 #include <cstdint>
 #include <memory>
 
-// for bmcv_api_ext.h
 #include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
+// #include "bmlib_runtime.h"
 
 namespace sophon_stream {
 namespace common {

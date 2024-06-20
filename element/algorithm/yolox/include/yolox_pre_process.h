@@ -10,28 +10,18 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOX_PRE_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_YOLOX_PRE_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/pre_process.h"
 #include "yolox_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-class YoloxPreProcess : public ::sophon_stream::framework::PreProcess {
+class YoloxPreProcess : public ::sophon_stream::element::PreProcess {
  public:
   common::ErrorCode preProcess(std::shared_ptr<YoloxContext> context,
                                common::ObjectMetadatas& objectMetadatas);
   void init(std::shared_ptr<YoloxContext> context);
-
- private:
-  void initTensors(std::shared_ptr<YoloxContext> context,
-                   common::ObjectMetadatas& objectMetadatas);
 };
 
 }  // namespace yolox

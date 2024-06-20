@@ -9,46 +9,11 @@
 
 #include "openpose_pre_process.h"
 
-#include "common/common_defs.h"
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace openpose {
 
 void OpenposePreProcess::init(std::shared_ptr<OpenposeContext> context) {}
-
-void OpenposePreProcess::initTensors(std::shared_ptr<OpenposeContext> context,
-                                     common::ObjectMetadatas& objectMetadatas) {
-  for (auto& obj : objectMetadatas) {
-    obj->mInputBMtensors = std::make_shared<sophon_stream::common::bmTensors>();
-    int channelId = obj->mFrame->mChannelId;
-    int frameId = obj->mFrame->mFrameId;
-    obj->mInputBMtensors.reset(
-        new sophon_stream::common::bmTensors(),
-        [channelId, frameId](sophon_stream::common::bmTensors* p) {
-          for (int i = 0; i < p->tensors.size(); ++i) {
-            if (p->tensors[i]->device_mem.u.device.device_addr != 0) {
-              bm_free_device(p->handle, p->tensors[i]->device_mem);
-            }
-          }
-
-          delete p;
-          p = nullptr;
-        });
-    obj->mInputBMtensors->handle = context->handle;
-    obj->mInputBMtensors->tensors.resize(context->input_num);
-    for (int i = 0; i < context->input_num; ++i) {
-      obj->mInputBMtensors->tensors[i] = std::make_shared<bm_tensor_t>();
-      obj->mInputBMtensors->tensors[i]->dtype =
-          context->bmNetwork->m_netinfo->input_dtypes[i];
-      obj->mInputBMtensors->tensors[i]->shape =
-          context->bmNetwork->m_netinfo->stages[0].input_shapes[i];
-      obj->mInputBMtensors->tensors[i]->shape.dims[0] = 1;
-      obj->mInputBMtensors->tensors[i]->st_mode = BM_STORE_1N;
-    }
-  }
-}
 
 common::ErrorCode OpenposePreProcess::preProcess(
     std::shared_ptr<OpenposeContext> context,
@@ -60,10 +25,10 @@ common::ErrorCode OpenposePreProcess::preProcess(
   for (auto& objMetadata : objectMetadatas) {
     if (objMetadata->mFrame->mSpData == nullptr) continue;
     bm_image resized_img;
-    int aligned_net_w = FFALIGN(context->m_net_w, 64);
+    int aligned_net_w = FFALIGN(context->net_w, 64);
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
-    auto ret = bm_image_create(context->bmContext->handle(), context->m_net_h,
-                               context->m_net_w, FORMAT_BGR_PLANAR,
+    auto ret = bm_image_create(context->bmContext->handle(), context->net_h,
+                               context->net_w, FORMAT_BGR_PLANAR,
                                DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
     assert(BM_SUCCESS == ret);
     bm_image converto_img;
@@ -106,8 +71,8 @@ common::ErrorCode OpenposePreProcess::preProcess(
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
     }
 
-    bm_image_create(context->bmNetwork->m_handle, context->m_net_h,
-                    context->m_net_w, FORMAT_BGR_PLANAR, img_dtype,
+    bm_image_create(context->bmNetwork->m_handle, context->net_h,
+                    context->net_w, FORMAT_BGR_PLANAR, img_dtype,
                     &converto_img);
 
     bm_device_mem_t mem;

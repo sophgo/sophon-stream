@@ -9,14 +9,6 @@
 
 #include "template.h"
 
-#include <stdlib.h>
-
-#include <chrono>
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
 using namespace std::chrono_literals;
 
 namespace sophon_stream {
@@ -188,29 +180,29 @@ namespace template {
   }
 
   void Template::setContext(
-      std::shared_ptr<::sophon_stream::framework::Context> context) {
+      std::shared_ptr<::sophon_stream::element::Context> context) {
     // check
     mContext = std::dynamic_pointer_cast<TemplateContext>(context);
   }
 
   void Template::setPreprocess(
-      std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+      std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
     mPreProcess = std::dynamic_pointer_cast<TemplatePreProcess>(pre);
   }
 
   void Template::setInference(
-      std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+      std::shared_ptr<::sophon_stream::element::Inference> infer) {
     mInference = std::dynamic_pointer_cast<TemplateInference>(infer);
   }
 
   void Template::setPostprocess(
-      std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+      std::shared_ptr<::sophon_stream::element::PostProcess> post) {
     mPostProcess = std::dynamic_pointer_cast<TemplatePostProcess>(post);
   }
 
   REGISTER_WORKER("template", Template)
   REGISTER_GROUP_WORKER("template_group",
-                           sophon_stream::framework::Group<Template>, Template)
+                        sophon_stream::framework::Group<Template>, Template)
 }  // namespace template
 }  // namespace element
 }  // namespace sophon_stream

@@ -9,14 +9,6 @@
 
 #include "lprnet.h"
 
-#include <stdlib.h>
-
-#include <chrono>
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
 using namespace std::chrono_literals;
 
 namespace sophon_stream {
@@ -223,23 +215,23 @@ void Lprnet::initProfiler(std::string name, int interval) {
 }
 
 void Lprnet::setContext(
-    std::shared_ptr<::sophon_stream::framework::Context> context) {
+    std::shared_ptr<::sophon_stream::element::Context> context) {
   // check
   mContext = std::dynamic_pointer_cast<LprnetContext>(context);
 }
 
 void Lprnet::setPreprocess(
-    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+    std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
   mPreProcess = std::dynamic_pointer_cast<LprnetPreProcess>(pre);
 }
 
 void Lprnet::setInference(
-    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+    std::shared_ptr<::sophon_stream::element::Inference> infer) {
   mInference = std::dynamic_pointer_cast<LprnetInference>(infer);
 }
 
 void Lprnet::setPostprocess(
-    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+    std::shared_ptr<::sophon_stream::element::PostProcess> post) {
   mPostProcess = std::dynamic_pointer_cast<LprnetPostProcess>(post);
 }
 

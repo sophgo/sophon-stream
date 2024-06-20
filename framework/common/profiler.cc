@@ -1,9 +1,5 @@
 #include "profiler.h"
 
-#include <opencv2/opencv.hpp>
-
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace common {
 FpsProfiler::FpsProfiler() {}

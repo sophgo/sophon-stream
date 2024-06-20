@@ -9,8 +9,6 @@
 
 #include "fastpose_pre_process.h"
 
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace fastpose {

@@ -10,13 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOV8_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_YOLOV8_POST_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "yolov8_context.h"
 
 namespace sophon_stream {
@@ -32,7 +26,7 @@ struct YoloV8Box {
 
 using YoloV8BoxVec = std::vector<YoloV8Box>;
 
-class Yolov8PostProcess : public ::sophon_stream::framework::PostProcess {
+class Yolov8PostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<Yolov8Context> context);
 
@@ -49,17 +43,14 @@ class Yolov8PostProcess : public ::sophon_stream::framework::PostProcess {
   float sigmoid(float x);
   int argmax(float* data, int num);
   void NMS(YoloV8BoxVec& dets, float nmsConfidence);
-
-  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
-                                bool* pIsAligWidth);
   void postProcessDet(std::shared_ptr<Yolov8Context> context,
                       common::ObjectMetadatas& objectMetadatas);
   void postProcessDetOpt(std::shared_ptr<Yolov8Context> context,
-                      common::ObjectMetadatas& objectMetadatas);
+                         common::ObjectMetadatas& objectMetadatas);
   void postProcessPose(std::shared_ptr<Yolov8Context> context,
                        common::ObjectMetadatas& objectMetadatas);
   void postProcessCls(std::shared_ptr<Yolov8Context> context,
-                       common::ObjectMetadatas& objectMetadatas);
+                      common::ObjectMetadatas& objectMetadatas);
   void clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w, int src_h);
 };
 

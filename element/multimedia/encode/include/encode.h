@@ -12,9 +12,7 @@
 
 #include <memory>
 
-#include "common/object_metadata.h"
-#include "common/profiler.h"
-#include "element.h"
+#include "element_factory.h"
 #include "encoder.h"
 #include "wss.h"
 
@@ -39,7 +37,7 @@ class Encode : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_PIX_FMT_FIELD = "pix_fmt";
   static constexpr const char* CONFIG_INTERNAL_WSS_PORT_FIELD = "wss_port";
   static constexpr const char* CONFIG_INTERNAL_FPS_FIELD = "fps";
-  
+
   // for customizing shape and ip
   static constexpr const char* CONFIG_INTERNAL_WIDTH_FIELD = "width";
   static constexpr const char* CONFIG_INTERNAL_HEIGHT_FIELD = "height";

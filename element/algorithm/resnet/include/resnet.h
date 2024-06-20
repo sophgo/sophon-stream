@@ -10,11 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_RESNET_H_
 #define SOPHON_STREAM_ELEMENT_RESNET_H_
 
-#include <memory>
-#include <mutex>
-
-#include "common/profiler.h"
-#include "element.h"
+#include "element_factory.h"
 #include "resnet_context.h"
 #include "resnet_multitask.h"
 
@@ -49,7 +45,8 @@ class ResNet : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_WIDTH_FILED = "width";
   static constexpr const char* CONFIG_INTERNAL_HEIGHT_FILED = "height";
   static constexpr const char* CONFIG_INTERNAL_TASK_TYPE_FIELD = "task_type";
-  static constexpr const char* CONFIG_INTERNAL_CLASS_THRESH_FIELD = "class_thresh";
+  static constexpr const char* CONFIG_INTERNAL_CLASS_THRESH_FIELD =
+      "class_thresh";
 
  private:
   std::shared_ptr<ResNetContext> mContext;      // context对象

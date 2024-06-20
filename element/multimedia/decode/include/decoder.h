@@ -12,22 +12,13 @@
 
 #include <dirent.h>
 
-#include <memory>
 #include <opencv2/opencv.hpp>
 #include <regex>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
-// for bmcv_api_ext.h
-#include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
-#include "bmruntime_interface.h"
 #include "channel.h"
-#include "common/error_code.h"
-#include "common/logger.h"
 #include "common/no_copyable.h"
-#include "common/object_metadata.h"
 #include "ff_decode.h"
 #include "http_base64_mgr.h"
 
@@ -58,13 +49,13 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   std::vector<std::string> mImagePaths;
   HTTP_Base64_Mgr* mgr;
   bmcv_rect_t mRoi;
-  bool mRoiPredefined = false;  
+  bool mRoiPredefined = false;
 
   double mFps;
   int mSampleInterval;
   ChannelOperateRequest::SampleStrategy mSampleStrategy;
 
-  //camera synchronization
+  // camera synchronization
   static std::mutex decoder_mutex;
   static std::condition_variable decoder_cv;
   static int numThreadsReady;

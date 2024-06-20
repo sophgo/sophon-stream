@@ -9,20 +9,14 @@
 
 #include "decoder.h"
 
-#include <cstdint>
-#include <nlohmann/json.hpp>
-
-#include "common/logger.h"
-#include "common/common_defs.h"
-
 namespace sophon_stream {
 namespace element {
 namespace decode {
 
-//camera synchronization
+// camera synchronization
 std::mutex Decoder::decoder_mutex;
 std::condition_variable Decoder::decoder_cv;
-int Decoder::numThreadsReady=0;
+int Decoder::numThreadsReady = 0;
 std::atomic<int> Decoder::numThreadsTotal(0);
 
 bool check_path(std::string file_path,
@@ -73,7 +67,7 @@ void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {
 }
 
 Decoder::Decoder() {
-// 获取线程数
+  // 获取线程数
   numThreadsTotal.fetch_add(1);
 }
 
@@ -94,11 +88,11 @@ common::ErrorCode Decoder::init(int deviceId,
     mImgIndex = 0;
     assert(BM_SUCCESS == ret);
     mRoiPredefined = request.roi_predefined;
-    if (mRoiPredefined){
+    if (mRoiPredefined) {
       mRoi.start_x = request.roi.start_x;
       mRoi.start_y = request.roi.start_y;
       mRoi.crop_w = request.roi.crop_w;
-      mRoi.crop_h = request.roi.crop_h; 
+      mRoi.crop_h = request.roi.crop_h;
     }
 
     if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
@@ -249,13 +243,13 @@ common::ErrorCode Decoder::process(
     if (common::ErrorCode::SUCCESS != errorCode) {
       objectMetadata->mErrorCode = errorCode;
     }
-  }else if(mSourceType == ChannelOperateRequest::SourceType::CAMERA){
+  } else if (mSourceType == ChannelOperateRequest::SourceType::CAMERA) {
     int frame_id = 0;
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;
     int64_t pts = 0;
 
-    { // 在所有线程等待执行decoder.grab前添加一个等待点
+    {  // 在所有线程等待执行decoder.grab前添加一个等待点
       std::unique_lock<std::mutex> lock(decoder_mutex);
       numThreadsReady++;
       if (numThreadsReady == numThreadsTotal) {
@@ -274,7 +268,7 @@ common::ErrorCode Decoder::process(
         decoder_cv.notify_all();
         lock.unlock();
         // 在让最快的线程执行decoder.grab后，等待其他线程执行完毕
-        while(numThreadsReady!=numThreadsTotal-1){
+        while (numThreadsReady != numThreadsTotal - 1) {
         }
       } else {
         decoder_cv.wait(lock, [&] { return numThreadsReady == 0; });
@@ -306,31 +300,30 @@ common::ErrorCode Decoder::process(
   // objectMetadata->mFrame->mFrameId); else printf("%d keep \n",
   // objectMetadata->mFrame->mFrameId);
 
-  if (objectMetadata->mFrame->mSpData && mRoiPredefined){
-
+  if (objectMetadata->mFrame->mSpData && mRoiPredefined) {
     std::shared_ptr<bm_image> cropped = nullptr;
     cropped.reset(new bm_image, [](bm_image* p) {
       bm_image_destroy(*p);
       delete p;
       p = nullptr;
     });
-    bm_status_t ret =
-        bm_image_create(objectMetadata->mFrame->mHandle, mRoi.crop_h, mRoi.crop_w,
-                        objectMetadata->mFrame->mSpData->image_format,
-                        objectMetadata->mFrame->mSpData->data_type, cropped.get());
+    bm_status_t ret = bm_image_create(
+        objectMetadata->mFrame->mHandle, mRoi.crop_h, mRoi.crop_w,
+        objectMetadata->mFrame->mSpData->image_format,
+        objectMetadata->mFrame->mSpData->data_type, cropped.get());
 
-// #if BMCV_VERSION_MAJOR > 1
-//     ret = bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *objectMetadata->mFrame->mSpData,
-//                                 cropped.get(), &mRoi);
-// #else
-    ret = bmcv_image_crop(objectMetadata->mFrame->mHandle, 1, &mRoi, *objectMetadata->mFrame->mSpData,
-                          cropped.get());
-// #endif
-    if (!ret){
+    // #if BMCV_VERSION_MAJOR > 1
+    //     ret = bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1,
+    //     *objectMetadata->mFrame->mSpData,
+    //                                 cropped.get(), &mRoi);
+    // #else
+    ret = bmcv_image_crop(objectMetadata->mFrame->mHandle, 1, &mRoi,
+                          *objectMetadata->mFrame->mSpData, cropped.get());
+    // #endif
+    if (!ret) {
       bm_image2Frame(objectMetadata->mFrame, *cropped);
       objectMetadata->mFrame->mSpData = cropped;
     }
-
 
     else
       IVS_ERROR("Decoder roi unreasonable");

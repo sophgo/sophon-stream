@@ -10,22 +10,16 @@
 #ifndef SOPHON_STREAM_ELEMENT_FASTPOSE_PRE_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_FASTPOSE_PRE_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
 #define USE_OPENCV 1
 #include <opencv2/opencv.hpp>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
+#include "algorithmApi/pre_process.h"
 #include "fastpose_context.h"
-#include "group.h"
 
 namespace sophon_stream {
 namespace element {
 namespace fastpose {
 
-class FastposePreProcess : public ::sophon_stream::framework::PreProcess {
+class FastposePreProcess : public ::sophon_stream::element::PreProcess {
  public:
   /**
    * @brief 对一个batch的数据做预处理

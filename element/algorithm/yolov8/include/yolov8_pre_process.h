@@ -10,30 +10,18 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOV8_PRE_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_YOLOV8_PRE_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/pre_process.h"
 #include "yolov8_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolov8 {
 
-class Yolov8PreProcess : public ::sophon_stream::framework::PreProcess {
+class Yolov8PreProcess : public ::sophon_stream::element::PreProcess {
  public:
   common::ErrorCode preProcess(std::shared_ptr<Yolov8Context> context,
                                common::ObjectMetadatas& objectMetadatas);
   void init(std::shared_ptr<Yolov8Context> context);
-
- private:
-  void initTensors(std::shared_ptr<Yolov8Context> context,
-                   common::ObjectMetadatas& objectMetadatas);
-  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
-                                bool* pIsAligWidth);
 };
 
 }  // namespace yolov8

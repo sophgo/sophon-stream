@@ -10,9 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_PPOCR_DET_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_PPOCR_DET_POST_PROCESS_H_
 
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "ppocr_det_context.h"
 #include "ppocr_det_post_processor.h"
 
@@ -20,7 +18,7 @@ namespace sophon_stream {
 namespace element {
 namespace ppocr_det {
 
-class Ppocr_detPostProcess : public ::sophon_stream::framework::PostProcess {
+class Ppocr_detPostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<Ppocr_detContext> context);
   /**

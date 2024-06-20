@@ -9,14 +9,6 @@
 
 #include "ppocr_det.h"
 
-#include <stdlib.h>
-
-#include <chrono>
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
 using namespace std::chrono_literals;
 
 namespace sophon_stream {
@@ -225,23 +217,23 @@ namespace ppocr_det {
   }
 
   void Ppocr_det::setContext(
-      std::shared_ptr<::sophon_stream::framework::Context> context) {
+      std::shared_ptr<::sophon_stream::element::Context> context) {
     // check
     mContext = std::dynamic_pointer_cast<Ppocr_detContext>(context);
   }
 
   void Ppocr_det::setPreprocess(
-      std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+      std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
     mPreProcess = std::dynamic_pointer_cast<Ppocr_detPreProcess>(pre);
   }
 
   void Ppocr_det::setInference(
-      std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+      std::shared_ptr<::sophon_stream::element::Inference> infer) {
     mInference = std::dynamic_pointer_cast<Ppocr_detInference>(infer);
   }
 
   void Ppocr_det::setPostprocess(
-      std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+      std::shared_ptr<::sophon_stream::element::PostProcess> post) {
     mPostProcess = std::dynamic_pointer_cast<Ppocr_detPostProcess>(post);
   }
 

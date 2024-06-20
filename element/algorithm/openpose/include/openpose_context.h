@@ -10,20 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_OPENPOSE_CONTEXT_H_
 #define SOPHON_STREAM_ELEMENT_OPENPOSE_CONTEXT_H_
 
-#include <memory>
-#include <nlohmann/json.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-// for bmcv_api_ext.h
-#include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
-#include "bmruntime_interface.h"
-#include "common/bmnn_utils.h"
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/context.h"
 
 namespace sophon_stream {
 namespace element {
@@ -32,7 +19,7 @@ namespace openpose {
 // #define USE_ASPECT_RATIO 1
 #define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
-class OpenposeContext : public ::sophon_stream::framework::Context {
+class OpenposeContext : public ::sophon_stream::element::Context {
  public:
   int deviceId;  // 设备ID
 
@@ -42,7 +29,7 @@ class OpenposeContext : public ::sophon_stream::framework::Context {
 
   bool use_tpu_kernel = false;
   tpu_kernel_function_t func_id;
-  int m_net_h, m_net_w;
+  int net_h, net_w;
   int m_net_channel;
   int max_batch;
   common::PosedObjectMetadata::EModelType m_model_type;

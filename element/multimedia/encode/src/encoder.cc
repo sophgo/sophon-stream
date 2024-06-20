@@ -9,13 +9,6 @@
 
 #include "encoder.h"
 
-#include <sys/time.h>
-
-#include <iostream>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace encode {

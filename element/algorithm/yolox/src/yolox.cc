@@ -9,12 +9,6 @@
 
 #include "yolox.h"
 
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
-
 namespace sophon_stream {
 namespace element {
 namespace yolox {
@@ -303,23 +297,23 @@ void Yolox::initProfiler(std::string name, int interval) {
 }
 
 void Yolox::setContext(
-    std::shared_ptr<::sophon_stream::framework::Context> context) {
+    std::shared_ptr<::sophon_stream::element::Context> context) {
   // check
   mContext = std::dynamic_pointer_cast<YoloxContext>(context);
 }
 
 void Yolox::setPreprocess(
-    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+    std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
   mPreProcess = std::dynamic_pointer_cast<YoloxPreProcess>(pre);
 }
 
 void Yolox::setInference(
-    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+    std::shared_ptr<::sophon_stream::element::Inference> infer) {
   mInference = std::dynamic_pointer_cast<YoloxInference>(infer);
 }
 
 void Yolox::setPostprocess(
-    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+    std::shared_ptr<::sophon_stream::element::PostProcess> post) {
   mPostProcess = std::dynamic_pointer_cast<YoloxPostProcess>(post);
 }
 

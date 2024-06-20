@@ -370,7 +370,7 @@ common::ErrorCode Posec3dPreProcess::preProcess(
   std::vector<int> crop_size = {64, 64};
   centerCrop(keypoints, new_shape, crop_quadruple, crop_size);
   int out_num = context->m_net_crops_clips * context->m_net_channel *
-                context->m_net_keypoints * context->m_net_h * context->m_net_w;
+                context->m_net_keypoints * context->net_h * context->net_w;
   int size_byte = out_num * sizeof(float);
   // input data set into obj0 mem
   auto ret = bm_malloc_device_byte_heap(

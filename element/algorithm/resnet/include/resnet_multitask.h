@@ -10,13 +10,6 @@
 #ifndef SOPHON_STREAM_ELEMENT_RESNET_CLASSIFY_H_
 #define SOPHON_STREAM_ELEMENT_RESNET_CLASSIFY_H_
 
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
 #include "resnet_context.h"
 
 namespace sophon_stream {

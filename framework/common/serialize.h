@@ -16,17 +16,17 @@
 #include <type_traits>
 #include <utility>
 
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "detected_object_metadata.h"
-#include "face_object_metadata.h"
+// #include "common/common_defs.h"
+// #include "common/logger.h"
+// #include "detected_object_metadata.h"
+// #include "face_object_metadata.h"
 #include "frame.h"
 #include "graphics.h"
 #include "object_metadata.h"
-#include "posed_object_metadata.h"
-#include "recognized_object_metadata.h"
-#include "segmented_object_metadata.h"
-#include "tracked_object_metadata.h"
+// #include "posed_object_metadata.h"
+// #include "recognized_object_metadata.h"
+// #include "segmented_object_metadata.h"
+// #include "tracked_object_metadata.h"
 
 #define ENABLE_TIME_LOG 0
 #define BASE64_CPU 1

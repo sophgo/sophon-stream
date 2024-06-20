@@ -10,12 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_TEMPLATE_H_
 #define SOPHON_STREAM_ELEMENT_TEMPLATE_H_
 
-#include <fstream>
-#include <memory>
-#include <mutex>
-
-#include "common/profiler.h"
-#include "element.h"
+#include "element_factory.h"
 #include "group.h"
 #include "template_context.h"
 #include "template_inference.h"
@@ -50,26 +45,25 @@ namespace template {
      */
     common::ErrorCode doWork(int dataPipeId) override;
 
-    void setContext(
-        std::shared_ptr<::sophon_stream::framework::Context> context);
+    void setContext(std::shared_ptr<::sophon_stream::element::Context> context);
     void setPreprocess(
-        std::shared_ptr<::sophon_stream::framework::PreProcess> pre);
+        std::shared_ptr<::sophon_stream::element::PreProcess> pre);
     void setInference(
-        std::shared_ptr<::sophon_stream::framework::Inference> infer);
+        std::shared_ptr<::sophon_stream::element::Inference> infer);
     void setPostprocess(
-        std::shared_ptr<::sophon_stream::framework::PostProcess> post);
+        std::shared_ptr<::sophon_stream::element::PostProcess> post);
     void setStage(bool pre, bool infer, bool post);
     void initProfiler(std::string name, int interval);
-    std::shared_ptr<::sophon_stream::framework::Context> getContext() {
+    std::shared_ptr<::sophon_stream::element::Context> getContext() {
       return mContext;
     }
-    std::shared_ptr<::sophon_stream::framework::PreProcess> getPreProcess() {
+    std::shared_ptr<::sophon_stream::element::PreProcess> getPreProcess() {
       return mPreProcess;
     }
-    std::shared_ptr<::sophon_stream::framework::Inference> getInference() {
+    std::shared_ptr<::sophon_stream::element::Inference> getInference() {
       return mInference;
     }
-    std::shared_ptr<::sophon_stream::framework::PostProcess> getPostProcess() {
+    std::shared_ptr<::sophon_stream::element::PostProcess> getPostProcess() {
       return mPostProcess;
     }
 

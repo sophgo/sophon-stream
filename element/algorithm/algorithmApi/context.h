@@ -7,26 +7,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SOPHON_STREAM_COMMON_FACE_OBJECT_METADATA_H_
-#define SOPHON_STREAM_COMMON_FACE_OBJECT_METADATA_H_
+#ifndef SOPHON_STREAM_ELEMENT_ALGORITHMAPI_CONTEXT_H_
+#define SOPHON_STREAM_ELEMENT_ALGORITHMAPI_CONTEXT_H_
 
+#include <cmath>
 #include <memory>
 #include <string>
+#include <type_traits>
+#include <unordered_map>
 #include <vector>
 
+#include "common/bmnn_utils.h"
+#include "common/common_defs.h"
+#include "common/object_metadata.h"
+
 namespace sophon_stream {
-namespace common {
-struct FaceObjectMetadata {
-    int top;
-    int bottom;
-    int left;
-    int right;
-    float points_x[5];
-    float points_y[5];
-    float score;
+namespace element {
+
+class Context {
+ public:
+  Context() = default;
+  virtual ~Context() = default;
 };
 
-}  // namespace common
+}  // namespace element
 }  // namespace sophon_stream
 
-#endif  // SOPHON_STREAM_COMMON_POSED_OBJECT_METADATA_H_
+#endif

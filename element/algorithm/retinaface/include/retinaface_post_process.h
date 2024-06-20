@@ -10,14 +10,9 @@
 #ifndef SOPHON_STREAM_ELEMENT_RETINAFACE_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_RETINAFACE_POST_PROCESS_H_
 
-#include <memory>
 #include <opencv2/opencv.hpp>
-#include <string>
-#include <vector>
 
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "retinaface_context.h"
 
 using namespace std;
@@ -79,7 +74,7 @@ struct anchor_cfg {
   }
 };
 
-class RetinafacePostProcess : public ::sophon_stream::framework::PostProcess {
+class RetinafacePostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<RetinafaceContext> context);
   /**
@@ -100,8 +95,6 @@ class RetinafacePostProcess : public ::sophon_stream::framework::PostProcess {
   static bool CompareBBox(const FaceDetectInfo& a, const FaceDetectInfo& b);
   std::vector<FaceDetectInfo> nms(std::vector<FaceDetectInfo>& bboxes,
                                   float threshold);
-  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
-                                bool* pIsAligWidth);
   void get_faceInfo(std::shared_ptr<RetinafaceContext> context,
                     vector<FaceDetectInfo>& faceInfo, float** preds,
                     map<string, int>& output_names_map, int img_h, int img_w,

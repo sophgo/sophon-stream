@@ -10,13 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_TEMPLATE_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_TEMPLATE_POST_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "template_context.h"
 
 namespace sophon_stream {

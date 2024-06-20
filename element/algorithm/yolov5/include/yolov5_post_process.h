@@ -10,13 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOV5_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_YOLOV5_POST_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "yolov5_context.h"
 
 namespace sophon_stream {
@@ -42,7 +36,7 @@ typedef struct tpu_kernel_ {
   int32_t detect_num[MAX_BATCH];
 } tpu_kernel;
 
-class Yolov5PostProcess : public ::sophon_stream::framework::PostProcess {
+class Yolov5PostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<Yolov5Context> context);
 
@@ -61,8 +55,6 @@ class Yolov5PostProcess : public ::sophon_stream::framework::PostProcess {
   float sigmoid(float x);
   int argmax(float* data, int num);
   void NMS(YoloV5BoxVec& dets, float nmsConfidence);
-  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
-                                bool* pIsAligWidth);
   void postProcessCPU(std::shared_ptr<Yolov5Context> context,
                       common::ObjectMetadatas& objectMetadatas);
   void postProcessTPUKERNEL(std::shared_ptr<Yolov5Context> context,

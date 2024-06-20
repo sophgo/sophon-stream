@@ -10,20 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_FASTPOSE_CONTEXT_H_
 #define SOPHON_STREAM_ELEMENT_FASTPOSE_CONTEXT_H_
 
-#include <memory>
-#include <nlohmann/json.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-// for bmcv_api_ext.h
-#include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
-#include "bmruntime_interface.h"
-#include "common/bmnn_utils.h"
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/context.h"
 
 namespace sophon_stream {
 namespace element {
@@ -34,7 +21,7 @@ namespace fastpose {
 
 enum class HeatmapLossType { MSELoss };
 
-class FastposeContext : public ::sophon_stream::framework::Context {
+class FastposeContext : public ::sophon_stream::element::Context {
  public:
   int deviceId;  // 设备ID
 

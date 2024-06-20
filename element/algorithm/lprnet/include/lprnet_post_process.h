@@ -10,21 +10,14 @@
 #ifndef SOPHON_STREAM_ELEMENT_LPRNET_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_LPRNET_POST_PROCESS_H_
 
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "lprnet_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace lprnet {
 
-class LprnetPostProcess : public ::sophon_stream::framework::PostProcess {
+class LprnetPostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<LprnetContext> context);
   /**
