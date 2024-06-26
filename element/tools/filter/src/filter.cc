@@ -303,7 +303,7 @@ bool Filter_Imp::isinclasses(
         new_mSubObjectMetadatas.push_back(
             objectMetadata->mSubObjectMetadatas[j]);
 
-      } else {
+      } else if (type == 1){
         new_mTrackedObjectMetadatas.push_back(
             objectMetadata->mTrackedObjectMetadatas[j]);
       }
@@ -318,7 +318,7 @@ bool Filter_Imp::isinclasses(
     if (type == 0) {
       objectMetadata->mSubObjectMetadatas.clear();
       objectMetadata->mSubObjectMetadatas = new_mSubObjectMetadatas;
-    } else {
+    } else if (type == 1){
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
     }
@@ -361,7 +361,7 @@ bool Filter_Imp::isInPolygon(
         new_mSubObjectMetadatas.push_back(
             objectMetadata->mSubObjectMetadatas[j]);
 
-      } else {
+      } else if (type == 1){
         new_mTrackedObjectMetadatas.push_back(
             objectMetadata->mTrackedObjectMetadatas[j]);
       }
@@ -375,7 +375,7 @@ bool Filter_Imp::isInPolygon(
     if (type == 0) {
       objectMetadata->mSubObjectMetadatas.clear();
       objectMetadata->mSubObjectMetadatas = new_mSubObjectMetadatas;
-    } else {
+    } else if (type == 1){
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
     }
@@ -420,7 +420,7 @@ bool Filter_Imp::istrack(
           new_mSubObjectMetadatas.push_back(
               objectMetadata->mSubObjectMetadatas[i]);
 
-        } else {
+        } else if (type == 1){
           new_mTrackedObjectMetadatas.push_back(
               objectMetadata->mTrackedObjectMetadatas[i]);
         }
@@ -431,7 +431,7 @@ bool Filter_Imp::istrack(
     if (type == 0) {
       objectMetadata->mSubObjectMetadatas.clear();
       objectMetadata->mSubObjectMetadatas = new_mSubObjectMetadatas;
-    } else {
+    } else if (type == 1){
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
     }
