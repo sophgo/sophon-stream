@@ -1,7 +1,0 @@
-{
-  "configure": {},
-  "shared_object": "../../build/lib/libstitch.so",
-  "name": "stitch",
-  "side": "sophgo",
-  "thread_number": 1
-}

@@ -17,5 +17,5 @@
   "shared_object": "../../build/lib/libdpu.so",
   "name": "dpu",
   "side": "sophgo",
-  "thread_number": 2
+  "thread_number": 1
 }
