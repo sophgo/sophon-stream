@@ -41,6 +41,7 @@ class Encode : public ::sophon_stream::framework::Element {
   // for customizing shape and ip
   static constexpr const char* CONFIG_INTERNAL_WIDTH_FIELD = "width";
   static constexpr const char* CONFIG_INTERNAL_HEIGHT_FIELD = "height";
+  static constexpr const char* CONFIG_INTERNAL_WSENCTYPE_FIELD = "ws_enc_type";
   static constexpr const char* CONFIG_INTERNAL_IP_FIELD = "ip";
 
  private:
@@ -57,6 +58,9 @@ class Encode : public ::sophon_stream::framework::Element {
 
   int width = -1;
   int height = -1;
+
+  enum class WSencType {IMG_ONLY, SERIALIZED};
+  WSencType mWsEncType = WSencType::IMG_ONLY;
 
   std::string ip = "localhost";
 
@@ -77,7 +81,7 @@ class Encode : public ::sophon_stream::framework::Element {
   // WS发送停止标识
   void stopWS(int dataPipeId);
 
-  ::sophon_stream::common::FpsProfiler mFpsProfiler;
+  std::vector<std::shared_ptr<common::FpsProfiler>> mFpsProfilers;
 };
 
 }  // namespace encode

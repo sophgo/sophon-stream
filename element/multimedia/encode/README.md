@@ -36,6 +36,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
     "wss_port": "9000",
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420",
+    "ws_enc_type": "IMG_ONLY",
     "fps": 25
   },
   "shared_object": "../../../build/lib/libencode.so",
@@ -55,6 +56,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 |   wss_port    | 字符串 |                无                 |                websocket server起始端口                 |
 |    enc_fmt    | 字符串 |                无                 |           编码格式，包括 "h264_bm"，“h265_bm”           |
 |    pix_fmt    | 字符串 |                无                 |              像素格式，包括 "I420"，"NV12"              |
+|  ws_enc_type  | 字符串 |           "IMG_ONLY"              | 当编码格式为WS时生效，设为"IMG_ONLY"时只对图片编码，设为"SERIALIZED"对ObjectMetadata作编码 |
 |      fps      |  整数  |                25                 |                  RTSP、RTMP、VIDEO帧率                  |
 |      ip       | 字符串 |             "localhost"           |                       流服务器地址                      |
 |     width     | 整数   |                -1                 |         编码器输出的宽度，默认和输入图片相同              |

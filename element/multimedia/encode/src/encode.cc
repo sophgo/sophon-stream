@@ -8,7 +8,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "encode.h"
-
+#include "common/serialize.h"
+#include <nlohmann/json.hpp>
 namespace sophon_stream {
 namespace element {
 namespace encode {
@@ -99,10 +100,18 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
 
     auto widthIt = configure.find(CONFIG_INTERNAL_WIDTH_FIELD);
     auto heightIt = configure.find(CONFIG_INTERNAL_HEIGHT_FIELD);
+    auto wsTypeIt = configure.find(CONFIG_INTERNAL_WSENCTYPE_FIELD);
     if (widthIt != configure.end() && heightIt != configure.end()) {
       width = widthIt->get<int>();
       height = heightIt->get<int>();
     }
+    
+    if( wsTypeIt != configure.end()) {
+      std::string wsEncType = wsTypeIt->get<std::string>();
+      if (wsEncType == "IMG_ONLY") mWsEncType = WSencType::IMG_ONLY;
+      if (wsEncType == "SERIALIZED") mWsEncType = WSencType::SERIALIZED;
+    }
+
 
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
@@ -179,8 +188,10 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         break;
       }
     }
-
-    mFpsProfiler.config("fps_encode", 100);
+    mFpsProfilers.resize(getThreadNumber());
+    for(int i = 0; i < mFpsProfilers.size(); ++i) {
+      mFpsProfilers[i]->config("fps_encode" + std::to_string(i), 100);
+    }
   } while (false);
   return errorCode;
 }
@@ -215,7 +226,7 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   if (!data) return common::ErrorCode::SUCCESS;
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
-
+  mFpsProfilers[objectMetadata->mFrame->mChannelIdInternal]->add(1);
   if (objectMetadata->mFrame->mEndOfStream) {
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
@@ -236,7 +247,6 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
       processWS(dataPipeId, objectMetadata);
     } else {
     }
-    mFpsProfiler.add(1);
   } else {
     // WS发送停止标识
     if (mEncodeType == EncodeType::WS) {
@@ -357,9 +367,11 @@ void Encode::processImgDir(
   bm_image_destroy(imageStorage);
 }
 
+
 // 处理WS
 void Encode::processWS(int dataPipeId,
                        std::shared_ptr<common::ObjectMetadata> objectMetadata) {
+
   auto serverIt = mWSSMap.find(dataPipeId);
   if (mWSSMap.end() == serverIt) {
     int channel_id = objectMetadata->mFrame->mChannelId;
@@ -372,37 +384,44 @@ void Encode::processWS(int dataPipeId,
     mWSSThreads.push_back(std::move(t));
     mWSSMap[dataPipeId] = wss;
     serverIt = mWSSMap.find(dataPipeId);
+  }                      
+  std::string data;
+  if(mWsEncType == WSencType::IMG_ONLY) {
+    void* jpeg_data = NULL;
+    size_t out_size = 0;
+    std::shared_ptr<bm_image> img = objectMetadata->mFrame->mSpDataOsd
+                                        ? objectMetadata->mFrame->mSpDataOsd
+                                        : objectMetadata->mFrame->mSpData;
+    std::shared_ptr<bm_image> img_to_enc = img;
+    if (img->image_format != FORMAT_YUV420P) {
+      img_to_enc.reset(new bm_image, [&](bm_image* img) {
+        bm_image_destroy(*img);
+        delete img;
+        img = nullptr;
+      });
+      bm_image image = *(objectMetadata->mFrame->mSpData);
+      int width =
+          this->width == -1 ? objectMetadata->mFrame->mWidth : this->width;
+      int height =
+          this->height == -1 ? objectMetadata->mFrame->mHeight : this->height;
+      bm_image_create(objectMetadata->mFrame->mHandle, height, width,
+                      FORMAT_YUV420P, image.data_type, &(*img_to_enc));
+      bmcv_rect_t crop_rect = {0, 0, img->width, img->height};
+      bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *img,
+                            img_to_enc.get(), &crop_rect);
+    }
+    bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
+                        &jpeg_data, &out_size);
+    data =
+      websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);    
+      free(jpeg_data);                
+  } if (mWsEncType == WSencType::SERIALIZED) {
+    objectMetadata->fps = mFpsProfilers[objectMetadata->mFrame->mChannelIdInternal]->getTmpFps();
+    nlohmann::json serializedObj = objectMetadata;
+    data =serializedObj.dump();
   }
-  void* jpeg_data = NULL;
-  size_t out_size = 0;
-  std::shared_ptr<bm_image> img = objectMetadata->mFrame->mSpDataOsd
-                                      ? objectMetadata->mFrame->mSpDataOsd
-                                      : objectMetadata->mFrame->mSpData;
-  std::shared_ptr<bm_image> img_to_enc = img;
-  if (img->image_format != FORMAT_YUV420P) {
-    img_to_enc.reset(new bm_image, [&](bm_image* img) {
-      bm_image_destroy(*img);
-      delete img;
-      img = nullptr;
-    });
-    bm_image image = *(objectMetadata->mFrame->mSpData);
-    int width =
-        this->width == -1 ? objectMetadata->mFrame->mWidth : this->width;
-    int height =
-        this->height == -1 ? objectMetadata->mFrame->mHeight : this->height;
-    bm_image_create(objectMetadata->mFrame->mHandle, height, width,
-                    FORMAT_YUV420P, image.data_type, &(*img_to_enc));
-    bmcv_rect_t crop_rect = {0, 0, img->width, img->height};
-    bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *img,
-                           img_to_enc.get(), &crop_rect);
-  }
-  bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
-                      &jpeg_data, &out_size);
-  std::string data =
-      websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
   // base64 img 存入队列
   serverIt->second->pushImgDataQueue(data);
-  free(jpeg_data);
 }
 
 // WS发送停止标识

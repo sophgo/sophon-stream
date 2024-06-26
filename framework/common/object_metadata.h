@@ -124,7 +124,7 @@ struct ObjectMetadata {
   std::shared_ptr<common::Frame> mTransformFrame;
   std::vector<std::shared_ptr<ObjectMetadata>> mSubObjectMetadatas;
   int tag;
-
+  float fps;
   int numBranches;
   int mSubId;
   /**
