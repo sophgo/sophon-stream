@@ -52,6 +52,9 @@ common::ErrorCode Retinaface::initContext(const std::string& json) {
         configure.find(CONFIG_INTERNAL_SCORE_THRESHOLD_FIELD);
     mContext->score_threshold = score_threshold_It->get<float>();
 
+    auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
+    mContext->thresh_nms = threshNmsIt->get<float>();
+
     // 1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
     mContext->bmContext = std::make_shared<BMNNContext>(

@@ -16,7 +16,8 @@ sophon-stream retinaface插件具有一些可配置的参数，可以根据需�
     "configure": {
         "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
         "max_face_count":50,
-        "score_threshold":0.5,
+        "score_threshold":0.1,
+        "threshold_nms": 0.4,
         "bgr2rgb": false,
         "mean": [
             104,
@@ -43,7 +44,8 @@ sophon-stream retinaface插件具有一些可配置的参数，可以根据需�
 |:-------------:| :-------: | :------------------:| :------------------------:|
 |  model_path  |   字符串   | "../data/models/retinaface_mobilenet0.25_int8_1b.bmodel" | retinaface模型路径 |
 |  max_face_count   |   整数   | 50 | 最大的人脸数量 |
-|  score_threshold  |   浮点数   | 0.5 | 目标检测NMS IOU阈值 |
+|  score_threshold  |   浮点数   | 0.1 | 目标检测置信度阈值 |
+|  threshold_nms  |  浮点数 | 0.4 | 目标检测NMS IOU阈值 |
 |  bgr2rgb  |   bool   | false | 解码器解出来的图像默认是bgr格式，是否需要将图像转换成rgb格式 |
 |  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |

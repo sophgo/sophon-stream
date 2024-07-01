@@ -172,7 +172,8 @@ void RetinafacePostProcess::get_faceInfo(
     }
   }
 
-  faceInfo = nms(faceInfo, threshold);
+  faceInfo = nms(faceInfo, context->thresh_nms);
+
 }
 
 vector<anchor_box> RetinafacePostProcess::bbox_pred(

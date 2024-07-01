@@ -27,6 +27,7 @@ class RetinafaceContext : public ::sophon_stream::element::Context {
   std::shared_ptr<BMNNNetwork> bmNetwork;
   bm_handle_t handle;
 
+  float thresh_nms;                                    // nms iou阈值
   std::vector<float> mean;  // 前处理均值， 长度为3，顺序为rgb
   std::vector<float> stdd;  // 前处理方差， 长度为3，顺序为rgb
   bool bgr2rgb;             // 是否将bgr图像转成rgb推理
