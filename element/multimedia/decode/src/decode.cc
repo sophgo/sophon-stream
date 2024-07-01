@@ -9,16 +9,6 @@
 
 #include "decode.h"
 
-#include <dlfcn.h>
-#include <sys/prctl.h>
-
-#include <nlohmann/json.hpp>
-
-#include "common/logger.h"
-#include "common/object_metadata.h"
-#include "decoder.h"
-#include "element_factory.h"
-
 namespace sophon_stream {
 namespace element {
 namespace decode {
@@ -178,14 +168,15 @@ common::ErrorCode Decode::parse_channel_task(
       }
       channelTask->request.sourceType =
           ChannelOperateRequest::SourceType::GB28181;
-    }  else if (sourceType == "CAMERA") {
+    } else if (sourceType == "CAMERA") {
       IVS_INFO("Source type is {0}", sourceType);
       channelTask->request.sourceType =
           ChannelOperateRequest::SourceType::CAMERA;
-    }
-     else {
-      IVS_ERROR("{0} error, please input RTSP, RTMP, VIDEO, IMG_DIR, BASE64 or GB28181",
-                JSON_SOURCE_TYPE);
+    } else {
+      IVS_ERROR(
+          "{0} error, please input RTSP, RTMP, VIDEO, IMG_DIR, BASE64 or "
+          "GB28181",
+          JSON_SOURCE_TYPE);
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
@@ -257,32 +248,27 @@ common::ErrorCode Decode::parse_channel_task(
 
       auto roi_left_it = roi_it->find(JSON_LEFT_FILED);
       if (roi_left_it != roi_it->end())
-        channelTask->request.roi.start_x =
-          roi_left_it->get<int>();
+        channelTask->request.roi.start_x = roi_left_it->get<int>();
       else
         IVS_ERROR("Missing decoder roi left");
-      
+
       auto roi_top_it = roi_it->find(JSON_TOP_FILED);
       if (roi_top_it != roi_it->end())
-        channelTask->request.roi.start_y =
-          roi_top_it->get<int>();
+        channelTask->request.roi.start_y = roi_top_it->get<int>();
       else
         IVS_ERROR("Missing decoder roi top");
 
       auto roi_w_it = roi_it->find(JSON_WIDTH_FILED);
       if (roi_w_it != roi_it->end())
-        channelTask->request.roi.crop_w =
-          roi_w_it->get<int>();
+        channelTask->request.roi.crop_w = roi_w_it->get<int>();
       else
         IVS_ERROR("Missing decoder roi width");
 
       auto roi_h_it = roi_it->find(JSON_HEIGHT_FILED);
       if (roi_h_it != roi_it->end())
-        channelTask->request.roi.crop_h =
-          roi_h_it->get<int>();
+        channelTask->request.roi.crop_h = roi_h_it->get<int>();
       else
         IVS_ERROR("Missing decoder roi height");
-
     }
 
   } while (false);

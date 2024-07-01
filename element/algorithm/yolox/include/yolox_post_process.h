@@ -10,13 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOX_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_YOLOX_POST_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "yolox_context.h"
 
 namespace sophon_stream {
@@ -36,7 +30,7 @@ struct YoloxBox {
 
 using YoloxBoxVec = std::vector<YoloxBox>;
 
-class YoloxPostProcess : public ::sophon_stream::framework::PostProcess {
+class YoloxPostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<YoloxContext> context);
 

@@ -10,20 +10,14 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOX_INFERENCE_H_
 #define SOPHON_STREAM_ELEMENT_YOLOX_INFERENCE_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/inference.h"
 #include "yolox_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-class YoloxInference : public ::sophon_stream::framework::Inference {
+class YoloxInference : public ::sophon_stream::element::Inference {
  public:
   ~YoloxInference() override;
 
@@ -31,19 +25,6 @@ class YoloxInference : public ::sophon_stream::framework::Inference {
 
   common::ErrorCode predict(std::shared_ptr<YoloxContext> context,
                             common::ObjectMetadatas& objectMetadatas);
-
- private:
-  std::shared_ptr<sophon_stream::common::bmTensors> mergeInputDeviceMem(
-      std::shared_ptr<YoloxContext> context,
-      common::ObjectMetadatas& objectMetadatas);
-
-  std::shared_ptr<sophon_stream::common::bmTensors> getOutputDeviceMem(
-      std::shared_ptr<YoloxContext> context);
-
-  void splitOutputMemIntoObjectMetadatas(
-      std::shared_ptr<YoloxContext> context,
-      common::ObjectMetadatas& objectMetadatas,
-      std::shared_ptr<sophon_stream::common::bmTensors> outputTensors);
 };
 
 }  // namespace yolox

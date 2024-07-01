@@ -10,19 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_
 #define SOPHON_STREAM_ELEMENT_YOLOV5_CONTEXT_H_
 
-#include <memory>
-#include <nlohmann/json.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-// for bmcv_api_ext.h
-#include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
-#include "bmruntime_interface.h"
-#include "common/bmnn_utils.h"
-#include "common/error_code.h"
-#include "group.h"
+#include "algorithmApi/context.h"
 
 namespace sophon_stream {
 namespace element {
@@ -30,7 +18,7 @@ namespace yolov5 {
 
 #define USE_ASPECT_RATIO 1
 #define USE_MULTICLASS_NMS 0
-#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
+#define FFALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
 
 #define MAX_YOLO_INPUT_NUM 8
 #define MAX_YOLO_ANCHOR_NUM 8
@@ -54,7 +42,7 @@ typedef struct {
 
 #define MAX_BATCH 16
 
-class Yolov5Context : public ::sophon_stream::framework::Context {
+class Yolov5Context : public ::sophon_stream::element::Context {
  public:
   int deviceId;  // 设备ID
 
@@ -81,7 +69,8 @@ class Yolov5Context : public ::sophon_stream::framework::Context {
   float thresh_nms;                                    // nms iou阈值
   std::vector<std::string> class_names;
   bool class_thresh_valid = false;
-  float log_conf_threshold;                            // 应用log运算符到阈值可在box过滤时省略box置信度的sigmoid计算 
+  float
+      log_conf_threshold;  // 应用log运算符到阈值可在box过滤时省略box置信度的sigmoid计算
 
   int class_num = 80;  // default is coco names
   int m_frame_h, m_frame_w;

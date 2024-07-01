@@ -228,7 +228,8 @@ connection是所有element之间的连接方式，通过element_id和port_id确�
     "configure": {
         "model_path": "../retinaface/data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
         "max_face_count":50,
-        "score_threshold":0.5,
+        "score_threshold":0.1,
+        "threshold_nms": 0.4,
         "bgr2rgb": false,
         "mean": [
             104,
@@ -273,7 +274,7 @@ frame count is 920 | fps is 191.723 fps.
 |设备|路数|算法线程数|CPU利用率(%)|平均FPS|
 |----|----|-----|-----|-----|
 |SE7    |4  |4-4-4  |381  |428.797|
-|SE9-16 |4  |4-4-4  |400  |263.333|
+|SE9-16 |4  |4-4-4  |400  |302.932|
 
 > **测试说明**：
 1. 性能测试结果具有一定的波动性，建议多次测试取平均值；

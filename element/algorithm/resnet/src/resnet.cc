@@ -9,14 +9,6 @@
 
 #include "resnet.h"
 
-#include <stdlib.h>
-
-#include <chrono>
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
 using namespace std::chrono_literals;
 
 namespace sophon_stream {

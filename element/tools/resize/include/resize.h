@@ -32,15 +32,18 @@ class Resize : public ::sophon_stream::framework::Element {
 
   common::ErrorCode resize_work(std::shared_ptr<common::ObjectMetadata> resObj);
 
-  float get_aspect_scaled_ratio(int src_w, int src_h, int dst_w, int dst_h,
-                                bool* pIsAligWidth);
+
 
   static constexpr const char* CONFIG_INTERNAL_DST_H_FILED = "dst_h";
   static constexpr const char* CONFIG_INTERNAL_DST_W_FILED = "dst_w";
-  static constexpr const char* CONFIG_INTERNAL_RATIO_FILED = "ratio";
+  static constexpr const char* CONFIG_INTERNAL_CROP_TOP_FILED = "crop_top";
+  static constexpr const char* CONFIG_INTERNAL_CROP_LEFT_FILED = "crop_left";
+  static constexpr const char* CONFIG_INTERNAL_CROP_H_FILED = "crop_h";
+  static constexpr const char* CONFIG_INTERNAL_CROP_W_FILED = "crop_w";
 
   int dst_h, dst_w;
-  float ratio;
+  int crop_top,crop_left;
+  int crop_h,crop_w;
 
  private:
   ::sophon_stream::common::FpsProfiler mFpsProfiler;

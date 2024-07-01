@@ -275,7 +275,7 @@ The tested data is `/data/images/wind`. The compilation was done in Release mode
 |Device|Number of Channels|Algorithm Thread Count|CPU Utilization(%)|Average FPS|
 |----|----|-----|-----|-----|
 |SE7    |4  |4-4-4  |381  |428.797|
-|SE9-16 |4  |4-4-4  |400  |263.333|
+|SE9-16 |4  |4-4-4  |400  |302.932|
 
 > **Test Description**:
 1. Performance test results exhibit certain fluctuations; it's advisable to conduct multiple tests and calculate the average.

@@ -10,10 +10,11 @@
 #ifndef SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODE_H_
 #define SOPHON_STREAM_ELEMENT_MULTIMEDIA_DECODE_DECODE_H_
 
-#include "common/no_copyable.h"
-#include "common/profiler.h"
+#include <dlfcn.h>
+#include <sys/prctl.h>
+
 #include "decoder.h"
-#include "element.h"
+#include "element_factory.h"
 
 namespace sophon_stream {
 namespace element {

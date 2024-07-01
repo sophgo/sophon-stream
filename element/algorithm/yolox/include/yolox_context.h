@@ -10,19 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOX_CONTEXT_H_
 #define SOPHON_STREAM_ELEMENT_YOLOX_CONTEXT_H_
 
-#include <memory>
-#include <nlohmann/json.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-// for bmcv_api_ext.h
-#include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
-#include "bmruntime_interface.h"
-#include "common/bmnn_utils.h"
-#include "common/error_code.h"
-#include "group.h"
+#include "algorithmApi/context.h"
 
 namespace sophon_stream {
 namespace element {
@@ -30,7 +18,7 @@ namespace yolox {
 
 #define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
-class YoloxContext : public ::sophon_stream::framework::Context {
+class YoloxContext : public ::sophon_stream::element::Context {
  public:
   int deviceId;
 

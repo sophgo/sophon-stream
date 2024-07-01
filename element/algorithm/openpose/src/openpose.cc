@@ -9,14 +9,6 @@
 
 #include "openpose.h"
 
-#include <stdlib.h>
-
-#include <chrono>
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
 using namespace std::chrono_literals;
 
 namespace sophon_stream {
@@ -63,8 +55,8 @@ common::ErrorCode Openpose::initContext(const std::string& json) {
     mContext->max_batch = mContext->bmNetwork->maxBatch();
     auto inputTensor = mContext->bmNetwork->inputTensor(0);
     mContext->m_net_channel = inputTensor->get_shape()->dims[1];
-    mContext->m_net_h = inputTensor->get_shape()->dims[2];
-    mContext->m_net_w = inputTensor->get_shape()->dims[3];
+    mContext->net_h = inputTensor->get_shape()->dims[2];
+    mContext->net_w = inputTensor->get_shape()->dims[3];
     mContext->input_num = mContext->bmNetwork->m_netinfo->input_num;
 
     // 3. get output
@@ -265,23 +257,23 @@ void Openpose::initProfiler(std::string name, int interval) {
 }
 
 void Openpose::setContext(
-    std::shared_ptr<::sophon_stream::framework::Context> context) {
+    std::shared_ptr<::sophon_stream::element::Context> context) {
   // check
   mContext = std::dynamic_pointer_cast<OpenposeContext>(context);
 }
 
 void Openpose::setPreprocess(
-    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+    std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
   mPreProcess = std::dynamic_pointer_cast<OpenposePreProcess>(pre);
 }
 
 void Openpose::setInference(
-    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+    std::shared_ptr<::sophon_stream::element::Inference> infer) {
   mInference = std::dynamic_pointer_cast<OpenposeInference>(infer);
 }
 
 void Openpose::setPostprocess(
-    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+    std::shared_ptr<::sophon_stream::element::PostProcess> post) {
   mPostProcess = std::dynamic_pointer_cast<OpenposePostProcess>(post);
 }
 

@@ -9,13 +9,6 @@
 
 #include "encoder.h"
 
-#include <sys/time.h>
-
-#include <iostream>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace encode {
@@ -113,7 +106,6 @@ class Encoder::Encoder_CC {
   mutable std::mutex mQueueMtx;
   std::thread flow_control;
   bool isRunning = true;
-  ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };
 
 Encoder::Encoder() : _impl(new Encoder_CC()) {}
@@ -221,7 +213,6 @@ Encoder::Encoder_CC::Encoder_CC(int dev_id, const std::string& enc_fmt,
     pix_fmt_ = AV_PIX_FMT_NV12;
   } else {
   }
-  mFpsProfiler.config("encoder", 100);
   flow_control = std::thread(&Encoder::Encoder_CC::flowControlFunc, this);
 }
 
@@ -525,7 +516,6 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     }
     av_packet_rescale_ts(test_enc_pkt.get(), enc_ctx_->time_base,
                          out_stream_->time_base);
-    mFpsProfiler.add(1);
     pushQueue(std::static_pointer_cast<void>(test_enc_pkt));
 
     // auto _finish_time = std::chrono::high_resolution_clock::now();
@@ -540,7 +530,6 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     cv::bmcv::toMAT(&image, write_mat, true);
     cv::Mat resized;
     cv::resize(write_mat, resized, cv::Size(params_map_["width"], params_map_["height"]));
-    mFpsProfiler.add(1);
     pushQueue(
         std::static_pointer_cast<void>(std::make_shared<cv::Mat>(resized)));
     return 0;

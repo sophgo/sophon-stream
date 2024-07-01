@@ -36,6 +36,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         set(JPU_LIBS bmjpuapi bmjpulite)
     endif()
 
+    include_directories(../)
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 
@@ -69,7 +70,8 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     if(BMJPU)
         set(JPU_LIBS bmjpuapi bmjpulite)
     endif()
-    
+
+    include_directories(../)
     include_directories(../../../framework)
     include_directories(../../../framework/include)
 

@@ -9,16 +9,6 @@
 
 #include "ff_decode.h"
 
-#include <sys/time.h>
-#include <unistd.h>
-
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <thread>
-
-#include "common/common_defs.h"
-
 using namespace std;
 
 bool hardware_decode = true;
@@ -1025,7 +1015,6 @@ std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, string input_name) {
     return spBmImage;
   }
 }
-
 
 // Do Not Work in SoC Mode !
 // std::shared_ptr<bm_image> jpgDec(bm_handle_t& handle, std::string input_name)

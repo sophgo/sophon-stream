@@ -1,12 +1,5 @@
 #include "element.h"
 
-#include <sys/prctl.h>
-
-#include <iostream>
-#include <nlohmann/json.hpp>
-
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace framework {
 

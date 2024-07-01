@@ -8,42 +8,21 @@
 //===----------------------------------------------------------------------===//
 
 #include "retinaface_post_process.h"
-#include <opencv2/opencv.hpp>
-#include <cmath>
-#include "common/logger.h"
-
-#include <iostream>
-
-
 namespace sophon_stream {
 namespace element {
 namespace retinaface {
 
 void RetinafacePostProcess::init(std::shared_ptr<RetinafaceContext> context) {}
 
-float RetinafacePostProcess::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
-                                                int dst_h, bool* pIsAligWidth) {
-  float ratio;
-  float r_w = (float)dst_w / src_w;
-  float r_h = (float)dst_h / src_h;
-  if (r_h > r_w) {
-    *pIsAligWidth = true;
-    ratio = r_w;
-  } else {
-    *pIsAligWidth = false;
-    ratio = r_h;
-  }
-  return ratio;
-}
-
-void RetinafacePostProcess::postProcess(std::shared_ptr<RetinafaceContext> context,
-                                    common::ObjectMetadatas& objectMetadatas) {
+void RetinafacePostProcess::postProcess(
+    std::shared_ptr<RetinafaceContext> context,
+    common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return;
   // write your post process here
-  int i=0;
+  int i = 0;
   for (auto obj : objectMetadatas) {
     if (obj->mFrame->mEndOfStream) break;
-   std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
+    std::vector<std::shared_ptr<BMNNTensor>> outputTensors(context->output_num);
     for (int i = 0; i < context->output_num; i++) {
       outputTensors[i] = std::make_shared<BMNNTensor>(
           obj->mOutputBMtensors->handle,
@@ -54,8 +33,7 @@ void RetinafacePostProcess::postProcess(std::shared_ptr<RetinafaceContext> conte
 
     int frame_width = obj->mFrame->mWidth;
     int frame_height = obj->mFrame->mHeight;
-    int output_num=context->output_num;
-
+    int output_num = context->output_num;
 
     std::vector<void*> output_data;
     for (int i = 0; i < output_num; i++) {
@@ -63,50 +41,55 @@ void RetinafacePostProcess::postProcess(std::shared_ptr<RetinafaceContext> conte
       output_data.push_back(outputTensors[i]->get_cpu_data());
     }
 
-    //计算output_size
-    vector<int>  output_sizes;
+    // 计算output_size
+    vector<int> output_sizes;
     map<string, int> output_names_map;
     for (int i = 0; i < output_num; i++) {
-      output_names_map.insert(pair<string, int>(
-                          context->bmNetwork->m_netinfo->output_names[i], i));
-      auto &output_shape = context->bmNetwork->m_netinfo->stages[0].output_shapes[i];
+      output_names_map.insert(
+          pair<string, int>(context->bmNetwork->m_netinfo->output_names[i], i));
+      auto& output_shape =
+          context->bmNetwork->m_netinfo->stages[0].output_shapes[i];
       auto count = bmrt_shape_count(&output_shape);
       output_sizes.push_back(count / output_shape.dims[0]);
     }
 
-    //将输出数据转换为float型数据
-    float *preds[output_num];
+    // 将输出数据转换为float型数据
+    float* preds[output_num];
     for (int j = 0; j < output_num; j++) {
-        if (BM_FLOAT32 == context->bmNetwork->m_netinfo->output_dtypes[j]) {
-            preds[j] = reinterpret_cast<float*>(output_data[j]) + output_sizes[j] * i;
-        }
+      if (BM_FLOAT32 == context->bmNetwork->m_netinfo->output_dtypes[j]) {
+        preds[j] =
+            reinterpret_cast<float*>(output_data[j]) + output_sizes[j] * i;
+      }
     }
 
-    bool isAlignWidth=false;
-    float ratio_ =get_aspect_scaled_ratio(frame_width, frame_height, context->net_w,
-                                      context->net_h, &isAlignWidth); 
+    bool isAlignWidth = false;
+    float ratio_ =
+        get_aspect_scaled_ratio(frame_width, frame_height, context->net_w,
+                                context->net_h, &isAlignWidth);
 
     // 应该是从json中读取的，现在先直接在这里定义
-    int max_face_count=context->max_face_count;
-    float score_threshold=context->score_threshold;
+    int max_face_count = context->max_face_count;
+    float score_threshold = context->score_threshold;
     std::vector<stFaceRect> results;
 
     vector<FaceDetectInfo> faceInfo;
-    get_faceInfo(context,faceInfo,preds, output_names_map,frame_width, frame_height, ratio_,score_threshold);
+    get_faceInfo(context, faceInfo, preds, output_names_map, frame_width,
+                 frame_height, ratio_, score_threshold);
 
-    int face_num = 
-       max_face_count > static_cast<int>(faceInfo.size()) ? static_cast<int>(faceInfo.size()) : max_face_count;
+    int face_num = max_face_count > static_cast<int>(faceInfo.size())
+                       ? static_cast<int>(faceInfo.size())
+                       : max_face_count;
 
     for (int i = 0; i < face_num; i++) {
       std::shared_ptr<common::FaceObjectMetadata> detData =
-            std::make_shared<common::FaceObjectMetadata>();
+          std::make_shared<common::FaceObjectMetadata>();
       detData->left = faceInfo[i].rect.x1;
       detData->right = faceInfo[i].rect.x2;
       detData->top = faceInfo[i].rect.y1;
       detData->bottom = faceInfo[i].rect.y2;
       detData->score = faceInfo[i].score;
 
-      for(size_t k = 0; k < 5; k++) {
+      for (size_t k = 0; k < 5; k++) {
         detData->points_x[k] = faceInfo[i].pts.x[k];
         detData->points_y[k] = faceInfo[i].pts.y[k];
       }
@@ -116,40 +99,39 @@ void RetinafacePostProcess::postProcess(std::shared_ptr<RetinafaceContext> conte
   }
 }
 
-void RetinafacePostProcess::get_faceInfo(std::shared_ptr<RetinafaceContext> context,vector<FaceDetectInfo> &faceInfo,
-            float** preds, map<string, int> &output_names_map, int img_h, int img_w, float ratio_,
-            float threshold, float scales){
+void RetinafacePostProcess::get_faceInfo(
+    std::shared_ptr<RetinafaceContext> context,
+    vector<FaceDetectInfo>& faceInfo, float** preds,
+    map<string, int>& output_names_map, int img_h, int img_w, float ratio_,
+    float threshold, float scales) {
+  int hs = context->net_h;
+  int ws = context->net_w;
 
-    int hs=context->net_h;
-    int ws=context->net_w;
+  float* cls_data =
+      preds[output_names_map[context->bmNetwork->m_netinfo->output_names[1]]];
+  float* land_data =
+      preds[output_names_map[context->bmNetwork->m_netinfo->output_names[2]]];
+  float* loc_data =
+      preds[output_names_map[context->bmNetwork->m_netinfo->output_names[0]]];
 
-    float * cls_data = preds[output_names_map[context->bmNetwork->m_netinfo->output_names[1]]];
-    float *land_data = preds[output_names_map[context->bmNetwork->m_netinfo->output_names[2]]];
-    float *loc_data = preds[output_names_map[context->bmNetwork->m_netinfo->output_names[0]]];
-    
-    
-    const int num_layer = 3;
-    const size_t steps[] = {8, 16, 32};
-    const int num_anchor = 2;
-    const size_t anchor_sizes[][2] = {
-          {16, 32},
-          {64, 128},
-          {256, 512}};
-    const float variances[] = {0.1, 0.2};
+  const int num_layer = 3;
+  const size_t steps[] = {8, 16, 32};
+  const int num_anchor = 2;
+  const size_t anchor_sizes[][2] = {{16, 32}, {64, 128}, {256, 512}};
+  const float variances[] = {0.1, 0.2};
 
-    size_t index = 0, min_size;
-    const float *loc, *land;
-    float x, y, w, h, conf;
-    float anchor_w, anchor_h, anchor_x, anchor_y;
-
+  size_t index = 0, min_size;
+  const float *loc, *land;
+  float x, y, w, h, conf;
+  float anchor_w, anchor_h, anchor_x, anchor_y;
 
   FaceDetectInfo obj;
-  for (int il = 0; il < num_layer; ++il){
+  for (int il = 0; il < num_layer; ++il) {
     int feature_width = (ws + steps[il] - 1) / steps[il];
     int feature_height = (hs + steps[il] - 1) / steps[il];
-    for (int iy = 0; iy < feature_height; ++iy){
-      for (int ix = 0; ix < feature_width; ++ix){
-        for (int ia = 0; ia < num_anchor; ++ia){
+    for (int iy = 0; iy < feature_height; ++iy) {
+      for (int ix = 0; ix < feature_width; ++ix) {
+        for (int ia = 0; ia < num_anchor; ++ia) {
           conf = cls_data[index * 2 + 1];
           if (conf < threshold) goto cond;
           min_size = anchor_sizes[il][ia];
@@ -168,31 +150,36 @@ void RetinafacePostProcess::get_faceInfo(std::shared_ptr<RetinafaceContext> cont
           obj.rect.y1 = (y - h / 2) * 640 / ratio_;
           obj.rect.y2 = (y + h / 2) * 640 / ratio_;
           land = land_data + index * 10;
-          for (int i = 0; i < 5; ++i){
-            obj.pts.x[i] = (anchor_x +
-                // land[i * 2] * variances[0] * anchor_w) * net_w_ / ratio_;
-                // land[i * 2] * variances[0] * anchor_w) * img_w;
-                land[i * 2] * variances[0] * anchor_w) * 640 / ratio_;
-            obj.pts.y[i] = (anchor_y +
-                // land[i * 2 + 1] * variances[0] * anchor_h) * net_h_ / ratio_;
-                // land[i * 2 + 1] * variances[0] * anchor_h) * img_h;
-                land[i * 2 + 1] * variances[0] * anchor_h) * 640 / ratio_;
+          for (int i = 0; i < 5; ++i) {
+            obj.pts.x[i] =
+                (anchor_x +
+                 // land[i * 2] * variances[0] * anchor_w) * net_w_ / ratio_;
+                 // land[i * 2] * variances[0] * anchor_w) * img_w;
+                 land[i * 2] * variances[0] * anchor_w) *
+                640 / ratio_;
+            obj.pts.y[i] =
+                (anchor_y +
+                 // land[i * 2 + 1] * variances[0] * anchor_h) * net_h_ /
+                 // ratio_; land[i * 2 + 1] * variances[0] * anchor_h) * img_h;
+                 land[i * 2 + 1] * variances[0] * anchor_h) *
+                640 / ratio_;
           }
           faceInfo.push_back(obj);
-cond:
+        cond:
           ++index;
         }
       }
     }
   }
 
-  faceInfo = nms(faceInfo, threshold);
+  faceInfo = nms(faceInfo, context->thresh_nms);
 
 }
 
-vector<anchor_box> RetinafacePostProcess::bbox_pred(vector<anchor_box> anchors, vector<vector<float> > regress) {
+vector<anchor_box> RetinafacePostProcess::bbox_pred(
+    vector<anchor_box> anchors, vector<vector<float>> regress) {
   vector<anchor_box> rects(anchors.size());
-  for(size_t i = 0; i < anchors.size(); i++) {
+  for (size_t i = 0; i < anchors.size(); i++) {
     float width = anchors[i].x2 - anchors[i].x1 + 1;
     float height = anchors[i].y2 - anchors[i].y1 + 1;
     float ctr_x = anchors[i].x1 + 0.5 * (width - 1.0);
@@ -212,7 +199,8 @@ vector<anchor_box> RetinafacePostProcess::bbox_pred(vector<anchor_box> anchors, 
   return rects;
 }
 
-anchor_box RetinafacePostProcess::bbox_pred(anchor_box anchor, vector<float> regress) {
+anchor_box RetinafacePostProcess::bbox_pred(anchor_box anchor,
+                                            vector<float> regress) {
   anchor_box rect;
 
   float width = anchor.x2 - anchor.x1 + 1;
@@ -233,15 +221,16 @@ anchor_box RetinafacePostProcess::bbox_pred(anchor_box anchor, vector<float> reg
   return rect;
 }
 
-vector<FacePts> RetinafacePostProcess::landmark_pred(vector<anchor_box> anchors, vector<FacePts> facePts) {
+vector<FacePts> RetinafacePostProcess::landmark_pred(vector<anchor_box> anchors,
+                                                     vector<FacePts> facePts) {
   vector<FacePts> pts(anchors.size());
-  for(size_t i = 0; i < anchors.size(); i++) {
+  for (size_t i = 0; i < anchors.size(); i++) {
     float width = anchors[i].x2 - anchors[i].x1 + 1;
     float height = anchors[i].y2 - anchors[i].y1 + 1;
     float ctr_x = anchors[i].x1 + 0.5 * (width - 1.0);
     float ctr_y = anchors[i].y1 + 0.5 * (height - 1.0);
 
-    for(size_t j = 0; j < 5; j ++) {
+    for (size_t j = 0; j < 5; j++) {
       pts[i].x[j] = facePts[i].x[j] * width + ctr_x;
       pts[i].y[j] = facePts[i].y[j] * height + ctr_y;
     }
@@ -250,14 +239,15 @@ vector<FacePts> RetinafacePostProcess::landmark_pred(vector<anchor_box> anchors,
   return pts;
 }
 
-FacePts RetinafacePostProcess::landmark_pred(anchor_box anchor, FacePts facePt) {
+FacePts RetinafacePostProcess::landmark_pred(anchor_box anchor,
+                                             FacePts facePt) {
   FacePts pt;
   float width = anchor.x2 - anchor.x1 + 1;
   float height = anchor.y2 - anchor.y1 + 1;
   float ctr_x = anchor.x1 + 0.5 * (width - 1.0);
   float ctr_y = anchor.y1 + 0.5 * (height - 1.0);
 
-  for(size_t j = 0; j < 5; j ++) {
+  for (size_t j = 0; j < 5; j++) {
     pt.x[j] = facePt.x[j] * width + ctr_x;
     pt.y[j] = facePt.y[j] * height + ctr_y;
   }
@@ -265,11 +255,13 @@ FacePts RetinafacePostProcess::landmark_pred(anchor_box anchor, FacePts facePt) 
   return pt;
 }
 
-bool RetinafacePostProcess::CompareBBox(const FaceDetectInfo & a, const FaceDetectInfo & b) {
+bool RetinafacePostProcess::CompareBBox(const FaceDetectInfo& a,
+                                        const FaceDetectInfo& b) {
   return a.score > b.score;
 }
 
-vector<FaceDetectInfo> RetinafacePostProcess::nms(vector<FaceDetectInfo>& bboxes, float threshold) {
+vector<FaceDetectInfo> RetinafacePostProcess::nms(
+    vector<FaceDetectInfo>& bboxes, float threshold) {
   vector<FaceDetectInfo> bboxes_nms;
   std::sort(bboxes.begin(), bboxes.end(), CompareBBox);
 
@@ -279,8 +271,7 @@ vector<FaceDetectInfo> RetinafacePostProcess::nms(vector<FaceDetectInfo>& bboxes
   bool all_merged = false;
 
   while (!all_merged) {
-    while (select_idx < num_bbox && mask_merged[select_idx] == 1)
-      select_idx++;
+    while (select_idx < num_bbox && mask_merged[select_idx] == 1) select_idx++;
 
     if (select_idx == num_bbox) {
       all_merged = true;
@@ -291,7 +282,8 @@ vector<FaceDetectInfo> RetinafacePostProcess::nms(vector<FaceDetectInfo>& bboxes
     mask_merged[select_idx] = 1;
 
     anchor_box select_bbox = bboxes[select_idx].rect;
-    float area1 = static_cast<float>((select_bbox.x2 - select_bbox.x1 + 1) * (select_bbox.y2 - select_bbox.y1 + 1));
+    float area1 = static_cast<float>((select_bbox.x2 - select_bbox.x1 + 1) *
+                                     (select_bbox.y2 - select_bbox.y1 + 1));
     float x1 = static_cast<float>(select_bbox.x1);
     float y1 = static_cast<float>(select_bbox.y1);
     float x2 = static_cast<float>(select_bbox.x2);
@@ -310,17 +302,19 @@ vector<FaceDetectInfo> RetinafacePostProcess::nms(vector<FaceDetectInfo>& bboxes
       if (w <= 0 || h <= 0) {
         continue;
       }
-      float area2 = static_cast<float>((bbox_i.x2 - bbox_i.x1 + 1) * (bbox_i.y2 - bbox_i.y1 + 1));
+      float area2 = static_cast<float>((bbox_i.x2 - bbox_i.x1 + 1) *
+                                       (bbox_i.y2 - bbox_i.y1 + 1));
       float area_intersect = w * h;
 
-      if (static_cast<float>(area_intersect) / (area1 + area2 - area_intersect) > threshold) {
+      if (static_cast<float>(area_intersect) /
+              (area1 + area2 - area_intersect) >
+          threshold) {
         mask_merged[i] = 1;
       }
     }
   }
   return bboxes_nms;
 }
-
 
 }  // namespace retinaface
 }  // namespace element

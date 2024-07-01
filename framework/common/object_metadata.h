@@ -15,8 +15,7 @@
 #include <string>
 #include <vector>
 
-// #include "common/bmnn_utils.h"
-#include "bmruntime_interface.h"
+#include "common_defs.h"
 #include "detected_object_metadata.h"
 #include "error_code.h"
 #include "face_object_metadata.h"
@@ -125,7 +124,7 @@ struct ObjectMetadata {
   std::shared_ptr<common::Frame> mTransformFrame;
   std::vector<std::shared_ptr<ObjectMetadata>> mSubObjectMetadatas;
   int tag;
-
+  float fps;
   int numBranches;
   int mSubId;
   /**

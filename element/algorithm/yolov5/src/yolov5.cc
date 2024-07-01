@@ -9,14 +9,6 @@
 
 #include "yolov5.h"
 
-#include <stdlib.h>
-
-#include <chrono>
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
 using namespace std::chrono_literals;
 
 namespace sophon_stream {
@@ -77,7 +69,7 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
                                       ? mContext->thresh_conf_min
                                       : thresh_it->second;
     }
-    mContext->log_conf_threshold = - std::log(1 / mContext->thresh_conf_min - 1);
+    mContext->log_conf_threshold = -std::log(1 / mContext->thresh_conf_min - 1);
 
     auto threshNmsIt = configure.find(CONFIG_INTERNAL_THRESHOLD_NMS_FIELD);
     mContext->thresh_nms = threshNmsIt->get<float>();
@@ -349,23 +341,23 @@ void Yolov5::initProfiler(std::string name, int interval) {
 }
 
 void Yolov5::setContext(
-    std::shared_ptr<::sophon_stream::framework::Context> context) {
+    std::shared_ptr<::sophon_stream::element::Context> context) {
   // check
   mContext = std::dynamic_pointer_cast<Yolov5Context>(context);
 }
 
 void Yolov5::setPreprocess(
-    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+    std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
   mPreProcess = std::dynamic_pointer_cast<Yolov5PreProcess>(pre);
 }
 
 void Yolov5::setInference(
-    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+    std::shared_ptr<::sophon_stream::element::Inference> infer) {
   mInference = std::dynamic_pointer_cast<Yolov5Inference>(infer);
 }
 
 void Yolov5::setPostprocess(
-    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+    std::shared_ptr<::sophon_stream::element::PostProcess> post) {
   mPostProcess = std::dynamic_pointer_cast<Yolov5PostProcess>(post);
 }
 

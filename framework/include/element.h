@@ -10,21 +10,25 @@
 #ifndef SOPHON_STREAM_FRAMEWORK_ELEMENT_H_
 #define SOPHON_STREAM_FRAMEWORK_ELEMENT_H_
 
+#include <sys/prctl.h>
+
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <thread>
 #include <vector>
 
 #include "common/error_code.h"
 #include "common/http_defs.h"
-#include "common/logger.h"
+// #include "common/logger.h"
 #include "common/no_copyable.h"
 #include "connector.h"
 #include "datapipe.h"

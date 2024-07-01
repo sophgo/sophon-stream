@@ -16,17 +16,17 @@
 #include <type_traits>
 #include <utility>
 
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "detected_object_metadata.h"
-#include "face_object_metadata.h"
+// #include "common/common_defs.h"
+// #include "common/logger.h"
+// #include "detected_object_metadata.h"
+// #include "face_object_metadata.h"
 #include "frame.h"
 #include "graphics.h"
 #include "object_metadata.h"
-#include "posed_object_metadata.h"
-#include "recognized_object_metadata.h"
-#include "segmented_object_metadata.h"
-#include "tracked_object_metadata.h"
+// #include "posed_object_metadata.h"
+// #include "recognized_object_metadata.h"
+// #include "segmented_object_metadata.h"
+// #include "tracked_object_metadata.h"
 
 #define ENABLE_TIME_LOG 0
 #define BASE64_CPU 1
@@ -206,6 +206,8 @@ void to_json(nlohmann::json& j, Frame frame) {
   j["mChannelId"] = frame.mChannelId;
   j["mFrameId"] = frame.mFrameId;
   j["mTimestamp"] = frame.mTimestamp;
+  j["mWidth"] = frame.mWidth;
+  j["mHeight"] = frame.mHeight;
   j["mEndOfStream"] = frame.mEndOfStream;
   j["mSpData"] = frame_to_base64(frame);
 }
@@ -242,6 +244,7 @@ void to_json(nlohmann::json& j, std::shared_ptr<common::ObjectMetadata> obj) {
   for (auto faceObj : obj->mFaceObjectMetadatas) {
     j["mFaceObjectMetadata"].push_back(*faceObj);
   }
+  j["mFps"] = obj->fps;
   j["mFrame"] = (*(obj->mFrame));
   j["mSubId"] = obj->mSubId;
   for (auto subObj : obj->mSubObjectMetadatas) {

@@ -9,10 +9,6 @@
 
 #include "yolov5_post_process.h"
 
-#include <cmath>
-
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace yolov5 {
@@ -36,11 +32,13 @@ void Yolov5PostProcess::init(std::shared_ptr<Yolov5Context> context) {
         auto ret = bm_malloc_device_byte(
             handle_, &multi_thread_tpu_kernel[i].out_dev_mem[j],
             out_len_max * sizeof(float));
-        STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
+        STREAM_CHECK(ret == 0,
+                     "Alloc Device Memory Failed! Program Terminated.")
         ret = bm_malloc_device_byte(
             handle_, &multi_thread_tpu_kernel[i].detect_num_mem[j],
             batch_num * sizeof(int32_t));
-        STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
+        STREAM_CHECK(ret == 0,
+                     "Alloc Device Memory Failed! Program Terminated.")
         multi_thread_tpu_kernel[i].api[j].top_addr =
             bm_mem_get_device_addr(multi_thread_tpu_kernel[i].out_dev_mem[j]);
         multi_thread_tpu_kernel[i].api[j].detected_num_addr =
@@ -97,22 +95,6 @@ int Yolov5PostProcess::argmax(float* data, int num) {
 }
 
 float Yolov5PostProcess::sigmoid(float x) { return 1.0 / (1 + expf(-x)); }
-
-float Yolov5PostProcess::get_aspect_scaled_ratio(int src_w, int src_h,
-                                                 int dst_w, int dst_h,
-                                                 bool* pIsAligWidth) {
-  float ratio;
-  float r_w = (float)dst_w / src_w;
-  float r_h = (float)dst_h / src_h;
-  if (r_h > r_w) {
-    *pIsAligWidth = true;
-    ratio = r_w;
-  } else {
-    *pIsAligWidth = false;
-    ratio = r_h;
-  }
-  return ratio;
-}
 
 void Yolov5PostProcess::NMS(YoloV5BoxVec& dets, float nmsConfidence) {
   int length = dets.size();
@@ -377,8 +359,8 @@ void Yolov5PostProcess::postProcessCPU(
       const int anchor_num = anchors[0].size();
       assert(context->output_num == (int)anchors.size());
       assert(box_num > 0);
-      if ((int)decoded_data.size() != box_num * out_nout){
-        decoded_data.resize(box_num*out_nout);
+      if ((int)decoded_data.size() != box_num * out_nout) {
+        decoded_data.resize(box_num * out_nout);
       }
       float* dst = decoded_data.data();
       for (int tidx = 0; tidx < context->output_num; ++tidx) {
@@ -395,19 +377,22 @@ void Yolov5PostProcess::postProcessCPU(
           float* ptr = tensor_data + anchor_idx * feature_size;
           for (int i = 0; i < area; i++) {
             if (ptr[4] > context->log_conf_threshold) {
-              dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w * context->net_w;
-              dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h * context->net_h;
-              dst[2] = pow((sigmoid(ptr[2]) * 2), 2) * anchors[tidx][anchor_idx][0];
-              dst[3] = pow((sigmoid(ptr[3]) * 2), 2) * anchors[tidx][anchor_idx][1];
+              dst[0] = (sigmoid(ptr[0]) * 2 - 0.5 + i % feat_w) / feat_w *
+                       context->net_w;
+              dst[1] = (sigmoid(ptr[1]) * 2 - 0.5 + i / feat_w) / feat_h *
+                       context->net_h;
+              dst[2] =
+                  pow((sigmoid(ptr[2]) * 2), 2) * anchors[tidx][anchor_idx][0];
+              dst[3] =
+                  pow((sigmoid(ptr[3]) * 2), 2) * anchors[tidx][anchor_idx][1];
               dst[4] = sigmoid(ptr[4]);
 #if USE_MULTICLASS_NMS
-              for(int d = 5; d < nout; d++)
-                  dst[d] = ptr[d];
+              for (int d = 5; d < nout; d++) dst[d] = ptr[d];
 #else
               dst[5] = ptr[5];
               dst[6] = 5;
-              for(int d = 6; d < nout; d++){
-                if(ptr[d] > dst[5]){
+              for (int d = 6; d < nout; d++) {
+                if (ptr[d] > dst[5]) {
                   dst[5] = ptr[d];
                   dst[6] = d;
                 }
@@ -427,42 +412,9 @@ void Yolov5PostProcess::postProcessCPU(
                     context->class_thresh_valid
                         ? context->thresh_conf[context->class_names[class_id]]
                         : context->thresh_conf_min;
-                float box_transformed_m_conf_threshold = - std::log(score / cur_class_thresh - 1);
-                if (confidence > box_transformed_m_conf_threshold)
-                {
-                    YoloV5Box box;
-                    if (!agnostic)
-                        box.x = centerX - width / 2 + class_id * max_wh;
-                    else
-                        box.x = centerX - width / 2;
-                    if (box.x < 0) box.x = 0;
-                    if (!agnostic)
-                        box.y = centerY - height / 2 + class_id * max_wh;
-                    else
-                        box.y = centerY - height / 2;
-                    if (box.y < 0) box.y = 0;
-                    box.width = width;
-                    box.height = height;
-                    box.class_id = class_id;
-                    box.score = sigmoid(confidence) * score;
-                    yolobox_vec.push_back(box);
-                }
-              }
-#else
-              int class_id = dst[6];
-              float confidence = dst[5];
-              float cur_class_thresh =
-                  context->class_thresh_valid
-                      ? context->thresh_conf[context->class_names[class_id]]
-                      : context->thresh_conf_min;
-              float box_transformed_m_conf_threshold = - std::log(score / cur_class_thresh - 1);
-              if (confidence > box_transformed_m_conf_threshold)
-              {
-                  float centerX = dst[0];
-                  float centerY = dst[1];
-                  float width = dst[2];
-                  float height = dst[3];
-
+                float box_transformed_m_conf_threshold =
+                    -std::log(score / cur_class_thresh - 1);
+                if (confidence > box_transformed_m_conf_threshold) {
                   YoloV5Box box;
                   if (!agnostic)
                     box.x = centerX - width / 2 + class_id * max_wh;
@@ -477,9 +429,42 @@ void Yolov5PostProcess::postProcessCPU(
                   box.width = width;
                   box.height = height;
                   box.class_id = class_id;
-                  confidence = sigmoid(confidence);
-                  box.score = confidence * score;
+                  box.score = sigmoid(confidence) * score;
                   yolobox_vec.push_back(box);
+                }
+              }
+#else
+              int class_id = dst[6];
+              float confidence = dst[5];
+              float cur_class_thresh =
+                  context->class_thresh_valid
+                      ? context->thresh_conf[context->class_names[class_id]]
+                      : context->thresh_conf_min;
+              float box_transformed_m_conf_threshold =
+                  -std::log(score / cur_class_thresh - 1);
+              if (confidence > box_transformed_m_conf_threshold) {
+                float centerX = dst[0];
+                float centerY = dst[1];
+                float width = dst[2];
+                float height = dst[3];
+
+                YoloV5Box box;
+                if (!agnostic)
+                  box.x = centerX - width / 2 + class_id * max_wh;
+                else
+                  box.x = centerX - width / 2;
+                if (box.x < 0) box.x = 0;
+                if (!agnostic)
+                  box.y = centerY - height / 2 + class_id * max_wh;
+                else
+                  box.y = centerY - height / 2;
+                if (box.y < 0) box.y = 0;
+                box.width = width;
+                box.height = height;
+                box.class_id = class_id;
+                confidence = sigmoid(confidence);
+                box.score = confidence * score;
+                yolobox_vec.push_back(box);
               }
 #endif
             }
@@ -525,31 +510,29 @@ void Yolov5PostProcess::postProcessCPU(
 
     if (!agnostic)
       for (auto& box : yolobox_vec) {
-          box.x -= box.class_id * max_wh;
-          box.y -= box.class_id * max_wh;
-          box.x = (box.x - tx1) / ratio;
-          if (box.x < 0) box.x = 0;
-          box.y = (box.y - ty1) / ratio;
-          if (box.y < 0) box.y = 0;
-          box.width = (box.width) / ratio;
-          if (box.x + box.width >= frame_width)
-              box.width = frame_width - box.x;
-          box.height = (box.height) / ratio;
-          if (box.y + box.height >= frame_height)
-              box.height = frame_height - box.y;
+        box.x -= box.class_id * max_wh;
+        box.y -= box.class_id * max_wh;
+        box.x = (box.x - tx1) / ratio;
+        if (box.x < 0) box.x = 0;
+        box.y = (box.y - ty1) / ratio;
+        if (box.y < 0) box.y = 0;
+        box.width = (box.width) / ratio;
+        if (box.x + box.width >= frame_width) box.width = frame_width - box.x;
+        box.height = (box.height) / ratio;
+        if (box.y + box.height >= frame_height)
+          box.height = frame_height - box.y;
       }
     else
       for (auto& box : yolobox_vec) {
-          box.x = (box.x - tx1) / ratio;
-          if (box.x < 0) box.x = 0;
-          box.y = (box.y - ty1) / ratio;
-          if (box.y < 0) box.y = 0;
-          box.width = (box.width) / ratio;
-          if (box.x + box.width >= frame_width)
-              box.width = frame_width - box.x;
-          box.height = (box.height) / ratio;
-          if (box.y + box.height >= frame_height)
-              box.height = frame_height - box.y;
+        box.x = (box.x - tx1) / ratio;
+        if (box.x < 0) box.x = 0;
+        box.y = (box.y - ty1) / ratio;
+        if (box.y < 0) box.y = 0;
+        box.width = (box.width) / ratio;
+        if (box.x + box.width >= frame_width) box.width = frame_width - box.x;
+        box.height = (box.height) / ratio;
+        if (box.y + box.height >= frame_height)
+          box.height = frame_height - box.y;
       }
 
     for (auto bbox : yolobox_vec) {

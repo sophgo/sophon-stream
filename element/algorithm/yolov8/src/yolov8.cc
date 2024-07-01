@@ -9,14 +9,6 @@
 
 #include "yolov8.h"
 
-#include <stdlib.h>
-
-#include <chrono>
-#include <nlohmann/json.hpp>
-
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "element_factory.h"
 using namespace std::chrono_literals;
 
 namespace sophon_stream {
@@ -331,23 +323,23 @@ void Yolov8::initProfiler(std::string name, int interval) {
 }
 
 void Yolov8::setContext(
-    std::shared_ptr<::sophon_stream::framework::Context> context) {
+    std::shared_ptr<::sophon_stream::element::Context> context) {
   // check
   mContext = std::dynamic_pointer_cast<Yolov8Context>(context);
 }
 
 void Yolov8::setPreprocess(
-    std::shared_ptr<::sophon_stream::framework::PreProcess> pre) {
+    std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
   mPreProcess = std::dynamic_pointer_cast<Yolov8PreProcess>(pre);
 }
 
 void Yolov8::setInference(
-    std::shared_ptr<::sophon_stream::framework::Inference> infer) {
+    std::shared_ptr<::sophon_stream::element::Inference> infer) {
   mInference = std::dynamic_pointer_cast<Yolov8Inference>(infer);
 }
 
 void Yolov8::setPostprocess(
-    std::shared_ptr<::sophon_stream::framework::PostProcess> post) {
+    std::shared_ptr<::sophon_stream::element::PostProcess> post) {
   mPostProcess = std::dynamic_pointer_cast<Yolov8PostProcess>(post);
 }
 

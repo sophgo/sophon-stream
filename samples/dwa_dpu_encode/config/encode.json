@@ -11,5 +11,5 @@
   "shared_object": "../../build/lib/libencode.so",
   "name": "encode",
   "side": "sophgo",
-  "thread_number": 2
+  "thread_number": 1
 }

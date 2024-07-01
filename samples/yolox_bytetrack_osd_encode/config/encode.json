@@ -6,6 +6,7 @@
     "wss_port": "9000",
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420",
+    "ws_enc_type": "IMG_ONLY",
     "fps": 25
   },
   "shared_object": "../../build/lib/libencode.so",

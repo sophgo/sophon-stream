@@ -10,13 +10,9 @@
 #ifndef SOPHON_STREAM_ELEMENT_PPOCR_REC_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_PPOCR_REC_POST_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
+#include <numeric>
 
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "ppocr_rec_context.h"
 
 namespace sophon_stream {
@@ -38,7 +34,7 @@ struct BeamSearchCandidate {
   }
 };
 
-class PpocrRecPostProcess : public ::sophon_stream::framework::PostProcess {
+class PpocrRecPostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<PpocrRecContext> context);
   /**

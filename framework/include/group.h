@@ -12,41 +12,11 @@
 
 #include <chrono>
 #include <memory>
-#include <nlohmann/json.hpp>
 
-#include "common/common_defs.h"
-#include "common/logger.h"
-#include "common/object_metadata.h"
-#include "common/profiler.h"
-#include "element.h"
 #include "element_factory.h"
 
 namespace sophon_stream {
 namespace framework {
-
-class Context {
- public:
-  Context() = default;
-  virtual ~Context() = default;
-};
-
-class PreProcess {
- public:
-  PreProcess() = default;
-  virtual ~PreProcess() = default;
-};
-
-class Inference {
- public:
-  Inference() = default;
-  virtual ~Inference() = default;
-};
-
-class PostProcess {
- public:
-  PostProcess() = default;
-  virtual ~PostProcess() = default;
-};
 
 template <typename T,
           typename std::enable_if<std::is_same_v<

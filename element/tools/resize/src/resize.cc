@@ -31,31 +31,19 @@ common::ErrorCode Resize::initInternal(const std::string& json) {
 
   mFpsProfiler.config("Resize fps:", 100);
 
-  ratio = configure.find(CONFIG_INTERNAL_RATIO_FILED)->get<float>();
-  if (ratio == 0 && ratio == 1) {
-    dst_h = configure.find(CONFIG_INTERNAL_DST_H_FILED)->get<int>();
-    dst_w = configure.find(CONFIG_INTERNAL_DST_W_FILED)->get<int>();
-    ratio = (float)dst_w / dst_h;
-  }
+  dst_h = configure.find(CONFIG_INTERNAL_DST_H_FILED)->get<int>();
+  dst_w = configure.find(CONFIG_INTERNAL_DST_W_FILED)->get<int>();
+  crop_top = configure.find(CONFIG_INTERNAL_CROP_TOP_FILED)->get<int>();
+  crop_left = configure.find(CONFIG_INTERNAL_CROP_LEFT_FILED)->get<int>();
+  crop_h = configure.find(CONFIG_INTERNAL_CROP_H_FILED)->get<int>();
+  crop_w = configure.find(CONFIG_INTERNAL_CROP_W_FILED)->get<int>();
+  
   
 
   return common::ErrorCode::SUCCESS;
 }
 
-float Resize::get_aspect_scaled_ratio(int src_w, int src_h, int dst_w,
-                                      int dst_h, bool* pIsAligWidth) {
-  float ratio;
-  float r_w = (float)dst_w / src_w;
-  float r_h = (float)dst_h / src_h;
-  if (r_h > r_w) {
-    *pIsAligWidth = true;
-    ratio = r_w;
-  } else {
-    *pIsAligWidth = false;
-    ratio = r_h;
-  }
-  return ratio;
-}
+
 
 common::ErrorCode Resize::resize_work(
     std::shared_ptr<common::ObjectMetadata> resObj) {
@@ -69,14 +57,14 @@ common::ErrorCode Resize::resize_work(
     });
 
     bm_status_t ret =
-        bm_image_create(resObj->mFrame->mHandle, resObj->mFrame->mSpData->height*ratio, resObj->mFrame->mSpData->width*ratio, FORMAT_RGB_PLANAR,
+        bm_image_create(resObj->mFrame->mHandle, dst_h, dst_w, FORMAT_YUV420P,
                         DATA_TYPE_EXT_1N_BYTE, resize_image.get());
     bm_image_alloc_dev_mem(*resize_image, 1);
 
 
-    bmcv_rect_t crop_rect{0, 0,
-                          (unsigned int)resObj->mFrame->mSpData->width,
-                          (unsigned int)resObj->mFrame->mSpData->height};
+    bmcv_rect_t crop_rect{crop_left, crop_top,
+                          (unsigned int)crop_w,
+                          (unsigned int)crop_h};
     bmcv_padding_atrr_t padding_attr;
     memset(&padding_attr, 0, sizeof(padding_attr));
     padding_attr.dst_crop_sty =0;
@@ -85,15 +73,14 @@ common::ErrorCode Resize::resize_work(
     padding_attr.padding_g = 114;
     padding_attr.padding_r = 114;
     padding_attr.if_memset = 1;
-    padding_attr.dst_crop_h = (unsigned int)resObj->mFrame->mSpData->height*ratio;
-    padding_attr.dst_crop_w = (unsigned int)resObj->mFrame->mSpData->width*ratio;
+    padding_attr.dst_crop_h = (unsigned int)dst_h;
+    padding_attr.dst_crop_w = (unsigned int)dst_w;
 
     ret = bmcv_image_vpp_convert_padding(resObj->mFrame->mHandle, 1,
                                          *resObj->mFrame->mSpData, resize_image.get(),
                                          &padding_attr, &crop_rect);
 
     resObj->mFrame->mSpData = resize_image;  
-
     resObj->mFrame->mWidth = resObj->mFrame->mSpData->width;
     resObj->mFrame->mHeight = resObj->mFrame->mSpData->height;
   }
@@ -105,7 +92,7 @@ common::ErrorCode Resize::doWork(int dataPipeId) {
   int outputPort = 0;
   if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
-    int outputPort = outputPorts[0];
+    outputPort = outputPorts[0];
   }
 
   auto data = popInputData(inputPort, dataPipeId);

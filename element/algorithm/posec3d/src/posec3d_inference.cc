@@ -19,49 +19,6 @@ Posec3dInference::~Posec3dInference() {}
 
 void Posec3dInference::init(std::shared_ptr<Posec3dContext> context) {}
 
-std::shared_ptr<sophon_stream::common::bmTensors>
-Posec3dInference::getOutputDeviceMem(std::shared_ptr<Posec3dContext> context) {
-  std::shared_ptr<sophon_stream::common::bmTensors> outputTensors =
-      std::make_shared<sophon_stream::common::bmTensors>();
-  outputTensors.reset(
-      new sophon_stream::common::bmTensors(),
-      [](sophon_stream::common::bmTensors* p) {
-        for (int i = 0; i < p->tensors.size(); ++i)
-          if (p->tensors[i]->device_mem.u.device.device_addr != 0) {
-            bm_free_device(p->handle, p->tensors[i]->device_mem);
-          }
-        delete p;
-        p = nullptr;
-      });
-  outputTensors->handle = context->handle;
-  outputTensors->tensors.resize(context->output_num);
-  for (int i = 0; i < context->output_num; ++i) {
-    outputTensors->tensors[i] = std::make_shared<bm_tensor_t>();
-    outputTensors->tensors[i]->dtype =
-        context->bmNetwork->m_netinfo->output_dtypes[i];
-    outputTensors->tensors[i]->shape =
-        context->bmNetwork->m_netinfo->stages[0].output_shapes[i];
-    outputTensors->tensors[i]->st_mode = BM_STORE_1N;
-    // 计算大小
-    size_t max_size = 0;
-    for (int s = 0; s < context->bmNetwork->m_netinfo->stage_num; s++) {
-      size_t out_size = bmrt_shape_count(
-          &context->bmNetwork->m_netinfo->stages[s].output_shapes[i]);
-      if (max_size < out_size) {
-        max_size = out_size;
-      }
-    }
-    if (BM_FLOAT32 == context->bmNetwork->m_netinfo->output_dtypes[i])
-      max_size *= 4;
-    // malloc空间
-    auto ret =
-        bm_malloc_device_byte(outputTensors->handle,
-                              &outputTensors->tensors[i]->device_mem, max_size);
-    STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")                              
-  }
-  return outputTensors;
-}
-
 common::ErrorCode Posec3dInference::predict(
     std::shared_ptr<Posec3dContext> context,
     common::ObjectMetadatas& objectMetadatas) {

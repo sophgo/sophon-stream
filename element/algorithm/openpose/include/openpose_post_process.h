@@ -10,17 +10,11 @@
 #ifndef SOPHON_STREAM_ELEMENT_OPENPOSE_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_OPENPOSE_POST_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-#define USE_OPENCV 1
 #include <opencv2/opencv.hpp>
 
-#include "common/bmnn_utils.h"
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "openpose_context.h"
+
 using namespace sophon_stream::common;
 
 namespace sophon_stream {
@@ -62,7 +56,7 @@ class PoseBlob : public NoCopyable,
   float* data() { return m_data; }
 };
 using PoseBlobPtr = std::shared_ptr<PoseBlob>;
-class OpenposePostProcess : public ::sophon_stream::framework::PostProcess {
+class OpenposePostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<OpenposeContext> context);
   /**

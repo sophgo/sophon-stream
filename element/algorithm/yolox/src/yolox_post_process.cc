@@ -9,11 +9,6 @@
 
 #include "yolox_post_process.h"
 
-#include <algorithm>
-#include <cmath>
-
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace yolox {

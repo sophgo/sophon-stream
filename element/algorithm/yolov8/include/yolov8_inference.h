@@ -10,20 +10,14 @@
 #ifndef SOPHON_STREAM_ELEMENT_YOLOV8_INFERENCE_H_
 #define SOPHON_STREAM_ELEMENT_YOLOV8_INFERENCE_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/inference.h"
 #include "yolov8_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace yolov8 {
 
-class Yolov8Inference : public ::sophon_stream::framework::Inference {
+class Yolov8Inference : public ::sophon_stream::element::Inference {
  public:
   ~Yolov8Inference() override;
   /**
@@ -38,19 +32,6 @@ class Yolov8Inference : public ::sophon_stream::framework::Inference {
    */
   common::ErrorCode predict(std::shared_ptr<Yolov8Context> context,
                             common::ObjectMetadatas& objectMetadatas);
-
- private:
-  std::shared_ptr<sophon_stream::common::bmTensors> mergeInputDeviceMem(
-      std::shared_ptr<Yolov8Context> context,
-      common::ObjectMetadatas& objectMetadatas);
-
-  std::shared_ptr<sophon_stream::common::bmTensors> getOutputDeviceMem(
-      std::shared_ptr<Yolov8Context> context);
-
-  void splitOutputMemIntoObjectMetadatas(
-      std::shared_ptr<Yolov8Context> context,
-      common::ObjectMetadatas& objectMetadatas,
-      std::shared_ptr<sophon_stream::common::bmTensors> outputTensors);
 };
 
 }  // namespace yolov8

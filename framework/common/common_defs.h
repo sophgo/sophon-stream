@@ -14,9 +14,10 @@
 #include <sstream>
 #include <string>
 
-#include "logger.h"
 #include "bmcv_api.h"
 #include "bmcv_api_ext.h"
+#include "bmruntime_interface.h"
+#include "logger.h"
 
 #define STREAM_LIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 1))
 #define STREAM_UNLIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 0))
@@ -30,20 +31,16 @@ inline std::string concatArgs(const T& arg, const Args&... args) {
   return ss.str() + concatArgs(args...);
 }
 
-#define STREAM_CHECK(cond, ...)                                     \
-  if (STREAM_UNLIKELY(!(cond))) {                                   \
-    std::string msg = concatArgs(__VA_ARGS__);                      \
-    std::string error_msg =                                         \
-        "Expected " #cond " to be true, but got false. " + (msg);   \
-    std::cerr << "\033[0;31m"                                       \
-              << "[STREAM_CHECK_ERROR] "                            \
-              << "\033[0m"                                          \
-              << "\t" << __FILE__ << ": " << __LINE__ << std::endl; \
-    std::cerr << "\033[0;31m"                                       \
-              << "[STREAM_CHECK_MESSAGE] "                          \
-              << "\033[0m"                                          \
-              << "\t" << error_msg << std::endl;                    \
-    exit(1);                                                        \
+#define STREAM_CHECK(cond, ...)                                               \
+  if (STREAM_UNLIKELY(!(cond))) {                                             \
+    std::string msg = concatArgs(__VA_ARGS__);                                \
+    std::string error_msg =                                                   \
+        "Expected " #cond " to be true, but got false. " + (msg);             \
+    std::cerr << "\033[0;31m" << "[STREAM_CHECK_ERROR] " << "\033[0m" << "\t" \
+              << __FILE__ << ": " << __LINE__ << std::endl;                   \
+    std::cerr << "\033[0;31m" << "[STREAM_CHECK_MESSAGE] " << "\033[0m"       \
+              << "\t" << error_msg << std::endl;                              \
+    exit(1);                                                                  \
   }
 
 /* for multi version compatible */
@@ -53,7 +50,8 @@ inline std::string concatArgs(const T& arg, const Args&... args) {
 //  * @brief To solve incompatible issue in a2 sdk
 //  *
 //  * @param image input bm_image
-//  * @return bm_status_t BM_SUCCESS change success, other values: change failed.
+//  * @return bm_status_t BM_SUCCESS change success, other values: change
+//  failed.
 //  */
 // static inline bm_status_t bm_image_destroy(bm_image& image) {
 //   return bm_image_destroy(&image);
@@ -111,6 +109,7 @@ static int avcodec_encode_video2(AVCodecContext* avctx, AVPacket* avpkt,
   }
   return 0;
 }
+
 #define av_find_input_format(x) \
   const_cast<AVInputFormat*>(av_find_input_format(x))
 #define avcodec_find_decoder(x) const_cast<AVCodec*>(avcodec_find_decoder(x))

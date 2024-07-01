@@ -14,8 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "graphics.h"
-
 namespace sophon_stream {
 namespace common {
 struct PosedObjectMetadata {

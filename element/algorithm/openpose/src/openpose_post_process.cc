@@ -9,10 +9,6 @@
 
 #include "openpose_post_process.h"
 
-#include <cmath>
-
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace openpose {

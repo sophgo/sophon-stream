@@ -10,21 +10,14 @@
 #ifndef SOPHON_STREAM_ELEMENT_POSEC3D_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_POSEC3D_POST_PROCESS_H_
 
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
-#include "group.h"
+#include "algorithmApi/post_process.h"
 #include "posec3d_context.h"
 
 namespace sophon_stream {
 namespace element {
 namespace posec3d {
 
-class Posec3dPostProcess : public ::sophon_stream::framework::PostProcess {
+class Posec3dPostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<Posec3dContext> context);
   /**

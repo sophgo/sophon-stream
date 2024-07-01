@@ -25,12 +25,15 @@ sophon-stream resize插件具有一些可配置的参数，可以根据需求进
 ```
 
 | 参数名        | 类型   | 默认值                         | 说明             |
-| ------------- | ------ | ------------------------------ | ---------------- |
-| ratio         | float  | 0.4                            | 缩放比例因子     |
-| dst_h         | int    | 1080                           | 选择缩放图像的高 |
-| dst_w         | int    | 1920                           | 选择缩放图像的宽 |
-| shared_object | string | "../../../build/lib/libive.so" | libive动态库路径 |
-| name          | string | "distributor"                  | element名称      |
+| ------------- | ------ | ------------------------------| ---------------- |
+| dst_h         | int    | 无                            | 输出图像的高度信息 |
+| dst_w         | int    | 无                            | 输出图像的宽度信息 |
+| crop_top      | int    | 无                            | 对输入图像进行裁剪操作时，从哪一行开始进行裁剪的位置信息 |
+| crop_left     | int    | 无                            | 对输入图像进行裁剪操作时，从哪一列开始进行裁剪的位置信息 |
+| crop_h        | int    | 无                            | 对输入图像进行裁剪操作时，裁剪出图像的高度信息 |
+| crop_w        | int    | 无                            | 对输入图像进行裁剪操作时，裁剪出图像的宽度信息 |
+| shared_object | string | "../../../build/lib/libresize.so" | libresize动态库路径 |
+| name          | string | "resize"                       | element名称      |
 | side          | string | "sophgo"                       | 设备类型         |
 | thread_number | int    | 1                              | 启动线程数       |
 

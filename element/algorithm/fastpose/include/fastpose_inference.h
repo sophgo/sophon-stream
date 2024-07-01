@@ -10,20 +10,14 @@
 #ifndef SOPHON_STREAM_ELEMENT_FASTPOSE_INFERENCE_H_
 #define SOPHON_STREAM_ELEMENT_FASTPOSE_INFERENCE_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "common/error_code.h"
-#include "common/object_metadata.h"
+#include "algorithmApi/inference.h"
 #include "fastpose_context.h"
-#include "group.h"
 
 namespace sophon_stream {
 namespace element {
 namespace fastpose {
 
-class FastposeInference : public ::sophon_stream::framework::Inference {
+class FastposeInference : public ::sophon_stream::element::Inference {
  public:
   ~FastposeInference() override;
   /**

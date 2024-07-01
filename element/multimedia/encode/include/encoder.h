@@ -10,6 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_ENCODER_H_
 #define SOPHON_STREAM_ELEMENT_ENCODER_H_
 
+#include <sys/time.h>
 #include <unistd.h>
 
 #include <csignal>
@@ -22,8 +23,6 @@
 #include <regex>
 #include <thread>
 
-// for bmcv_api_ext.h
-#include "bmcv_api_ext.h"
 #include "common/profiler.h"
 
 extern "C" {
@@ -32,6 +31,7 @@ extern "C" {
 #include <libavutil/time.h>
 #include <libswscale/swscale.h>
 }
+#include "common/common_defs.h"
 
 namespace sophon_stream {
 namespace element {

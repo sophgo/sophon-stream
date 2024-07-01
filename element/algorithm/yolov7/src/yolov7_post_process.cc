@@ -9,10 +9,6 @@
 
 #include "yolov7_post_process.h"
 
-#include <cmath>
-
-#include "common/logger.h"
-
 namespace sophon_stream {
 namespace element {
 namespace yolov7 {
@@ -98,22 +94,6 @@ int Yolov7PostProcess::argmax(float* data, int num) {
 }
 
 float Yolov7PostProcess::sigmoid(float x) { return 1.0 / (1 + expf(-x)); }
-
-float Yolov7PostProcess::get_aspect_scaled_ratio(int src_w, int src_h,
-                                                 int dst_w, int dst_h,
-                                                 bool* pIsAligWidth) {
-  float ratio;
-  float r_w = (float)dst_w / src_w;
-  float r_h = (float)dst_h / src_h;
-  if (r_h > r_w) {
-    *pIsAligWidth = true;
-    ratio = r_w;
-  } else {
-    *pIsAligWidth = false;
-    ratio = r_h;
-  }
-  return ratio;
-}
 
 void Yolov7PostProcess::NMS(YoloV7BoxVec& dets, float nmsConfidence) {
   int length = dets.size();

@@ -16,7 +16,8 @@ The sophon-stream retinaface plugin has some configurable parameters that can be
     "configure": {
         "model_path": "../data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
         "max_face_count":50,
-        "score_threshold":0.5,
+        "score_threshold":0.1,
+        "threshold_nms": 0.4,
         "bgr2rgb": false,
         "mean": [
             104,
@@ -43,7 +44,8 @@ The sophon-stream retinaface plugin has some configurable parameters that can be
 |:-------------:| :-------: | :------------------:| :------------------------:|
 | model_path | String | "../data/models/retinaface_mobilenet0.25_int8_1b.bmodel" | Path to the retinaface model |
 | max_face_count | Integer | 50 | Maximum number of faces to detect |
-| score_threshold | Float | 0.5 | NMS IOU threshold for target detection |
+| score_threshold | Float | 0.1 | Confidence threshold for target detection |
+| threshold_nms | Float | 0.4 | NMS IOU threshold for target detection |
 | bgr2rgb | Bool | false | Whether to convert the image from BGR to RGB format; the default is BGR |
 | mean | Float Array | None | Mean values for image preprocessing, with a length of 3. The calculation is y=(x-mean)/std. If bgr2rgb=true, the order of the array should be R, G, B; otherwise, it should be B, G, R |
 | std | Float Array | None | Standard deviations for image preprocessing, with a length of 3. The calculation is the same as above. If bgr2rgb=true, the order of the array should be R, G, B; otherwise, it should be B, G, R |

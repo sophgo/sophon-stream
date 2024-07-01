@@ -10,17 +10,11 @@
 #ifndef SOPHON_STREAM_ELEMENT_FASTPOSE_POST_PROCESS_H_
 #define SOPHON_STREAM_ELEMENT_FASTPOSE_POST_PROCESS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
 #define USE_OPENCV 1
 #include <opencv2/opencv.hpp>
 
-#include "common/bmnn_utils.h"
-#include "common/error_code.h"
-#include "common/object_metadata.h"
+#include "algorithmApi/post_process.h"
 #include "fastpose_context.h"
-#include "group.h"
 
 using namespace sophon_stream::common;
 
@@ -44,7 +38,7 @@ struct PoseNMSParams {
   float face_weight_dist;
 };
 
-class FastposePostProcess : public ::sophon_stream::framework::PostProcess {
+class FastposePostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<FastposeContext> context);
   /**

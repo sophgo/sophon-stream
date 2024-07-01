@@ -8,5 +8,5 @@
   "shared_object": "../../build/lib/libive.so",
   "name": "ive",
   "side": "sophgo",
-  "thread_number": 4
+  "thread_number": 1
 }

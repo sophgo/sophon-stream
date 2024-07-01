@@ -40,6 +40,12 @@ then
     rm -f maps.zip
     mv ./maps ../data/
 
+    python3 -m dfss --url=open@sophgo.com:/sophon-stream/dwa_dpu_encode/v4l2_os04a10_dual_0621.ko
+    mv v4l2_os04a10_dual_0621.ko ../data/
+
+    python3 -m dfss --url=open@sophgo.com:/sophon-stream/dwa_dpu_encode/cvi_sdr_bin
+    mv cvi_sdr_bin ../data/
+
 else
     echo "test image exist!"
 fi

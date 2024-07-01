@@ -23,7 +23,8 @@
 
 本例程用于说明如何使用sophon-stream快速构建深度估计应用。
 
-本例程中，深度估计算法的镜头畸变矫正、深度估计、染色分别在三个element上进行运算，element内部可以开启多个线程，保证了一定的运行效率。
+本例程中，深度估计算法的镜头畸变矫正、深度估计、染色分别在三个element上进行运算，element内部可以开启多个线程，保证了一定的运行效率。下图是深度估计应用的流程图：
+![dpu_pipeline](pic/image.png)
 
 ## 2. 特性
 
@@ -63,14 +64,19 @@ sudo -s
 cd /mnt/system/ko/
 insmod v4l2_os04a10.ko
 ```
+或者，使用data目录中下载的文件：
+```bash
+sudo -s
+insmod /data/v4l2_os04a10_dual_0621.ko
+```
+
 （2）isp参数文件配置
 
 ```bash
 sudo -s
 mkdir -p /mnt/cfg/param
-cp data/param/cvi_sdr_bin /mnt/cfg/param
+cp data/cvi_sdr_bin /mnt/cfg/param/
 ```
-
 
 ## 5. 程序编译
 
@@ -86,14 +92,16 @@ dwa_dpu_encode demo中各部分参数位于 [config](./config/) 目录，结构�
 ```bash
 ./config/
 ├── decode.json                 # 解码配置
-├── engine.json                 # sophon-stream graph配置，需要分别配置dwa、dpu、resize、encode等文件
-├── camera_dwa_dpu_encode_demo.json          # demo按sensor输入的配置文件
-├── dwa_dpu_encode_demo_imgs.json            # demo按图片输入的配置文件
+├── encode.json                 # 编码配置
+├── engine_dwa_dpu_ive_resize.json          # sophon-stream graph配置，需要分别配置dwa、dpu、ive_resize、encode等文件
+├── dwa_dpu_encode_demo_imgs.json           # demo按图片输入的配置文件
+├── camera_dwa_dpu_encode_demo.json        # demo按sensor输入的配置文件
 ├── dwa_L.json                  # 左侧输入对应的畸变矫正配置文件
 ├── dwa_R.json                  # 右侧输入对应的畸变矫正配置文件
 ├── dpu.json                    # 深度估计配置文件
 ├── resize.json                 # 尺寸缩放配置文件
 └── ive.json                    # 深度估计配置文件
+
 ```
 
 其中，[camera_dwa_dpu_encode_demo.json](./config/camera_dwa_dpu_encode_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels参数配置输入的路数，sample_interval设置跳帧数，loop_num设置循环播放次数，channel中包含码流url等信息。download_image控制是否保存推理结果，若为false则不保存，若为true，则会保存在/build/results目录下。
@@ -103,7 +111,7 @@ dwa_dpu_encode demo中各部分参数位于 [config](./config/) 目录，结构�
 
 ### 6.2 运行
 
-对于PCIe平台，可以直接在PCIe平台上运行测试；对于SoC平台，需将交叉编译生成的动态链接库、可执行文件、所需的模型和测试数据拷贝到SoC平台中测试。
+对于SoC平台，需将交叉编译生成的动态链接库、可执行文件、所需的模型和测试数据拷贝到SoC平台中测试。
 
 SoC平台上，动态库、可执行文件、配置文件、模型、视频数据的目录结构关系应与原始sophon-stream仓库中的关系保持一致。
 
@@ -115,7 +123,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 ## 7. 性能测试
 
-目前，深度估计算法只支持在BM1688 SOC模式下进行推理。按照默认设置可以达到25fps。
+目前，深度估计算法只支持在BM1688 SOC模式下进行推理。按照默认设置可以达到30fps。
 
 
 ## 8. web ui使用

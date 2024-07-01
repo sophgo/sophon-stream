@@ -10,19 +10,7 @@
 #ifndef SOPHON_STREAM_ELEMENT_RETINAFACE_CONTEXT_H_
 #define SOPHON_STREAM_ELEMENT_RETINAFACE_CONTEXT_H_
 
-#include <memory>
-#include <nlohmann/json.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-// for bmcv_api_ext.h
-#include "bmcv_api_ext.h"
-#include "bmlib_runtime.h"
-#include "bmruntime_interface.h"
-#include "common/bmnn_utils.h"
-#include "common/error_code.h"
-#include "group.h"
+#include "algorithmApi/context.h"
 
 namespace sophon_stream {
 namespace element {
@@ -31,7 +19,7 @@ namespace retinaface {
 #define USE_ASPECT_RATIO 1
 #define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
-class RetinafaceContext : public ::sophon_stream::framework::Context {
+class RetinafaceContext : public ::sophon_stream::element::Context {
  public:
   int deviceId;  // 设备ID
 
@@ -39,6 +27,7 @@ class RetinafaceContext : public ::sophon_stream::framework::Context {
   std::shared_ptr<BMNNNetwork> bmNetwork;
   bm_handle_t handle;
 
+  float thresh_nms;                                    // nms iou阈值
   std::vector<float> mean;  // 前处理均值， 长度为3，顺序为rgb
   std::vector<float> stdd;  // 前处理方差， 长度为3，顺序为rgb
   bool bgr2rgb;             // 是否将bgr图像转成rgb推理

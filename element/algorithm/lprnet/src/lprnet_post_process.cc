@@ -9,13 +9,6 @@
 
 #include "lprnet_post_process.h"
 
-#include <cmath>
-
-#include "common/logger.h"
-#include <iostream>
-#include <string>
-
-
 namespace sophon_stream {
 namespace element {
 namespace lprnet {
