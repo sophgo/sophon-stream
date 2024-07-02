@@ -190,6 +190,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
     }
     mFpsProfilers.resize(getThreadNumber());
     for(int i = 0; i < mFpsProfilers.size(); ++i) {
+      mFpsProfilers[i] = std::make_shared<common::FpsProfiler>();
       mFpsProfilers[i]->config("fps_encode" + std::to_string(i), 100);
     }
   } while (false);
