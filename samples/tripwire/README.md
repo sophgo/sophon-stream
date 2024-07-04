@@ -285,11 +285,11 @@ frame count is 3077 | fps is 41.2909 fps.
 ## 7. 性能测试
 由于涉及到筛选，本例程暂不提供性能测试结果，如需各模型推理性能，请到对应模型例程查看。
 
-## 8. 使用sophon-web可视化
+## 8. 使用application-web可视化
 
-1.克隆 https://github.com/sophgo/sophon-web
+1.克隆 https://github.com/sophgo/application-web
 
-2.根据sophon-web/README.md将sophon-web部署
+2.根据application-web/README.md将application-web部署
 
 3.参考[web_server](../../tools/web-server/README.md)搭建应用层程序
 
@@ -298,4 +298,4 @@ frame count is 3077 | fps is 41.2909 fps.
 cd ../../tools/web-server
 bash start_server.sh 
 ```
-5.通过sophon-web下发任务，启动任务
+5.通过application-web下发任务，启动任务
