@@ -1,7 +1,7 @@
 # stream-server
 
 ## 介绍
-此框架意图是为了打通sophon-web与sophon-stream，通过json配置文件,使得底层算法与上层前端可以联动。
+此框架意图是为了打通application-web与sophon-stream，通过json配置文件,使得底层算法与上层前端可以联动。
 
 ## 特性
 本框架实现了简单的业务层逻辑demo和json配置文件转换功能。
@@ -17,7 +17,7 @@
 参考[sophon-stream](../../README.md)根据算法需求准备好模型与数据，并完成stream编译，生成main函数接口，此接口为sophon-stream进程主要逻辑的入口，根据命名格式完成config命名，注意入口参数config一般以算法名称+'_demo'命名，算法名称为samples下文件目录名称。
 
 
-算法定义了TYPE映射保存在server中，对应sophon-web中算法，如
+算法定义了TYPE映射保存在server中，对应application-web中算法，如
 ```
 map_type={16:'license_plate_recognition'}
 ```
@@ -75,7 +75,7 @@ server.py会自动完成以下操作
 python3 server.py --stream_path="/path/to/stream"
 ```
 
-其中包含服务如下,设置遵循sophon-web接口规则
+其中包含服务如下,设置遵循application-web接口规则
 ```
 /task/list # 完成查询任务列表功能
 /task/create # 完成创建任务功能
@@ -94,7 +94,7 @@ def build_config(data):
     return :  demo_config_path,TaskID,Type
     '''
 ```
-接受sophon-web请求并转换成stream config规则，此部分不同算法具有特异性，需要根据具体算法配置extend选项进行修改代码。
+接受application-web请求并转换成stream config规则，此部分不同算法具有特异性，需要根据具体算法配置extend选项进行修改代码。
 ### build_task
 ```
 def build_task(demo_config_path,task_id,Type,result_url):
@@ -123,7 +123,7 @@ stream算法进程，完成算法,并将逐帧结果通过post请求推送到业
 
 由于算法是逐帧反馈的，所以具体业务需要对算法的结果进行反馈，逐帧反馈是不现实的，会严重占用带宽，需要业务层逻辑进行筛选。
 
-实现了接受stream结果，并进行业务筛选(如车牌识别去重筛选告警功能)，此部分具有特异性，需要根据需求修改，并转换为sophon-web接口格式做出告警,并使用post请求做异步上报,多个上报地址采取轮询的负载均衡机制，亦可以保存json到本地文件。
+实现了接受stream结果，并进行业务筛选(如车牌识别去重筛选告警功能)，此部分具有特异性，需要根据需求修改，并转换为application-web接口格式做出告警,并使用post请求做异步上报,多个上报地址采取轮询的负载均衡机制，亦可以保存json到本地文件。
 
 本例程中只对连续出现n帧并且没有连续消失m帧的进行告警。可以根据需求在修改。
 
@@ -178,7 +178,7 @@ license_plate_recognition_out_thresh=5
 以车牌识别为例，只对连续出现n帧并且没有连续消失m帧的进行告警。
 
 ### build_config
-主要是sophon-web的任务下发json与stream的json文件的转换。
+主要是application-web的任务下发json与stream的json文件的转换。
 
 ```
 def algorithm_build_config(algorithm_name,stream_path,data,port):
@@ -189,9 +189,9 @@ def algorithm_build_config(algorithm_name,stream_path,data,port):
 
 参数包括算法名称，stream路径，数据，业务逻辑进程端口号
 
-为了完成config转换功能，我们需要知道sophon-stream和sophon-web的config的对应关系
+为了完成config转换功能，我们需要知道sophon-stream和application-web的config的对应关系
 
-一个sophon-web的任务下发json如下
+一个application-web的任务下发json如下
 ```
 data = {
     "TaskID": task_id,
@@ -302,7 +302,7 @@ data = {
 
 对应关系如下
 
-|stream|sophon-web|说明|
+|stream|application-web|说明|
 |----|----|----|
 |channels-url|InputSrc-StreamSrc-Address|视频地址|
 |channels-sample_interval|Algorithm-DetectInterval/TrackInterval|抽帧数|
@@ -334,7 +334,7 @@ data = {
 
 
 对应关系如下
-|stream|sophon-web|说明|
+|stream|application-web|说明|
 |----|----|----|
 |configure-route|TaskID|任务ID|
 |configure-port|全局变量自增|进程端口|
@@ -372,18 +372,18 @@ data = {
   "thread_number": 1
 }
 ```
-|stream|sophon-web|说明|
+|stream|application-web|说明|
 |----|----|----|
 |roi|HotArea|感兴趣区域，只支持矩形|
 
 备注：
 
-1.其他sophon-web参数目前stream并不支持。
+1.其他application-web参数目前stream并不支持。
 
-2.其他算法特定参数可能在sophon-web的extend模块中提供，具体参考[sophon-stream](../../README.md)
+2.其他算法特定参数可能在application-web的extend模块中提供，具体参考[sophon-stream](../../README.md)
 
 ### trans_json
-主要是sophon-stream的结果json与sophon-web的汇报json文件的转换。
+主要是sophon-stream的结果json与application-web的汇报json文件的转换。
 
 ```
 def algorithm_trans_json(json_data,task_id,Type,up_list):
@@ -394,7 +394,7 @@ def algorithm_trans_json(json_data,task_id,Type,up_list):
 
 参数包括数据，任务id，任务类型，上报列表
 
-为了完成结果json转换功能，我们需要知道sophon-stream和sophon-web的json的对应关系
+为了完成结果json转换功能，我们需要知道sophon-stream和application-web的json的对应关系
 
 sophon-stream的结果json如下
 
@@ -443,7 +443,7 @@ sophon-stream的结果json如下
 }
 ```
 
-sophon-web的结果上报json格式
+application-web的结果上报json格式
 ```
 {
     “TaskID":"123",//任务ID
@@ -491,7 +491,7 @@ sophon-web的结果上报json格式
 |其他属性|		|其他属性描述|
 
 对应关系如下
-|stream|sophon-web|说明|
+|stream|application-web|说明|
 |----|----|----|
 |mFrame-mSpData|SceneImageBase64|原图base64编码|
 |mFrame-mFrameId|FrameIndex|帧号|
