@@ -2,8 +2,8 @@
     "configure": {
         "model_path": "../retinaface/data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
         "max_face_count":50,
-        "score_threshold":0.1,
-        "threshold_nms": 0.4,
+        "score_threshold":0.3,
+        "threshold_nms": 0.5,
         "bgr2rgb": false,
         "mean": [
             104,
@@ -12,7 +12,7 @@
         ],
         "std": [
             1,
-            1,
+            1,  
             1
         ]
     },
