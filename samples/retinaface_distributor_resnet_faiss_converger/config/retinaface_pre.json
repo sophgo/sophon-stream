@@ -2,7 +2,8 @@
     "configure": {
         "model_path": "../retinaface_distributor_resnet_faiss_converger/data/models/BM1684X/retinaface_mobilenet0.25_fp32_1b.bmodel",
         "max_face_count":50,
-        "score_threshold":0.5,
+        "score_threshold":0.3,
+        "threshold_nms": 0.5,
         "bgr2rgb": false,
         "mean": [
             104,
