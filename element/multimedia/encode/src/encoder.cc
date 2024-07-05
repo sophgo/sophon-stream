@@ -335,11 +335,8 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
       bm_image_create(handle, params_map_["height"],  params_map_["width"], FORMAT_NV12,
                       DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
     }
-// #if BMCV_VERSION_MAJOR > 1
-//     auto ret = bm_image_alloc_dev_mem_heap_mask(*yuv_image, 2);
-// #else
-    auto ret = bm_image_alloc_dev_mem_heap_mask(*yuv_image, 4);
-// #endif
+
+    auto ret = bm_image_alloc_dev_mem_heap_mask(*yuv_image, STREAM_VPP_HEAP_MASK);
     STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
     bmcv_rect_t crop_rect = {0, 0, image->width, image->height};
     // timeval tv1, tv2;

@@ -52,7 +52,7 @@ class Inference {
         input_bytes *= 4;
       // malloc空间
       auto ret = bm_malloc_device_byte_heap(
-          inputTensors->handle, &inputTensors->tensors[i]->device_mem, 0,
+          inputTensors->handle, &inputTensors->tensors[i]->device_mem, STREAM_NPU_HEAP,
           input_bytes);
       STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       // d2d
@@ -107,7 +107,7 @@ class Inference {
         max_size *= 4;
       // malloc空间
       auto ret = bm_malloc_device_byte_heap(
-          outputTensors->handle, &outputTensors->tensors[i]->device_mem, 0,
+          outputTensors->handle, &outputTensors->tensors[i]->device_mem, STREAM_NPU_HEAP,
           max_size);
       STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     }
@@ -160,7 +160,7 @@ class Inference {
         max_size /= context->max_batch;
         auto ret = bm_malloc_device_byte_heap(
             objectMetadatas[i]->mOutputBMtensors->handle,
-            &objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem, 0,
+            &objectMetadatas[i]->mOutputBMtensors->tensors[j]->device_mem, STREAM_NPU_HEAP,
             max_size);
         STREAM_CHECK(ret == 0,
                      "Alloc Device Memory Failed! Program Terminated.")

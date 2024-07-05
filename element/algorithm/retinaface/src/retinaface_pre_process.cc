@@ -33,7 +33,7 @@ common::ErrorCode RetinafacePreProcess::preProcess(
     if (image0.image_format != jsonPlanner) {
       bm_image_create(context->handle, image0.height, image0.width, jsonPlanner,
                       image0.data_type, &image1);
-      auto ret = bm_image_alloc_dev_mem_heap_mask(image1, 2);
+      auto ret = bm_image_alloc_dev_mem_heap_mask(image1, STREAM_VPU_HEAP_MASK);
       STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_image_storage_convert(context->handle, 1, &image0, &image1);
     } else {
@@ -51,7 +51,7 @@ common::ErrorCode RetinafacePreProcess::preProcess(
                       image1.image_format, image1.data_type, &image_aligned,
                       stride2);
 
-      auto ret = bm_image_alloc_dev_mem_heap_mask(image_aligned, 2);
+      auto ret = bm_image_alloc_dev_mem_heap_mask(image_aligned, STREAM_VPU_HEAP_MASK);
       STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_copy_to_atrr_t copyToAttr;
       memset(&copyToAttr, 0, sizeof(copyToAttr));
@@ -95,7 +95,7 @@ common::ErrorCode RetinafacePreProcess::preProcess(
     int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
-    auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, STREAM_VPP_HEAP_MASK);
     STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     bmcv_rect_t crop_rect{0, 0, image1.width, image1.height};
 
@@ -122,7 +122,7 @@ common::ErrorCode RetinafacePreProcess::preProcess(
     bm_device_mem_t mem;
     int size_byte = 0;
     bm_image_get_byte_size(converto_img, &size_byte);
-    ret = bm_malloc_device_byte_heap(context->handle, &mem, 0, size_byte);
+    ret = bm_malloc_device_byte_heap(context->handle, &mem, STREAM_NPU_HEAP, size_byte);
     STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     bm_image_attach(converto_img, &mem);
 

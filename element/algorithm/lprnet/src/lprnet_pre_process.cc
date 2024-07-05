@@ -62,7 +62,7 @@ common::ErrorCode LprnetPreProcess::preProcess(
     bm_image_create(context->handle, context->net_h, context->net_w,
                     FORMAT_BGR_PLANAR, DATA_TYPE_EXT_1N_BYTE, &resized_img,
                     strides);
-    auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, 4);
+    auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, STREAM_VPP_HEAP_MASK);
     STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
     bmcv_image_vpp_convert(
         context->bmContext->handle(), 1, image_aligned,
@@ -81,7 +81,7 @@ common::ErrorCode LprnetPreProcess::preProcess(
     bm_device_mem_t mem;
     int size_byte = 0;
     bm_image_get_byte_size(converto_img, &size_byte);
-    ret = bm_malloc_device_byte_heap(context->handle, &mem, 0, size_byte);
+    ret = bm_malloc_device_byte_heap(context->handle, &mem, STREAM_NPU_HEAP, size_byte);
     STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
 
     bm_image_attach(converto_img, &mem);
