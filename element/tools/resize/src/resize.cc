@@ -7,7 +7,6 @@
 //
 //===----------------------------------------------------------------------===//
 #include "common/common_defs.h"
-#if BMCV_VERSION_MAJOR > 1
 
 #include <chrono>
 #include <nlohmann/json.hpp>
@@ -132,4 +131,3 @@ REGISTER_WORKER("resize", Resize)
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif
