@@ -148,7 +148,7 @@ std::string frame_to_base64(Frame& frame) {
 
   bm_image_create(handle_, bgr_.height, bgr_.width, FORMAT_YUV420P,
                   bgr_.data_type, &yuv_);
-  bm_image_alloc_dev_mem_heap_mask(yuv_, 2);
+  bm_image_alloc_dev_mem_heap_mask(yuv_, STREAM_VPU_HEAP_MASK);
 #if ENABLE_TIME_LOG
   gettimeofday(&time2, NULL);
 #endif

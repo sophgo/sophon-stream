@@ -375,7 +375,7 @@ common::ErrorCode Posec3dPreProcess::preProcess(
   // input data set into obj0 mem
   auto ret = bm_malloc_device_byte_heap(
       context->handle,
-      &objectMetadatas[0]->mInputBMtensors->tensors[0]->device_mem, 0,
+      &objectMetadatas[0]->mInputBMtensors->tensors[0]->device_mem, STREAM_NPU_HEAP,
       size_byte);
   STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
 

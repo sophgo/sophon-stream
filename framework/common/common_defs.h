@@ -14,10 +14,66 @@
 #include <sstream>
 #include <string>
 
-#include "bmcv_api.h"
 #include "bmcv_api_ext.h"
 #include "bmruntime_interface.h"
 #include "logger.h"
+
+// BM1688/CV186AH
+#if BMCV_VERSION_MAJOR > 1
+
+// For SDK Version 1.7, Heap Mask is the Same With 1684/1684X
+#ifdef BMCV_VERSION_MINOR
+
+#include "bmcv_api.h"
+#define STREAM_VPP_HEAP_MASK 4
+#define STREAM_VPU_HEAP_MASK 2
+#define STREAM_NPU_HEAP_MASK 1
+#define STREAM_VPP_HEAP 2
+#define STREAM_VPU_HEAP 1
+#define STREAM_NPU_HEAP 0
+
+#else
+
+// For SDK Version 1.6, Heap Mask is 1 and 2
+#define STREAM_VPP_HEAP_MASK 2
+#define STREAM_VPU_HEAP_MASK 2
+#define STREAM_NPU_HEAP_MASK 1
+#define STREAM_VPP_HEAP 1
+#define STREAM_VPU_HEAP 1
+#define STREAM_NPU_HEAP 0
+
+typedef bmcv_padding_attr_t bmcv_padding_atrr_t;
+/**
+ * @brief To solve incompatible issue in a2 sdk
+ *
+ * @param image input bm_image
+ * @return bm_status_t BM_SUCCESS change success, other values: change
+ failed.
+ */
+static inline bm_status_t bm_image_destroy(bm_image& image) {
+  return bm_image_destroy(&image);
+}
+
+static inline bm_status_t bmcv_image_crop(bm_handle_t handle, int crop_num,
+                                          bmcv_rect_t* rects, bm_image input,
+                                          bm_image* output) {
+  return bmcv_image_vpp_convert(handle, crop_num, input, output, rects,
+                                BMCV_INTER_LINEAR);
+}
+
+#endif
+
+#else
+
+// For 1684/1684X
+#define STREAM_VPP_HEAP_MASK 4
+#define STREAM_VPU_HEAP_MASK 2
+#define STREAM_NPU_HEAP_MASK 1
+#define STREAM_VPP_HEAP 2
+#define STREAM_VPU_HEAP 1
+#define STREAM_NPU_HEAP 0
+
+#endif
 
 #define STREAM_LIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 1))
 #define STREAM_UNLIKELY(expr) (__builtin_expect(static_cast<bool>(expr), 0))
@@ -42,21 +98,6 @@ inline std::string concatArgs(const T& arg, const Args&... args) {
               << "\t" << error_msg << std::endl;                              \
     exit(1);                                                                  \
   }
-
-/* for multi version compatible */
-// #if BMCV_VERSION_MAJOR > 1
-// typedef bmcv_padding_attr_t bmcv_padding_atrr_t;
-// /**
-//  * @brief To solve incompatible issue in a2 sdk
-//  *
-//  * @param image input bm_image
-//  * @return bm_status_t BM_SUCCESS change success, other values: change
-//  failed.
-//  */
-// static inline bm_status_t bm_image_destroy(bm_image& image) {
-//   return bm_image_destroy(&image);
-// }
-// #endif
 
 #if LIBAVCODEC_VERSION_MAJOR > 58
 static int avcodec_decode_video2(AVCodecContext* dec_ctx, AVFrame* frame,
