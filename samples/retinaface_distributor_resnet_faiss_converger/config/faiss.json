@@ -6,5 +6,5 @@
     "shared_object": "../../build/lib/libfaiss.so",
     "name": "faiss",
     "side": "sophgo",
-    "thread_number": 4
+    "thread_number": 1
 }
