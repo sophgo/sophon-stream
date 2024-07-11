@@ -39,6 +39,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(../3rdparty/nlohmann-json/include)
     include_directories(../3rdparty/httplib)
 
+    find_package(OpenSSL REQUIRED)
+    if(OPENSSL_FOUND)
+        add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
+    endif()
+
     add_library(ivslogger SHARED
       common/logger.cc
       common/profiler.cc
@@ -60,7 +65,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/listen_thread.cc
     )
     link_libraries(dl)
-    target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS})
+    if(OPENSSL_FOUND)
+	target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${OPENSSL_LIBRARIES})
+    else()
+    	target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS})
+    endif()
      
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
@@ -91,6 +100,12 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     set(OPENCV_LIBS opencv_imgproc opencv_core opencv_highgui opencv_imgcodecs opencv_videoio)
     link_libraries(dl)
 
+    if (DEFINED OPENSSL_PATH)
+        include_directories(${OPENSSL_PATH}/include)
+        link_directories(${OPENSSL_PATH}/lib)
+        add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
+    endif()
+
     add_library(ivslogger SHARED
       common/logger.cc
       common/profiler.cc
@@ -112,6 +127,10 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
         src/listen_thread.cc
     )
     link_libraries(dl)
-    target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov)
+    if (DEFINED OPENSSL_PATH)
+        target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ssl crypto -fprofile-arcs -lgcov)
+    else()
+        target_link_libraries(framework -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov)
+    endif()
 
 endif()

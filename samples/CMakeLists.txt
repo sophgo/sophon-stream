@@ -55,9 +55,17 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     target_link_libraries(cvunitext freetype ${OPENCV_LIBS})
 
     add_dependencies(${demo_name} ivslogger framework cvunitext)
-    add_dependencies(${demo_name} ivslogger framework)
-    target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
 
+    find_package(OpenSSL REQUIRED)
+    if(OPENSSL_FOUND)
+        add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
+    endif()
+
+    if(OPENSSL_FOUND)
+        target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} ${OPENSSL_LIBRARIES} -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
+    else()
+        target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
+    endif()
 
 elseif(${TARGET_ARCH} STREQUAL "soc")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fprofile-arcs -ftest-coverage -g -rdynamic")
@@ -89,6 +97,12 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../framework)
     include_directories(../framework/include)
 
+    if (DEFINED OPENSSL_PATH)
+        include_directories(${OPENSSL_PATH}/include)
+        link_directories(${OPENSSL_PATH}/lib)
+        add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
+    endif()
+
     include_directories(./include)
     set(demo_src
         src/main.cc
@@ -101,6 +115,10 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     add_dependencies(cvunitext freetype)
     add_dependencies(${demo_name} ivslogger framework cvunitext)
     add_dependencies(${demo_name} ivslogger framework)
-    target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
+    if (DEFINED OPENSSL_PATH)
+        target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ssl crypto -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
+    else()
+        target_link_libraries(${demo_name} -ldl ${OPENCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil -livslogger -lframework)
+    endif()
 
 endif()

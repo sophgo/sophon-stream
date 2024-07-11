@@ -65,6 +65,14 @@ Download QT with command:
 sudo apt install qtbase5-dev
 ```
 
+If https protocol is needed in http_push unit, please download OpenSSL with official version first. Or, https support will not be compiled.
+
+Download OpenSSL with command
+```bash
+sudo apt install libssl-dev
+```
+
+
 
 ## SoC Platform
 Usually, when cross-compiling programs on an x86 host, you need to set up a cross-compilation environment using the SOPHON SDK on the x86 host. You will package the required header files and library files into the `sophon_sdk_soc` directory. You can either download the SOPHON SDK and package it yourself or download our pre-packaged files (choose one based on your SOC environment).
@@ -101,12 +109,17 @@ For BM1688/CV186AH:
 python3 -m dfss --url=open@sophgo.com:sophon-pipeline/a2_bringup/qtbase.zip
 ```
 
-When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC` and `QTPATH`:
+If https is needed in http_push unit, make sure to download OPENSSL of cross-compiling version on x86 device. Use the `OPENSSL_PATH` parameter at compile time to specify the openssl path: (If not using https, this part can be ignored and `OPENSSL_PATH` while cross-compiling is not necessary)
+```bash
+python3 -m dfss --dflag=openssl_1.1.1f_aarch64
+```
+
+When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC`, `QTPATH` and `OPENSSL_PATH`:
 
 ```bash
 mkdir build
 cd build
-cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt
+cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt -DOPENSSL_PATH=/path/to/openssl
 make -j4
 ```
 
