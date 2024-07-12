@@ -361,6 +361,29 @@ void Yolov5::setPostprocess(
   mPostProcess = std::dynamic_pointer_cast<Yolov5PostProcess>(post);
 }
 
+void Yolov5::registListenFunc(
+    sophon_stream::framework::ListenThread* listener) {
+  std::string mIdStr = std::to_string(getId());
+  std::string handlerName = postNameSetConfThreshold + "/" + mIdStr;
+  listener->setHandler(handlerName.c_str(),
+                       sophon_stream::framework::RequestType::POST,
+                       std::bind(&Yolov5::listenerSetConfThreshold, this,
+                                 std::placeholders::_1, std::placeholders::_2));
+}
+
+void Yolov5::listenerSetConfThreshold(const httplib::Request& request,
+                                      httplib::Response& response) {
+  common::Response resp;
+  common::RequestSingleFloat rsi;
+  common::str_to_object(request.body, rsi);
+  mContext->thresh_conf_min = rsi.value;
+  resp.code = 0;
+  resp.msg = "success";
+  nlohmann::json json_res = resp;
+  response.set_content(json_res.dump(), "application/json");
+  return;
+}
+
 REGISTER_WORKER("yolov5", Yolov5)
 REGISTER_GROUP_WORKER("yolov5_group", sophon_stream::framework::Group<Yolov5>,
                       Yolov5)

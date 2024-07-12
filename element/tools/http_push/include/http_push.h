@@ -25,7 +25,12 @@ namespace http_push {
 
 class HttpPushImpl_ {
  public:
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+  HttpPushImpl_(std::string& scheme, std::string& ip, int port, std::string cert, std::string key,
+		  std::string cacert_, bool verify_, std::string path_, int channel);
+#else
   HttpPushImpl_(std::string& ip, int port, std::string path, int channel);
+#endif
   bool pushQueue(std::shared_ptr<nlohmann::json> j);
   void release();
 
@@ -40,6 +45,12 @@ class HttpPushImpl_ {
   constexpr static int maxQueueLen = 20;
 
   httplib::Client cli;
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+  std::string scheme;
+  std::string cacert;
+  std::string key;
+  bool verify;
+#endif
   std::string path;
 
   std::string mFpsProfilerName;
@@ -58,6 +69,13 @@ class HttpPush : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_IP_FILED = "ip";
   static constexpr const char* CONFIG_INTERNAL_PORT_FILED = "port";
   static constexpr const char* CONFIG_INTERNAL_PATH_FILED = "path";
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+  static constexpr const char* CONFIG_INTERNAL_SCHEME_FILED = "scheme";
+  static constexpr const char* CONFIG_INTERNAL_CERT_FILED = "cert";
+  static constexpr const char* CONFIG_INTERNAL_KEY_FILED = "key";
+  static constexpr const char* CONFIG_INTERNAL_CACERT_FILED = "cacert";
+  static constexpr const char* CONFIG_INTERNAL_VERIFY_FILED = "verify";
+#endif
 
  private:
   std::unordered_map<int, std::shared_ptr<HttpPushImpl_>> mapImpl_;
@@ -65,6 +83,13 @@ class HttpPush : public ::sophon_stream::framework::Element {
   std::string ip_;
   int port_;
   std::string path_;
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+  std::string scheme_;
+  std::string cert_;
+  std::string key_;
+  std::string cacert_;
+  bool verify_;
+#endif
 };
 
 }  // namespace http_push

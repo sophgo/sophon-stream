@@ -503,9 +503,8 @@ bm_image Distributor::get_rotate_crop_image(bm_handle_t handle,
   bm_image_create(handle, crop_height, crop_width,
                   input_bmimg_planar.image_format, input_bmimg_planar.data_type,
                   &crop_bmimg);
-  assert(BM_SUCCESS == bmcv_image_warp_perspective_with_coordinate(
-                           handle, 1, &coord, &input_bmimg_planar, &crop_bmimg,
-                           0));  // bilinear interpolation.
+  auto ret =  bmcv_image_warp_perspective_with_coordinate(handle, 1, &coord, &input_bmimg_planar, &crop_bmimg,0);
+  STREAM_CHECK(ret == 0,"bmcv_image_warp_perspective_with_coordinate Failed! Program Terminated.");
 
   if ((float)crop_height / crop_width < 1.5) {
     return crop_bmimg;
@@ -531,9 +530,8 @@ bm_image Distributor::get_rotate_crop_image(bm_handle_t handle,
     matrix_image.matrix->m[5] =
         rot_mat.at<double>(1, 2) - crop_height / 2.0 + crop_width / 2.0;
 
-    assert(BM_SUCCESS == bmcv_image_warp_affine(handle, 1, &matrix_image,
-                                                &crop_bmimg, &rot_bmimg,
-                                                0));  // bilinear interpolation
+    auto ret =  bmcv_image_warp_affine(handle, 1, &matrix_image,&crop_bmimg, &rot_bmimg,0);
+    STREAM_CHECK(ret == 0,"bmcv_image_warp_affine Failed. Program Terminated.");
     bm_image_destroy(crop_bmimg);
     return rot_bmimg;
   }

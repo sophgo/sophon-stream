@@ -48,11 +48,70 @@ common::ErrorCode HttpPush::initInternal(const std::string& json) {
                  "Port must be string, please check your http_push element "
                  "configuration file");
     path_ = pathIt->get<std::string>();
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+    auto schemeIt = configure.find(CONFIG_INTERNAL_SCHEME_FILED);
+    if (schemeIt == configure.end()) {
+        scheme_ = "http";
+    } else {
+	scheme_ = schemeIt->get<std::string>();  // 获取值
+        STREAM_CHECK((scheme_ == "http" || scheme_ == "https"),
+                     "Scheme must be http or https, please check your http_push element "
+                     "configuration file");
+    }
+
+    auto certIt = configure.find(CONFIG_INTERNAL_CERT_FILED);
+    if (certIt == configure.end()) {
+        cert_ = "";
+    } else {
+        STREAM_CHECK(certIt->is_string(),
+                 "Cert path must be string, please check your http_push element "
+                 "configuration file");
+        cert_ = certIt->get<std::string>();
+    }
+
+    auto keyIt = configure.find(CONFIG_INTERNAL_KEY_FILED);
+    if (keyIt == configure.end()) {
+        key_ = "";
+    } else {
+        STREAM_CHECK(keyIt->is_string(),
+                 "Key path must be string, please check your http_push element "
+                 "configuration file");
+        key_ = keyIt->get<std::string>();
+    }
+
+    auto cacertIt = configure.find(CONFIG_INTERNAL_CACERT_FILED);
+    if (cacertIt == configure.end()) {
+        cacert_ = "";
+    } else {
+        STREAM_CHECK(cacertIt->is_string(),
+                 "CACERT path must be string, please check your http_push element "
+                 "configuration file");
+        cacert_ = cacertIt->get<std::string>();
+    }
+
+    auto verifyIt = configure.find(CONFIG_INTERNAL_VERIFY_FILED);
+    if (verifyIt == configure.end()) {
+        verify_ = false;
+    } else {
+        verify_ = verifyIt->get<bool>();
+    }
+#endif
 
   } while (false);
   return errorCode;
 }
 
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+HttpPushImpl_::HttpPushImpl_(std::string& scheme, std::string& ip, int port, std::string cert, std::string key,
+		std::string cacert_, bool verify_, std::string path_, int channel)
+    : cli(scheme + "://" + ip + ":" + std::to_string(port), cert, key), cacert(cacert_), verify(verify_), path(path_) {
+  cli.set_ca_cert_path(cacert);
+  cli.enable_server_certificate_verification(verify);
+  workThread = std::thread(&HttpPushImpl_::postFunc, this);
+  mFpsProfilerName = "http_push_" + std::to_string(channel) + "_fps";
+  mFpsProfiler.config(mFpsProfilerName, 100);
+}
+#else
 HttpPushImpl_::HttpPushImpl_(std::string& ip, int port, std::string path_,
                              int channel)
     : cli(ip, port), path(path_) {
@@ -60,6 +119,7 @@ HttpPushImpl_::HttpPushImpl_(std::string& ip, int port, std::string path_,
   mFpsProfilerName = "http_push_" + std::to_string(channel) + "_fps";
   mFpsProfiler.config(mFpsProfilerName, 100);
 }
+#endif
 
 void HttpPushImpl_::release() {
   isRunning = false;
@@ -131,8 +191,13 @@ common::ErrorCode HttpPush::doWork(int dataPipeId) {
     auto implIt = mapImpl_.find(channel_id);
     if (implIt == mapImpl_.end()) {
       std::lock_guard<std::mutex> lock(mapMtx);
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+      auto httpImpl = std::make_shared<HttpPushImpl_>(scheme_, ip_, port_, cert_, key_,
+		      cacert_, verify_, path_, channel_id);
+#else
       auto httpImpl =
           std::make_shared<HttpPushImpl_>(ip_, port_, path_, channel_id);
+#endif
       mapImpl_[channel_id] = httpImpl;
       mapImpl_[channel_id]->pushQueue(
           std::make_shared<nlohmann::json>(serializedObj));

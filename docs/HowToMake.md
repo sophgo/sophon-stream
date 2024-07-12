@@ -60,6 +60,13 @@ make -j4
 sudo apt install qtbase5-dev
 ```
 
+如果需要在http_push插件中使用https，请先下载公版OpenSSL，否则将默认不支持https。
+
+可以通过以下命令下载OpenSSL：
+```bash
+sudo apt install libssl-dev
+```
+
 
 ## SoC平台
 通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)。
@@ -95,12 +102,17 @@ BM1688/CV186AH设备：
 python3 -m dfss --url=open@sophgo.com:sophon-pipeline/a2_bringup/qtbase.zip
 ```
 
-交叉编译时，`SOPHON_SDK_SOC`、`QTPATH`需要填写绝对路径
+如果需要在http_push插件中使用https，只需要在x86上下载用于交叉编译的openssl，并在编译时使用`OPENSSL_PATH`参数指定openssl的路径：（如果不需要使用https，可以忽略这部分，并且不添加交叉编译时的`OPENSSL_PATH`参数）
+```bash
+python3 -m dfss --dflag=openssl_1.1.1f_aarch64
+```
+
+交叉编译时，`SOPHON_SDK_SOC`、`QTPATH`，`OPENSSL_PATH`需要填写绝对路径
 
 ```bash
 mkdir build
 cd build
-cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt
+cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt -DOPENSSL_PATH=/path/to/openssl
 make -j4
 ```
 

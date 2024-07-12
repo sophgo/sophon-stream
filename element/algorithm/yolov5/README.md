@@ -71,3 +71,26 @@ sophon-stream yolov5插件具有一些可配置的参数，可以根据需求进
 > **注意**：
 1. stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用各项资源，提高检测效率。
 3. tpu_kernel后处理仅适配BM1684X设备，若不启用，则需要设置为false
+
+
+## 3. 动态修改参数
+
+目前，yolov5插件支持在stream运行时通过外部http请求修改某些参数。代码中提供了动态修改置信度阈值的功能，可以使用如下python脚本进行验证：
+
+```python
+import requests
+import json
+import sys
+
+url = "http://localhost:8000/yolov5/SetConfThreshold/10003"
+payload = {"value": 1.0}
+headers = {'Content-Type': 'application/json'}
+response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+print(response)
+```
+
+其中，10003为实际运行时yolov5插件的id；请求中value字段表示期望设置的置信度阈值。例如，上述请求会将置信度改为1.0，也就是说几乎任何情况都无法检测到目标。
+
+目前设置的此置信度阈值，只有启用cpu后处理时生效。
+
+> **需要注意：启用动态修改参数功能，需要参考 [README.md](../../../samples/README.md) 设置监听的ip和端口**

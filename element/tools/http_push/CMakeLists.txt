@@ -27,6 +27,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(${LIBSOPHON_INCLUDE_DIRS})
     link_directories(${LIBSOPHON_LIB_DIRS})
 
+    find_package(OpenSSL REQUIRED)
+    if(OPENSSL_FOUND)
+        add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
+    endif()
+
     set(BM_LIBS bmlib bmrt bmcv yuv)
     find_library(BMJPU bmjpuapi)
     if(BMJPU)
@@ -45,7 +50,11 @@ if (${TARGET_ARCH} STREQUAL "pcie")
         src/http_push.cc
     )
 
-    target_link_libraries(http_push ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
+    if(OPENSSL_FOUND)
+        target_link_libraries(http_push ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ${OPENSSL_LIBRARIES} -lpthread)
+    else()
+        target_link_libraries(http_push ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -lpthread)
+    endif()
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
     add_compile_options(-fPIC)
@@ -71,9 +80,19 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(../../../3rdparty/httplib)
     include_directories(../../../3rdparty/nlohmann-json/include)
 
+    if (DEFINED OPENSSL_PATH)
+        include_directories(${OPENSSL_PATH}/include)
+        link_directories(${OPENSSL_PATH}/lib)
+        add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
+    endif()
+
     include_directories(include)
     add_library(http_push SHARED
         src/http_push.cc
     )
-    target_link_libraries(http_push ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    if (DEFINED OPENSSL_PATH)
+        target_link_libraries(http_push ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} ssl crypto -fprofile-arcs -lgcov -lpthread)
+    else()
+        target_link_libraries(http_push ${FFMPEG_LIBS} ${OpenCV_LIBS} ${BM_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread)
+    endif()
 endif()
