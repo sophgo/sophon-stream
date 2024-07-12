@@ -146,7 +146,7 @@ IMG_DIR/
 |:-------------:| :-------: | :------------------:| :------------------------:|
 | ip | 字符串   | http_listen默认为"0.0.0.0"，http_report默认无| 上报/监听的ip地址，report时上报请求到此ip，listen时监听此ip的post请求 |
 | port | 整数 | http_listen默认为8000，http_report默认无 | 上报/监听的端口号，report时上报请求到此port，listen时监听此port的post请求 |
-|path | 字符串  | http_listen默认为"/task/test"，http_report默认无  | 上报/监听的路由，report时上报请求到此ath，listen时监听此path的post请求 |
+|path | 字符串  | http_listen默认为"/task/test"，http_report默认无  | 上报/监听的路由，report时上报请求到此path，listen时监听此path的post请求。对于监听请求来说，此字段留空即可 |
 
 > **注意**：
 >1. http_report字段必须完整，否则不会进行上报，默认不上报。

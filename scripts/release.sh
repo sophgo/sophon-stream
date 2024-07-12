@@ -28,6 +28,7 @@ mkdir $result_dir/element
 cp -r element/multimedia $result_dir/element
 
 mkdir $result_dir/element/algorithm
+cp -r element/algorithm/algorithmApi $result_dir/element/algorithm
 cp -r element/algorithm/bytetrack $result_dir/element/algorithm
 cp -r element/algorithm/resnet $result_dir/element/algorithm
 cp -r element/algorithm/yolov5 $result_dir/element/algorithm
