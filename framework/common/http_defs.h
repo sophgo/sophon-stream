@@ -37,6 +37,13 @@ void to_json(nlohmann::json& j, const RequestSingleInt& p);
 void from_json(const nlohmann::json& j, RequestSingleInt& p);
 bool str_to_object(const std::string& strjson, RequestSingleInt& request);
 
+struct RequestSingleFloat {
+  float value;
+};
+void to_json(nlohmann::json& j, const RequestSingleFloat& p);
+void from_json(const nlohmann::json& j, RequestSingleFloat& p);
+bool str_to_object(const std::string& strjson, RequestSingleFloat& request);
+
 }  // namespace common
 }  // namespace sophon_stream
 

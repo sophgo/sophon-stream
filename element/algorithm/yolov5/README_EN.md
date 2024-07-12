@@ -71,3 +71,25 @@ The Sophon-Stream YOLOv5 plugin has several configurable parameters that can be 
 > **notes**：
 1. The `stage` parameter should be set as one of the following: "pre", "infer", "post", or their adjacent combinations. These stages should be connected in sequence to the elements, aligning with the order of preprocessing, inference, and post-processing. Distributing these three stages across three elements aims to maximize the utilization of resources, enhancing detection efficiency.
 2. TPU kernel post-processing is specifically designed for BM1684X devices. If it's not enabled, it should be set to false.
+
+## 3. Dynamic parameter modification
+
+Currently, the yolov5 plugin supports the modification of certain parameters at stream runtime via external http requests. The code provides the ability to dynamically modify confidence thresholds, which can be verified using the following python script:
+
+``` python
+import requests
+import json
+import sys
+
+url = "http://localhost:8000/yolov5/SetConfThreshold/10003"
+payload = {"value": 1.0}
+headers = {'Content-Type': 'application/json'}
+response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+print(response) 
+```
+
+where 10003 is the id of the yolov5 plugin at the time of the actual run; the value field in the request indicates the confidence threshold that is expected to be set. For example, the above request would change the confidence level to 1.0, meaning that the target would not be detected in almost any case.
+
+This confidence threshold, as currently set, only takes effect when cpu post-processing is enabled.
+
+> **Note: To enable the dynamic parameter modification feature, you need to refer to [README.md](... /... /... /samples/README.md) to set the ip and port to listen to**.

@@ -43,5 +43,17 @@ bool str_to_object(const std::string& strjson, RequestSingleInt& request) {
   return true;
 }
 
+void to_json(nlohmann::json& j, const RequestSingleFloat& p) {
+  j = nlohmann::json{{"value", p.value}};
+}
+void from_json(const nlohmann::json& j, RequestSingleFloat& p) {
+  if (j.count("value")) p.value = j.at("value").get<float>();
+}
+bool str_to_object(const std::string& strjson, RequestSingleFloat& request) {
+  nlohmann::json json_object = nlohmann::json::parse(strjson);
+  request = json_object;
+  return true;
+}
+
 }  // namespace common
 }  // namespace sophon_stream
