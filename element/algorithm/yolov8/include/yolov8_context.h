@@ -17,7 +17,6 @@ namespace element {
 namespace yolov8 {
 
 #define USE_ASPECT_RATIO 1
-#define FFALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
 
 enum class TaskType { Detect = 0, Pose, Cls };
 

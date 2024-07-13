@@ -16,7 +16,6 @@ namespace sophon_stream {
 namespace element {
 namespace yolox {
 
-#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
 class YoloxContext : public ::sophon_stream::element::Context {
  public:

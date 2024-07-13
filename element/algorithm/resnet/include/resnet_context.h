@@ -17,7 +17,6 @@ namespace element {
 namespace resnet {
 
 #define USE_ASPECT_RATIO 1
-#define FFALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
 
 #define MAX_BATCH 16
 

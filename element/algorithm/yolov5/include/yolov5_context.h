@@ -18,7 +18,6 @@ namespace yolov5 {
 
 #define USE_ASPECT_RATIO 1
 #define USE_MULTICLASS_NMS 0
-#define FFALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
 
 #define MAX_YOLO_INPUT_NUM 8
 #define MAX_YOLO_ANCHOR_NUM 8

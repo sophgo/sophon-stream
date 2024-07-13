@@ -17,7 +17,7 @@ namespace sophon_stream {
 namespace element {
 namespace template {
 
-class TemplatePostProcess : public ::sophon_stream::framework::PostProcess {
+class TemplatePostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<TemplateContext> context);
   /**

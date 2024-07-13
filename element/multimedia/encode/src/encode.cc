@@ -8,8 +8,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "encode.h"
-#include "common/serialize.h"
+
 #include <nlohmann/json.hpp>
+
+#include "common/serialize.h"
 namespace sophon_stream {
 namespace element {
 namespace encode {
@@ -105,13 +107,12 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       width = widthIt->get<int>();
       height = heightIt->get<int>();
     }
-    
-    if( wsTypeIt != configure.end()) {
+
+    if (wsTypeIt != configure.end()) {
       std::string wsEncType = wsTypeIt->get<std::string>();
       if (wsEncType == "IMG_ONLY") mWsEncType = WSencType::IMG_ONLY;
       if (wsEncType == "SERIALIZED") mWsEncType = WSencType::SERIALIZED;
     }
-
 
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {
@@ -189,7 +190,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       }
     }
     mFpsProfilers.resize(getThreadNumber());
-    for(int i = 0; i < mFpsProfilers.size(); ++i) {
+    for (int i = 0; i < mFpsProfilers.size(); ++i) {
       mFpsProfilers[i] = std::make_shared<common::FpsProfiler>();
       mFpsProfilers[i]->config("fps_encode" + std::to_string(i), 100);
     }
@@ -301,7 +302,8 @@ void Encode::processVideoStream(
               IVS_INFO("Error creating directory.");
             }
           }
-          output_path = dir_path_ + std::to_string(channel_id) + ".avi";
+          output_path = dir_path_ + std::to_string(channel_id) +
+                        (encFmt == "h265_bm" ? ".mp4" : ".avi");
         } break;
         default:
           IVS_ERROR("Encode type error, please input RTSP, RTMP or VIDEO");
@@ -368,11 +370,9 @@ void Encode::processImgDir(
   bm_image_destroy(imageStorage);
 }
 
-
 // 处理WS
 void Encode::processWS(int dataPipeId,
                        std::shared_ptr<common::ObjectMetadata> objectMetadata) {
-
   auto serverIt = mWSSMap.find(dataPipeId);
   if (mWSSMap.end() == serverIt) {
     int channel_id = objectMetadata->mFrame->mChannelId;
@@ -385,9 +385,9 @@ void Encode::processWS(int dataPipeId,
     mWSSThreads.push_back(std::move(t));
     mWSSMap[dataPipeId] = wss;
     serverIt = mWSSMap.find(dataPipeId);
-  }                      
+  }
   std::string data;
-  if(mWsEncType == WSencType::IMG_ONLY) {
+  if (mWsEncType == WSencType::IMG_ONLY) {
     void* jpeg_data = NULL;
     size_t out_size = 0;
     std::shared_ptr<bm_image> img = objectMetadata->mFrame->mSpDataOsd
@@ -409,17 +409,19 @@ void Encode::processWS(int dataPipeId,
                       FORMAT_YUV420P, image.data_type, &(*img_to_enc));
       bmcv_rect_t crop_rect = {0, 0, img->width, img->height};
       bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *img,
-                            img_to_enc.get(), &crop_rect);
+                             img_to_enc.get(), &crop_rect);
     }
     bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
                         &jpeg_data, &out_size);
     data =
-      websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);    
-      free(jpeg_data);                
-  } if (mWsEncType == WSencType::SERIALIZED) {
-    objectMetadata->fps = mFpsProfilers[objectMetadata->mFrame->mChannelIdInternal]->getTmpFps();
+        websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
+    free(jpeg_data);
+  }
+  if (mWsEncType == WSencType::SERIALIZED) {
+    objectMetadata->fps =
+        mFpsProfilers[objectMetadata->mFrame->mChannelIdInternal]->getTmpFps();
     nlohmann::json serializedObj = objectMetadata;
-    data =serializedObj.dump();
+    data = serializedObj.dump();
   }
   // base64 img 存入队列
   serverIt->second->pushImgDataQueue(data);

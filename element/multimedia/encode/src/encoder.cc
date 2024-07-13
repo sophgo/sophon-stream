@@ -248,17 +248,21 @@ void Encoder::Encoder_CC::init_writer() {
       is_video_file_ = true;
       avformat_alloc_output_context2(&enc_format_ctx_, NULL, NULL,
                                      output_path_.c_str());
-      enc_output_fmt_ = av_guess_format(NULL, output_path_.c_str(), NULL);
-      if (enc_output_fmt_->video_codec == AV_CODEC_ID_NONE) {
-      }
-      enc_format_ctx_->oformat = enc_output_fmt_;
+      // enc_output_fmt_ = av_guess_format(NULL, output_path_.c_str(), NULL);
+      // if (enc_output_fmt_->video_codec == AV_CODEC_ID_NONE) {
+      // }
+      // enc_format_ctx_->oformat = enc_output_fmt_;
     }
 
     encoder_ = avcodec_find_encoder_by_name(enc_fmt_.c_str());
     if (!encoder_) {
+      IVS_ERROR("Cannot find encoder named {0}", enc_fmt_);
+      abort();
     }
     enc_ctx_ = avcodec_alloc_context3(encoder_);
     if (!encoder_) {
+      IVS_ERROR("Cannot alloc encoder named {0}", enc_fmt_);
+      abort();
     }
 
     enc_ctx_->codec_id = encoder_->id;
@@ -290,20 +294,28 @@ void Encoder::Encoder_CC::init_writer() {
 
     int ret = avcodec_open2(enc_ctx_, encoder_, &enc_dict_);
     if (ret < 0) {
+      IVS_ERROR("avcodec_open2 failed!");
+      abort();
     }
     ret = avcodec_parameters_from_context(out_stream_->codecpar, enc_ctx_);
     if (ret < 0) {
+      IVS_ERROR("avcodec_parameters_from_context failed");
+      abort();
     }
     if (is_video_file_) {
       if (!(enc_format_ctx_->oformat->flags & AVFMT_NOFILE)) {
         ret = avio_open2(&enc_format_ctx_->pb, output_path_.c_str(),
                          AVIO_FLAG_WRITE, NULL, NULL);
         if (ret < 0) {
+          IVS_ERROR("avio_open2 failed");
+          abort();
         }
       }
     }
     ret = avformat_write_header(enc_format_ctx_, NULL);
     if (ret < 0) {
+      IVS_ERROR("avformat_write_header failed");
+      abort();
     }
     opened_ = true;
   }
@@ -326,17 +338,20 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
     if (pix_fmt_ == AV_PIX_FMT_YUV420P) {
       plane = 3;
       int stride_bmi[3] = {encode_stride, encode_stride / 2, encode_stride / 2};
-      bm_image_create(handle, params_map_["height"], params_map_["width"], FORMAT_YUV420P,
-                      DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
+      bm_image_create(handle, params_map_["height"], params_map_["width"],
+                      FORMAT_YUV420P, DATA_TYPE_EXT_1N_BYTE, yuv_image,
+                      stride_bmi);
     }
     if (pix_fmt_ == AV_PIX_FMT_NV12) {
       plane = 2;
       int stride_bmi[2] = {encode_stride, encode_stride};
-      bm_image_create(handle, params_map_["height"],  params_map_["width"], FORMAT_NV12,
-                      DATA_TYPE_EXT_1N_BYTE, yuv_image, stride_bmi);
+      bm_image_create(handle, params_map_["height"], params_map_["width"],
+                      FORMAT_NV12, DATA_TYPE_EXT_1N_BYTE, yuv_image,
+                      stride_bmi);
     }
 
-    auto ret = bm_image_alloc_dev_mem_heap_mask(*yuv_image, STREAM_VPP_HEAP_MASK);
+    auto ret =
+        bm_image_alloc_dev_mem_heap_mask(*yuv_image, STREAM_VPP_HEAP_MASK);
     STREAM_CHECK(ret == 0, "Alloc Device Mem Failed! Program Terminated.")
     bmcv_rect_t crop_rect = {0, 0, image->width, image->height};
     // timeval tv1, tv2;
@@ -474,7 +489,6 @@ void Encoder::Encoder_CC::flowControlFunc() {
       std::shared_ptr<cv::Mat> pp = std::static_pointer_cast<cv::Mat>(p);
       writer.write(*pp);
     }
-
   }
   return;
 }
@@ -493,8 +507,8 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
       }
     });
     std::shared_ptr<AVPacket> test_enc_pkt = nullptr;
-    test_enc_pkt.reset(av_packet_alloc(), [](AVPacket *p){
-      if(p!=nullptr){
+    test_enc_pkt.reset(av_packet_alloc(), [](AVPacket* p) {
+      if (p != nullptr) {
         av_packet_free(&p);
       }
     });
@@ -526,7 +540,8 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     cv::Mat write_mat;
     cv::bmcv::toMAT(&image, write_mat, true);
     cv::Mat resized;
-    cv::resize(write_mat, resized, cv::Size(params_map_["width"], params_map_["height"]));
+    cv::resize(write_mat, resized,
+               cv::Size(params_map_["width"], params_map_["height"]));
     pushQueue(
         std::static_pointer_cast<void>(std::make_shared<cv::Mat>(resized)));
     return 0;
