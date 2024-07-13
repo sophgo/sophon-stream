@@ -24,6 +24,10 @@
 namespace sophon_stream {
 namespace element {
 
+#ifndef FFALIGN
+#define FFALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
+#endif
+
 class Context {
  public:
   Context() = default;

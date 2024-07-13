@@ -17,7 +17,6 @@ namespace element {
 namespace posec3d {
 
 #define USE_ASPECT_RATIO 1
-#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
 class Posec3dContext : public ::sophon_stream::element::Context {
  public:

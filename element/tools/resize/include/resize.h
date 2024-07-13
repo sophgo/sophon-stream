@@ -19,8 +19,6 @@ namespace sophon_stream {
 namespace element {
 namespace resize {
 
-#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
-
 class Resize : public ::sophon_stream::framework::Element {
  public:
   Resize();

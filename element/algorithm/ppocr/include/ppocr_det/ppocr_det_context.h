@@ -17,7 +17,6 @@ namespace element {
 namespace ppocr_det {
 
 #define USE_ASPECT_RATIO 1
-#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
 class Ppocr_detContext : public ::sophon_stream::element::Context {
  public:

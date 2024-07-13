@@ -17,7 +17,6 @@ namespace element {
 namespace fastpose {
 #define USE_OPENCV 1
 // #define USE_ASPECT_RATIO 1
-#define FFALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 
 enum class HeatmapLossType { MSELoss };
 
