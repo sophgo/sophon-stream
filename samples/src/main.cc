@@ -358,12 +358,15 @@ int main(int argc, char* argv[]) {
       for (auto& src_id_port : src_id_port_vec) {
         // decode_id == -1为默认情况，即只有一个解码器
         // decode_id != -1，即有多个解码器，要求每个都写清参数
-        if ((decode_id == -1 && src_id_port_vec.size() == 1) || src_id_port.first == decode_id) {
+        if ((decode_id == -1 && src_id_port_vec.size() == 1) ||
+            src_id_port.first == decode_id) {
           sophon_stream::common::ErrorCode errorCode = engine.pushSourceData(
               graph_id, src_id_port.first, src_id_port.second,
               std::static_pointer_cast<void>(channelTask));
-        } else {
-          IVS_ERROR("Push Source Data Failed! Please Check Input Json!");
+          IVS_DEBUG(
+              "Push Source Data, GraphId = {0}, ElementId = {1}, ElementPort = "
+              "{2}",
+              graph_id, src_id_port.first, src_id_port.second);
         }
       }
     }
