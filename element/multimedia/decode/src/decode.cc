@@ -376,6 +376,7 @@ common::ErrorCode Decode::stopTask(std::shared_ptr<ChannelTask>& channelTask) {
   }
   common::ErrorCode errorCode = itTask->second->mThreadWrapper->stop();
   itTask->second->mSpDecoder->uninit();
+  itTask->second->mThreadWrapper.reset();
   mThreadsPool.erase(itTask);
   channelTask->response.errorCode = errorCode;
   return errorCode;
