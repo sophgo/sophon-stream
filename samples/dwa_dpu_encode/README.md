@@ -64,18 +64,13 @@ sudo -s
 cd /mnt/system/ko/
 insmod v4l2_os04a10.ko
 ```
-或者，使用data目录中下载的文件：
-```bash
-sudo -s
-insmod /data/v4l2_os04a10_dual_0621.ko
-```
 
 （2）isp参数文件配置
 
 ```bash
 sudo -s
 mkdir -p /mnt/cfg/param
-cp data/cvi_sdr_bin /mnt/cfg/param/
+cp ./data/cvi_sdr_bin /mnt/cfg/param/
 ```
 
 ## 5. 程序编译
