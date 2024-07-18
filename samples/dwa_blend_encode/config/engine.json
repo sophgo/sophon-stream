@@ -44,6 +44,10 @@
             },
             {
                 "element_id": 5005,
+                "element_config": "../dwa_blend_encode/config/resize.json"
+            },
+            {
+                "element_id": 5006,
                 "element_config": "../dwa_blend_encode/config/encode.json",
                 "ports": {
                     "output": [
@@ -85,6 +89,12 @@
                 "src_element_id": 5004,
                 "src_port": 0,
                 "dst_element_id": 5005,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5005,
+                "src_port": 0,
+                "dst_element_id": 5006,
                 "dst_port": 0
             }
         ]

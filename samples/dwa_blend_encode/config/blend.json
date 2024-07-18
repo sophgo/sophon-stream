@@ -1,14 +1,14 @@
 {
   "configure": {
-    "wgt1": "../dwa_blend_encode/data/wgt/c01_alpha_444p_m2__0_2240x128.bin",
-    "wgt2": "../dwa_blend_encode/data/wgt/c01_beta_444p_m2__0_2240x128.bin",
-    "ovlp_lx": 2112,
-    "ovlp_rx": 2239,
+    "wgt1": "../dwa_blend_encode/data/wgt/alpha_4096x2048.bin",
+    "wgt2": "../dwa_blend_encode/data/wgt/beta_4096x2048.bin",
+    "src_h": 2048,
+    "ovlp_lx": 0,
+    "ovlp_rx": 4095,
     "bd_lx0": 0,
     "bd_rx0": 0,
     "bd_lx1": 0,
-    "bd_rx1": 0,
-    "width_minus":128 
+    "bd_rx1": 0
   },
   "shared_object": "../../build/lib/libblend.so",
   "name": "blend",

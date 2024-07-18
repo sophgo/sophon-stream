@@ -1,11 +1,14 @@
 {
-    "configure": {
-      "ratio":0.4,
-      "dst_h":1536,
-      "dst_w":432
-    },
-    "shared_object": "../../build/lib/libresize.so",
-    "name": "resize",
-    "side": "sophgo",
-    "thread_number": 1
-  }
+  "configure": {
+    "dst_h": 512,
+    "dst_w": 1024,
+    "crop_w": 4096,
+    "crop_h": 2048,
+    "crop_top": 0,
+    "crop_left": 0
+  },
+  "shared_object": "../../build/lib/libresize.so",
+  "name": "resize",
+  "side": "sophgo",
+  "thread_number": 1
+}
