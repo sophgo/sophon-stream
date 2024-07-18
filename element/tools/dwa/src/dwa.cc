@@ -68,6 +68,8 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
 
   dst_h = configure.find(CONFIG_INTERNAL_DST_H_FILED)->get<int>();
   dst_w = configure.find(CONFIG_INTERNAL_DST_W_FILED)->get<int>();
+  resize_h = configure.find(CONFIG_INTERNAL_RESIZE_H_FILED)->get<int>();
+  resize_w = configure.find(CONFIG_INTERNAL_RESIZE_W_FILED)->get<int>();
   auto dwa_mode_str =
       configure.find(CONFIG_INTERNAL_DWA_MODE_FILED)->get<std::string>();
   dwa_mode = dwa_mode_map[dwa_mode_str];
@@ -182,16 +184,17 @@ common::ErrorCode Dwa::fisheye_work(
                         DATA_TYPE_EXT_1N_BYTE, fisheye_image.get());
     bm_image_alloc_dev_mem(*fisheye_image, 1);
 
-    bm_image input;
-    ret = bm_image_create(fisheyeObj->mFrame->mHandle, dst_h, dst_h, src_fmt,
-                          fisheyeObj->mFrame->mSpData->data_type, &input, NULL);
-    bm_image_alloc_dev_mem(input, 1);
+    std::shared_ptr<bm_image> resized_img = nullptr;
+    resized_img.reset(new bm_image, [](bm_image* p) {
+      bm_image_destroy(*p);
+      delete p;
+      p = nullptr;
+    });
+    ret = bm_image_create(fisheyeObj->mFrame->mHandle, resize_h, resize_w, src_fmt,
+                          fisheyeObj->mFrame->mSpData->data_type, resized_img.get(), NULL);
+    bm_image_alloc_dev_mem(*resized_img, 1);
 
-    bm_image input_rot;
-    ret = bm_image_create(fisheyeObj->mFrame->mHandle, dst_h, dst_h, src_fmt,
-                          fisheyeObj->mFrame->mSpData->data_type, &input_rot,
-                          NULL);
-    bm_image_alloc_dev_mem(input_rot, 1);
+    
 
     bmcv_rect_t crop_rect{0, 0,
                           (unsigned int)fisheyeObj->mFrame->mSpData->width,
@@ -199,28 +202,39 @@ common::ErrorCode Dwa::fisheye_work(
     bmcv_padding_atrr_t padding_attr;
     memset(&padding_attr, 0, sizeof(padding_attr));
     padding_attr.dst_crop_sty =
-        int(dst_h - (unsigned int)fisheyeObj->mFrame->mSpData->height) / 2;
+        int(resize_h - (unsigned int)fisheyeObj->mFrame->mSpData->height) / 2;
     padding_attr.dst_crop_stx =
-        int(dst_w - (unsigned int)fisheyeObj->mFrame->mSpData->width) / 2;
+        int(resize_w - (unsigned int)fisheyeObj->mFrame->mSpData->width) / 2;
     padding_attr.padding_b = 114;
     padding_attr.padding_g = 114;
     padding_attr.padding_r = 114;
     padding_attr.if_memset = 1;
-    padding_attr.dst_crop_h = (unsigned int)fisheyeObj->mFrame->mSpData->height;
-    padding_attr.dst_crop_w = (unsigned int)fisheyeObj->mFrame->mSpData->width;
-
+    padding_attr.dst_crop_h = (unsigned int)fisheyeObj->mFrame->mSpData->height ;
+    padding_attr.dst_crop_w = (unsigned int)fisheyeObj->mFrame->mSpData->width ;
+ 
     ret = bmcv_image_vpp_convert_padding(fisheyeObj->mFrame->mHandle, 1,
-                                         *fisheyeObj->mFrame->mSpData, &input,
+                                         *fisheyeObj->mFrame->mSpData, resized_img.get(),
                                          &padding_attr, &crop_rect);
+    if(is_rot){
+      std::shared_ptr<bm_image> input_rot = nullptr;
+      input_rot.reset(new bm_image, [](bm_image* p) {
+        bm_image_destroy(*p);
+        delete p;
+        p = nullptr;
+      });
+      ret = bm_image_create(fisheyeObj->mFrame->mHandle, resize_h, resize_w, src_fmt,
+                          fisheyeObj->mFrame->mSpData->data_type, input_rot.get(),
+                          NULL);
+      bm_image_alloc_dev_mem(*input_rot, 1);
+      bmcv_dwa_rot(fisheyeObj->mFrame->mHandle, *resized_img, *input_rot, rot_mode);
+      resized_img=input_rot;
+    }
 
-    bmcv_dwa_rot(fisheyeObj->mFrame->mHandle, input, input_rot, rot_mode);
-
-    bmcv_dwa_fisheye(fisheyeObj->mFrame->mHandle, input_rot, *fisheye_image,
+    bmcv_dwa_fisheye(fisheyeObj->mFrame->mHandle, *resized_img, *fisheye_image,
                      fisheye_attr);
 
+
     fisheyeObj->mFrame->mSpDataDwa = fisheye_image;  // 是否需要dwa
-    bm_image_destroy(input);
-    bm_image_destroy(input_rot);
   }
 }
 
