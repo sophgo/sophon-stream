@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "filter.h"
- 
+
 namespace sophon_stream {
 namespace element {
 namespace filter {
@@ -209,15 +209,15 @@ common::ErrorCode Filter::doWork(int dataPipeId) {
 
       if (objectMetadata->mSubObjectMetadatas.size())
         for (int j = 0; j < objectMetadata->mSubObjectMetadatas.size(); j++) {
-          if(objectMetadata->mSubObjectMetadatas[j]->mRecognizedObjectMetadatas.size()==1){
+          if (objectMetadata->mSubObjectMetadatas[j]
+                  ->mRecognizedObjectMetadatas.size() == 1) {
             std::string name = objectMetadata->mSubObjectMetadatas[j]
-                                  ->mRecognizedObjectMetadatas[0]
-                                  ->mLabelName;
+                                   ->mRecognizedObjectMetadatas[0]
+                                   ->mLabelName;
 
             continue_frame_num[channel_id_internal][name]++;
             names[name] = continue_frame_num[channel_id_internal][name];
           }
-
         }
       if (objectMetadata->mTrackedObjectMetadatas.size())
         for (int j = 0; j < objectMetadata->mTrackedObjectMetadatas.size();
@@ -303,7 +303,7 @@ bool Filter_Imp::isinclasses(
         new_mSubObjectMetadatas.push_back(
             objectMetadata->mSubObjectMetadatas[j]);
 
-      } else if (type == 1){
+      } else if (type == 1) {
         new_mTrackedObjectMetadatas.push_back(
             objectMetadata->mTrackedObjectMetadatas[j]);
       }
@@ -318,7 +318,7 @@ bool Filter_Imp::isinclasses(
     if (type == 0) {
       objectMetadata->mSubObjectMetadatas.clear();
       objectMetadata->mSubObjectMetadatas = new_mSubObjectMetadatas;
-    } else if (type == 1){
+    } else if (type == 1) {
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
     }
@@ -361,7 +361,7 @@ bool Filter_Imp::isInPolygon(
         new_mSubObjectMetadatas.push_back(
             objectMetadata->mSubObjectMetadatas[j]);
 
-      } else if (type == 1){
+      } else if (type == 1) {
         new_mTrackedObjectMetadatas.push_back(
             objectMetadata->mTrackedObjectMetadatas[j]);
       }
@@ -375,7 +375,7 @@ bool Filter_Imp::isInPolygon(
     if (type == 0) {
       objectMetadata->mSubObjectMetadatas.clear();
       objectMetadata->mSubObjectMetadatas = new_mSubObjectMetadatas;
-    } else if (type == 1){
+    } else if (type == 1) {
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
     }
@@ -386,6 +386,7 @@ bool Filter_Imp::isInPolygon(
 bool Filter_Imp::istrack(
     std::shared_ptr<common::ObjectMetadata> objectMetadata,
     std::unordered_map<std::string, int>& continue_frame_num_) {
+  if (type != 1 && type != 0) return true;
   int channel_id = objectMetadata->mFrame->mChannelIdInternal;
   std::unordered_map<std::string, int> up_list;
   for (auto i : continue_frame_num_) {
@@ -411,7 +412,7 @@ bool Filter_Imp::istrack(
                    ->mLabelName;
       } else if (type == 1) {
         name = std::to_string(
-              objectMetadata->mTrackedObjectMetadatas[i]->mTrackId);
+            objectMetadata->mTrackedObjectMetadatas[i]->mTrackId);
       }
       if (up_list.find(name) != up_list.end()) {
         new_mDetectedObjectMetadatas.push_back(
@@ -420,7 +421,7 @@ bool Filter_Imp::istrack(
           new_mSubObjectMetadatas.push_back(
               objectMetadata->mSubObjectMetadatas[i]);
 
-        } else if (type == 1){
+        } else if (type == 1) {
           new_mTrackedObjectMetadatas.push_back(
               objectMetadata->mTrackedObjectMetadatas[i]);
         }
@@ -431,7 +432,7 @@ bool Filter_Imp::istrack(
     if (type == 0) {
       objectMetadata->mSubObjectMetadatas.clear();
       objectMetadata->mSubObjectMetadatas = new_mSubObjectMetadatas;
-    } else if (type == 1){
+    } else if (type == 1) {
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
     }
@@ -453,7 +454,8 @@ bool Filter_Imp::onSegment(const common::Point<int>& p,
 int Filter_Imp::orientation(const common::Point<int>& p,
                             const common::Point<int>& q,
                             const common::Point<int>& r) {
-  double val = 1.0 * (q.mY - p.mY) * (r.mX - q.mX) - 1.0 * (q.mX - p.mX) * (r.mY - q.mY);
+  double val =
+      1.0 * (q.mY - p.mY) * (r.mX - q.mX) - 1.0 * (q.mX - p.mX) * (r.mY - q.mY);
   if (val == 0) return 0;    // colinear
   return (val > 0) ? 1 : 2;  // clockwise or counterclockwise
 }
