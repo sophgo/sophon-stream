@@ -318,7 +318,7 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
                  static_cast<void*>(channelInfo->mSpDecoder.get()));
 
         common::ErrorCode ret =
-            channelInfo->mSpDecoder->init(getDeviceId(), channelTask->request);
+            channelInfo->mSpDecoder->init(getDeviceId(), getGraphId(), channelTask->request);
         if (ret != common::ErrorCode::SUCCESS) {
           channelTask->response.errorCode = ret;
           std::string error = "Decoder init failed! channel id is " +

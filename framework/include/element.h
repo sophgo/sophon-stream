@@ -127,6 +127,9 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
   int getId() const { return mId; }
 
+  int getGraphId() const { return mGraphId; }
+  virtual void setGraphId(int id) { mGraphId = id; }
+
   const std::string& getSide() const { return mSide; }
 
   int getDeviceId() const { return mDeviceId; }
@@ -220,6 +223,8 @@ class Element : public ::sophon_stream::common::NoCopyable {
 
  private:
   int mId;
+
+  int mGraphId;
 
   std::string mSide;
 

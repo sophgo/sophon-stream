@@ -104,6 +104,7 @@ Additionally, attention should be paid to the setting of the input data channels
 |sample_strategy|string|"DROP"|When frames are being filtered, set whether the filtered frames are to be kept or discarded. "DROP" indicates discarding the frames, while "KEEP" indicates retaining them.|
 |decode_id|int|-1|In the case of a single decode element, it is not necessary to fill in the form; in the case of multiple decode elements, it identifies that a certain way is decoded by the decode element with the corresponding id.|
 |roi| dict| \ | When roi is set, the frame from decoder will be cropped according to the roi range, otherwise passing the original frame.| 
+|graph_id| int | 0 | Graph Id that the current stream belongs |
 
 
 Where `channel_id` stands for the channel number of the input video, corresponding to the `channel_id` output by the [encoder](../encode/README.md). For instance, if the input `channel_id` is 20 and the encoder is used to save the results as a local video, the file name will be `20.avi`.

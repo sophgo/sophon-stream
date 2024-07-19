@@ -80,6 +80,13 @@ class Group : public ::sophon_stream::framework::Element {
     }
   }
 
+  void setGraphId(int id) override {
+    preElement->setGraphId(id);
+    inferElement->setGraphId(id);
+    postElement->setGraphId(id);
+    return;
+  }
+
   std::shared_ptr<T> getPreElement() { return preElement; }
   std::shared_ptr<T> getInferElement() { return inferElement; }
   std::shared_ptr<T> getPostElement() { return postElement; }

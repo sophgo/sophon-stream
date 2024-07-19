@@ -83,9 +83,9 @@ Make the following settings in the `encode.json` file
 "rtsp_port": "8554"
 ```
 
-The format of the output video stream URL is: `rtsp://localhost:{rtsp_port}/{channel_id}`
+The format of the output video stream URL is: `rtsp://localhost:{rtsp_port}/{graph_id}_{channel_id}`
 
-If the rtsp_port is 8554 and the channel_id is 0, the URL is:`rtsp://localhost:8554/0`
+If the rtsp_port is 8554, the channel_id and graph_id is 0, the URL is:`rtsp://localhost:8554/0_0`
 
 ## 4. RTMP Usage Instructions
 It is required to locally start the streaming server. For specific usage, refer to [8.Streaming Server](#8-Streaming-Server).

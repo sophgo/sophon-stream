@@ -31,7 +31,8 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   Decoder();
   ~Decoder();
 
-  common::ErrorCode init(int deviceId, const ChannelOperateRequest& request);
+  common::ErrorCode init(int deviceId, int graphId,
+                         const ChannelOperateRequest& request);
   common::ErrorCode process(
       std::shared_ptr<common::ObjectMetadata>& objectMetadata);
   void uninit();
@@ -42,6 +43,7 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
 
   std::string mUrl;
   int mDeviceId;
+  int mGraphId;
   int mLoopNum;
   int mImgIndex;
   int mFrameCount;

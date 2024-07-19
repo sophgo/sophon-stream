@@ -228,7 +228,7 @@ common::ErrorCode Graph::initElements(const std::string& json) {
             dlopen(sharedObject.c_str(), RTLD_NOW | RTLD_GLOBAL);
         if (NULL == sharedObjectHandle) {
           IVS_ERROR(
-              "Load dynamic shared object file fail, element id: {0:d}, "
+              "Load dynamic shared object file fail, graph id: {0:d}, "
               "shared object: {1}  error info:{2}",
               getId(), sharedObject, dlerror());
           errorCode = common::ErrorCode::DLOPEN_FAIL;
@@ -275,6 +275,7 @@ common::ErrorCode Graph::initElements(const std::string& json) {
 
       element->setListener(listenThreadPtr);
       element->registListenFunc(listenThreadPtr);
+      element->setGraphId(mId);
 
       if (element->getGroup()) {
         element->groupInsert(mElementMap);
