@@ -22,36 +22,13 @@ common::ErrorCode Blank::initInternal(const std::string& json) {
   return common::ErrorCode::SUCCESS;
 }
 
-void Blank::registListenFunc(sophon_stream::framework::ListenThread* listener) {
-  std::string mIdStr = std::to_string(getId());
-  std::string handlerName = postNameSetIdx + "/" + mIdStr;
-  listener->setHandler(handlerName.c_str(),
-                       sophon_stream::framework::RequestType::POST,
-                       std::bind(&Blank::listenerSetIdx, this,
-                                 std::placeholders::_1, std::placeholders::_2));
-}
-
-void Blank::listenerSetIdx(const httplib::Request& request,
-                           httplib::Response& response) {
-  // auto listener = getListener();
-  common::Response resp;
-  common::RequestSingleInt rsi;
-  common::str_to_object(request.body, rsi);
-  printIdx = rsi.idx;
-  resp.code = 0;
-  resp.msg = "success";
-  nlohmann::json json_res = resp;
-  response.set_content(json_res.dump(), "application/json");
-  return;
-}
-
 common::ErrorCode Blank::doWork(int dataPipeId) {
   std::vector<int> inputPorts = getInputPorts();
   int inputPort = inputPorts[0];
   int outputPort = 0;
   if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
-    int outputPort = outputPorts[0];
+    outputPort = outputPorts[0];
   }
 
   auto data = popInputData(inputPort, dataPipeId);

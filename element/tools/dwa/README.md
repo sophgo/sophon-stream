@@ -18,6 +18,8 @@ sophon-stream dwa插件具有一些可配置的参数，可以根据需求进行
       "is_resize":true,
       "dst_h":1080,
       "dst_w":1920,
+      "resize_h":1920,
+      "resize_w":1920,
       "dwa_mode":"DWA_GDC_MODE",
       "use_grid": true,
       "grid_name": "../dwa_dpu_encode/data/gridinfo/rrr.dat",
@@ -32,16 +34,18 @@ sophon-stream dwa插件具有一些可配置的参数，可以根据需求进行
 
 | 参数名        | 类型   | 默认值                                    | 说明                                                             |
 | ------------- | ------ | ----------------------------------------- | ---------------------------------------------------------------- |
-| is_gray       | bool   | true                                      | 选择是否转换为灰度图，可供下一个插件的特殊格式需要               |
-| is_resize     | bool   | true                                      | 选择是否缩放图像大小                                             |
-| dst_h         | int    | 1090                                      | 选择缩放图像的高                                                 |
-| dst_w         | int    | 1920                                      | 选择缩放图像的宽                                                 |
-| dwa_mode      | string | DWA_GDC_MODE                              | 选择使用鱼眼展开(DWA_FISHEYE_MODE)还是镜头畸变矫正(DWA_GDC_MODE) |
-| use_grid      | bool   | true                                      | 选择是否使用gridinfo进行畸变矫正                                 |
-| grid_name     | string | "../dwa_dpu_encode/data/gridinfo/rrr.dat" | 选择使用gridinfo的路径                                           |
-| grid_size     | int    | 183120                                    | gridinfo的文件大小                                               |
+| is_gray       | bool   | false                                      | 选择是否转换为灰度图，可供下一个插件的特殊格式需要               |
+| is_resize     | bool   | false                                      | 选择是否缩放图像大小                                             |
+| dst_h         | int    | 无                                      | 输出图像的高                                                 |
+| dst_w         | int    | 无                                      | 输出图像的宽
+| resize_h         | int    | 无                                      | dwa输入图像的高                                                 |
+| resize_h         | int    | 无                                      | dwa输入图像的宽                                                 |
+| dwa_mode      | string | 无                              | 选择使用鱼眼展开(DWA_FISHEYE_MODE)还是镜头畸变矫正(DWA_GDC_MODE) |
+| use_grid      | bool   | 无                                      | 选择是否使用gridinfo进行畸变矫正                                 |
+| grid_name     | string | 无 | 选择使用gridinfo的路径                                           |
+| grid_size     | int    | 无                                   | gridinfo的文件大小                                               |
 | shared_object | string | "../../../build/lib/libdwa.so"            | libdwa动态库路径                                                 |
-| name          | string | "distributor"                             | element名称                                                      |
+| name          | string | "dwa"                             | element名称                                                      |
 | side          | string | "sophgo"                                  | 设备类型                                                         |
 | thread_number | int    | 1                                         | 启动线程数                                                       |
 

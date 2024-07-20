@@ -21,6 +21,8 @@
 // BM1688/CV186AH
 #if BMCV_VERSION_MAJOR > 1
 
+# define FFMPEG_TIMEOUT_PARAM "timeout"
+
 // For SDK Version 1.7, Heap Mask is the Same With 1684/1684X
 #ifdef BMCV_VERSION_MINOR
 
@@ -66,6 +68,7 @@ static inline bm_status_t bmcv_image_crop(bm_handle_t handle, int crop_num,
 #else
 
 // For 1684/1684X
+# define FFMPEG_TIMEOUT_PARAM "stimeout"
 #define STREAM_VPP_HEAP_MASK 4
 #define STREAM_VPU_HEAP_MASK 2
 #define STREAM_NPU_HEAP_MASK 1

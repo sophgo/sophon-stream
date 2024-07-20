@@ -26,11 +26,6 @@ class Blank : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
-  std::string postNameSetIdx = "/blank/setIdx";
-  void listenerSetIdx(const httplib::Request& request,
-                      httplib::Response& response);
-  void registListenFunc(sophon_stream::framework::ListenThread* listener) override;
-
  private:
   int printIdx;
 };

@@ -440,7 +440,7 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   }
 
   av_dict_set(
-      &dict, "stimeout", "5*1000*1000",
+      &dict, FFMPEG_TIMEOUT_PARAM, "5*1000*1000",
       0);  // Returns (Connection timed out) every  5 seconds ,when disconnect
 
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);

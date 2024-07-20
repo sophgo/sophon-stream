@@ -54,10 +54,11 @@ class Dwa : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_SRC_W_FILED = "src_w";
   static constexpr const char* CONFIG_INTERNAL_DST_H_FILED = "dst_h";
   static constexpr const char* CONFIG_INTERNAL_DST_W_FILED = "dst_w";
-
+  static constexpr const char* CONFIG_INTERNAL_RESIZE_H_FILED = "resize_h";
+  static constexpr const char* CONFIG_INTERNAL_RESIZE_W_FILED = "resize_w";
   static constexpr const char* CONFIG_INTERNAL_DWA_MODE_FILED = "dwa_mode";
 
-  int src_h, src_w, dst_h, dst_w;
+  int src_h, src_w, dst_h, dst_w, resize_h, resize_w;
 
   bm_image_format_ext_ src_fmt;
   int subId = 0;

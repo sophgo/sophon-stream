@@ -105,8 +105,8 @@ common::ErrorCode Blend::initInternal(const std::string& json) {
   mFpsProfiler.config("fps_blend:", 100);
   bm_status_t ret = bm_dev_request(&handle, dev_id);
 
-  src_h = 2240;
-  // src_w = configure.find(CONFIG_INTERNAL_WEIGHT_FILED)->get<std::int>();
+  src_h = configure.find(CONFIG_INTERNAL_HEIGHT_FILED)->get<int>();
+
   auto wgt1 = configure.find(CONFIG_INTERNAL_WGT1_FILED)->get<std::string>();
   auto wgt2 = configure.find(CONFIG_INTERNAL_WGT2_FILED)->get<std::string>();
   char* wgt_name[2] = {NULL};
@@ -143,7 +143,8 @@ common::ErrorCode Blend::initInternal(const std::string& json) {
                     wgt_len);
   }
 
-  width_minus = configure.find(CONFIG_INTERNAL_WIDTH_MINUS_DIS)->get<int>();
+  width_minus = blend_config.ovlap_attr.ovlp_rx[0] -
+                           blend_config.ovlap_attr.ovlp_lx[0] + 1 ;
   return common::ErrorCode::SUCCESS;
 }
 
@@ -196,13 +197,9 @@ common::ErrorCode Blend::blend_work(
     blendObj->mFrame->mWidth = two_raw_image->width;
     blendObj->mFrame->mHeight = two_raw_image->height;
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    std::cout << "stitch程序执行时间：" << duration.count() << " ms"
-              << std::endl;
+
 
   } else {
-    auto start = std::chrono::high_resolution_clock::now();
 
     bool need_convert =
         (leftObj->mFrame->mSpDataDwa->image_format != FORMAT_YUV420P ||
@@ -233,10 +230,6 @@ common::ErrorCode Blend::blend_work(
       blend_img[1] = *rightObj->mFrame->mSpDataDwa;
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    std::cout << "blend格式转换程序执行时间：" << duration.count() << " ms"
-              << std::endl;
 
     std::shared_ptr<bm_image> blend_image = nullptr;
     blend_image.reset(new bm_image, [](bm_image* p) {
@@ -247,20 +240,15 @@ common::ErrorCode Blend::blend_work(
 
     bm_status_t ret = bm_image_create(
         handle, leftObj->mFrame->mSpDataDwa->height,
-        ALIGN(leftObj->mFrame->mSpDataDwa->width * 2 - width_minus, 32),
+        ALIGN(leftObj->mFrame->mSpDataDwa->width + rightObj->mFrame->mSpDataDwa->width - width_minus, 32),
         FORMAT_YUV420P, DATA_TYPE_EXT_1N_BYTE, blend_image.get());
     bm_image_alloc_dev_mem(*blend_image, 1);
     {
-      auto start = std::chrono::high_resolution_clock::now();
       // blend
       bmcv_blending(handle, input_num, blend_img, *blend_image, blend_config);
-
-      auto end = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double, std::milli> duration = end - start;
-      std::cout << "bmcv_blending程序执行时间：" << duration.count() << " ms"
-                << std::endl;
     }
     blendObj->mFrame->mSpData = blend_image;
+    blendObj->mFrame->mSpDataDwa = blend_image;
     blendObj->mFrame->mWidth = blend_image->width;
     blendObj->mFrame->mHeight = blend_image->height;
 

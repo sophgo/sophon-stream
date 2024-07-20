@@ -37,8 +37,7 @@ class Blend : public ::sophon_stream::framework::Element {
       std::shared_ptr<common::ObjectMetadata> rightObj,
       std::shared_ptr<common::ObjectMetadata> blendObj);
 
-  static constexpr const char* CONFIG_INTERNAL_HEIGHT_FILED = "scr_h";
-  static constexpr const char* CONFIG_INTERNAL_WEIGHT_FILED = "scr_w";
+  static constexpr const char* CONFIG_INTERNAL_HEIGHT_FILED = "src_h";
   static constexpr const char* CONFIG_INTERNAL_WGT1_FILED = "wgt1";
   static constexpr const char* CONFIG_INTERNAL_WGT2_FILED = "wgt2";
 
@@ -50,7 +49,6 @@ class Blend : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_BD_RX1_FILED = "bd_rx1";
 
   static constexpr const char* CONFIG_INTERNAL_WET_MODE_FILED = "wgt_mode";
-  static constexpr const char* CONFIG_INTERNAL_WIDTH_MINUS_DIS = "width_minus";
 
   DisplayType dis_type = DWA_BLEND_DIS;
   bool isDwa = false;
@@ -63,7 +61,7 @@ class Blend : public ::sophon_stream::framework::Element {
   int width_minus;
   std::mutex mtx;
   struct stitch_param blend_config;
-
+  
  private:
   void setDispType(const httplib::Request& request,
                    httplib::Response& response);
