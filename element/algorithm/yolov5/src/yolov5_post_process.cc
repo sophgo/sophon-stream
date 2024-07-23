@@ -483,19 +483,27 @@ void Yolov5PostProcess::postProcessCPU(
         float score = ptr[4];
         int class_id = argmax(&ptr[5], context->class_num);
         float confidence = ptr[class_id + 5];
-        if (confidence * score >
+        if (score > (context->class_thresh_valid
+                 ? context->thresh_conf[context->class_names[class_id]]
+                 : context->thresh_conf_min) && confidence * score >
             (context->class_thresh_valid
                  ? context->thresh_conf[context->class_names[class_id]]
                  : context->thresh_conf_min)) {
-          float centerX = (ptr[0] + 1 - tx1) / ratio - 1;
-          float centerY = (ptr[1] + 1 - ty1) / ratio - 1;
-          float width = (ptr[2] + 0.5) / ratio;
-          float height = (ptr[3] + 0.5) / ratio;
+          float centerX = ptr[0];
+          float centerY = ptr[1];
+          float width = ptr[2];
+          float height = ptr[3];
 
           YoloV5Box box;
-          box.x = int(centerX - width / 2);
+          if (!agnostic)
+            box.x = int(centerX - width / 2) + class_id * max_wh;
+          else
+            box.x = int(centerX - width / 2);
           if (box.x < 0) box.x = 0;
-          box.y = int(centerY - height / 2);
+          if (!agnostic)
+            box.y = int(centerY - height / 2) + class_id * max_wh;
+          else
+            box.y = int(centerY - height / 2);
           if (box.y < 0) box.y = 0;
           box.width = width;
           box.height = height;
