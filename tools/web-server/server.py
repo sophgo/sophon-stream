@@ -142,7 +142,12 @@ def build_task(demo_config_path,task_id,Type,id,src_id,result_url):
 
     infos[task_id]={}
     Types[task_id].append(Type)
+    file_path = stream_path+'/tools/web-server/stream_config_back/task_ids.txt'
 
+    # 将字典的键写入文件
+    with open(file_path, 'w') as file:
+        for key in infos.keys():
+            file.write(key + '\n')
     return 0
 def task_status(task_id):
     if(task_id in process_pools.keys()):
@@ -171,6 +176,12 @@ def del_task(task_id):
         del process_pools[task_id]
         del infos[task_id]
         del Types[task_id]
+        file_path = stream_path+'/tools/web-server/stream_config_back/task_ids.txt'
+
+        # 将字典的键写入文件
+        with open(file_path, 'w') as file:
+            for key in infos.keys():
+                file.write(key + '\n')
         # process_pools[tasks_ids[task_id]][1].terminate()
         return 0
     else:
@@ -202,6 +213,11 @@ def receive_request66():
 def receive_request():
     # 获取来自客户端的 JSON 数据
     demo_config_paths,task_id,Types_= build_config(request.json)
+    destination_folder = stream_path+'/tools/web-server/stream_config_back/'+str(task_id)+'.json'
+
+    # 获取源文件夹中的所有文件
+    with open(destination_folder, 'w') as file:
+        json.dump(request.json, file, indent=2)
     # if(demo_config_path=="no type"):
     #     return jsonify({"Code": -1, "Msg": "no type"})
     print(request.json["Reporting"]["ReportUrlList"])
