@@ -511,8 +511,9 @@ void draw_bytetrack_results(
                                 &imageStorage, &jpeg_data, &out_size);
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");
     fwrite(jpeg_data, out_size, 1, fp);
     fclose(fp);
@@ -611,8 +612,9 @@ void draw_openpose_results(
 
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");
     fwrite(jpeg_data, out_size, 1, fp);
     fclose(fp);
@@ -636,8 +638,9 @@ void draw_retinaface_results(
                                 &imageStorage, &jpeg_data, &out_size);
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");
     fwrite(jpeg_data, out_size, 1, fp);
     fclose(fp);
@@ -673,8 +676,9 @@ void draw_retinaface_distributor_resnet_faiss_converger_results(
     }
 
     std::string filename =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "-" + std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
     bm_image_write_to_bmp(imageStorage, filename.c_str());
     bm_image_destroy(imageStorage);
   }
@@ -757,7 +761,7 @@ void draw_yolov8_det_pose(
         cv::line(res, {pos1_x, pos1_y}, {pos2_x, pos2_y}, limb_color, 2);
       }
     }
-    ++ idx;
+    ++idx;
   }
   std::string img_file =
       out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
@@ -788,8 +792,9 @@ void draw_yolov5_results(
                                 &imageStorage, &jpeg_data, &out_size);
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");
     fwrite(jpeg_data, out_size, 1, fp);
     fclose(fp);
@@ -828,8 +833,9 @@ void draw_yolov5_bytetrack_distributor_resnet_converger_results(
           colors[trackObj->mTrackId % colors_num], true);
     }
     std::string filename =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "-" + std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
     bm_image_write_to_bmp(imageStorage, filename.c_str());
     bm_image_destroy(imageStorage);
   }
@@ -857,8 +863,9 @@ void draw_yolox_results(
                                 &imageStorage, &jpeg_data, &out_size);
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");
     fwrite(jpeg_data, out_size, 1, fp);
     fclose(fp);
@@ -871,7 +878,8 @@ void save_only(
     std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata,
     std::string& out_dir) {
   std::string filename =
-      out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) + "-" +
+      out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+      std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
       std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
   bm_image_write_to_bmp(*objectMetadata->mFrame->mSpData, filename.c_str());
   return;
@@ -913,8 +921,9 @@ void draw_yolov5_fastpose_posec3d_results(
 
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");
     fwrite(jpeg_data, out_size, 1, fp);
     fclose(fp);

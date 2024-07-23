@@ -1,0 +1,106 @@
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "yolov5_rtsp",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../multi_graph/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5002,
+                "element_config": "../multi_graph/config/encode_rtsp.json",
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../multi_graph/config/yolov5.json",
+                "inner_elements_id": [10001, 10002, 10003]
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5002,
+                "dst_port": 0
+            }
+        ]
+    },
+    {
+        "graph_id": 1,
+        "device_id": 0,
+        "graph_name": "yolov5_encode",
+        "elements": [
+            {
+                "element_id": 5000,
+                "element_config": "../multi_graph/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5002,
+                "element_config": "../multi_graph/config/encode_video.json",
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 5001,
+                "element_config": "../multi_graph/config/yolov5.json",
+                "inner_elements_id": [10001, 10002, 10003]
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 5000,
+                "src_port": 0,
+                "dst_element_id": 5001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 5001,
+                "src_port": 0,
+                "dst_element_id": 5002,
+                "dst_port": 0
+            }
+        ]
+    }
+]

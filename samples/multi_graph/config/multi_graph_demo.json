@@ -1,0 +1,25 @@
+{
+    "channels": [
+      {
+        "channel_id": 2,
+        "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+        "source_type": "VIDEO",
+        "sample_interval": 1,
+        "loop_num": 1,
+        "fps": 1
+      },
+      {
+        "channel_id": 3,
+        "url": "../yolov5/data/videos/test_car_person_1080P.avi",
+        "source_type": "VIDEO",
+        "sample_interval": 1,
+        "loop_num": 1,
+        "graph_id" : 1,
+        "fps": 1
+      }
+    ],
+    "class_names": "../yolov5/data/coco.names",
+    "download_image": false,
+    "draw_func_name": "draw_yolov5_results",
+    "engine_config_path": "../multi_graph/config/engine.json"
+  }

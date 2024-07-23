@@ -1,7 +1,7 @@
 {
   "configure": {
-    "ratio": 0.4,
-    "dst_h": 432,
+    "dst_w":1536,
+    "dst_h":435,
     "crop_w": 3776,
     "crop_h": 1014,
     "crop_top": 0,

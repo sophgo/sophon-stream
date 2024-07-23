@@ -73,7 +73,7 @@ Decoder::Decoder() {
 
 Decoder::~Decoder() {}
 
-common::ErrorCode Decoder::init(int deviceId,
+common::ErrorCode Decoder::init(int deviceId, int graphId,
                                 const ChannelOperateRequest& request) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
@@ -84,6 +84,7 @@ common::ErrorCode Decoder::init(int deviceId,
     mSampleStrategy = request.sampleStrategy;
     int ret = bm_dev_request(&m_handle, deviceId);
     mDeviceId = deviceId;
+    mGraphId = graphId;
     mSourceType = request.sourceType;
     mImgIndex = 0;
     assert(BM_SUCCESS == ret);
@@ -158,6 +159,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mFrame->mTimestamp = pts;
+    objectMetadata->mGraphId = mGraphId;
     if (eof) {
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;
@@ -182,6 +184,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mFrame->mTimestamp = pts;
+    objectMetadata->mGraphId = mGraphId;
     /* 当mLoopNum > 1，在最后一帧初始化decoder，开始下一个循环 */
     if (mLoopNum > 1 && (mImgIndex++ == mFrameCount - 1)) {
       --mLoopNum;
@@ -211,6 +214,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = mImgIndex;
     objectMetadata->mFrame->mSpData = spBmImage;
+    objectMetadata->mGraphId = mGraphId;
 
     if (!mLoopNum) {
       objectMetadata->mFrame->mEndOfStream = true;
@@ -238,6 +242,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = mImgIndex++;
     objectMetadata->mFrame->mSpData = spBmImage;
+    objectMetadata->mGraphId = mGraphId;
     if (spBmImage != nullptr)
       bm_image2Frame(objectMetadata->mFrame, *spBmImage);
     if (common::ErrorCode::SUCCESS != errorCode) {
@@ -281,6 +286,8 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame->mFrameId = frame_id;
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mFrame->mTimestamp = pts;
+    objectMetadata->mGraphId = mGraphId;
+
     if (eof) {
       objectMetadata->mFrame->mEndOfStream = true;
       errorCode = common::ErrorCode::STREAM_END;

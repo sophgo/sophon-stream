@@ -127,6 +127,7 @@ struct ObjectMetadata {
   float fps;
   int numBranches;
   int mSubId;
+  int mGraphId;
   /**
    * @brief
    * 用于posec3d插件中的推理和后处理，表示ObjectMetadata是否包含了多帧输入

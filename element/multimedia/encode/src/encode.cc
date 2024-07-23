@@ -284,10 +284,12 @@ void Encode::processVideoStream(
       switch (mEncodeType) {
         case EncodeType::RTSP:
           output_path = "rtsp://" + ip + ":" + mRtspPort + "/" +
+                        std::to_string(objectMetadata->mGraphId) + "_" +
                         std::to_string(channel_id);
           break;
         case EncodeType::RTMP:
           output_path = "rtmp://" + ip + ":" + mRtmpPort + "/" +
+                        std::to_string(objectMetadata->mGraphId) + "_" +
                         std::to_string(channel_id);
           break;
         case EncodeType::VIDEO: {
@@ -302,7 +304,8 @@ void Encode::processVideoStream(
               IVS_INFO("Error creating directory.");
             }
           }
-          output_path = dir_path_ + std::to_string(channel_id) +
+          output_path = dir_path_ + std::to_string(objectMetadata->mGraphId) +
+                        "_" + std::to_string(channel_id) +
                         (encFmt == "h265_bm" ? ".mp4" : ".avi");
         } break;
         default:
@@ -360,8 +363,9 @@ void Encode::processImgDir(
                                 &imageStorage, &jpeg_data, &out_size);
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        "./results/" + std::to_string(objectMetadata->mFrame->mChannelId) +
-        "/" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+        "./results/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        std::to_string(objectMetadata->mFrame->mChannelId) + "/" +
+        std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");
     fwrite(jpeg_data, out_size, 1, fp);
     fclose(fp);

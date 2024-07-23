@@ -247,6 +247,7 @@ void to_json(nlohmann::json& j, std::shared_ptr<common::ObjectMetadata> obj) {
   j["mFps"] = obj->fps;
   j["mFrame"] = (*(obj->mFrame));
   j["mSubId"] = obj->mSubId;
+  j["mGraphId"] = obj->mGraphId;
   for (auto subObj : obj->mSubObjectMetadatas) {
     nlohmann::json subJ;
     to_json(subJ, subObj);
