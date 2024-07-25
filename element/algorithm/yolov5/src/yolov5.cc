@@ -92,6 +92,8 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
+    mContext->use_tpu_kernel = tpu_kernelIt->get<bool>();
+
     auto max_detIt = configure.find(CONFIG_INTERNAL_MAX_DET_FILED);
     auto min_detIt = configure.find(CONFIG_INTERNAL_MIN_DET_FILED);
     if (configure.end() != max_detIt) {
@@ -100,10 +102,19 @@ common::ErrorCode Yolov5::initContext(const std::string& json) {
     if (configure.end() != min_detIt) {
       mContext->m_min_det = min_detIt->get<unsigned int>();
     }
-    mContext->use_tpu_kernel = tpu_kernelIt->get<bool>();
 
     // 1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
+
+    // use_tpu_kernel could only be enable on 1684x
+    // check it before load model
+    unsigned int chip_id_;
+    bm_get_chipid(handle->handle(), &chip_id_);
+    STREAM_CHECK((mContext->use_tpu_kernel && (chip_id_ == 0x1686)) ||
+                     (!mContext->use_tpu_kernel),
+                 "TPU KERNEL could only be enabled on 1684X, please check your "
+                 "Json files");
+
     mContext->bmContext = std::make_shared<BMNNContext>(
         handle, modelPathIt->get<std::string>().c_str());
     mContext->bmNetwork = mContext->bmContext->network(0);
