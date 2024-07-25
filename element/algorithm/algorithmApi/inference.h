@@ -105,6 +105,11 @@ class Inference {
       }
       if (BM_FLOAT32 == context->bmNetwork->m_netinfo->output_dtypes[i])
         max_size *= 4;
+      else if (BM_INT32 == context->bmNetwork->m_netinfo->output_dtypes[i])
+        max_size *= 4;
+      else if (BM_FLOAT16 == context->bmNetwork->m_netinfo->output_dtypes[i])
+        max_size *= 2;
+      
       // malloc空间
       auto ret = bm_malloc_device_byte_heap(
           outputTensors->handle, &outputTensors->tensors[i]->device_mem, STREAM_NPU_HEAP,

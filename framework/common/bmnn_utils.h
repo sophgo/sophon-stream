@@ -65,6 +65,32 @@ class BMNNTensor {
     return &this->m_tensor->device_mem;
   }
 
+  float cpu_half2float(unsigned short x) {
+      unsigned sign = ((x >> 15) & 1);
+      unsigned exponent = ((x >> 10) & 0x1f);
+      unsigned mantissa = ((x & 0x3ff) << 13);
+      if (exponent == 0x1f) {  /* NaN or Inf */
+          mantissa = (mantissa ? (sign = 0, 0x7fffff) : 0);
+          exponent = 0xff;
+      } else if (!exponent) {  /* Denorm or Zero */
+          if (mantissa) {
+              unsigned int msb;
+              exponent = 0x71;
+              do {
+                  msb = (mantissa & 0x400000);
+                  mantissa <<= 1;  /* normalize */
+                  --exponent;
+              } while (!msb);
+              mantissa &= 0x7fffff;  /* 1.mantissa is implicit */
+          }
+      } else {
+          exponent += 0x70;
+      }
+      int temp = ((sign << 31) | (exponent << 23) | mantissa);
+  
+      return *((float*)((void*)&temp));
+  }
+
   float* get_cpu_data() {
     if (m_cpu_data) return m_cpu_data;
     bm_status_t ret;
@@ -115,6 +141,23 @@ class BMNNTensor {
         ret = bm_mem_unmap_device_mem(
             m_handle, pI32, bm_mem_get_device_size(m_tensor->device_mem));
         assert(BM_SUCCESS == ret);
+      } else if (m_tensor->dtype == BM_FLOAT16) {
+        unsigned short* pFP16 = nullptr;
+        unsigned long long addr;
+        ret = bm_mem_mmap_device_mem(m_handle, &m_tensor->device_mem, &addr);
+        assert(BM_SUCCESS == ret);
+        ret = bm_mem_invalidate_device_mem(m_handle, &m_tensor->device_mem);
+        assert(BM_SUCCESS == ret);
+        pFP16 = (unsigned short*)addr;
+        // dtype convert
+        pFP32 = new float[count];
+        assert(pFP32 != nullptr);
+        for (int i = 0; i < count; ++i) {
+          pFP32[i] = cpu_half2float(pFP16[i]);
+        }
+        ret = bm_mem_unmap_device_mem(
+            m_handle, pFP16, bm_mem_get_device_size(m_tensor->device_mem));
+        assert(BM_SUCCESS == ret);
       } else {
         std::cout << "NOT support dtype=" << m_tensor->dtype << std::endl;
       }
@@ -126,6 +169,22 @@ class BMNNTensor {
         ret = bm_memcpy_d2s_partial(m_handle, pFP32, m_tensor->device_mem,
                                     count * sizeof(float));
         assert(BM_SUCCESS == ret);
+      } else if (BM_FLOAT16 == m_tensor->dtype) {
+        unsigned short* pFP16 = nullptr;
+        int tensor_size = bmrt_tensor_bytesize(m_tensor);
+        pFP16 = new unsigned short[count];
+        assert(pFP16 != nullptr);
+
+        // dtype convert
+        pFP32 = new float[count];
+        assert(pFP32 != nullptr);
+        ret = bm_memcpy_d2s_partial(m_handle, pFP16, m_tensor->device_mem,
+                                    tensor_size);
+        assert(BM_SUCCESS == ret);
+        for (int i = 0; i < count; ++i) {
+          pFP32[i] = cpu_half2float(pFP16[i]);
+        }
+        delete[] pFP16;
       } else if (BM_INT8 == m_tensor->dtype) {
         int8_t* pI8 = nullptr;
         int tensor_size = bmrt_tensor_bytesize(m_tensor);
@@ -142,6 +201,22 @@ class BMNNTensor {
           pFP32[i] = pI8[i] * m_scale;
         }
         delete[] pI8;
+      } else if (BM_INT32 == m_tensor->dtype) {
+        int32_t* pI32 = nullptr;
+        int tensor_size = bmrt_tensor_bytesize(m_tensor);
+        pI32 = new int32_t[count];
+        assert(pI32 != nullptr);
+
+        // dtype convert
+        pFP32 = new float[count];
+        assert(pFP32 != nullptr);
+        ret = bm_memcpy_d2s_partial(m_handle, pI32, m_tensor->device_mem,
+                                    tensor_size);
+        assert(BM_SUCCESS == ret);
+        for (int i = 0; i < count; ++i) {
+          pFP32[i] = pI32[i] * m_scale;
+        }
+        delete[] pI32;
       } else {
         std::cout << "NOT support dtype=" << m_tensor->dtype << std::endl;
       }
