@@ -397,24 +397,28 @@ void Encode::processWS(int dataPipeId,
     std::shared_ptr<bm_image> img = objectMetadata->mFrame->mSpDataOsd
                                         ? objectMetadata->mFrame->mSpDataOsd
                                         : objectMetadata->mFrame->mSpData;
-    std::shared_ptr<bm_image> img_to_enc = img;
-    if (img->image_format != FORMAT_YUV420P) {
-      img_to_enc.reset(new bm_image, [&](bm_image* img) {
-        bm_image_destroy(*img);
-        delete img;
-        img = nullptr;
-      });
-      bm_image image = *(objectMetadata->mFrame->mSpData);
-      int width =
-          this->width == -1 ? objectMetadata->mFrame->mWidth : this->width;
-      int height =
-          this->height == -1 ? objectMetadata->mFrame->mHeight : this->height;
+    std::shared_ptr<bm_image> img_to_enc;
+    img_to_enc.reset(new bm_image, [&](bm_image* img) {
+      bm_image_destroy(*img);
+      delete img;
+      img = nullptr;
+    });
+    bm_image image = *(objectMetadata->mFrame->mSpData);
+    int width =
+        this->width == -1 ? objectMetadata->mFrame->mWidth : this->width;
+    int height =
+        this->height == -1 ? objectMetadata->mFrame->mHeight : this->height;
+    // 判断需不需要做convert。如果不用resize也不用转format，就直接走到jpeg_enc
+    if (width != -1 || height != -1 || img->image_format == FORMAT_YUV420P) {
       bm_image_create(objectMetadata->mFrame->mHandle, height, width,
                       FORMAT_YUV420P, image.data_type, &(*img_to_enc));
       bmcv_rect_t crop_rect = {0, 0, img->width, img->height};
       bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *img,
                              img_to_enc.get(), &crop_rect);
+    } else {
+      img_to_enc = img;
     }
+
     bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
                         &jpeg_data, &out_size);
     data =
