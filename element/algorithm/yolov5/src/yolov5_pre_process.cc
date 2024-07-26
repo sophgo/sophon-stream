@@ -134,6 +134,8 @@ common::ErrorCode Yolov5PreProcess::preProcess(
     auto tensor = context->bmNetwork->inputTensor(0);
     if (tensor->get_dtype() == BM_INT8) {
       img_dtype = DATA_TYPE_EXT_1N_BYTE_SIGNED;
+    } else if (tensor->get_dtype() == BM_FLOAT16) {
+      img_dtype = DATA_TYPE_EXT_FP16;
     }
 
     bm_image_create(context->handle, context->net_h, context->net_w,
