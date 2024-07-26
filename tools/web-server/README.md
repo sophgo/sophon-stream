@@ -499,8 +499,16 @@ application-web的结果上报json格式
 |mDetectedObjectMetadatas-mBox|Box|检测框，注意需要做坐标转换，stream->net为xywh->xyxy|
 |自行规定|Extend|额外信息，如"VehicleLicense"需要算法自行规定|
 
+### 使用方式
+
 ```
-使用方式
+#命令行使用方式
 pip3 install pillow
-bash start_server.sh path/to/sophon-stream
+bash start_server.sh 
+```
+
+```
+#添加进程重启与恢复现场得使用方式，会对之前启动的任务进行保存，重启的时候会恢复，并且会对非正常退出的任务进行恢复现场
+pip3 install pillow
+python3 start.py 
 ```
