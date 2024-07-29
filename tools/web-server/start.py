@@ -9,7 +9,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 
 import time
 os.chdir(script_dir)
-process = subprocess.Popen(['bash', 'start_server.sh'])
+process = subprocess.Popen(['bash', 'start_server.sh',0])
 import time
 time.sleep(5)
 

@@ -33,7 +33,7 @@ sed -i "/class Algorithms:/a \ \ \ \ def ${algorithm}_logic(self,json_data,up_li
 
 sed -i "/class Algorithms:/a \ \ \ \ def ${algorithm}_trans_json(self,json_data,task_id,Type,up_list):\n\ \ \ \ \ \ \ \ return ${algorithm}.${algorithm}_trans_json(json_data,task_id,Type,up_list)" ../config_algorithm.py
 
-sed -i "/class Algorithms:/a \ \ \ \ def ${algorithm}_build_config(self,algorithm_name,stream_path,data,port,i):\n\ \ \ \ \ \ \ \ return ${algorithm}.${algorithm}_build_config(algorithm_name,stream_path,data,port,i)" ../config_algorithm.py
+sed -i "/class Algorithms:/a \ \ \ \ def ${algorithm}_build_config(self,algorithm_name,stream_path,data,port,i,is_single_process):\n\ \ \ \ \ \ \ \ return ${algorithm}.${algorithm}_build_config(algorithm_name,stream_path,data,port,i,is_single_process)" ../config_algorithm.py
 
 
 # 更新map_type字典

@@ -20,6 +20,7 @@ current_directory = os.getcwd()
 process_pools={}
 infos={}
 Types={}
+is_single_process=False
 port=10001
 task_ports={}
 algorithms=Algorithms()
@@ -100,7 +101,7 @@ def build_config(data):
         cp_process = subprocess.Popen(cmd, shell=False)    
         erro=cp_process.wait()
         algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
-        demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port,i)
+        demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port,i,is_single_process)
         task_ports[data['TaskID']].append(port)
         port+=1
         demo_config_paths.append(demo_config_path)
@@ -130,6 +131,12 @@ def build_task(demo_config_path,task_id,Type,id,src_id,result_url):
     client_process = build_client(task_id,Type,id,src_id,result_url)   
 
     os.chdir(stream_run_path)
+    if is_single_process:
+        try:
+            print(del_task(task_list()[0]["TaskID"]))
+        except:
+            1
+    
     cmd=[stream_run_path+"/main","--demo_config_path="+demo_config_path]
     print(cmd)
     log_path=str(task_id)+"_"+str(id)+"_stream.log"
@@ -236,11 +243,15 @@ def receive_request():
 def argsparser():
     parser = argparse.ArgumentParser(prog=__file__)
     parser.add_argument('--stream_path', type=str, default='/home/hyc/data/sophon-stream', help='path of stream')
+    parser.add_argument('--is_single_process', type=int, default=0, help='If setting zero is for multi-process mode, setting one is for single-process mode.')
+
     args = parser.parse_args()
     return args
 if __name__ == '__main__':
     args = argsparser()
     stream_path=args.stream_path
+    is_single_process=args.is_single_process
+    print(is_single_process)
     # 获取当前目录下所有的.log文件
     log_files = glob.glob('*.log')
     # 遍历文件列表，逐个删除

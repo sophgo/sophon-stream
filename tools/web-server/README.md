@@ -504,7 +504,8 @@ application-web的结果上报json格式
 ```
 #命令行使用方式
 pip3 install pillow
-bash start_server.sh 
+bash start_server.sh 0 #多进程
+bash start_server.sh 1 #单进程，多线程，仅支持添加一路配置相同的任务
 ```
 
 ```
