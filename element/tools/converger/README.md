@@ -7,6 +7,7 @@ sophon-stream converger element是sophon-stream框架中的一个插件，是一
 ## 1. 特性
 * 必须与distributor element配合使用
 * 保证输出的ObjectMetadata具有正确的时间顺序
+* 支持多线程
 
 ## 2. 配置参数
 sophon-stream converger插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
