@@ -43,5 +43,5 @@ The parameters for testing and the method of execution remain consistent. Theref
 
 Run the executable file
 ```bash
-./main --demo_config_path=../multi_graph/config/mult_graph_demo.json
+./main --demo_config_path=../multi_graph/config/multi_graph_demo.json
 ```

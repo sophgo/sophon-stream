@@ -43,5 +43,5 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 1. 运行可执行文件
 ```bash
-./main --demo_config_path=../multi_graph/config/mult_graph_demo.json
+./main --demo_config_path=../multi_graph/config/multi_graph_demo.json
 ```
