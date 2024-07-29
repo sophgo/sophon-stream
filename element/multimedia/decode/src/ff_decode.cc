@@ -114,6 +114,7 @@ VideoDecFFM::VideoDecFFM() {
 
 VideoDecFFM::~VideoDecFFM() {
   closeDec();
+  delete pkt;
   printf("#VideoDecFFM exit \n");
 }
 

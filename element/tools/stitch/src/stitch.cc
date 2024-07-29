@@ -7,7 +7,6 @@
 //
 //===----------------------------------------------------------------------===//
 #include "common/common_defs.h"
-#if BMCV_VERSION_MAJOR > 1
 
 #include <unordered_map>
 
@@ -27,11 +26,15 @@ common::ErrorCode Stitch::initInternal(const std::string& json) {
     errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
   }
   mFpsProfiler.config("stitch fps:", 100);
+  stitch_mode = configure.find(CONFIG_INTERNAL_STITCH_MODE_FILED)->get<std::string>();
+  
+
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode Stitch::stitch_work(
-    std::shared_ptr<bm_image> left_image, std::shared_ptr<bm_image> right_image,std::shared_ptr<common::ObjectMetadata> stitchObj) {
+common::ErrorCode Stitch::stitch_work(std::shared_ptr<common::ObjectMetadata> leftObj,
+    std::shared_ptr<common::ObjectMetadata> rightObj
+    ,std::shared_ptr<common::ObjectMetadata> stitchObj) {
 
   bm_status_t ret;
   std::shared_ptr<bm_image> stitch_image = nullptr;
@@ -40,82 +43,109 @@ common::ErrorCode Stitch::stitch_work(
     delete p;
     p = nullptr;
   });
-  ret = bm_image_create(
-      stitchObj->mFrame->mHandle, left_image->height,
-      left_image->width+right_image->width + 0, FORMAT_YUV444P,
-      DATA_TYPE_EXT_1N_BYTE, stitch_image.get());
-  bm_image_alloc_dev_mem(*stitch_image, 1);
-
-  bm_device_mem_t dpu_mem[3];
-  bm_image_get_device_mem(*stitch_image, dpu_mem);
-  bm_memset_device(stitchObj->mFrame->mHandle, 0, dpu_mem[0]);
-  bm_memset_device(stitchObj->mFrame->mHandle, 0, dpu_mem[1]);
-  bm_memset_device(stitchObj->mFrame->mHandle, 0, dpu_mem[2]);
-
+  int dst_h,dst_w;
   int input_num = 2;
   bmcv_rect_t dst_crop[input_num];
 
-  dst_crop[0] = {.start_x = 0,
-                 .start_y = 0,
-                 .crop_w = (unsigned int)left_image->width,
-                 .crop_h = (unsigned int)left_image->height};
-  dst_crop[1] = {
-      .start_x = (unsigned int)left_image->width * 1 + 0,
-      .start_y = 0,
-      .crop_w = (unsigned int)right_image->width,
-      .crop_h = (unsigned int)right_image->height};
+  if (stitch_mode == "HORIZONTAL") {
+    dst_h = std::max(leftObj->mFrame->mSpData->height, rightObj->mFrame->mSpData->height);
+    dst_w = leftObj->mFrame->mSpData->width + rightObj->mFrame->mSpData->width;
 
-  bm_image src_img[2] = {*left_image,
-                         *right_image};
-  bmcv_image_vpp_stitch(stitchObj->mFrame->mHandle, input_num, src_img, *stitch_image, dst_crop,
-                        NULL);
+    dst_crop[0] = {.start_x = 0,
+                 .start_y = 0,
+                 .crop_w = (unsigned int)leftObj->mFrame->mSpData->width,
+                 .crop_h = (unsigned int)leftObj->mFrame->mSpData->height};
+    dst_crop[1] = {
+        .start_x = (unsigned int)leftObj->mFrame->mSpData->width,
+        .start_y = 0,
+        .crop_w = (unsigned int)rightObj->mFrame->mSpData->width,
+        .crop_h = (unsigned int)rightObj->mFrame->mSpData->height};
+
+  }else if (stitch_mode == "VERTICAL") {
+    dst_h = leftObj->mFrame->mSpData->height + rightObj->mFrame->mSpData->height;
+    dst_w = std::max(leftObj->mFrame->mSpData->width, rightObj->mFrame->mSpData->width);
+
+    dst_crop[0] = {.start_x = 0,
+                 .start_y = 0,
+                 .crop_w = (unsigned int)leftObj->mFrame->mSpData->width,
+                 .crop_h = (unsigned int)leftObj->mFrame->mSpData->height};
+    dst_crop[1] = {
+        .start_x = 0,
+        .start_y = (unsigned int)leftObj->mFrame->mSpData->height,
+        .crop_w = (unsigned int)rightObj->mFrame->mSpData->width,
+        .crop_h = (unsigned int)rightObj->mFrame->mSpData->height};
+  }else{
+    IVS_ERROR("only support HORIZONTAL and VERTICAL stitch mode");
+  }
+  ret = bm_image_create(
+      stitchObj->mFrame->mHandle, dst_h, dst_w, leftObj->mFrame->mSpData->image_format, DATA_TYPE_EXT_1N_BYTE, stitch_image.get());
+  bm_image_alloc_dev_mem(*stitch_image, 1);
+
+  bm_image src_img[2] = {*leftObj->mFrame->mSpData,*rightObj->mFrame->mSpData};
+  bmcv_image_vpp_stitch(stitchObj->mFrame->mHandle, input_num, src_img, *stitch_image, dst_crop,NULL);
 
   stitchObj->mFrame->mSpData = stitch_image;
-
   stitchObj->mFrame->mWidth = stitchObj->mFrame->mSpData->width;
   stitchObj->mFrame->mHeight = stitchObj->mFrame->mSpData->height;
+  stitchObj->mFrame->mChannelId = leftObj->mFrame->mChannelId;
+  stitchObj->mFrame->mFrameId = leftObj->mFrame->mFrameId;
+
 
   return common::ErrorCode::SUCCESS;
 }
 
 common::ErrorCode Stitch::doWork(int dataPipeId) {
   std::vector<int> inputPorts = getInputPorts();
-  int inputPort = inputPorts[0];
   int outputPort = 0;
   if (!getSinkElementFlag()) {
     std::vector<int> outputPorts = getOutputPorts();
-    int outputPort = outputPorts[0];
+    outputPort = outputPorts[0];
   }
 
-  auto data = popInputData(inputPort, dataPipeId);
-  while (!data && (getThreadStatus() == ThreadStatus::RUN)) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    data = popInputData(inputPort, dataPipeId);
-  }
-  if (data == nullptr) return common::ErrorCode::SUCCESS;
+  common::ObjectMetadatas inputs;
 
-  auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
+  for (auto inputPort : inputPorts) {
+    auto data = popInputData(inputPort, dataPipeId);
+    while (!data && (getThreadStatus() == ThreadStatus::RUN)) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      data = popInputData(inputPort, dataPipeId);
+    }
+    if (data == nullptr) return common::ErrorCode::SUCCESS;
 
-  if (objectMetadata->mFrame != nullptr &&
-      objectMetadata->mFrame->mSpData != nullptr) {
-    stitch_work(objectMetadata->mFrame->mSpDataDwa,objectMetadata->mFrame->mSpDataDpu,objectMetadata);
+    auto objectMetadata =
+        std::static_pointer_cast<common::ObjectMetadata>(data);
+    inputs.emplace_back(objectMetadata);
+    IVS_DEBUG("Got Input, port id = {0}, channel_id = {1}, frame_id = {2}",
+              inputPort, objectMetadata->mFrame->mChannelId,
+              objectMetadata->mFrame->mFrameId);
   }
-  mFpsProfiler.add(1);
-  // usleep(10);
-  int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
-  int outDataPipeId =
-      getSinkElementFlag()
-          ? 0
-          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
-  common::ErrorCode errorCode =
-      pushOutputData(outputPort, outDataPipeId,
-                     std::static_pointer_cast<void>(objectMetadata));
-  if (common::ErrorCode::SUCCESS != errorCode) {
-    IVS_WARN(
-        "Send data fail, element id: {0:d}, output port: {1:d}, data: "
-        "{2:p}",
-        getId(), outputPort, static_cast<void*>(objectMetadata.get()));
+
+  if (inputs[0]->mFrame->mSpData != nullptr &&
+      inputs[1]->mFrame->mSpData != nullptr &&
+      inputs[0]->mFrame->mFrameId == inputs[1]->mFrame->mFrameId) {
+    std::shared_ptr<common::ObjectMetadata> stitchObj =
+        std::make_shared<common::ObjectMetadata>();
+    stitchObj->mFrame = std::make_shared<sophon_stream::common::Frame>();
+
+    stitch_work(inputs[0], inputs[1], stitchObj);
+
+    mFpsProfiler.add(1);
+
+    int channel_id_internal = stitchObj->mFrame->mChannelIdInternal;
+    int outDataPipeId =
+        getSinkElementFlag()
+            ? 0
+            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
+    common::ErrorCode errorCode = pushOutputData(
+        outputPort, outDataPipeId, std::static_pointer_cast<void>(stitchObj));
+    if (common::ErrorCode::SUCCESS != errorCode) {
+      IVS_WARN(
+          "Send data fail, element id: {0:d}, output port: {1:d}, data: "
+          "{2:p}",
+          getId(), outputPort, static_cast<void*>(stitchObj.get()));
+    }
   }
+
   return common::ErrorCode::SUCCESS;
 }
 
@@ -123,5 +153,3 @@ REGISTER_WORKER("stitch", Stitch)
 }  // namespace stitch
 }  // namespace element
 }  // namespace sophon_stream
-
-#endif

@@ -28,11 +28,16 @@ class Stitch : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipeId) override;
 
-  common::ErrorCode stitch_work(
-    std::shared_ptr<bm_image> left_image, std::shared_ptr<bm_image> right_image,std::shared_ptr<common::ObjectMetadata> stitchObj);
+  common::ErrorCode stitch_work(std::shared_ptr<common::ObjectMetadata> leftObj,
+    std::shared_ptr<common::ObjectMetadata> rightObj
+    ,std::shared_ptr<common::ObjectMetadata> stitchObj);
+
+  static constexpr const char* CONFIG_INTERNAL_STITCH_MODE_FILED = "stitch_mode";
 
   int dev_id = 0;
   bm_handle_t handle = NULL;
+
+  std::string stitch_mode;
 
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
 };

@@ -51,14 +51,15 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     data = popInputData(mDefaultPort, dataPipeId);
     ++retry_times;
   }
-  // if (data == nullptr) return common::ErrorCode::SUCCESS;
   if (data != nullptr) {
     auto objectMetadata =
         std::static_pointer_cast<common::ObjectMetadata>(data);
     int channel_id = objectMetadata->mFrame->mChannelIdInternal;
     int frame_id = objectMetadata->mFrame->mFrameId;
+    // lock
+    std::unique_lock<std::mutex> lk(mtx);
     mCandidates[channel_id][frame_id] = objectMetadata;
-    // mBranches[channel_id][frame_id] = objectMetadata->numBranches;
+    lk.unlock();
     IVS_DEBUG(
         "data recognized, channel_id = {0}, frame_id = {1}, num_branches = {2}",
         channel_id, frame_id, objectMetadata->numBranches);
@@ -68,14 +69,17 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
   for (int inputPort : inputPorts) {
     if (inputPort == mDefaultPort) continue;
     auto subdata = popInputData(inputPort, dataPipeId);
-    // 这里不能在while里取，否则会堵住
+    // 把某个端口给进来的subData都取出来
     while (subdata != nullptr) {
       auto subObj = std::static_pointer_cast<common::ObjectMetadata>(subdata);
       int sub_channel_id = subObj->mFrame->mChannelIdInternal;
       int sub_frame_id = subObj->mFrame->mFrameId;
       IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {1}",
                 sub_channel_id, sub_frame_id);
+      // lock
+      std::unique_lock<std::mutex> lk(mtx);
       mBranches[sub_channel_id][sub_frame_id]++;
+      lk.unlock();
       IVS_DEBUG(
           "data updated, channel_id = {0}, frame_id = {1}, current "
           "num_branches "
@@ -91,7 +95,11 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
   for (auto channel_it = mCandidates.begin(); channel_it != mCandidates.end();
        ++channel_it) {
     // 第一层：遍历所有channel
+    // 这里需要判断：如果channelId应该和自己这个datapipeId对上，就操作；否则跳过，给其它线程操作    
     int channel_id_internal = channel_it->first;
+    int dataPipeNums = getThreadNumber();
+    if (channel_id_internal % dataPipeNums != dataPipeId) continue;
+
     for (auto frame_it = mCandidates[channel_id_internal].begin();
          frame_it != mCandidates[channel_id_internal].end();) {
       // 第二层：遍历当前channel下的所有frame，有序

@@ -9,6 +9,7 @@ sophon-stream distributor element是sophon-stream框架中的一个插件，是�
 * 支持按类别分发
 * 支持按时间间隔分发
 * 支持按帧间隔分发
+* 支持多线程
 
 ## 2. 配置参数
 sophon-stream distributor插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
