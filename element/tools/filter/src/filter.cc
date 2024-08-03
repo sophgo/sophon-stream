@@ -322,6 +322,13 @@ bool Filter_Imp::isinclasses(
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
     }
+  }else{
+      objectMetadata->mDetectedObjectMetadatas.clear();
+    if (type == 0) {
+      objectMetadata->mSubObjectMetadatas.clear();
+    } else if (type == 1) {
+      objectMetadata->mTrackedObjectMetadatas.clear();
+    }
   }
 
   return flag_tot;
@@ -346,14 +353,13 @@ bool Filter_Imp::isInPolygon(
     std::vector<common::Point<int>> rectangle = {
         common::Point<int>(top, left), common::Point<int>(top, right),
         common::Point<int>(bottom, right), common::Point<int>(bottom, left)};
-
     for (int i = 0; i < areas.size(); ++i) {
       flag |= isRectangleInsidePolygon(rectangle, areas[i].points);
       if (flag) {
         objectMetadata->areas.push_back(areas[i].points);
         break;
       }
-    }
+    }     
     if (flag) {
       new_mDetectedObjectMetadatas.push_back(
           objectMetadata->mDetectedObjectMetadatas[j]);
@@ -378,6 +384,13 @@ bool Filter_Imp::isInPolygon(
     } else if (type == 1) {
       objectMetadata->mTrackedObjectMetadatas.clear();
       objectMetadata->mTrackedObjectMetadatas = new_mTrackedObjectMetadatas;
+    }
+  }else{
+      objectMetadata->mDetectedObjectMetadatas.clear();
+    if (type == 0) {
+      objectMetadata->mSubObjectMetadatas.clear();
+    } else if (type == 1) {
+      objectMetadata->mTrackedObjectMetadatas.clear();
     }
   }
 
@@ -546,13 +559,13 @@ bool Filter_Imp::isRectangleInsidePolygon(
       int nextPolyIndex = (j + 1) % polygon.size();
       common::Point<int> p2 = polygon[j];
       common::Point<int> q2 = polygon[nextPolyIndex];
-
       flag &= (!doIntersect(p1, q1, p2, q2));
       if (!flag) break;
     }
 
-    return flag;
   }
+  return flag;
+
 }
 
 int64_t Filter::timeToMilliseconds(const std::string& time) {
