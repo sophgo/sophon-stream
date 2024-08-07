@@ -6,18 +6,14 @@ English | [简体中文](EnvironmentInstallGuide.md)
 * [sophon-demo Environmental Installation Guide](#sophon-demo-environmental-installation-guide)
   * [Contents](#contents)
   * [1 TPU-MLIR Environmental Installation](#1-tpu-mlir-environmental-installation)
-  * [2 TPU-NNTC Environmental Installation](#2-tpu-nntc-environmental-installation)
-  * [3 x86 PCIe Platform Development and Runtime Environment Construction](#3-x86-pcie-platform-development-and-runtime-environment-construction)
-    * [3.1 Installation of libsophon](#31-installation-of-libsophon)
-    * [3.2 Installation of sophon-ffmpeg and sophon-opencv](#32-installation-of-sophon-ffmpeg-and-sophon-opencv)
-    * [3.3 Compilation and Installation of sophon-sail](#33-compilation-and-installation-of-sophon-sail)
-  * [4 SoC Platform Development and Runtime Environment Construction](#4-soc-platform-development-and-runtime-environment-construction)
-    * [4.1 Cross-compiling Environment Construction](#41-cross-compiling-environment-construction)
-    * [4.2 Cross-compiling and sophon-sail Installation](#42-cross-compiling-and-sophon-sail-installation)
-  * [5 arm PCIe Platform Development and Runtime Environment Construction](#5-arm-pcie-platform-development-and-runtime-environment-construction)
-    * [5.1 Installation of libsophon](#51-installation-of-libsophon)
-    * [5.2 Installation of sophon-ffmpeg and sophon-opencv](#52-installation-of-sophon-ffmpeg-and-sophon-opencv)
-    * [5.3 Compilation and Installation of sophon-sail](#53-compilation-and-installation-of-sophon-sail)
+  * [2 x86 PCIe Platform Development and Runtime Environment Construction](#2-x86-pcie-platform-development-and-runtime-environment-construction)
+    * [2.1 Installation of libsophon](#21-installation-of-libsophon)
+    * [2.2 Installation of sophon-ffmpeg and sophon-opencv](#22-installation-of-sophon-ffmpeg-and-sophon-opencv)
+  * [3 SoC Platform Development and Runtime Environment Construction](#3-soc-platform-development-and-runtime-environment-construction)
+    * [3.1 Cross-compiling Environment Construction](#31-cross-compiling-environment-construction)
+  * [4 arm PCIe Platform Development and Runtime Environment Construction](#4-arm-pcie-platform-development-and-runtime-environment-construction)
+    * [4.1 Installation of libsophon](#41-installation-of-libsophon)
+    * [4.2 Installation of sophon-ffmpeg and sophon-opencv](#42-installation-of-sophon-ffmpeg-and-sophon-opencv)
 
 The environments Sophon Stream relies on include the TPU-NNTC and TPU-MLIR environments for compiling and quantifying the models, the development environment for compiling C++ programs, and the runtime environment for deploying the programs.
 
@@ -43,7 +39,7 @@ If you are using BM1684X, it is recommended to use TPU-MLIR to compile BModel. U
 
 2. Download and Unzip TPU-MLIR
 
-    Download the [Compatible](../README_EN.md#environment-dependencies) TPU-MLIR package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html) and unzip it, the package is named in the format tpu-mlir_vx.y.z-hash-date.tar.gz, where x.y.z indicates the version number.
+    Download the [Compatible](../README_EN.md#environment-dependencies) TPU-MLIR package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/88/all.html) and unzip it, the package is named in the format tpu-mlir_vx.y.z-hash-date.tar.gz, where x.y.z indicates the version number.
     ```bash
     tar zxvf tpu-mlir_vx.y.z-<hash>-<date>.tar.gz
     ```
@@ -62,60 +58,13 @@ If you are using BM1684X, it is recommended to use TPU-MLIR to compile BModel. U
     source scripts/envsetup.sh
     ```
 
-This image is only for compiling and quantifying the model, please compile and run the program in the development and runtime environment. For more tutorials on TPU-MLIR, please refer to the "TPU-MLIR Quick Start" and the "TPU-MLIR Technical Reference Manual" on [the official website of Sophgo](https://developer.sophgo.com/site/index/material/31/all.html).
+This image is only for compiling and quantifying the model, please compile and run the program in the development and runtime environment. For more tutorials on TPU-MLIR, please refer to the "TPU-MLIR Quick Start" and the "TPU-MLIR Technical Reference Manual" on [the official website of Sophgo](https://developer.sophgo.com/site/index/material/88/all.html).
 
-## 2 TPU-NNTC Environmental Installation
-
-If you are using BM1684, it is recommended to use TPU-NNTC to compile BModel. Usually, you need to install TPU-NNTC environment on an x86 host with Ubuntu 16.04/18.04/20.04 installed and running memory of 12GB or more. Here are the installation steps for TPU-NNTC environment:
-
-1. Installation of Docker
-
-   If you already have docker installed, skip this section.
-    ```bash
-    # Install docker
-    sudo apt-get install docker.io
-    # In docker, commands can be executed without root privileges
-    # Create docker user group,if there is already a docker user group, it will raise an error,this error can be ignored
-    sudo groupadd docker
-    # Add the current user to the docker group
-    sudo gpasswd -a ${USER} docker
-    # Switch current session to new group or re-login to restart X session
-    newgrp docker​ 
-    ```
-    > **Note**：You need to logout the system and then log back in, and then you can use docker without sudo.
-
-2. Download and Unzip TPU-NNTC
-
-    Download the [Compatible](../README_EN.md#environment-dependencies) TPU-NNTC package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html) and unzip it, the package is named in the format tpu-nntc_vx.y.z-hash-date.tar.gz, where x.y.z indicates the version number.
-    ```bash
-    mkdir tpu-nntc
-    # Unzip the package to tpu-nntc
-    tar zxvf tpu-nntc_vx.y.z-<hash>-<date>.tar.gz --strip-components=1 -C tpu-nntc
-    ```
-
-3. Create and Enter Docker
-
-    The docker used by TPU-NNTC is sophgo/tpuc_dev:latest, the docker image and tpu-nntc have a binding relationship, in a few cases it is possible that tpu-nntc is updated and a new image is needed.
-    ```bash
-    cd tpu-nntc
-    # Enter docker, if the current system does not have the corresponding image, it will automatically download from docker hub
-    # Here will map tpu-nntc's higher level directory to /workspace directory in docker, users need to map the stream directory to docker according to the actual situation
-    # 8001 to 8001 port mapping is used here, which will be used later in the ufw visualization tool
-    # If the port is already occupied, please replace it with another unoccupied port, and adjust it later as needed
-    docker run --name myname -v $PWD/..:/workspace -p 8001:8001 -it sophgo/tpuc_dev:v2.1
-    # Now, you are already in docker, and in the /workspace directory
-    # Then, initializing the software environment
-    cd /workspace/tpu-nntc
-    source scripts/envsetup.sh
-    ```
-
-This image is only for compiling and quantifying the model, please compile and run the program in the development and runtime environment. For more tutorials on TPU-NNTC, please refer to the "TPU-NNTC Quick Start Guide" and the "TPU-NNTC Development Reference Manual" on [the official website of Sophgo](https://developer.sophgo.com/site/index/material/31/all.html).
-
-## 3 x86 PCIe Platform Development and Runtime Environment Construction
+## 2 x86 PCIe Platform Development and Runtime Environment Construction
 If you have installed a PCIe accelerator card on an x86 platform, the development environment and runtime environment can be the same, and you can build the development and runtime environment directly on the host computer.
 
-### 3.1 Installation of libsophon
-Download the [Compatible](../README_EN.md#environment-dependencies) libsophon installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html), which includes:
+### 2.1 Installation of libsophon
+Download the [Compatible](../README_EN.md#environment-dependencies) libsophon installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/88/all.html), which includes:
 * sophon-driver_x.y.z_amd64.deb
 * sophon-libsophon_x.y.z_amd64.deb
 * sophon-libsophon-dev_x.y.z_amd64.deb
@@ -132,9 +81,9 @@ source /etc/profile
 
 For more information on libsophon, please refer to "LIBSOPHON Manual".
 
-### 3.2 Installation of sophon-ffmpeg and sophon-opencv
+### 2.2 Installation of sophon-ffmpeg and sophon-opencv
 
-Download the [Compatible](../README_EN.md#environment-dependencies) sophon-mw installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html), which includes:
+Download the [Compatible](../README_EN.md#environment-dependencies) sophon-mw installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/88/all.html), which includes:
 * sophon-mw-sophon-ffmpeg_x.y.z_amd64.deb
 * sophon-mw-sophon-ffmpeg-dev_x.y.z_amd64.deb
 * sophon-mw-sophon-opencv_x.y.z_amd64.deb
@@ -157,20 +106,13 @@ source /etc/profile
 
 For more information on libsophon, please refer to "MULTIMEDIA User Manual", "Multimedia Development Reference Manual".
 
-### 3.3 Compilation and Installation of sophon-sail
-
-If the demo depends on sophon-sail, you need to compile and install sophon-sail, otherwise you can skip this section. You need to download the [Compatible](../README_EN.md#environment-dependencies) package of sophon-sail from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html), the package is named in the format sophon-sail_x.y.z.tar.gz, where x.y.z indicates the version number.
-Refer to docs in sophon-sail，choose the part you need (C++/Python，PCIE MODE) to install。
-Official sophon-sail guide link：https://doc.sophgo.com/sdk-docs/v23.05.01/docs_latest_release/docs/sophon-sail/docs/zh/html/1_build.html#sail
-
-## 4 SoC Platform Development and Runtime Environment Construction
+## 3 SoC Platform Development and Runtime Environment Construction
 For SoC platforms, the SophonSDK (>=v22.09.02) has been installed with the corresponding libsophon, sophon-opencv and sophon-ffmpeg runtime library packages integrated inside, located under `/opt/sophon/`, which can be used directly for the runtime environment. Programs are usually cross-compiled on x86 hosts to enable them to run on SoC platforms. SophonSDK firmware refresh methods can be found in the [FAQ document](./FAQ_EN.md#12-how-do-i-use-an-sd-card-to-update-firmware-in-soc-mode).
 
-### 4.1 Cross-compiling Environment Construction
+### 3.1 Cross-compiling Environment Construction
 You need to build a cross-compilation environment on an x86 host using SOPHON SDK and package the header and library files that the program depends on into the soc-sdk directory.
 
 Note that for SE9 devices, sophon-mw needs to be changed to sophon-media.
-
 
 1. Install the cross-compilation tool chain
     ```bash
@@ -193,7 +135,7 @@ Note that for SE9 devices, sophon-mw needs to be changed to sophon-media.
     ```
 2. Package libsophon
 
-    Download and unzip the [Compatible](../README_EN.md#environment-dependencies) sophon-img installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html), which includes libsophon_soc_x.y.z_aarch64.tar.gz, where x.y.z indicates the version number.
+    Download and unzip the [Compatible](../README_EN.md#environment-dependencies) sophon-img installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/88/all.html), which includes libsophon_soc_x.y.z_aarch64.tar.gz, where x.y.z indicates the version number.
 
 
     ```bash
@@ -208,7 +150,7 @@ Note that for SE9 devices, sophon-mw needs to be changed to sophon-media.
 
 3. Package sophon-ffmpeg and sophon-opencv
 
-    Download and unzip the [Compatible](../README_EN.md#environment-dependencies) sophon-mw installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html), which includes libsophon_soc_x.y.z_aarch64.tar.gz, where x.y.z indicates the version number.
+    Download and unzip the [Compatible](../README_EN.md#environment-dependencies) sophon-mw installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/88/all.html), which includes libsophon_soc_x.y.z_aarch64.tar.gz, where x.y.z indicates the version number.
     ```bash
     # unzip sophon-mw-soc_x.y.z_aarch64.tar.gz
     tar -zxf sophon-mw-soc_${x.y.z}_aarch64.tar.gz
@@ -221,22 +163,11 @@ Note that for SE9 devices, sophon-mw needs to be changed to sophon-media.
 
 Here, the cross-compilation environment has been built, and then you can use the packaged soc-sdk to compile the programs that need to run on the SoC platform. For more information on cross-compilation, please refer to the "LIBSOPHON Manual".
 
-### 4.2 Cross-compiling and sophon-sail Installation
-
-If the demo depends on sophon-sail, you need to compile and install sophon-sail, otherwise you can skip this section. You need to download the [Compatible](../README_EN.md#environment-dependencies) package of sophon-sail from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html), the package is named in the format sophon-sail_x.y.z.tar.gz, where x.y.z indicates the version number.
-Refer to docs in sophon-sail，choose the part you need (C++/Python，PCIE MODE) to install。
-Official sophon-sail guide link：https://doc.sophgo.com/sdk-docs/v23.05.01/docs_latest_release/docs/sophon-sail/docs/zh/html/1_build.html#sail
-
-After you have followed the tutorial and copied the library files of Sophon Sail to the target SoC, you also need to set the following environment variables:
-```bash
-sudo echo "export LD_LIBRARY_PATH=/opt/sophon/sophon-sail/lib/:$LD_LIBRARY_PATH" >> ~/.bashrc
-source ~/.bashrc
-```
-## 5 arm PCIe Platform Development and Runtime Environment Construction
+## 4 arm PCIe Platform Development and Runtime Environment Construction
 If you have installed PCIe accelerator card in arm platform, the development environment and running environment can be unified, you can directly build the development and running environment on the host.
 Here we provide the environment installation method for NeoKylin v10 machine, other types of machines please refer to the official development manual for details.
-### 5.1 Installation of libsophon
-Download the [Compatible](../README_EN.md#environment-dependencies) libsophon installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/28/all.html), the installation package consists of a file where "$arch" is the hardware architecture of the current machine, and the current server's arch can be obtained using the following command.
+### 4.1 Installation of libsophon
+Download the [Compatible](../README_EN.md#environment-dependencies) libsophon installation package from [the official website of Sophgo](https://developer.sophgo.com/site/index/material/88/all.html), the installation package consists of a file where "$arch" is the hardware architecture of the current machine, and the current server's arch can be obtained using the following command.
 ```
 uname -m
 ```
@@ -287,11 +218,11 @@ Add the cmake config file：
 sudo mkdir -p /usr/lib/cmake/libsophon
 sudo cp /opt/sophon/libsophon-current/data/libsophon-config.cmake /usr/lib/cmake/libsophon/
 ```
-For other platform machines, please refer to the[libsophon installation tutorial](https://doc.sophgo.com/sdk-docs/v22.12.01/docs_latest_release/docs/libsophon/guide/html/1_install.html)。
+For other platform machines, please refer to the[libsophon installation tutorial](https://doc.sophgo.com/sdk-docs/v24.04.01/docs_latest_release/docs/libsophon/guide/html/index.html)。
 For more information on libsophon, please refer to "LIBSOPHON Manual"
 
-### 5.2 Installation of sophon-ffmpeg and sophon-opencv
-Download the [Compatible](../README_EN.md#environment-dependencies) installation package of sophon-mw from [the official website of sophongo](https://developer.sophgo.com/site/index/material/28/all.html),
+### 4.2 Installation of sophon-ffmpeg and sophon-opencv
+Download the [Compatible](../README_EN.md#environment-dependencies) installation package of sophon-mw from [the official website of sophongo](https://developer.sophgo.com/site/index/material/88/all.html),
 The installation package consists of one file:
 ```
 sophon-mw_x.y.z_aarch64.tar.gz，x.y.z indicates the version number
@@ -321,8 +252,5 @@ sudo cp /opt/sophon/sophon-opencv-latest/data/sophon-opencv-autoconf.sh /etc/pro
 sudo cp /opt/sophon/sophon-sample-latest/data/sophon-sample-autoconf.sh /etc/profile.d/
 source /etc/profile
 ```
-For other platform machines, please refer to the[libsophon installation tutorial](https://doc.sophgo.com/sdk-docs/v22.12.01/docs_latest_release/docs/sophon-mw/manual/html/1_install.html).
+For other platform machines, please refer to the[libsophon installation tutorial](https://doc.sophgo.com/sdk-docs/v24.04.01/docs_latest_release/docs/libsophon/guide/html/index.html).
 For more information on sophon-mw, please refer to "MULTIMEDIA User Manual", "Multimedia Development Reference Manual".
-
-### 5.3 Compilation and Installation of sophon-sail
-Same installation method as[3.3 Compilation and Installation of sophon-sail](#33-compilation-and-installation-of-sophon-sail).
