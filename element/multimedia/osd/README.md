@@ -43,7 +43,7 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 |    draw_utils    | 字符串 |             "OPENCV"              |    画图工具，包括 "OPENCV"，"BMCV"    |
 |  draw_interval   | 布尔值 |               false               |          是否画出未采样的帧           |
 |     put_text     | 布尔值 |               false               |             是否输出文本              |
-|  shared_object   | 字符串 | "../../../build/lib/libencode.so" |         libencode 动态库路径          |
+|  shared_object   | 字符串 | "../../../build/lib/libosd.so" |         libosd 动态库路径          |
 |    device_id     |  整数  |                 0                 |              tpu 设备号               |
 |        id        |  整数  |                 0                 |              element id               |
 |       name       | 字符串 |               "osd"               |             element 名称              |

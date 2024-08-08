@@ -43,7 +43,7 @@ The sophon-stream osd plugin has several configurable parameters that can be adj
 |    draw_utils    | string |             "OPENCV"              |    drawing function，include "OPENCV"，"BMCV"    |
 |  draw_interval   | bool |               false               |         Whether to draw unsampled frames  |
 |     put_text     | bool |               false               |             Whether to output text        |
-|  shared_object   | string | "../../../build/lib/libencode.so" |         libencode dynamic library path  |
+|  shared_object   | string | "../../../build/lib/libosd.so" |         libosd dynamic library path  |
 |    device_id     |  int  |                 0                 |              tpu device id               |
 |        id        |  int  |                 0                 |              element id               |
 |       name       | string |               "osd"               |             element name             |

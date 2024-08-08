@@ -70,8 +70,8 @@ sophon-stream http_push插件具有一些可配置的参数，可以根据需求
 | time_start           | string | 无                    | 开始时间，格式hh mm ss，为空将会全部筛掉  |
 | time_end           | int | 无                   | 结束时间，格式hh mm ss,为空将会全部筛掉    |
 | type           | int | 0                    | 筛选类型，recognize:0  track:1 classes:other        |
-| shared_object | string | "../../../build/lib/libhttp_push.so" | libhttp_push动态库路径          |
-| name          | string | "http_push"                          | element名称                     |
+| shared_object | string | "../../../build/lib/libfilter.so" | libfilter动态库路径          |
+| name          | string | "filter"                          | element名称                     |
 | side          | string | "sophgo"                             | 设备类型                        |
 | thread_number | int    | 1                                    | 启动线程数                      |
 
