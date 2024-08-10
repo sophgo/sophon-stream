@@ -235,54 +235,10 @@ demo_config parse_demo_json(std::string& json_path) {
   return config;
 }
 
-int main(int argc, char* argv[]) {
-  const char* keys =
-      "{demo_config_path | "
-      "../license_plate_recognition/config/license_plate_recognition_demo.json "
-      "| demo config path}"
-      "{help | 0 | print help information.}";
-  cv::CommandLineParser parser(argc, argv, keys);
-  if (parser.get<bool>("help")) {
-    parser.printMessage();
-    return 0;
-  }
-  std::string demo_config_fpath = parser.get<std::string>("demo_config_path");
+using drawFuncType =
+    std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>;
 
-  ::logInit("debug", "");
-
-  std::mutex mtx;
-  std::condition_variable cv;
-
-  sophon_stream::common::Clocker clocker;
-  std::atomic_uint32_t frameCount(0);
-  std::atomic_int32_t finishedChannelCount(0);
-
-  auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
-
-  std::ifstream istream;
-  nlohmann::json engine_json;
-  demo_config demo_json = parse_demo_json(demo_config_fpath);
-
-  // 启动每个graph, graph之间没有联系，可以是完全不同的配置
-  istream.open(demo_json.engine_config_file);
-  STREAM_CHECK(istream.is_open(), "Please check if engine_config_file ",
-               demo_json.engine_config_file, " exists.");
-  istream >> engine_json;
-  istream.close();
-
-  // engine.json里的graph数量
-  demo_json.num_graphs = engine_json.size();
-  // demo.json里的码流数量，这里每个码流都可以配置graph_id，对应不同的graph
-  demo_json.num_channels_per_graph = demo_json.channel_configs.size();
-  // 总的码流数就是demo_json.num_channels_per_graph，这个命名需要修改
-  int num_channels = demo_json.num_channels_per_graph;
-
-  std::vector<::sophon_stream::common::FpsProfiler> fpsProfilers(num_channels);
-  for (int i = 0; i < num_channels; ++i) {
-    std::string fpsName = "channel_" + std::to_string(i);
-    fpsProfilers[i].config(fpsName, 100);
-  }
-
+drawFuncType getDrawFunc(demo_config& demo_json) {
   std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>
       draw_func;
   std::string out_dir = "./results";
@@ -334,6 +290,59 @@ int main(int argc, char* argv[]) {
   else
     IVS_ERROR("No such function! Please check your 'draw_func_name'.");
 
+  return draw_func;
+}
+
+int main(int argc, char* argv[]) {
+  const char* keys =
+      "{demo_config_path | "
+      "../license_plate_recognition/config/license_plate_recognition_demo.json "
+      "| demo config path}"
+      "{help | 0 | print help information.}";
+  cv::CommandLineParser parser(argc, argv, keys);
+  if (parser.get<bool>("help")) {
+    parser.printMessage();
+    return 0;
+  }
+  std::string demo_config_fpath = parser.get<std::string>("demo_config_path");
+
+  ::logInit("debug", "");
+
+  std::mutex mtx;
+  std::condition_variable cv;
+
+  sophon_stream::common::Clocker clocker;
+  std::atomic_uint32_t frameCount(0);
+  std::atomic_int32_t finishedChannelCount(0);
+
+  auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
+
+  std::ifstream istream;
+  nlohmann::json engine_json;
+  demo_config demo_json = parse_demo_json(demo_config_fpath);
+
+  // 启动每个graph, graph之间没有联系，可以是完全不同的配置
+  istream.open(demo_json.engine_config_file);
+  STREAM_CHECK(istream.is_open(), "Please check if engine_config_file ",
+               demo_json.engine_config_file, " exists.");
+  istream >> engine_json;
+  istream.close();
+
+  // engine.json里的graph数量
+  demo_json.num_graphs = engine_json.size();
+  // demo.json里的码流数量，这里每个码流都可以配置graph_id，对应不同的graph
+  demo_json.num_channels_per_graph = demo_json.channel_configs.size();
+  // 总的码流数就是demo_json.num_channels_per_graph，这个命名需要修改
+  int num_channels = demo_json.num_channels_per_graph;
+
+  std::vector<::sophon_stream::common::FpsProfiler> fpsProfilers(num_channels);
+  for (int i = 0; i < num_channels; ++i) {
+    std::string fpsName = "channel_" + std::to_string(i);
+    fpsProfilers[i].config(fpsName, 100);
+  }
+
+  auto draw_func = getDrawFunc(demo_json);
+
   auto sinkHandler = [&, draw_func](std::shared_ptr<void> data) {
     // write stop data handler here
     auto objectMetadata =
@@ -369,8 +378,6 @@ int main(int argc, char* argv[]) {
     channelTask->request.channelId = channel_config["channel_id"];
     channelTask->request.json = channel_config.dump();
     int decode_id = channel_config["decode_id"];
-    // std::pair<int, int> src_id_port =
-    // graph_src_id_port_map[graph_id][decode_id];
 
     auto src_id_port_vec = graph_src_id_port_map[graph_id];
     for (auto& src_id_port : src_id_port_vec) {
