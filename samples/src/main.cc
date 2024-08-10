@@ -57,6 +57,8 @@ constexpr const char* JSON_CONFIG_HTTP_CONFIG_IP_FILED = "ip";
 constexpr const char* JSON_CONFIG_HTTP_CONFIG_PORT_FILED = "port";
 constexpr const char* JSON_CONFIG_HTTP_CONFIG_PATH_FILED = "path";
 
+static int channel_id_config = 0;
+
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
   istream.open(json_path);
@@ -158,9 +160,14 @@ demo_config parse_demo_json(std::string& json_path) {
     } else {
       channel_json["graph_id"] = graph_id_it->get<int>();
     }
-    channel_json["channel_id"] =
-        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_CHANNEL_ID_FILED)
-            ->get<int>();
+    auto channel_id_it =
+        channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_CHANNEL_ID_FILED);
+    if (channel_id_it == channel_it.end()) {
+      channel_json["channel_id"] = channel_id_config;
+      channel_id_config++;
+    } else {
+      channel_json["channel_id"] = channel_id_it->get<int>();
+    }
     channel_json["url"] = channel_it.find(JSON_CONFIG_CHANNEL_CONFIG_URL_FILED)
                               ->get<std::string>();
     channel_json["source_type"] =
@@ -354,7 +361,7 @@ int main(int argc, char* argv[]) {
   init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
 
   for (auto& channel_config : demo_json.channel_configs) {
-    int graph_id = channel_config["graph_id"]; // 默认是graph0
+    int graph_id = channel_config["graph_id"];  // 默认是graph0
     auto channelTask =
         std::make_shared<sophon_stream::element::decode::ChannelTask>();
     channelTask->request.operation = sophon_stream::element::decode::
