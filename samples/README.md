@@ -151,3 +151,25 @@ IMG_DIR/
 
 > **注意**：
 >1. http_report字段必须完整，否则不会进行上报，默认不上报。
+
+## 3. 功能
+
+samples支持通过http请求动态增加或停止一路码流的功能。在设置了上面的`http_listen`字段之后，可以使用如下代码增加一路码流：
+
+```python
+# add a channel
+url = "http://localhost:8000/stream/addChannel"
+payload = {"channel_id": 3,"url": "../yolov5/data/videos/test_car_person_1080P.avi","source_type": "VIDEO","sample_interval": 1,"loop_num": 1,"fps": 1}
+headers = {'Content-Type': 'application/json'}
+response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+print(response)
+
+# stop a channel
+url = "http://localhost:8000/stream/stopChannel"
+payload = {"channel_id": 3}
+headers = {'Content-Type': 'application/json'}
+response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+print(response)
+```
+
+需要注意，目前bytetrack、osd、encode、http_push等插件的工作示例数量是依照预设的线程数来分配。因此，使用动态增加码流功能时，需要保证前述插件的线程数大于等于增加后的码流总数。

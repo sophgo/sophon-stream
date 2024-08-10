@@ -31,8 +31,8 @@ class Decoder : public ::sophon_stream::common::NoCopyable {
   Decoder();
   ~Decoder();
 
-  common::ErrorCode init(int deviceId, int graphId,
-                         const ChannelOperateRequest& request);
+  common::ErrorCode init(int graphId, const ChannelOperateRequest& request,
+                         bm_handle_t handle);
   common::ErrorCode process(
       std::shared_ptr<common::ObjectMetadata>& objectMetadata);
   void uninit();

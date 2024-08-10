@@ -71,10 +71,13 @@ Decoder::Decoder() {
   numThreadsTotal.fetch_add(1);
 }
 
-Decoder::~Decoder() {}
+Decoder::~Decoder() {
+  // bm_dev_free(m_handle);
+}
 
-common::ErrorCode Decoder::init(int deviceId, int graphId,
-                                const ChannelOperateRequest& request) {
+common::ErrorCode Decoder::init(int graphId,
+                                const ChannelOperateRequest& request,
+                                bm_handle_t handle_) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
     mUrl = request.url;
@@ -82,12 +85,12 @@ common::ErrorCode Decoder::init(int deviceId, int graphId,
     mSampleInterval = request.sampleInterval;
     mFps = request.fps;
     mSampleStrategy = request.sampleStrategy;
-    int ret = bm_dev_request(&m_handle, deviceId);
-    mDeviceId = deviceId;
+    // int ret = bm_dev_request(&m_handle, deviceId);
+    m_handle = handle_;
+    mDeviceId = bm_get_devid(m_handle);
     mGraphId = graphId;
     mSourceType = request.sourceType;
     mImgIndex = 0;
-    assert(BM_SUCCESS == ret);
     mRoiPredefined = request.roi_predefined;
     if (mRoiPredefined) {
       mRoi.start_x = request.roi.start_x;

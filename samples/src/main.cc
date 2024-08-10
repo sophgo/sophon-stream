@@ -58,6 +58,11 @@ constexpr const char* JSON_CONFIG_HTTP_CONFIG_PORT_FILED = "port";
 constexpr const char* JSON_CONFIG_HTTP_CONFIG_PATH_FILED = "path";
 
 static int channel_id_config = 0;
+static int num_channels = 0;
+std::vector<std::shared_ptr<sophon_stream::common::FpsProfiler>> fpsProfilers;
+std::map<int, std::vector<std::pair<int, int>>> graph_src_id_port_map;
+const std::string addChannelPath = "/stream/addChannel";
+const std::string stopChannelPath = "/stream/stopChannel";
 
 demo_config parse_demo_json(std::string& json_path) {
   std::ifstream istream;
@@ -239,8 +244,7 @@ using drawFuncType =
     std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>;
 
 drawFuncType getDrawFunc(demo_config& demo_json) {
-  std::function<void(std::shared_ptr<sophon_stream::common::ObjectMetadata>)>
-      draw_func;
+  drawFuncType draw_func;
   std::string out_dir = "./results";
   if (demo_json.draw_func_name == "draw_bytetrack_results")
     draw_func =
@@ -293,6 +297,118 @@ drawFuncType getDrawFunc(demo_config& demo_json) {
   return draw_func;
 }
 
+/**
+ * @brief 动态增加一路码流的回调
+ *
+ * @param request http request，对格式有要求
+ * @param response http response，标识成功或失败
+ */
+void addChannel(const httplib::Request& request, httplib::Response& response) {
+  sophon_stream::common::Response resp;
+  sophon_stream::common::RequestAddChannel rac;
+  auto ret = sophon_stream::common::str_to_object(request.body, rac);
+  if (!ret) {
+    IVS_ERROR("Invalid Request! Please check it.");
+    resp.code = 5008;  // Invalid value
+    resp.msg = "Invalid Request";
+    nlohmann::json json_res = resp;
+    response.set_content(json_res.dump(), "application/json");
+    return;
+  }
+  // update info
+  num_channels++;
+  std::string fpsName = "channel_" + std::to_string(num_channels - 1);
+  fpsProfilers.push_back(
+      std::make_shared<sophon_stream::common::FpsProfiler>(fpsName, 100));
+
+  // push START signal
+  auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
+  int graph_id = rac.graph_id;  // 默认是graph0
+  auto channelTask =
+      std::make_shared<sophon_stream::element::decode::ChannelTask>();
+  channelTask->request.operation = sophon_stream::element::decode::
+      ChannelOperateRequest::ChannelOperate::START;
+  channelTask->request.channelId = rac.channel_id;
+  nlohmann::json j;
+  to_json(j, rac);
+  channelTask->request.json = j.dump();
+  int decode_id = rac.decode_id;
+
+  auto src_id_port_vec = graph_src_id_port_map[graph_id];
+  for (auto& src_id_port : src_id_port_vec) {
+    if ((decode_id == -1 && src_id_port_vec.size() == 1) ||
+        src_id_port.first == decode_id) {
+      sophon_stream::common::ErrorCode errorCode =
+          engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
+                                std::static_pointer_cast<void>(channelTask));
+      IVS_DEBUG(
+          "Push Source Data, GraphId = {0}, ElementId = {1}, ElementPort = "
+          "{2}, ChannelId = {3}",
+          graph_id, src_id_port.first, src_id_port.second,
+          channelTask->request.channelId);
+    }
+  }
+  resp.code = 0;
+  resp.msg = "success";
+  nlohmann::json json_res = resp;
+  response.set_content(json_res.dump(), "application/json");
+
+  return;
+}
+
+/**
+ * @brief 动态停止一路码流的回调
+ *
+ * @param request http request，对格式有要求
+ * @param response http response，标识成功或失败
+ */
+void stopChannel(const httplib::Request& request, httplib::Response& response) {
+  sophon_stream::common::Response resp;
+  sophon_stream::common::RequestStopChannel rsc;
+  auto ret = sophon_stream::common::str_to_object(request.body, rsc);
+  if (!ret) {
+    IVS_ERROR("Invalid Request! Please check it.");
+    resp.code = 5008;  // Invalid value
+    resp.msg = "Invalid Request";
+    nlohmann::json json_res = resp;
+    response.set_content(json_res.dump(), "application/json");
+    return;
+  }
+  num_channels--;
+  auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
+  int graph_id = rsc.graph_id;  // 默认是graph0
+  auto channelTask =
+      std::make_shared<sophon_stream::element::decode::ChannelTask>();
+  channelTask->request.operation = sophon_stream::element::decode::
+      ChannelOperateRequest::ChannelOperate::STOP;
+  channelTask->request.channelId = rsc.channel_id;
+  nlohmann::json j;
+  to_json(j, rsc);
+  channelTask->request.json = j.dump();
+  int decode_id = rsc.decode_id;
+
+  auto src_id_port_vec = graph_src_id_port_map[graph_id];
+  for (auto& src_id_port : src_id_port_vec) {
+    if ((decode_id == -1 && src_id_port_vec.size() == 1) ||
+        src_id_port.first == decode_id) {
+      sophon_stream::common::ErrorCode errorCode =
+          engine.pushSourceData(graph_id, src_id_port.first, src_id_port.second,
+                                std::static_pointer_cast<void>(channelTask));
+      IVS_DEBUG(
+          "Push Source Data, GraphId = {0}, ElementId = {1}, ElementPort = "
+          "{2}, ChannelId = {3}",
+          graph_id, src_id_port.first, src_id_port.second,
+          channelTask->request.channelId);
+    }
+  }
+  resp.code = 0;
+  resp.msg = "success";
+  nlohmann::json json_res = resp;
+  response.set_content(json_res.dump(), "application/json");
+
+  return;
+}
+
 int main(int argc, char* argv[]) {
   const char* keys =
       "{demo_config_path | "
@@ -333,12 +449,13 @@ int main(int argc, char* argv[]) {
   // demo.json里的码流数量，这里每个码流都可以配置graph_id，对应不同的graph
   demo_json.num_channels_per_graph = demo_json.channel_configs.size();
   // 总的码流数就是demo_json.num_channels_per_graph，这个命名需要修改
-  int num_channels = demo_json.num_channels_per_graph;
+  num_channels = demo_json.num_channels_per_graph;
 
-  std::vector<::sophon_stream::common::FpsProfiler> fpsProfilers(num_channels);
+  fpsProfilers.resize(num_channels);
   for (int i = 0; i < num_channels; ++i) {
     std::string fpsName = "channel_" + std::to_string(i);
-    fpsProfilers[i].config(fpsName, 100);
+    fpsProfilers[i] =
+        std::make_shared<sophon_stream::common::FpsProfiler>(fpsName, 100);
   }
 
   auto draw_func = getDrawFunc(demo_json);
@@ -350,7 +467,7 @@ int main(int argc, char* argv[]) {
     if (objectMetadata == nullptr) return;
     if (!objectMetadata->mFilter) {
       frameCount++;
-      fpsProfilers[objectMetadata->mFrame->mChannelIdInternal].add(1);
+      fpsProfilers[objectMetadata->mFrame->mChannelIdInternal]->add(1);
     }
     if (objectMetadata->mFrame->mEndOfStream) {
       printf("meet a eof\n");
@@ -366,7 +483,13 @@ int main(int argc, char* argv[]) {
       sophon_stream::framework::ListenThread::getInstance();
   listenthread->init(demo_json.report_config, demo_json.listen_config);
   engine.setListener(listenthread);
-  std::map<int, std::vector<std::pair<int, int>>> graph_src_id_port_map;
+  listenthread->setHandler(
+      addChannelPath, sophon_stream::framework::RequestType::POST,
+      std::bind(addChannel, std::placeholders::_1, std::placeholders::_2));
+  listenthread->setHandler(
+      stopChannelPath, sophon_stream::framework::RequestType::POST,
+      std::bind(stopChannel, std::placeholders::_1, std::placeholders::_2));
+
   init_engine(engine, engine_json, sinkHandler, graph_src_id_port_map);
 
   for (auto& channel_config : demo_json.channel_configs) {

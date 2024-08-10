@@ -11,6 +11,7 @@
 #define SOPHON_STREAM_COMMON_HTTP_DEFS_H_
 
 #include "nlohmann/json.hpp"
+#include "error_code.h"
 
 namespace sophon_stream {
 namespace common {
@@ -43,6 +44,33 @@ struct RequestSingleFloat {
 void to_json(nlohmann::json& j, const RequestSingleFloat& p);
 void from_json(const nlohmann::json& j, RequestSingleFloat& p);
 bool str_to_object(const std::string& strjson, RequestSingleFloat& request);
+
+struct RequestAddChannel {
+  int channel_id;
+  std::string url;
+  std::string source_type;
+  int sample_interval = 1;
+  int decode_id = -1;
+  float fps = 1;
+  int loop_num = 1;
+  std::string sample_strategy = "DROP";
+  int graph_id = 0;
+  ErrorCode errorCode = ErrorCode::SUCCESS;
+};
+void to_json(nlohmann::json& j, const RequestAddChannel& p);
+void from_json(const nlohmann::json& j, RequestAddChannel& p);
+bool str_to_object(const std::string& strjson, RequestAddChannel& request);
+
+struct RequestStopChannel {
+  int channel_id;
+  int decode_id = -1;
+  int graph_id = 0;
+  ErrorCode errorCode = ErrorCode::SUCCESS;
+};
+void to_json(nlohmann::json& j, const RequestStopChannel& p);
+void from_json(const nlohmann::json& j, RequestStopChannel& p);
+bool str_to_object(const std::string& strjson, RequestStopChannel& request);
+
 
 }  // namespace common
 }  // namespace sophon_stream

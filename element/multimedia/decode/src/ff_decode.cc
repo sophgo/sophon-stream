@@ -103,11 +103,6 @@ VideoDecFFM::VideoDecFFM() {
   video_stream_idx = -1;
   refcount = 1;
 
-  pkt = new AVPacket;
-  av_init_packet(pkt);
-  pkt->data = NULL;
-  pkt->size = 0;
-
   avdevice_register_all();
   // frame = av_frame_alloc();
 }
@@ -406,6 +401,10 @@ void VideoDecFFM::mFrameCount(const char* video_file, int& mFrameCount) {
 
 int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
   // printf("openDec, tid = %d\n", gettid());
+  pkt = new AVPacket;
+  av_init_packet(pkt);
+  pkt->data = NULL;
+  pkt->size = 0;
   gettimeofday(&last_time, NULL);
   frame = av_frame_alloc();
   frame_id = 0;
@@ -484,11 +483,11 @@ void VideoDecFFM::closeDec() {
   }
   if (ifmt_ctx) {
     avformat_close_input(&ifmt_ctx);
-    avformat_free_context(ifmt_ctx); 
+    avformat_free_context(ifmt_ctx);
     ifmt_ctx = NULL;
   }
   if (frame) {
-    av_frame_unref(frame); 
+    av_frame_unref(frame);
     av_frame_free(&frame);
     frame = NULL;
   }
