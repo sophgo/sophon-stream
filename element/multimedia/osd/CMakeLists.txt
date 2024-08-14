@@ -44,7 +44,13 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     add_library(osd SHARED
         src/osd.cc
     )
+    add_library(cvunitext SHARED src/cvUniText.cc)
+    target_link_libraries(osd cvunitext)
+    add_dependencies(cvunitext freetype)
+    target_link_libraries(cvunitext freetype ${OPENCV_LIBS})
 
+    add_dependencies(osd ivslogger framework cvunitext)
+    add_dependencies(osd ivslogger framework)
     target_link_libraries(osd ${BM_LIBS} ${FFMPEG_LIBS} ${OpenCV_LIBS} ${JPU_LIBS} -lpthread)
 
 elseif (${TARGET_ARCH} STREQUAL "soc")
@@ -76,5 +82,12 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     add_library(osd SHARED
         src/osd.cc
     )
+    add_library(cvunitext SHARED src/cvUniText.cc)
+    target_link_libraries(${demo_name}  cvunitext)
+    add_dependencies(cvunitext freetype)
+    target_link_libraries(cvunitext freetype ${OPENCV_LIBS})
+
+    add_dependencies(osd ivslogger framework cvunitext)
+    add_dependencies(osd ivslogger framework)
     target_link_libraries(osd ${BM_LIBS} ${OPENCV_LIBS} ${JPU_LIBS} -fprofile-arcs -lgcov -lpthread -lavcodec -lavformat -lavutil)
 endif()

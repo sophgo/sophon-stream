@@ -31,7 +31,7 @@ sophon-stream ive插件具有一些可配置的参数，可以根据需求进行
 | ive_mapv      | string | "../dwa_dpu_encode/data/maps/mapV.txt" | 给DPU结果进行染色的V通道map文件      |
 | is_ive        | bool   | true                                   | 选择是否对DPU结果进行染色            |
 | shared_object | string | "../../../build/lib/libive.so"         | libive动态库路径                     |
-| name          | string | "distributor"                          | element名称                          |
+| name          | string | "ive"                                  | element名称                          |
 | side          | string | "sophgo"                               | 设备类型                             |
 | thread_number | int    | 1                                      | 启动线程数                           |
 

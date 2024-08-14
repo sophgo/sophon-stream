@@ -55,5 +55,72 @@ bool str_to_object(const std::string& strjson, RequestSingleFloat& request) {
   return true;
 }
 
+void to_json(nlohmann::json& j, const RequestAddChannel& p) {
+  j = nlohmann::json{
+      {"channel_id", p.channel_id},   {"url", p.url},
+      {"source_type", p.source_type}, {"sample_interval", p.sample_interval},
+      {"decode_id", p.decode_id},     {"fps", p.fps},
+      {"loop_num", p.loop_num},       {"sample_strategy", p.sample_strategy},
+      {"graph_id", p.graph_id}};
+}
+void from_json(const nlohmann::json& j, RequestAddChannel& p) {
+  if (j.count("url") == 0 || j.count("source_type") == 0 ||
+      j.count("channel_id") == 0) {
+    p.errorCode = ErrorCode::ERR_STREAM_INVALID_VALUE;
+    return;
+  }
+
+  p.channel_id = j.at("channel_id").get<int>();
+  p.url = j.at("url").get<std::string>();
+  p.source_type = j.at("source_type").get<std::string>();
+  if (j.count("sample_interval")) {
+    p.sample_interval = j.at("sample_interval").get<int>();
+  }
+  if (j.count("decode_id")) {
+    p.decode_id = j.at("decode_id").get<int>();
+  }
+  if (j.count("fps")) {
+    p.fps = j.at("fps").get<float>();
+  }
+  if (j.count("loop_num")) {
+    p.loop_num = j.at("loop_num").get<int>();
+  }
+  if (j.count("sample_strategy"))
+    p.sample_strategy = j.at("sample_strategy").get<std::string>();
+  if (j.count("graph_id")) {
+    p.graph_id = j.at("graph_id").get<int>();
+  }
+}
+bool str_to_object(const std::string& strjson, RequestAddChannel& request) {
+  nlohmann::json json_object = nlohmann::json::parse(strjson);
+  request = json_object;
+  return request.errorCode == ErrorCode::SUCCESS ? true : false;
+}
+
+void to_json(nlohmann::json& j, const RequestStopChannel& p) {
+  j = nlohmann::json{{"channel_id", p.channel_id},
+                     {"decode_id", p.decode_id},
+                     {"graph_id", p.graph_id}};
+}
+void from_json(const nlohmann::json& j, RequestStopChannel& p) {
+  if (j.count("channel_id") == 0) {
+    p.errorCode = ErrorCode::ERR_STREAM_INVALID_VALUE;
+    return;
+  }
+  p.channel_id = j.at("channel_id").get<int>();
+
+  if (j.count("decode_id")) {
+    p.decode_id = j.at("decode_id").get<int>();
+  }
+  if (j.count("graph_id")) {
+    p.graph_id = j.at("graph_id").get<int>();
+  }
+}
+bool str_to_object(const std::string& strjson, RequestStopChannel& request) {
+  nlohmann::json json_object = nlohmann::json::parse(strjson);
+  request = json_object;
+  return request.errorCode == ErrorCode::SUCCESS ? true : false;
+}
+
 }  // namespace common
 }  // namespace sophon_stream

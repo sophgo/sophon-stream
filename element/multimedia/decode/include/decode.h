@@ -141,6 +141,8 @@ class Decode : public ::sophon_stream::framework::Element {
 
   common::ErrorCode doWork(int dataPipe) override;
 
+  bm_handle_t getHandle() const;
+
   static constexpr const char* JSON_CHANNEL_ID = "channel_id";
   static constexpr const char* JSON_SOURCE_TYPE = "source_type";
   static constexpr const char* JSON_URL = "url";
@@ -159,8 +161,13 @@ class Decode : public ::sophon_stream::framework::Element {
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
   std::mutex mThreadsPoolMtx;
-  std::atomic<int> mChannelCount;
+  // 用于channelIdInternal更新
+  static std::atomic<int> mChannelCount;
+  // channelId -> channelIdInternal 的映射
   std::map<int, int> mChannelIdInternal;
+  // 已经释放出来的channelIdInternal
+  static std::queue<int> mChannelIdInternalReleased;
+
 
   void onStart() override;
   void onStop() override;
@@ -177,6 +184,8 @@ class Decode : public ::sophon_stream::framework::Element {
       std::shared_ptr<ChannelTask>& channelTask);
 
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
+
+  bm_handle_t handle_;
 };
 
 }  // namespace decode

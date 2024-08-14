@@ -15,12 +15,16 @@ namespace decode {
 
 Decode::Decode() {}
 
+std::atomic<int> Decode::mChannelCount = 0;
+std::queue<int> Decode::mChannelIdInternalReleased;
+
 Decode::~Decode() {
   std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
   for (auto& channelInfo : mThreadsPool) {
     channelInfo.second->mThreadWrapper->stop();
   }
   mThreadsPool.clear();
+  bm_dev_free(handle_);
 }
 
 common::ErrorCode Decode::initInternal(const std::string& json) {
@@ -32,8 +36,9 @@ common::ErrorCode Decode::initInternal(const std::string& json) {
       errorCode = common::ErrorCode::PARSE_CONFIGURE_FAIL;
       break;
     }
-    mChannelCount = 0;
     mFpsProfiler.config("fps_decode", 100);
+    int dev_id = getDeviceId();
+    bm_dev_request(&handle_, dev_id);
   } while (false);
 
   return errorCode;
@@ -317,8 +322,8 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
         IVS_INFO("channel info decoder address: {0:p}",
                  static_cast<void*>(channelInfo->mSpDecoder.get()));
 
-        common::ErrorCode ret =
-            channelInfo->mSpDecoder->init(getDeviceId(), getGraphId(), channelTask->request);
+        common::ErrorCode ret = channelInfo->mSpDecoder->init(
+            getGraphId(), channelTask->request, handle_);
         if (ret != common::ErrorCode::SUCCESS) {
           channelTask->response.errorCode = ret;
           std::string error = "Decoder init failed! channel id is " +
@@ -355,11 +360,19 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
       std::make_pair(channelTask->request.channelId, channelInfo));
 
   int channel_id = channelTask->request.channelId;
-  if (mChannelIdInternal.find(channel_id) == mChannelIdInternal.end()) {
+  // 这里不需要判断channel_id是否在占用，因为本函数开头就在mThreadsPool里处理了
+  // 更新channel_id。需要判断是否有释放出来的channelIdInternal
+  if (mChannelIdInternalReleased.empty()) {
+    // 没有释放的channelIdInternal，那么只能更新一个。
     mChannelIdInternal[channel_id] = mChannelCount++;
+  } else {
+    // 有可以释放的channelIdInternal
+    int channelIdInternal = mChannelIdInternalReleased.front();
+    mChannelIdInternalReleased.pop();
+    mChannelIdInternal[channel_id] = channelIdInternal;
   }
 
-  IVS_INFO("add one channel task finished!");
+  IVS_INFO("add one channel task finished, channel id = {0}", channel_id);
   return channelTask->response.errorCode;
 }
 
@@ -374,11 +387,21 @@ common::ErrorCode Decode::stopTask(std::shared_ptr<ChannelTask>& channelTask) {
     IVS_ERROR("{0}", error);
     return common::ErrorCode::DECODE_CHANNEL_NOT_FOUND;
   }
+
+  // 停止一路码流，需要记录释放出来的channelIdInternal，然后erase一对kv
+  auto itChannelId = mChannelIdInternal.find(channelTask->request.channelId);
+  int channelIdInternal = itChannelId->second;
+  mChannelIdInternalReleased.push(channelIdInternal);
+  mChannelIdInternal.erase(itChannelId);
+
   common::ErrorCode errorCode = itTask->second->mThreadWrapper->stop();
   itTask->second->mSpDecoder->uninit();
   itTask->second->mThreadWrapper.reset();
   mThreadsPool.erase(itTask);
   channelTask->response.errorCode = errorCode;
+  IVS_INFO("stop one channel task finished, channel id = {0}",
+           channelTask->request.channelId);
+
   return errorCode;
 }
 

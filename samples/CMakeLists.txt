@@ -42,6 +42,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
 
     include_directories(../framework)
     include_directories(../framework/include)
+    include_directories(../element/multimedia/osd/include)
 
     include_directories(./include)
     set(demo_src
@@ -49,10 +50,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
-    add_library(cvunitext SHARED src/cvUniText.cpp)
     target_link_libraries(${demo_name}  cvunitext)
-    add_dependencies(cvunitext freetype)
-    target_link_libraries(cvunitext freetype ${OPENCV_LIBS})
 
     add_dependencies(${demo_name} ivslogger framework cvunitext)
 
@@ -96,6 +94,7 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     include_directories(../element/multimedia/decode/include)
     include_directories(../framework)
     include_directories(../framework/include)
+    include_directories(../element/multimedia/osd/include)
 
     if (DEFINED OPENSSL_PATH)
         include_directories(${OPENSSL_PATH}/include)
@@ -109,10 +108,8 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
     add_executable(${demo_name} ${demo_src})
-    add_library(cvunitext SHARED src/cvUniText.cpp)
     target_link_libraries(${demo_name}  cvunitext)
-    target_link_libraries(cvunitext freetype ${OPENCV_LIBS})
-    add_dependencies(cvunitext freetype)
+
     add_dependencies(${demo_name} ivslogger framework cvunitext)
     add_dependencies(${demo_name} ivslogger framework)
     if (DEFINED OPENSSL_PATH)
