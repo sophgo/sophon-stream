@@ -119,6 +119,7 @@ common::ErrorCode Yolox::initContext(const std::string& json) {
     float input_scale = inputTensor->get_scale();
     // yolox原始模型输入是0-255,scale=1.0意味着不需要做缩放
     // input_scale /= 255;
+    input_scale = input_scale * 1.0 / 255.f;
     mContext->converto_attr.alpha_0 = input_scale / (mContext->stdd[0]);
     mContext->converto_attr.beta_0 = -(mContext->mean[0]) / (mContext->stdd[0]);
     mContext->converto_attr.alpha_1 = input_scale / (mContext->stdd[1]);

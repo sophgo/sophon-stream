@@ -24,9 +24,9 @@ The Sophon-Stream YOLOX plugin has several configurable parameters that can be a
       0
     ],
     "std": [
-      1,
-      1,
-      1
+      0.0039216,
+      0.0039216,
+      0.0039216
     ],
     "stage": [
       "pre"
