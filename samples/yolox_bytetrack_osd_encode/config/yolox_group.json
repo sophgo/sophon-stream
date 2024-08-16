@@ -4,15 +4,15 @@
         "threshold_conf":0.5,
         "threshold_nms":0.5,
         "bgr2rgb": true,
-        "mean": [
-          0,
-          0,
-          0
+        "mean":[
+          0.485,
+          0.456,
+          0.406
         ],
         "std": [
-          255,
-          255,
-          255
+          0.229,
+          0.224,
+          0.225
         ]
     },
     "shared_object":"../../build/lib/libyolox.so",

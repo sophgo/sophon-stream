@@ -83,9 +83,9 @@ The downloaded models include:
 
 Model description:
 
-1.`yolox_s_bytetrack_` models are from [bytetrack](https://github.com/ifzhang/ByteTrack), `mean=[0,0,0]`, `std=[255,255,255]`, support for person category detection tasks.
+1.`yolox_s_bytetrack_` models are from [bytetrack](https://github.com/ifzhang/ByteTrack), `mean=[0.485, 0.456, 0.406]`，`std=[0.229, 0.224, 0.225]`, support for person category detection tasks.
 
-2.`yolox_s` models are from [yolox](https://github.com/Megvii-BaseDetection/YOLOX), `mean=[0,0,0]`, `std=[1,1,1]`, support for 80 classes of COCO dataset.
+2.`yolox_s` models are from [yolox](https://github.com/Megvii-BaseDetection/YOLOX), `mean=[0,0,0]`，`std=[0.0039216,0.0039216,0.0039216]`, support for 80 classes of COCO dataset.
 
 The downloaded data include:
 
