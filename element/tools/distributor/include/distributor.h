@@ -63,10 +63,9 @@ class Distributor : public ::sophon_stream::framework::Element {
       std::shared_ptr<common::DetectedObjectMetadata> detObj,
       std::shared_ptr<common::ObjectMetadata> subObj, int subId);
 
-  bm_image get_rotate_crop_image(bm_handle_t handle, 
-      bm_image input_bmimg_planar, 
-      std::vector<std::vector<int>>);
-  
+  bm_image get_rotate_crop_image(bm_handle_t handle,
+                                 bm_image input_bmimg_planar,
+                                 std::vector<std::vector<int>>);
 
   /**
    * @brief 按时间间隔分发的所有规则。key：时间间隔，value：{类名，端口}
@@ -91,6 +90,13 @@ class Distributor : public ::sophon_stream::framework::Element {
    * 不同channel首次进入doWork的时间先后不能确定，因此采用unordered_map而不是vector
    */
   std::unordered_map<int, std::vector<float>> mChannelLastTimes;
+
+  /**
+   * @brief key是ChannelId，value是在distributor内部维护的subFrameId
+   * 这个设计是因为：如果只使用frameId作为判断是否可以弹出数据的map的key，会在多级dist和conv嵌套时出错
+   * 考虑到设计上嵌套等级是无上限的，所以需要在ObjectMetadata里使用一个vector<std::int64_t>来维护最近的frameId
+   */
+  std::unordered_map<int, std::int64_t> mSubFrameIdMap;
 
   sophon_stream::common::Clocker clocker;
 
