@@ -35,10 +35,10 @@ class Converger : public ::sophon_stream::framework::Element {
  private:
   int mDefaultPort;
   /**
-   * @brief key: channel_id, value: map<frame_id, objectMetadata>
+   * @brief key: channel_id, value: map<sub_frame_id, objectMetadata>
    */
   std::unordered_map<int,
-                     std::map<int, std::shared_ptr<common::ObjectMetadata>>>
+                     std::map<std::int64_t, std::shared_ptr<common::ObjectMetadata>>>
       mCandidates;
   /**
    * @brief recored number of branches for every ObjectMetadata in default_port

@@ -55,6 +55,7 @@ struct Frame {
   int mChannelId;
   int mChannelIdInternal;
   std::int64_t mFrameId;
+  std::vector<std::int64_t> mSubFrameIdVec;
 
   bm_image_format_ext mFormatType;
   bm_image_data_format_ext mDataType;

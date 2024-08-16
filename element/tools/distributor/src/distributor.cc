@@ -181,6 +181,9 @@ void Distributor::makeSubObjectMetadata(
 
   // update frameid, channelid
   subObj->mFrame->mFrameId = obj->mFrame->mFrameId;
+  subObj->mFrame->mSubFrameIdVec = obj->mFrame->mSubFrameIdVec;
+  subObj->mFrame->mSubFrameIdVec.push_back(
+      mSubFrameIdMap[obj->mFrame->mChannelId]);
   subObj->mFrame->mChannelId = obj->mFrame->mChannelId;
   subObj->mFrame->mChannelIdInternal = obj->mFrame->mChannelIdInternal;
   subObj->mSubId = subId;
@@ -419,9 +422,13 @@ void Distributor::makeSubFaceObjectMetadata(
 
   // update frameid, channelid
   subObj->mFrame->mFrameId = obj->mFrame->mFrameId;
+  subObj->mFrame->mSubFrameIdVec = obj->mFrame->mSubFrameIdVec;
+  subObj->mFrame->mSubFrameIdVec.push_back(
+      mSubFrameIdMap[obj->mFrame->mChannelId]);
   subObj->mFrame->mChannelId = obj->mFrame->mChannelId;
   subObj->mFrame->mChannelIdInternal = obj->mFrame->mChannelIdInternal;
   subObj->mSubId = subId;
+  subObj->mFrame->mEndOfStream = obj->mFrame->mEndOfStream;
 }
 
 void Distributor::makeSubOcrObjectMetadata(
@@ -468,9 +475,13 @@ void Distributor::makeSubOcrObjectMetadata(
 
   // update frameid, channelid
   subObj->mFrame->mFrameId = obj->mFrame->mFrameId;
+  subObj->mFrame->mSubFrameIdVec = obj->mFrame->mSubFrameIdVec;
+  subObj->mFrame->mSubFrameIdVec.push_back(
+      mSubFrameIdMap[obj->mFrame->mChannelId]);
   subObj->mFrame->mChannelId = obj->mFrame->mChannelId;
   subObj->mFrame->mChannelIdInternal = obj->mFrame->mChannelIdInternal;
   subObj->mSubId = subId;
+  subObj->mFrame->mEndOfStream = obj->mFrame->mEndOfStream;
 }
 
 bm_image Distributor::get_rotate_crop_image(bm_handle_t handle,
@@ -623,6 +634,7 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
         }
       }
       ++subId;
+      ++mSubFrameIdMap[objectMetadata->mFrame->mChannelId];
     }
 
     for (auto faceObj : objectMetadata->mFaceObjectMetadatas) {
@@ -657,6 +669,7 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
         }
       }
       ++subId;
+      ++mSubFrameIdMap[objectMetadata->mFrame->mChannelId];
     }
 
     for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
@@ -696,6 +709,7 @@ common::ErrorCode Distributor::doWork(int dataPipeId) {
         }
       }
       ++subId;
+      ++mSubFrameIdMap[objectMetadata->mFrame->mChannelId];
     }
 
     if (class2ports.find("full_frame") != class2ports.end()) {

@@ -160,6 +160,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
+    objectMetadata->mFrame->mSubFrameIdVec.push_back(frame_id);
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mFrame->mTimestamp = pts;
     objectMetadata->mGraphId = mGraphId;
@@ -185,6 +186,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
+    objectMetadata->mFrame->mSubFrameIdVec.push_back(frame_id);
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mFrame->mTimestamp = pts;
     objectMetadata->mGraphId = mGraphId;
@@ -216,6 +218,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = mImgIndex;
+    objectMetadata->mFrame->mSubFrameIdVec.push_back(mImgIndex);
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mGraphId = mGraphId;
 
@@ -244,6 +247,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = mImgIndex++;
+    objectMetadata->mFrame->mSubFrameIdVec.push_back(mImgIndex);
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mGraphId = mGraphId;
     if (spBmImage != nullptr)
@@ -287,6 +291,7 @@ common::ErrorCode Decoder::process(
     objectMetadata->mFrame = std::make_shared<common::Frame>();
     objectMetadata->mFrame->mHandle = m_handle;
     objectMetadata->mFrame->mFrameId = frame_id;
+    objectMetadata->mFrame->mSubFrameIdVec.push_back(frame_id);
     objectMetadata->mFrame->mSpData = spBmImage;
     objectMetadata->mFrame->mTimestamp = pts;
     objectMetadata->mGraphId = mGraphId;

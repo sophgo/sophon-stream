@@ -55,14 +55,16 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     auto objectMetadata =
         std::static_pointer_cast<common::ObjectMetadata>(data);
     int channel_id = objectMetadata->mFrame->mChannelIdInternal;
-    int frame_id = objectMetadata->mFrame->mFrameId;
+    int frame_id = objectMetadata->mFrame->mSubFrameIdVec.back();
     // lock
     std::unique_lock<std::mutex> lk(mtx);
     mCandidates[channel_id][frame_id] = objectMetadata;
     lk.unlock();
     IVS_DEBUG(
-        "data recognized, channel_id = {0}, frame_id = {1}, num_branches = {2}",
-        channel_id, frame_id, objectMetadata->numBranches);
+        "data recognized, element_id = {3}, channel_id = {0}, frame_id = {1}, "
+        "num_branches = "
+        "{2}",
+        channel_id, frame_id, objectMetadata->numBranches, getId());
   }
 
   // 非default_port，取出来之后更新分支数的记录
@@ -73,19 +75,23 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
     while (subdata != nullptr) {
       auto subObj = std::static_pointer_cast<common::ObjectMetadata>(subdata);
       int sub_channel_id = subObj->mFrame->mChannelIdInternal;
-      int sub_frame_id = subObj->mFrame->mFrameId;
-      IVS_DEBUG("subData recognized, channel_id = {0}, frame_id = {1}",
-                sub_channel_id, sub_frame_id);
+      auto sub_frame_id_it = subObj->mFrame->mSubFrameIdVec.end();
+      auto sub_frame_id = *(sub_frame_id_it - 2);
+      IVS_DEBUG(
+          "subData recognized, element_id = {2}, channel_id = {0}, frame_id = "
+          "{1}",
+          sub_channel_id, sub_frame_id, getId());
       // lock
       std::unique_lock<std::mutex> lk(mtx);
       mBranches[sub_channel_id][sub_frame_id]++;
       lk.unlock();
       IVS_DEBUG(
-          "data updated, channel_id = {0}, frame_id = {1}, current "
+          "data updated, element_id = {3}, channel_id = {0}, frame_id = {1}, "
+          "current "
           "num_branches "
           "= {2}",
-          sub_channel_id, sub_frame_id,
-          mBranches[sub_channel_id][sub_frame_id]);
+          sub_channel_id, sub_frame_id, mBranches[sub_channel_id][sub_frame_id],
+          getId());
       subdata = popInputData(inputPort, dataPipeId);
     }
     // if (subdata == nullptr) continue;
@@ -95,7 +101,7 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
   for (auto channel_it = mCandidates.begin(); channel_it != mCandidates.end();
        ++channel_it) {
     // 第一层：遍历所有channel
-    // 这里需要判断：如果channelId应该和自己这个datapipeId对上，就操作；否则跳过，给其它线程操作    
+    // 这里需要判断：如果channelId应该和自己这个datapipeId对上，就操作；否则跳过，给其它线程操作
     int channel_id_internal = channel_it->first;
     int dataPipeNums = getThreadNumber();
     if (channel_id_internal % dataPipeNums != dataPipeId) continue;
@@ -107,8 +113,10 @@ common::ErrorCode Converger::doWork(int dataPipeId) {
       // 如果可以弹出，则弹出并循环至下一个
       if (mBranches[channel_id_internal][frame_id] ==
           mCandidates[channel_id_internal][frame_id]->numBranches) {
-        IVS_DEBUG("Data converged! Now pop... channel_id = {0}, frame_id = {1}",
-                  channel_id_internal, frame_id);
+        IVS_DEBUG(
+            "Data converged! Now pop... element_id = {0}, channel_id = {1}, "
+            "frame_id = {2}",
+            getId(), channel_id_internal, frame_id);
         auto obj = mCandidates[channel_id_internal][frame_id];
         int outDataPipeId = getSinkElementFlag()
                                 ? 0
