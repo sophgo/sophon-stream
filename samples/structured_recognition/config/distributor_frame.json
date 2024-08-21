@@ -1,0 +1,39 @@
+{
+    "configure": {
+        "default_port": 0,
+        "rules": [
+            {
+                "frame_interval": 2,
+                "routes": [
+                    {
+                        "classes":[],
+                        "port": 1
+                    }
+                ]
+            },
+            {
+                "frame_interval": 3,
+                "routes": [
+                    {
+                        "classes":[],
+                        "port": 2
+                    }
+                ]
+            },
+            {
+                "frame_interval": 4,
+                "routes": [
+                    {
+                        "classes":[],
+                        "port": 3
+                    }
+                ]
+            }
+        ],
+        "class_names_file": "../structured_recognition/data/coco_lpr.names"
+    },
+    "shared_object": "../../build/lib/libdistributor.so",
+    "name": "distributor",
+    "side": "sophgo",
+    "thread_number": 1
+}

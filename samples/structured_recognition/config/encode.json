@@ -1,0 +1,14 @@
+{
+  "configure": {
+    "encode_type": "WS",
+    "wss_port": "9000",
+    "enc_fmt": "h264_bm",
+    "pix_fmt": "I420",
+    "ws_enc_type": "SERIALIZED",
+    "fps": 25
+  },
+  "shared_object": "../../build/lib/libencode.so",
+  "name": "encode",
+  "side": "sophgo",
+  "thread_number": 1
+}

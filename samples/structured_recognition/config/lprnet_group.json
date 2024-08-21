@@ -1,0 +1,9 @@
+{
+    "configure": {
+      "model_path": "../structured_recognition/data/models/lprnet/BM1684X/lprnet_int8_1b.bmodel"
+    },
+    "shared_object": "../../build/lib/liblprnet.so",
+    "name": "lprnet_group",
+    "side": "sophgo",
+    "thread_number": 1
+  }
