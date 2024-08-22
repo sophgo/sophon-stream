@@ -177,6 +177,8 @@ void Distributor::makeSubObjectMetadata(
     subObj->mFrame->mSpData = cropped;
   } else {
     subObj->mFrame->mSpData = obj->mFrame->mSpData;
+    subObj->mFrame->mHeight = obj->mFrame->mHeight;
+    subObj->mFrame->mWidth = obj->mFrame->mWidth;
   }
 
   // update frameid, channelid
