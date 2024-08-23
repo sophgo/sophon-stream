@@ -47,7 +47,6 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     add_library(ivslogger SHARED
       common/logger.cc
       common/profiler.cc
-      common/common_defs.h
       common/http_defs.cc
       common/common_tool.cc
     )
@@ -109,7 +108,6 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
     add_library(ivslogger SHARED
       common/logger.cc
       common/profiler.cc
-      common/common_defs.h
       common/http_defs.cc
       common/common_tool.cc
     )
