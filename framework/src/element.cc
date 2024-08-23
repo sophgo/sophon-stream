@@ -170,9 +170,6 @@ common::ErrorCode Element::resume() {
 void Element::run(int dataPipeId) {
   onStart();
   prctl(PR_SET_NAME, std::to_string(mId).c_str());
-  // IVS_CRITICAL("create thread, mID = {0}, threadNumber = {1}, tid = {2}",
-  // mId,
-  //              dataPipeId, gettid());
   while (ThreadStatus::RUN == mThreadStatus) {
     doWork(dataPipeId);
     std::this_thread::yield();
