@@ -1,0 +1,15 @@
+{
+    "channels": [
+      {
+        "channel_id": 2,
+        "url": "../structured_recognition/data/videos/structs.mp4",
+        "source_type": "VIDEO",
+        "loop_num": 2,
+        "fps": 30,
+        "sample_interval": 1
+      }
+    ],
+    "class_names": "../structured_recognition/data/coco.names",
+    "download_image": false,
+    "engine_config_path": "../structured_recognition/config/engine_group.json"
+  }

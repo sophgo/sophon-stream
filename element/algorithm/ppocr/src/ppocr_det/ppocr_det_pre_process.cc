@@ -86,11 +86,8 @@ common::ErrorCode Ppocr_detPreProcess::preProcess(
     } else {
       ratio = 1;
     }
-    int resize_h = int(h * ratio);
-    int resize_w = int(w * ratio);
-
-    resize_h = std::max(int(pythonRound((float)resize_h / 32) * 32), 32);
-    resize_w = std::max(int(pythonRound((float)resize_w / 32) * 32), 32);
+    int resize_h = context->net_h;
+    int resize_w = context->net_w;
 
     objMetadata->resize_vector.push_back(resize_h);
     objMetadata->resize_vector.push_back(resize_w);

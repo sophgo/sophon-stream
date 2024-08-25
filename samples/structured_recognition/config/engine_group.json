@@ -1,0 +1,151 @@
+[
+    {
+        "graph_id": 0,
+        "device_id": 0,
+        "graph_name": "structured_recognition",
+        "elements": [
+            {
+                "element_id": 1000,
+                "element_config": "../structured_recognition/config/decode.json",
+                "ports": {
+                    "input": [
+                        {
+                            "port_id": 0,
+                            "is_sink": false,
+                            "is_src": true
+                        }
+                    ]
+                }
+            },
+            {
+                "element_id": 1001,
+                "element_config": "../structured_recognition/config/distributor_frame.json"
+            },
+            {
+                "element_id": 1002,
+                "element_config": "../structured_recognition/config/yolov5_group.json",
+                "inner_elements_id": [10001, 10002, 10003]
+            },
+            {
+                "element_id": 1003,
+                "element_config": "../structured_recognition/config/retinaface_group.json",
+                "inner_elements_id": [20001, 20002, 20003]
+            },
+            {
+                "element_id": 1004,
+                "element_config": "../structured_recognition/config/yolov5_lpr_group.json",
+                "inner_elements_id": [30001, 30002, 30003]
+            },
+            {
+                "element_id": 1005,
+                "element_config": "../structured_recognition/config/distributor_time_class.json"
+            },
+            {
+                "element_id": 1006,
+                "element_config": "../structured_recognition/config/lprnet_group.json",
+                "inner_elements_id": [40001, 40002, 40003]
+            },
+            {
+                "element_id": 1007,
+                "element_config": "../structured_recognition/config/converger.json"
+            },
+            {
+                "element_id": 1008,
+                "element_config": "../structured_recognition/config/converger.json"
+            },
+            {
+                "element_id": 1009,
+                "element_config": "../structured_recognition/config/encode.json",
+                "ports": {
+                    "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": true,
+                            "is_src": false
+                        }
+                    ]
+                }
+            }
+        ],
+        "connections": [
+            {
+                "src_element_id": 1000,
+                "src_port": 0,
+                "dst_element_id": 1001,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1001,
+                "src_port": 0,
+                "dst_element_id": 1008,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1001,
+                "src_port": 1,
+                "dst_element_id": 1002,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1002,
+                "src_port": 0,
+                "dst_element_id": 1008,
+                "dst_port": 1
+            },
+            {
+                "src_element_id": 1001,
+                "src_port": 2,
+                "dst_element_id": 1003,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1003,
+                "src_port": 0,
+                "dst_element_id": 1008,
+                "dst_port": 2
+            },
+            {
+                "src_element_id": 1001,
+                "src_port": 3,
+                "dst_element_id": 1004,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1004,
+                "src_port": 0,
+                "dst_element_id": 1005,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1005,
+                "src_port": 0,
+                "dst_element_id": 1007,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1005,
+                "src_port": 1,
+                "dst_element_id": 1006,
+                "dst_port": 0
+            },
+            {
+                "src_element_id": 1006,
+                "src_port": 0,
+                "dst_element_id": 1007,
+                "dst_port": 1
+            },
+            {
+                "src_element_id": 1007,
+                "src_port": 0,
+                "dst_element_id": 1008,
+                "dst_port": 3
+            },
+            {
+                "src_element_id": 1008,
+                "src_port": 0,
+                "dst_element_id": 1009,
+                "dst_port": 0
+            }
+        ]
+    }
+]
