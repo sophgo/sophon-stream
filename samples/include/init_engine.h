@@ -35,7 +35,8 @@ constexpr const char* JSON_CONFIG_INNER_ELEMENTS_ID = "inner_elements_id";
 void parse_element_json(
     const nlohmann::detail::iter_impl<nlohmann::json> elements_it,
     nlohmann::json& elementsConfigure, int device_id,
-    std::vector<std::pair<int, int>>& src_id_port, std::pair<int, int>& sink_id_port) {
+    std::vector<std::pair<int, int>>& src_id_port,
+    std::vector<std::pair<int, int>>& sink_id_port) {
   std::ifstream elem_stream;
   for (auto& element_it : *elements_it) {
     nlohmann::json element;
@@ -47,11 +48,11 @@ void parse_element_json(
     elem_stream >> element;
     element["id"] = element_it.find(JSON_CONFIG_ELEMENT_ID_FILED)->get<int>();
     element["device_id"] = device_id;
-    
+
     std::vector<int> elements_id_list;
 
     auto inner_it = element_it.find(JSON_CONFIG_INNER_ELEMENTS_ID);
-    if(inner_it != element_it.end()) {
+    if (inner_it != element_it.end()) {
       elements_id_list = inner_it->get<std::vector<int>>();
       element[JSON_CONFIG_INNER_ELEMENTS_ID] = elements_id_list;
     }
@@ -64,22 +65,22 @@ void parse_element_json(
       if (input_it != ports_it->end()) {
         for (auto& input : *input_it) {
           if (input.find(JSON_CONFIG_ELEMENT_IS_SRC_FILED)->get<bool>()) {
-            // STREAM_CHECK(src_id_port.first == -1,
-            //              "Too many src element, please check ", elem_config,
-            //              " file.");
-            src_id_port.push_back({element["id"],
-                           input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()});
+            src_id_port.push_back(
+                {element["id"],
+                 input.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()});
           }
         }
       }
       if (output_it != ports_it->end()) {
         for (auto& output : *output_it) {
           if (output.find(JSON_CONFIG_ELEMENT_IS_SINK_FILED)->get<bool>()) {
-            sink_id_port = {element["id"],
-                            output.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()};
+            sink_id_port.push_back(
+                {element["id"],
+                 output.find(JSON_CONFIG_PORT_ID_FILED)->get<int>()});
             element["is_sink"] = true;
-            if(elements_id_list.size() != 0) {
-              sink_id_port.first = elements_id_list.back();
+            if (elements_id_list.size() != 0) {
+              // 针对 末尾element是group_element的情况
+              sink_id_port.back().first = elements_id_list.back();
             }
           }
         }
@@ -88,10 +89,9 @@ void parse_element_json(
     elementsConfigure.push_back(element);
     elem_stream.close();
   }
-  STREAM_CHECK(
-      (src_id_port.size() > 0 && src_id_port[0].first != -1 && sink_id_port.first != -1),
-      "THERE MUST BE ONE SRC PORT AND AT LEAST ONE SINK PORT IN GRAPH! CHECK "
-      "YOUR ENGINE.JSON.");
+  STREAM_CHECK((src_id_port.size() > 0 && sink_id_port.size() > 0),
+               "THERE MUST BE ONE SRC PORT AND AT LEAST ONE "
+               "SINK PORT IN GRAPH! CHECK YOUR ENGINE.JSON.");
 }
 
 void parse_connection_json(
@@ -119,8 +119,8 @@ void init_engine(
     std::map<int, std::vector<std::pair<int, int>>>& graph_src_id_port_map) {
   for (auto& graph_it : engine_json) {
     nlohmann::json graphConfigure, elementsConfigure;
-    std::vector<std::pair<int, int>> src_id_port;;   // src_port
-    std::pair<int, int> sink_id_port = {-1, -1};  // sink_port
+    std::vector<std::pair<int, int>> src_id_port;   // src_port
+    std::vector<std::pair<int, int>> sink_id_port;  // sink_port
 
     int graph_id = graph_it.find(JSON_CONFIG_GRAPH_ID_FILED)->get<int>();
     graphConfigure["graph_id"] = graph_id;
@@ -133,8 +133,10 @@ void init_engine(
     parse_connection_json(connect_it, graphConfigure);
 
     engine.addGraph(graphConfigure.dump());
-    engine.setSinkHandler(graph_id, sink_id_port.first, sink_id_port.second,
-                          sinkHandler);
+    for (auto& sink_id_port_obj : sink_id_port) {
+      engine.setSinkHandler(graph_id, sink_id_port_obj.first,
+                            sink_id_port_obj.second, sinkHandler);
+    }
     graph_src_id_port_map[graph_id] = src_id_port;
   }
 }
