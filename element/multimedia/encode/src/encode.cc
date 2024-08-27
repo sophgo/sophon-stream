@@ -156,7 +156,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       mEncodeParams["framerate"] = mFps;
 
       int dev_id = getDeviceId();
-      bm_dev_request(&m_handle, dev_id);
+      // bm_dev_request(&m_handle, dev_id);
 
       int threadNumber = getThreadNumber();
       for (int i = 0; i < threadNumber; ++i) {
