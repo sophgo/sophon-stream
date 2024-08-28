@@ -23,10 +23,6 @@ English | [简体中文](README.md)
 
 This sample is used to illustrate how to quickly build a video target tracking application using sophon-stream and push stream the algorithm results to output;
 
-The connection method for this example plugin is shown in the following diagram.
-
-![elements.jpg](pics/dec_det_track_osd_qt.jpg)
-
 ## 2. Feature
 
 * Use yolox for detection;

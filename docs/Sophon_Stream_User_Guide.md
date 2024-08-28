@@ -103,7 +103,7 @@ samples中的源文件，其编译结果是`samples/build`目录下的可执行�
 
 ## 2. 概述
 
-sophon-stream是面向算丰开发平台的数据流处理工具。本软件基于插件化的思想，使用C++11开发了一套支持多路数据流并发处理的流水线框架。基于现有的接口，sophon-stream对用户具有易使用、易二次开发的优点，可以大大简化用户配置工程或添加插件的复杂度。sophon-stream基于SophonSDK，可以充分发挥算丰硬件的编解码能力及深度学习算法的推理能力，从而获得较高的性能。
+sophon-stream是面向算丰开发平台的数据流处理工具。本软件基于插件化的思想，使用C++17开发了一套支持多路数据流并发处理的流水线框架。基于现有的接口，sophon-stream对用户具有易使用、易二次开发的优点，可以大大简化用户配置工程或添加插件的复杂度。sophon-stream基于SophonSDK，可以充分发挥算丰硬件的编解码能力及深度学习算法的推理能力，从而获得较高的性能。
 
 ### 2.1 sophon-stream优势
 
@@ -294,7 +294,7 @@ sophon-stream/element/algorithm 目录是算法插件的集合，目前包括yol
 
 sophon-stream/element/multimedia 目录是多媒体插件的集合，目前包括编解码和OSD(On-Screen Display)功能。
 
-sophon-stream/element/tools 目录是功能性插件的集合，目前包括数据分发、数据汇聚element，以及一个供用户进行调试的空白element。
+sophon-stream/element/tools 目录是功能性插件的集合，包括数据分发、数据汇聚element，以及一个供用户进行调试的空白element等。
 
 ### 4.1 algorithm
 
@@ -836,7 +836,7 @@ engine.json 是当前demo程序中构造的graph信息，储存了每个graph内
 
 其中，需要重点关注的是 "elements" 和 "connections" 部分。"elements" 是graph内所有element的列表，对于每个element，需要配置element_id、对应的配置文件路径和端口信息。同一个graph内不同的element应具有不同的element_id。element的端口包括输入和输出端口，同一种类的不同端口之间同样应该由不同的port_id区分开。每个端口都具有 "is_src" 和 "is_sink" 属性，标志着当前是否是整张graph的输入或输出端口。
 
-一般只有decode element才会具有输入端口，decode element在一张图中只有一个。对于此element，需要在应用程序中为其发送channelTask，以启动pipeline的工作。不同的是，输出端口不要求element的类型，任何element都可以具有输出端口，具体应该参考工程需求进行配置。对于具有输出端口的element，应为其设置SinkHandler，即正确处理输出数据的回调函数。
+一般只有decode element才会具有输入端口。对于此element，需要在应用程序中为其发送channelTask，以启动pipeline的工作。不同的是，输出端口不要求element的类型，任何element都可以具有输出端口，具体应该参考工程需求进行配置。对于具有输出端口的element，应为其设置SinkHandler，即正确处理输出数据的回调函数。
 
 ### 5.3 入口程序
 
