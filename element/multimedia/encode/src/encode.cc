@@ -189,11 +189,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         break;
       }
     }
-    mFpsProfilers.resize(getThreadNumber());
-    for (int i = 0; i < mFpsProfilers.size(); ++i) {
-      mFpsProfilers[i] = std::make_shared<common::FpsProfiler>();
-      mFpsProfilers[i]->config("fps_encode" + std::to_string(i), 100);
-    }
+
   } while (false);
   return errorCode;
 }
@@ -228,7 +224,14 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
   if (!data) return common::ErrorCode::SUCCESS;
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
-  mFpsProfilers[objectMetadata->mFrame->mChannelIdInternal]->add(1);
+  int curChannelIdInternal = objectMetadata->mFrame->mChannelIdInternal;
+  if (!mFpsProfilers.count(curChannelIdInternal)) {
+    mFpsProfilers[curChannelIdInternal] =
+        std::make_shared<common::FpsProfiler>();
+    mFpsProfilers[curChannelIdInternal]->config(
+        "fps_encode" + std::to_string(curChannelIdInternal), 100);
+  }
+  mFpsProfilers[curChannelIdInternal]->add(1);
   if (objectMetadata->mFrame->mEndOfStream) {
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
         mEncodeType == EncodeType::VIDEO) {

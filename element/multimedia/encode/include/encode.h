@@ -59,7 +59,7 @@ class Encode : public ::sophon_stream::framework::Element {
   int width = -1;
   int height = -1;
 
-  enum class WSencType {IMG_ONLY, SERIALIZED};
+  enum class WSencType { IMG_ONLY, SERIALIZED };
   WSencType mWsEncType = WSencType::IMG_ONLY;
 
   std::string ip = "localhost";
@@ -81,7 +81,11 @@ class Encode : public ::sophon_stream::framework::Element {
   // WS发送停止标识
   void stopWS(int dataPipeId);
 
-  std::vector<std::shared_ptr<common::FpsProfiler>> mFpsProfilers;
+  // 如果多decoder，各自连接到各自的encoder上，那么直接把encoder的profiler
+  // resize成线程数会出错 所以这里使用一个unordered_map来代替
+  // key: channelIdInternal
+  std::unordered_map<unsigned int, std::shared_ptr<common::FpsProfiler>>
+      mFpsProfilers;
 };
 
 }  // namespace encode
