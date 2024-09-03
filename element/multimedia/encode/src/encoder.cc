@@ -104,6 +104,9 @@ class Encoder::Encoder_CC {
   static constexpr const int queueMinSize = 5;
   std::queue<std::shared_ptr<void>> encoderQueue;
   mutable std::mutex mQueueMtx;
+  std::mutex mIsOpenMtx;  // mutex lock for judging if rtsp opened
+  std::mutex mMtx;        // mutex lock for clearing context
+
   std::thread flow_control;
   bool isRunning = true;
 };
@@ -314,10 +317,17 @@ void Encoder::Encoder_CC::init_writer() {
     }
     ret = avformat_write_header(enc_format_ctx_, NULL);
     if (ret < 0) {
-      IVS_ERROR("avformat_write_header failed");
-      abort();
+      IVS_ERROR("avformat_write_header failed {0}", ret);
+      IVS_ERROR(
+          "The RTSP ingest server fails to reconnect, check whether it is "
+          "enabled");
+      std::lock_guard<std::mutex> lock(mIsOpenMtx);
+      opened_ = false;
+    } else {
+      IVS_INFO("The RTSP ingest server success to connect!");
+      std::lock_guard<std::mutex> lock(mIsOpenMtx);
+      opened_ = true;
     }
-    opened_ = true;
   }
 }
 
@@ -445,7 +455,10 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
   return 0;
 }
 
-bool Encoder::Encoder_CC::is_opened() { return opened_; }
+bool Encoder::Encoder_CC::is_opened() {
+  std::lock_guard<std::mutex> lock(mIsOpenMtx);
+  return opened_;
+}
 
 bool Encoder::Encoder_CC::pushQueue(std::shared_ptr<void> p) {
   if (getSize() >= queueMaxSize) {
@@ -477,6 +490,29 @@ void Encoder::Encoder_CC::flowControlFunc() {
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
   while (isRunning) {
+    while (!is_opened()) {
+      IVS_INFO(
+          "Try clearing context and reconnecting to the RTSP streaming server "
+          "every 5 seconds");
+      {
+        std::lock_guard<std::mutex> lock(mMtx);
+        if (enc_dict_) {
+          av_dict_free(&enc_dict_);
+          enc_dict_ = nullptr;
+        }
+        if (enc_ctx_) {
+          avcodec_close(enc_ctx_);
+          avcodec_free_context(&enc_ctx_);
+          enc_ctx_ = nullptr;
+        }
+        while (1) {
+          auto p = popQueue();
+          if (p == nullptr) break;
+        }
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+      init_writer();
+    }
     auto p = popQueue();
     if (p == nullptr) {
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -485,7 +521,18 @@ void Encoder::Encoder_CC::flowControlFunc() {
 
     if (is_rtsp_ || is_video_file_) {
       std::shared_ptr<AVPacket> pp = std::static_pointer_cast<AVPacket>(p);
-      auto ret = av_interleaved_write_frame(enc_format_ctx_, pp.get());
+      int ret = av_interleaved_write_frame(enc_format_ctx_, pp.get());
+      if (ret) {
+        IVS_ERROR(
+            "The RTSP stream ingest server fails to connect, check whether it "
+            "is "
+            "enabled");
+        {
+          std::lock_guard<std::mutex> lock(mIsOpenMtx);
+          opened_ = false;
+        }
+      }
+
     } else if (is_rtmp_) {
       std::shared_ptr<cv::Mat> pp = std::static_pointer_cast<cv::Mat>(p);
       writer.write(*pp);
@@ -495,6 +542,12 @@ void Encoder::Encoder_CC::flowControlFunc() {
 }
 
 int Encoder::Encoder_CC::video_write(bm_image& image) {
+  if (!is_opened()) {
+    IVS_WARN(
+        "The RTSP stream ingest server fails to connect, so the encoder won't "
+        "push data");
+    return -1;
+  }
   if (is_rtsp_ || is_video_file_) {
     // auto _start_time = std::chrono::high_resolution_clock::now();
 
@@ -519,9 +572,18 @@ int Encoder::Encoder_CC::video_write(bm_image& image) {
     test_enc_pkt->data = NULL;
     test_enc_pkt->size = 0;
     av_init_packet(test_enc_pkt.get());
+    if (!is_opened()) {
+      IVS_WARN(
+          "The RTSP stream ingest server fails to connect, so the encoder "
+          "won't push data");
+      return -1;
+    }
+    {
+      std::lock_guard<std::mutex> lock(mMtx);
+      ret = avcodec_encode_video2(enc_ctx_, test_enc_pkt.get(), frame_.get(),
+                                  &got_output);
+    }
 
-    ret = avcodec_encode_video2(enc_ctx_, test_enc_pkt.get(), frame_.get(),
-                                &got_output);
     if (ret < 0) return ret;
     if (got_output == 0) {
       return -1;
