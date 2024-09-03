@@ -846,7 +846,7 @@ The `engine.json` file contains the graph information constructed in the current
 
 It's essential to pay attention to the "elements" and "connections" sections. "Elements" lists all the elements within the graph. For each element, you need to configure the element_id, the corresponding configuration file path, and port information. Different elements within the same graph should have distinct element_ids. Ports of an element include input and output ports, and ports of the same type should be distinguished by different port_ids. Each port has attributes "is_src" and "is_sink," indicating whether it is an input or output port for the entire graph.
 
-In general, only the decode element has input ports, and there is only one decode element in a graph. For this element, you need to send a channelTask in the application to start the pipeline's operation. On the other hand, output ports are not specific to any element type. Any element can have output ports, and the configuration should be based on project requirements. For elements with output ports, you should set a SinkHandler for them, which is a callback function to handle the output data correctly.
+In general, only the decode element has input ports. For this element, you need to send a channelTask in the application to start the pipeline's operation. On the other hand, output ports are not specific to any element type. Any element can have output ports, and the configuration should be based on project requirements. For elements with output ports, you should set a SinkHandler for them, which is a callback function to handle the output data correctly.
 
 ### 5.3 Entry Program
 

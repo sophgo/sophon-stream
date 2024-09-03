@@ -8,6 +8,7 @@
 // ===----------------------------------------------------------------------===
 
 #include "qt_display.h"
+
 #include <QScreen>
 
 #include "common/logger.h"
@@ -20,8 +21,8 @@ namespace qt_display {
 QtDisplay::QtDisplay() {}
 QtDisplay::~QtDisplay() {
   qt_thread.join();
-  for (int i = 0; i < thread_num; i++){
-    delete mFpsProfilers[i];
+  for (auto& [k, v] : mFpsProfilers) {
+    delete v;
   }
 }
 
@@ -51,8 +52,7 @@ int QtDisplay::qt_func() {
 
 common::ErrorCode QtDisplay::initInternal(const std::string& json) {
   auto configure = nlohmann::json::parse(json, nullptr, false);
-  if (!configure.is_object())
-    return common::ErrorCode::PARSE_CONFIGURE_FAIL;
+  if (!configure.is_object()) return common::ErrorCode::PARSE_CONFIGURE_FAIL;
 
   screen_width = configure.find(CONFIG_INTERNAL_SCREEN_WIDTH)->get<int>();
   screen_height = configure.find(CONFIG_INTERNAL_SCREEN_HEIGHT)->get<int>();
@@ -65,13 +65,6 @@ common::ErrorCode QtDisplay::initInternal(const std::string& json) {
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   thread_num = getThreadNumber();
-
-  for (int i = 0; i < thread_num; i++) {
-    ::sophon_stream::common::FpsProfiler* mFpsProfiler =
-        new ::sophon_stream::common::FpsProfiler();
-    mFpsProfilers.push_back(mFpsProfiler);
-    mFpsProfilers[i]->config("qt_display_" + std::to_string(i), 100);
-  }
 
   return common::ErrorCode::SUCCESS;
 }
@@ -90,8 +83,7 @@ common::ErrorCode QtDisplay::doWork(int dataPipeId) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     data = popInputData(inputPort, dataPipeId);
   }
-  if (data == nullptr)
-    return common::ErrorCode::SUCCESS;
+  if (data == nullptr) return common::ErrorCode::SUCCESS;
 
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
@@ -102,16 +94,22 @@ common::ErrorCode QtDisplay::doWork(int dataPipeId) {
   }
   auto bmimg_ptr = objectMetadata->mFrame->mSpDataOsd;
 
-  if (bmimg_ptr == nullptr)
-    bmimg_ptr = objectMetadata->mFrame->mSpData;
+  if (bmimg_ptr == nullptr) bmimg_ptr = objectMetadata->mFrame->mSpData;
 
   if (objectMetadata->mFrame->mEndOfStream)
     stopped_num++;
   else
     label_vec[channel_id]->show_img(bmimg_ptr);
 
-  if (stopped_num == channel_ids.size())
-    qapp->quit();
+  if (stopped_num == channel_ids.size()) qapp->quit();
+
+  if (!mFpsProfilers.count(channel_id)) {
+    ::sophon_stream::common::FpsProfiler* mFpsProfiler =
+        new ::sophon_stream::common::FpsProfiler();
+    mFpsProfilers[channel_id] = mFpsProfiler;
+    mFpsProfilers[channel_id]->config(
+        "qt_display_" + std::to_string(channel_id), 100);
+  }
 
   mFpsProfilers[channel_id]->add(1);
 

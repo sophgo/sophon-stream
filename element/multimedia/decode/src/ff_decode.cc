@@ -706,6 +706,8 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     if (refcount) av_frame_unref(frame);
     gettimeofday(&tv1, NULL);
     ret = avcodec_decode_video2(video_dec_ctx, frame, &got_frame, pkt);
+    STREAM_CHECK(ret != AVERROR(ENOMEM), "Error decoding video frame, memory allocation failed\n");
+    STREAM_CHECK(ret != AVERROR_EXTERNAL, "Error decoding video frame, decoder hardware exception\n");
     if (ret < 0) {
       av_log(video_dec_ctx, AV_LOG_ERROR, "Error decoding video frame (%d)\n",
              ret);

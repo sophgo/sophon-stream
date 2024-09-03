@@ -1,13 +1,12 @@
 #ifndef SOPHON_STREAM_ELEMENT_QT_DISPLAY_H_
 #define SOPHON_STREAM_ELEMENT_QT_DISPLAY_H_
 
-#include "BMLabel.h"
-#include <QSharedPointer>
 #include <QLoggingCategory>
-
-#include <unordered_set>
+#include <QSharedPointer>
 #include <atomic>
+#include <unordered_set>
 
+#include "BMLabel.h"
 #include "common/object_metadata.h"
 #include "element.h"
 
@@ -16,14 +15,13 @@ namespace element {
 namespace qt_display {
 
 class QtDisplay : public ::sophon_stream::framework::Element {
-public:
+ public:
   QtDisplay();
   ~QtDisplay() override;
 
   common::ErrorCode initInternal(const std::string& json) override;
 
   common::ErrorCode doWork(int dataPipeId) override;
-
 
   static constexpr const char* CONFIG_INTERNAL_SCREEN_WIDTH = "width";
   static constexpr const char* CONFIG_INTERNAL_SCREEN_HEIGHT = "height";
@@ -33,9 +31,8 @@ public:
 
   int qt_func();
 
-private:
-
-  QApplication *qapp;
+ private:
+  QApplication* qapp;
   QWidget* qwidget_ptr;
   QGridLayout* layout;
 
@@ -52,15 +49,13 @@ private:
   std::unordered_set<int> channel_ids;
   std::atomic<int> stopped_num;
 
-  std::vector<::sophon_stream::common::FpsProfiler*> mFpsProfilers;
+  // std::vector<::sophon_stream::common::FpsProfiler*> mFpsProfilers;
+  std::unordered_map<unsigned int, common::FpsProfiler*> mFpsProfilers;
   int thread_num;
-
 };
 
-}
-}
-}
-
-
+}  // namespace qt_display
+}  // namespace element
+}  // namespace sophon_stream
 
 #endif

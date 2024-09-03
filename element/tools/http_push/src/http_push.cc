@@ -187,7 +187,7 @@ common::ErrorCode HttpPush::doWork(int dataPipeId) {
   if (!objectMetadata->mFrame->mEndOfStream) {
     nlohmann::json serializedObj = objectMetadata;
 
-    int channel_id = objectMetadata->mFrame->mChannelId;
+    int channel_id = objectMetadata->mFrame->mChannelIdInternal;
     auto implIt = mapImpl_.find(channel_id);
     if (implIt == mapImpl_.end()) {
       std::lock_guard<std::mutex> lock(mapMtx);

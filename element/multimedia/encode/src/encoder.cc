@@ -324,6 +324,7 @@ void Encoder::Encoder_CC::init_writer() {
 Encoder::Encoder_CC::~Encoder_CC() {
   // SPDLOG_INFO("release encoder");
   // release();
+  bm_dev_free(handle_);
 }
 
 int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,

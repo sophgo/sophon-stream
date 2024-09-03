@@ -23,10 +23,6 @@
 
 本例程用于说明如何使用sophon-stream快速构建视频目标跟踪应用，并将算法结果显示输出；
 
-本例程插件的连接方式如下图所示:
-
-![elements.jpg](pics/dec_det_track_osd_qt.jpg)
-
 ## 2. 特性
 * 检测模型使用yolox；
 * 跟踪模型使用bytetrack；
