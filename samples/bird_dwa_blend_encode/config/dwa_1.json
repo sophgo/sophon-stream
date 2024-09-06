@@ -2,15 +2,15 @@
   "configure": {
     "is_gray": false,
     "is_resize": false,
-    "dst_h": 2048,
-    "dst_w": 4096,
+    "dst_h": 1920,
+    "dst_w": 1920,
     "dwa_mode": "DWA_FISHEYE_MODE",
     "dis_mode": "BMCV_MODE_PANORAMA_360",
     "use_grid": true,
-    "grid_name": "../dwa_blend_encode/data/gridinfo/Rgrid_info_bev_128_64_4413_128_64_dst_4096x2048_src_2240x2240.dat",
-    "grid_size": 487600,
-    "resize_h": 2240,
-    "resize_w": 2240
+    "grid_name": "../bird_dwa_blend_encode/data/gridinfo/1grid_info_bev_60_60_2381_60_60_dst_1920x1920_src_1920x1080.dat",
+    "grid_size": 250416,
+    "resize_h": 1920,
+    "resize_w": 1920
   },
   "shared_object": "../../build/lib/libdwa.so",
   "name": "dwa",

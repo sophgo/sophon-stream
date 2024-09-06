@@ -1,0 +1,38 @@
+{
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../bird_dwa_blend_encode/data/images/0",
+      "source_type": "IMG_DIR",
+      "loop_num": -1,
+      "fps": 25,
+      "decode_id": 5000
+    },
+    {
+      "channel_id": 3,
+      "url": "../bird_dwa_blend_encode/data/images/1",
+      "source_type": "IMG_DIR",
+      "loop_num": -1,
+      "fps": 25,
+      "decode_id": 5001
+    },
+    {
+      "channel_id": 4,
+      "url": "../bird_dwa_blend_encode/data/images/2",
+      "source_type": "IMG_DIR",
+      "loop_num": -1,
+      "fps": 25,
+      "decode_id": 6001
+    },
+    {
+      "channel_id": 5,
+      "url": "../bird_dwa_blend_encode/data/images/3",
+      "source_type": "IMG_DIR",
+      "loop_num": -1,
+      "fps": 25,
+      "decode_id": 6002
+    }
+  ],
+  "download_image": false,
+  "engine_config_path": "../bird_dwa_blend_encode/config/engine_resize.json"
+}

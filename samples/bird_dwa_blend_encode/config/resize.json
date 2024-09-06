@@ -1,9 +1,9 @@
 {
   "configure": {
-    "dst_h": 512,
-    "dst_w": 1024,
-    "crop_w": 4096,
-    "crop_h": 2048,
+    "dst_h": 268,
+    "dst_w": 268,
+    "crop_w": 1920,
+    "crop_h": 1920,
     "crop_top": 0,
     "crop_left": 0
   },

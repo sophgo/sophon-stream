@@ -1,11 +1,12 @@
 {
   "configure": {
-    "dst_h": 512,
-    "dst_w": 1024,
-    "crop_w": 4096,
-    "crop_h": 2048,
-    "crop_top": 0,
-    "crop_left": 0
+    "ratio": 0.4,
+    "dst_h": 432,
+    "dst_w": 1536,
+    "crop_w": 3470,
+    "crop_h": 900,
+    "crop_top": 200,
+    "crop_left": 660
   },
   "shared_object": "../../build/lib/libresize.so",
   "name": "resize",

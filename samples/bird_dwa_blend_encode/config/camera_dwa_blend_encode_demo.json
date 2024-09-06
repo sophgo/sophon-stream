@@ -1,0 +1,34 @@
+{
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "/dev/video0",
+      "source_type": "CAMERA",
+      "loop_num": -1,
+      "decode_id": 5000
+    },
+    {
+      "channel_id": 3,
+      "url": "/dev/video1",
+      "source_type": "CAMERA",
+      "loop_num": -1,
+      "decode_id": 5001
+    },
+    {
+      "channel_id": 4,
+      "url": "/dev/video2",
+      "source_type": "CAMERA",
+      "loop_num": -1,
+      "decode_id": 6001
+    },
+    {
+      "channel_id": 5,
+      "url": "/dev/video3",
+      "source_type": "CAMERA",
+      "loop_num": -1,
+      "decode_id": 6002
+    }
+  ],
+  "download_image": false,
+  "engine_config_path": "../bird_dwa_blend_encode/config/engine.json"
+}

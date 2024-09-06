@@ -2,7 +2,7 @@
   "channels": [
     {
       "channel_id": 2,
-      "url": "/dev/video0",
+      "url": "/dev/video1",
       "source_type": "CAMERA",
       "sample_interval": 1,
       "loop_num": -1,
@@ -10,7 +10,7 @@
     },
     {
       "channel_id": 3,
-      "url": "/dev/video1",
+      "url": "/dev/video0",
       "source_type": "CAMERA",
       "sample_interval": 1,
       "loop_num": -1,
@@ -18,5 +18,5 @@
     }
   ],
   "download_image": false,
-  "engine_config_path": "../dwa_blend_encode/config/engine.json"
+  "engine_config_path": "../gdwa_blend_encode/config/engine_dwa_blend_resize.json"
 }
