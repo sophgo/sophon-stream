@@ -24,7 +24,7 @@
 本例程用于说明如何使用sophon-stream快速构建深度估计应用。
 
 本例程中，广角拼接算法的广角展开、广角拼接分别在两个element上进行运算，element内部可以开启多个线程，保证了一定的运行效率。下图是广角拼接应用的流程图：
-![gdwa_pipeline](pic/image.png)
+![gdwa_pipeline](pic/image.jpg)
 ## 2. 特性
 
 * 支持BM1688(SoC)
@@ -43,13 +43,13 @@ chmod -R +x scripts/
 ```
 
 脚本执行完毕后，会在当前目录下生成`data`目录，其中包含`models`和`videos`两个子目录。
-
+```bash
 .
 ├── gridinfo # 用于dwa模块的参数文件
 ├── images   # 测试图片
 ├── wgt     # 用于拼接的权重文件
 └── videos   # 测试视频
-
+```
 
 ## 4. 环境准备
 
@@ -61,14 +61,14 @@ chmod -R +x scripts/
 ```bash
 sudo -s
 cd /mnt/system/ko/
-insmod v4l2_os04a10.ko
+insmod v4l2_os04a10_sync.ko
 ```
 （2）isp参数文件配置
 
 ```bash
 sudo -s
 mkdir -p /mnt/cfg/param
-cp data/param/cvi_sdr_bin /mnt/cfg/param
+cp data/cvi_sdr_bin /mnt/cfg/param
 ```
 
 

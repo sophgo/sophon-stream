@@ -62,7 +62,7 @@ chmod -R +x scripts/
 ```bash
 sudo -s
 cd /mnt/system/ko/
-insmod v4l2_os04a10.ko
+insmod v4l2_os04a10_sync.ko
 ```
 
 （2）isp参数文件配置
