@@ -7,10 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 #include <functional>
-#include <thread>
 
 #include "draw_funcs.h"
-#include "EdgeAwtk.h"
 
 typedef struct demo_config_ {
   int num_graphs;
@@ -411,12 +409,6 @@ void stopChannel(const httplib::Request& request, httplib::Response& response) {
   return;
 }
 
-
-void run_awtk() {
-    EdgeAwtk e(LCD_WIDTH, LCD_HEIGHT);
-    e.run();
-}
-
 int main(int argc, char* argv[]) {
   const char* keys =
       "{demo_config_path | "
@@ -428,11 +420,6 @@ int main(int argc, char* argv[]) {
     parser.printMessage();
     return 0;
   }
-
-  // run awtk in another thread
-  std::thread t_awtk(run_awtk);
-
-
   std::string demo_config_fpath = parser.get<std::string>("demo_config_path");
 
   ::logInit("debug", "");
@@ -546,6 +533,5 @@ int main(int argc, char* argv[]) {
   double fps = static_cast<double>(frameCount) / totalCost;
   std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000
             << " fps." << std::endl;
-  t_awtk.join();
   return 0;
 }

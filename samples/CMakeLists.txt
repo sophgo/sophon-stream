@@ -102,63 +102,13 @@ elseif(${TARGET_ARCH} STREQUAL "soc")
         add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
     endif()
 
-    # ======== awtk =====
-    set(AWTK_ROOT ../3rdparty/awtk)
-    set(COMMON_FLAGS
-    -DHAS_STD_MALLOC
-    -DHAS_STDIO
-    -DHAS_FAST_MEMCPY
-    -DWITH_VGCANVAS
-    -DWITH_UNICODE_BREAK
-    -DLOAD_ASSET_WITH_MMAP=1
-    -DWITH_SOCKET=1
-    -DWITH_ASSET_LOADER
-    -DWITH_FS_RES
-    -DHAS_GET_TIME_US64=1
-    -DSTBTT_STATIC
-    -DSTB_IMAGE_STATIC
-    -DWITH_STB_IMAGE
-    -DWITH_STB_FONT
-    -DWITH_TEXT_BIDI=1
-    -DAPP_TYPE=APP_MOBILE
-    -DLINUX_FB
-    -DWITH_NANOVG_AGGE
-    -DWITH_LINUX_DRM
-    -DWITH_FAST_LCD_PORTRAIT
-    -DWITH_IME_PINYIN
-    -DLINUX
-    -DHAS_PTHREAD
-    -DWITH_DATA_READER_WRITER=1
-    -DWITH_EVENT_RECORDER_PLAYER=1
-    -DWITH_WIDGET_TYPE_CHECK=1
-    -DENABLE_CURSOR
-)
-
-set(OS_FLAGS "-Wall -fno-strict-aliasing -Os")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OS_FLAGS}")
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OS_FLAGS}")
-
-add_definitions(${COMMON_FLAGS})
-
-include_directories(${AWTK_ROOT}/include)
-include_directories(${AWTK_ROOT}/include/ext_widgets)
-
-
-link_directories(${AWTK_ROOT}/lib)
-
-
-
-    # ======== awtk end ====
-
     include_directories(./include)
     set(demo_src
         src/main.cc
     )
     get_filename_component(demo_name ${demo_src} NAME_WE)
-    add_executable(${demo_name} ${demo_src}  src/assets.c src/EdgeAwtk.cpp)
-    target_link_libraries(${demo_name}  cvunitext awtk)
+    add_executable(${demo_name} ${demo_src})
+    target_link_libraries(${demo_name}  cvunitext)
 
     add_dependencies(${demo_name} ivslogger framework cvunitext)
     add_dependencies(${demo_name} ivslogger framework)

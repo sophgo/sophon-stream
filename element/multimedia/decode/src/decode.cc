@@ -362,17 +362,14 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   int channel_id = channelTask->request.channelId;
   // 这里不需要判断channel_id是否在占用，因为本函数开头就在mThreadsPool里处理了
   // 更新channel_id。需要判断是否有释放出来的channelIdInternal
-  // TODO lock
   if (mChannelIdInternalReleased.empty()) {
     // 没有释放的channelIdInternal，那么只能更新一个。
     mChannelIdInternal[channel_id] = mChannelCount++;
-    channelOutputFlags[channelIdInternal] = 1; // only output to vo
   } else {
     // 有可以释放的channelIdInternal
     int channelIdInternal = mChannelIdInternalReleased.front();
     mChannelIdInternalReleased.pop();
     mChannelIdInternal[channel_id] = channelIdInternal;
-    channelOutputFlags[channelIdInternal] = 1; // only output to vo
   }
 
   IVS_INFO("add one channel task finished, channel id = {0}", channel_id);
@@ -467,64 +464,22 @@ common::ErrorCode Decode::process(
     return common::ErrorCode::SUCCESS;
   }
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
-  
-  if (channelOutputFlags[channel_id_internal] & DecodeOutputFlags::VO) {
-    int outputPort = 0; // TODO get output port for vo
-    if (!getSinkElementFlag()) {
-      std::vector<int> outputPorts = getOutputPorts();
-      outputPort = outputPorts[0];
-    }
-    int dataPipeId =
-        getSinkElementFlag()
-            ? 0
-            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
-    common::ErrorCode errorCode = pushOutputData(
-        outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      IVS_WARN("Send data fail, element id: {0}, output port: {1}, data: {2:p}",
-              getId(), 0, static_cast<void*>(objectMetadata.get()));
-      return errorCode;
-      }
+  int outputPort = 0;
+  if (!getSinkElementFlag()) {
+    std::vector<int> outputPorts = getOutputPorts();
+    outputPort = outputPorts[0];
   }
-
-  if (channelOutputFlags[channel_id_internal] & DecodeOutputFlags::ALGO) {
-    int outputPort = 0; // TODO get output port for algo
-    if (!getSinkElementFlag()) {
-      std::vector<int> outputPorts = getOutputPorts();
-      outputPort = outputPorts[0];
-    }
-    int dataPipeId =
-        getSinkElementFlag()
-            ? 0
-            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
-    common::ErrorCode errorCode = pushOutputData(
-        outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      IVS_WARN("Send data fail, element id: {0}, output port: {1}, data: {2:p}",
-              getId(), 0, static_cast<void*>(objectMetadata.get()));
-      return errorCode;
-      }
+  int dataPipeId =
+      getSinkElementFlag()
+          ? 0
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
+  common::ErrorCode errorCode = pushOutputData(
+      outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
+  if (common::ErrorCode::SUCCESS != errorCode) {
+    IVS_WARN("Send data fail, element id: {0}, output port: {1}, data: {2:p}",
+             getId(), 0, static_cast<void*>(objectMetadata.get()));
+    return errorCode;
   }
-
-  if (channelOutputFlags[channel_id_internal] & DecodeOutputFlags::ENCODE) {
-    int outputPort = 0; // TODO get output port for encode
-    if (!getSinkElementFlag()) {
-      std::vector<int> outputPorts = getOutputPorts();
-      outputPort = outputPorts[0];
-    }
-    int dataPipeId =
-        getSinkElementFlag()
-            ? 0
-            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
-    common::ErrorCode errorCode = pushOutputData(
-        outputPort, dataPipeId, std::static_pointer_cast<void>(objectMetadata));
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      IVS_WARN("Send data fail, element id: {0}, output port: {1}, data: {2:p}",
-              getId(), 0, static_cast<void*>(objectMetadata.get()));
-      return errorCode;
-      }
-  }
-  
   return ret;
 }
 

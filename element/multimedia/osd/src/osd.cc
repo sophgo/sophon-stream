@@ -246,7 +246,11 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
   common::ObjectMetadatas objectMetadatas;
   std::vector<int> inputPorts = getInputPorts();
   int inputPort = inputPorts[0];
- 
+  int outputPort = 0;
+  if (!getSinkElementFlag()) {
+    std::vector<int> outputPorts = getOutputPorts();
+    int outputPort = outputPorts[0];
+  }
 
   std::shared_ptr<void> data;
   while (getThreadStatus() == ThreadStatus::RUN) {
@@ -270,50 +274,16 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
   }
 
   int channel_id_internal = objectMetadata->mFrame->mChannelIdInternal;
-  
-
-  if (channelOutputFlags.find(channel_id_internal)==channelOutputFlags.end()) 
-      // todo lock
-      channelOutputFlags[channel_id_internal] = 0; // init to 0
-
-  if (channelOutputFlags[channel_id_internal] & OsdOutputFlags::VO) {
-    int outputPort = 0; // TODO get output port for vo
-    if (!getSinkElementFlag()) {
-      std::vector<int> outputPorts = getOutputPorts();
-      int outputPort = outputPorts[0];
-    }
-
-    int outDataPipeId =
-        getSinkElementFlag()
-            ? 0
-            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
-    errorCode = pushOutputData(outputPort, outDataPipeId, objectMetadata);
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      IVS_WARN(
-          "Send data fail, element id: {0:d}, output port: {1:d}, data: "
-          "{2:p}",
-          getId(), outputPort, static_cast<void*>(objectMetadata.get()));
-    }
-  }
-
-   if (channelOutputFlags[channel_id_internal] & OsdOutputFlags::Encode) {
-    int outputPort = 0; // TODO get output port for Encode
-    if (!getSinkElementFlag()) {
-      std::vector<int> outputPorts = getOutputPorts();
-      int outputPort = outputPorts[0];
-    }
-
-    int outDataPipeId =
-        getSinkElementFlag()
-            ? 0
-            : (channel_id_internal % getOutputConnectorCapacity(outputPort));
-    errorCode = pushOutputData(outputPort, outDataPipeId, objectMetadata);
-    if (common::ErrorCode::SUCCESS != errorCode) {
-      IVS_WARN(
-          "Send data fail, element id: {0:d}, output port: {1:d}, data: "
-          "{2:p}",
-          getId(), outputPort, static_cast<void*>(objectMetadata.get()));
-    }
+  int outDataPipeId =
+      getSinkElementFlag()
+          ? 0
+          : (channel_id_internal % getOutputConnectorCapacity(outputPort));
+  errorCode = pushOutputData(outputPort, outDataPipeId, objectMetadata);
+  if (common::ErrorCode::SUCCESS != errorCode) {
+    IVS_WARN(
+        "Send data fail, element id: {0:d}, output port: {1:d}, data: "
+        "{2:p}",
+        getId(), outputPort, static_cast<void*>(objectMetadata.get()));
   }
 
   return common::ErrorCode::SUCCESS;
