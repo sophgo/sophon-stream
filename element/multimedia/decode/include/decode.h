@@ -20,6 +20,13 @@ namespace sophon_stream {
 namespace element {
 namespace decode {
 
+  enum DecodeOutputFlags {
+    VO = 1,  // VO
+    ALGO = 2,  // 算法
+    ENCODE = 4  // 编码
+};
+
+
 class ThreadWrapper : public ::sophon_stream::common::NoCopyable {
   friend class Decoder;
 
@@ -186,6 +193,8 @@ class Decode : public ::sophon_stream::framework::Element {
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
 
   bm_handle_t handle_;
+
+  std::unordered_map<int, int> channelOutputFlags;
 };
 
 }  // namespace decode

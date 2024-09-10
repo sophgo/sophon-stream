@@ -21,6 +21,11 @@ namespace sophon_stream {
 namespace element {
 namespace osd {
 
+enum OsdOutputFlags {
+    VO = 1,  // VO
+    ENCODE = 2  // 编码
+};
+
 class Osd : public ::sophon_stream::framework::Element {
  public:
   enum class OsdType { DET, TRACK, REC, POSE, AREA, ALGORITHM, TEXT, UNKNOWN };
@@ -73,6 +78,8 @@ class Osd : public ::sophon_stream::framework::Element {
       draw_func_opencv;
   ::sophon_stream::common::FpsProfiler mFpsProfiler;
   void draw(std::shared_ptr<common::ObjectMetadata> objectMetadata);
+
+  std::unordered_map<int, int> channelOutputFlags;
 };
 
 }  // namespace osd
