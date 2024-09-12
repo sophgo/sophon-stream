@@ -5,7 +5,7 @@ English | [简体中文](README.md)
 The sophon-stream decode element is a plugin within the sophon-stream framework, used for decoding images, videos, RTSP/RTMP video streams for subsequent analysis and processing purposes.
 
 ## 1. feature
-* Supports various input formats, including RTSP, RTMP, local videos, image files, BASE64, etc.
+* Supports various input formats, including RTSP, RTMP, local videos, image files, BASE64, CAMERA ,etc.
 * Supports reconnection for interrupted RTSP/RTMP video streams.
 * Allows configuration for looping local videos and image files.
 * High-performance decoding for multiple video streams with hardware acceleration.
@@ -81,7 +81,7 @@ Additionally, attention should be paid to the setting of the input data channels
 |:-------------:| :-------: | :------------------:| :------------------------:|
 | channel_id | int   | \ | Input data channel number |
 |   url      | string | \ | Input data path, including local videos, images, video streams, and base64-encoded URLs. |
-|source_type | string  | \  | Input data types: "RTSP" represents an RTSP video stream, “RTMP” represents an RTMP video stream, “VIDEO” represents local videos, “IMG_DIR” represents image folders, and “BASE64” represents base64-encoded data. |
+|source_type | string  | \  | Input data types: "RTSP" represents an RTSP video stream, “RTMP” represents an RTMP video stream, “VIDEO” represents local videos, “IMG_DIR” represents image folders, “BASE64” represents base64-encoded data, and “CAMERA” camera or other type of video input device. |
 |sample_interval | int  | 1  |Frame extraction rate. Setting it to 5 implies that for every 5 frames, 1 frame will be processed subsequently, which means the ObjectMata mFilter field is set to false.|
 |loop_num | int  | 1  | Loop count. Only applicable when the source_type is set to "VIDEO" and "IMG_DIR". A value of 0 indicates an infinite loop.|
 |fps | float  | 30 | Used to control the frames per second (fps) of the video stream. Fps=-1 means no control over fps. In other cases, when source_type is set to "IMG_DIR" or "BASE64", it's determined by the set value. For other source_types, fps is read from the video stream, and the set value does not take effect.|
@@ -110,4 +110,4 @@ IMG_DIR/
 >2. The URL for inputting RTMP data stream must begin with `rtmp://`.
 >3. If the input BASE64 URL is `/base64`, the HTTP request format should be a POST request to "http://{host_ip}:{base64_port}/base64". The request body's data field stores the base64 data, such as {"data": "{base64 string, excluding the header (data:image/xxx;base64,)}"}.
 >4. The URL for inputting GB28181 data stream must start with `gb28181://`.
-
+>5. The URL for inputting CAMERA data stream must start with `/dev/video`.

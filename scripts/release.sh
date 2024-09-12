@@ -49,6 +49,12 @@ cp -r element/tools/distributor $result_dir/element/tools
 cp -r element/tools/blank $result_dir/element/tools
 cp -r element/tools/faiss $result_dir/element/tools
 cp -r element/tools/http_push $result_dir/element/tools
+cp -r element/tools/dwa $result_dir/element/tools
+cp -r element/tools/dpu $result_dir/element/tools
+cp -r element/tools/blend $result_dir/element/tools
+cp -r element/tools/ive $result_dir/element/tools
+cp -r element/tools/resize $result_dir/element/tools
+cp -r element/tools/stitch $result_dir/element/tools
 
 cp -r 3rdparty $result_dir
 cp -r samples $result_dir

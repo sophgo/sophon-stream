@@ -43,7 +43,7 @@ chmod -R +x scripts/
 ```
 
 脚本执行完毕后，会在当前目录下生成`data`目录，其中包含`models`和`videos`两个子目录。
-
+```bash
 .
 ├── gridinfo
 │   ├── 0grid_info_bev_60_60_2920_60_60_dst_1920x1920_src_1920x1080.dat
@@ -105,7 +105,7 @@ chmod -R +x scripts/
     ├── c01_alpha_444p_m2__0_3072x32.bin
     ├── c01_beta_444p_m2__0_2240x32.bin
     └── c01_beta_444p_m2__0_3072x32.bin
-
+```
 
 ## 4. 环境准备
 
