@@ -345,7 +345,8 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
     switch (mOsdType) {
       case OsdType::DET:
         draw_bmcv_det_result(objectMetadata->mFrame->mHandle, objectMetadata,
-                             mClassNames, *imageStorage, mPutText);
+                             mClassNames, *imageStorage, mPutText,
+                             mDrawInterval);
         break;
 
       case OsdType::TRACK:

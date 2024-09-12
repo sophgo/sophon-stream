@@ -92,12 +92,20 @@ std::mutex mLastObjectMetaDataMtx;
 void draw_bmcv_det_result(
     bm_handle_t& handle, std::shared_ptr<common::ObjectMetadata> objectMetadata,
     std::vector<std::string>& class_names, bm_image& frame,
-    bool put_text_flag) {
+    bool put_text_flag, bool draw_interval) {
   int colors_num = colors.size();
   std::map<int, std::vector<bmcv_rect_t>> rectsMap;
   int thickness = 2;
   float fontScale = 1;
-  for (auto detObj : objectMetadata->mDetectedObjectMetadatas) {
+  std::shared_ptr<common::ObjectMetadata> objData;
+  {
+    std::lock_guard<std::mutex> lk(mLastObjectMetaDataMtx);
+    objData = (objectMetadata->mFilter && draw_interval)
+                  ? lastObjectMetadataMap[objectMetadata->mFrame->mChannelId]
+                  : objectMetadata;
+    lastObjectMetadataMap[objectMetadata->mFrame->mChannelId] = objData;
+  }
+  for (auto detObj : objData->mDetectedObjectMetadatas) {
     bmcv_rect_t rect;
     rect.start_x = detObj->mBox.mX;
     rect.start_y = detObj->mBox.mY;
