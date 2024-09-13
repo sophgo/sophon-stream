@@ -103,6 +103,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
     auto widthIt = configure.find(CONFIG_INTERNAL_WIDTH_FIELD);
     auto heightIt = configure.find(CONFIG_INTERNAL_HEIGHT_FIELD);
     auto wsTypeIt = configure.find(CONFIG_INTERNAL_WSENCTYPE_FIELD);
+    auto wsBackendIt = configure.find(CONFIG_INTERNAL_WSS_BACKEND);
     if (widthIt != configure.end() && heightIt != configure.end()) {
       width = widthIt->get<int>();
       height = heightIt->get<int>();
@@ -110,8 +111,18 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
 
     if (wsTypeIt != configure.end()) {
       std::string wsEncType = wsTypeIt->get<std::string>();
-      if (wsEncType == "IMG_ONLY") mWsEncType = WSencType::IMG_ONLY;
-      if (wsEncType == "SERIALIZED") mWsEncType = WSencType::SERIALIZED;
+      if (wsEncType == "IMG_ONLY")
+        mWsEncType = WSencType::IMG_ONLY;
+      else if (wsEncType == "SERIALIZED")
+        mWsEncType = WSencType::SERIALIZED;
+    }
+
+    if (wsBackendIt != configure.end()) {
+      std::string wsBackend = wsBackendIt->get<std::string>();
+      if (wsBackend == "WEBSOCKETPP")
+        mWssBackend = WSSBackend::WEBSOCKETPP;
+      else if (wsBackend == "BOOST")
+        mWssBackend = WSSBackend::BOOST;
     }
 
     if (mEncodeType == EncodeType::RTSP || mEncodeType == EncodeType::RTMP ||
@@ -254,7 +265,8 @@ common::ErrorCode Encode::doWork(int dataPipeId) {
     }
   } else {
     // WS发送停止标识
-    if (mEncodeType == EncodeType::WS) {
+    if (mEncodeType == EncodeType::WS &&
+        mWssBackend == WSSBackend::WEBSOCKETPP) {
       stopWS(dataPipeId);
     }
   }
@@ -384,14 +396,24 @@ void Encode::processWS(int dataPipeId,
   if (mWSSMap.end() == serverIt) {
     int channel_id = objectMetadata->mFrame->mChannelId;
     int server_port = std::stoi(mWSSPort) + channel_id;
-    std::shared_ptr<WSS> wss = std::make_shared<WSS>();
-    std::thread t(create_wss, wss.get(), server_port, mFps);
-    std::thread s(send_wss, wss.get());
-    std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
-    mWSSThreads.push_back(std::move(s));
-    mWSSThreads.push_back(std::move(t));
-    mWSSMap[dataPipeId] = wss;
-    serverIt = mWSSMap.find(dataPipeId);
+
+    if (mWssBackend == WSSBackend::WEBSOCKETPP) {
+      std::shared_ptr<WSS> wss = std::make_shared<WSS>();
+      std::thread t(create_wss, wss.get(), server_port, mFps);
+      std::thread s(send_wss, wss.get());
+      std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
+      mWSSThreads.push_back(std::move(s));
+      mWSSThreads.push_back(std::move(t));
+      mWSSMap[dataPipeId] = std::make_shared<WSSManager>(wss);
+      serverIt = mWSSMap.find(dataPipeId);
+    } else if (mWssBackend == WSSBackend::BOOST) {
+      auto wss = std::make_shared<WebSocketServer>(server_port, mFps, 4);
+      std::thread t([wss]() { wss->run(); });
+      std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
+      mWSSThreads.push_back(std::move(t));
+      mWSSMap[dataPipeId] = std::make_shared<WSSManager>(wss);
+      serverIt = mWSSMap.find(dataPipeId);
+    }
   }
 
   if (!serverIt->second->getConnectionsNum()) {

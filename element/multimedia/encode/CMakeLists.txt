@@ -44,6 +44,7 @@ if (${TARGET_ARCH} STREQUAL "pcie")
     include_directories(include)
     add_library(encode SHARED
         src/wss.cc
+        src/wss_boost.cc
         src/encoder.cc
         src/encode.cc
     )
@@ -80,6 +81,7 @@ elseif (${TARGET_ARCH} STREQUAL "soc")
     include_directories(include)
     add_library(encode SHARED
         src/wss.cc
+        src/wss_boost.cc
         src/encoder.cc
         src/encode.cc
     )

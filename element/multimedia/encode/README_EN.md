@@ -38,6 +38,7 @@ sophon-stream encoder plugin has several configurable parameters that can be adj
     "enc_fmt": "h264_bm",
     "pix_fmt": "I420",
     "ws_enc_type": "IMG_ONLY",
+    "wss_backend": "WEBSOCKETPP",
     "fps": 25
   },
   "shared_object": "../../../build/lib/libencode.so",
@@ -58,6 +59,7 @@ sophon-stream encoder plugin has several configurable parameters that can be adj
 |    enc_fmt    | string |                \                 |       encode format，include "h264_bm"，"h265_bm"       |
 |    pix_fmt    | string |                \                 |             pixel format，include "I420"，"NV12"        |
 |  ws_enc_type  | string |           "IMG_ONLY"             |Take effect when the encoding format is WS. Setting to "IMG_ONLY" means only encoding pictures. Setting to "SERIALIZED" means encoding ObjectMetadata.|
+| wss_backend   | string |          "WEBSOCKETPP"            | websocket server type, supports "WEBSOCKETPP" and "BOOST"      |
 |      fps      |  int  |                25                 |                  RTSP,RTMP,VIDEO frame rate             |
 |      ip       | string |             "localhost"           |                       ip of stream server              |
 |     width     | int    |               -1                 |           width of encoder output, default to img.width  |

@@ -14,11 +14,44 @@
 
 #include "element_factory.h"
 #include "encoder.h"
+#include "websocketpp/base64/base64.hpp"
 #include "wss.h"
+#include "wss_boost.h"
 
 namespace sophon_stream {
 namespace element {
 namespace encode {
+
+class WSSManager {
+ public:
+  WSSManager() = default;
+  ~WSSManager() = default;
+  WSSManager(std::shared_ptr<WSS> ptr) : wsspp(ptr), wssboost(nullptr) {};
+  WSSManager(std::shared_ptr<WebSocketServer> ptr)
+      : wsspp(nullptr), wssboost(ptr) {};
+
+  void pushImgDataQueue(const std::string& data) {
+    if (wsspp) {
+      wsspp->pushImgDataQueue(data);
+    } else if (wssboost) {
+      wssboost->pushImgDataQueue(data);
+    }
+    return;
+  }
+
+  const int getConnectionsNum() const {
+    int n = 0;
+    if (wsspp) {
+      n = wsspp->getConnectionsNum();
+    } else if (wssboost) {
+      n = wssboost->getConnectionsNum();
+    }
+    return n;
+  }
+
+  std::shared_ptr<WSS> wsspp;
+  std::shared_ptr<WebSocketServer> wssboost;
+};
 
 class Encode : public ::sophon_stream::framework::Element {
  public:
@@ -36,6 +69,7 @@ class Encode : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_ENC_FMT_FIELD = "enc_fmt";
   static constexpr const char* CONFIG_INTERNAL_PIX_FMT_FIELD = "pix_fmt";
   static constexpr const char* CONFIG_INTERNAL_WSS_PORT_FIELD = "wss_port";
+  static constexpr const char* CONFIG_INTERNAL_WSS_BACKEND = "wss_backend";
   static constexpr const char* CONFIG_INTERNAL_FPS_FIELD = "fps";
 
   // for customizing shape and ip
@@ -60,11 +94,16 @@ class Encode : public ::sophon_stream::framework::Element {
   int height = -1;
 
   enum class WSencType { IMG_ONLY, SERIALIZED };
+  enum class WSSBackend { WEBSOCKETPP, BOOST };
   WSencType mWsEncType = WSencType::IMG_ONLY;
+  WSSBackend mWssBackend = WSSBackend::WEBSOCKETPP;
 
   std::string ip = "localhost";
 
-  std::map<int, std::shared_ptr<WSS>> mWSSMap;
+  std::map<int, std::shared_ptr<WSSManager>> mWSSMap;
+  //   std::map<int, std::shared_ptr<WSS>> mWSSMap;  // for websocketpp
+  //   std::map<int, std::shared_ptr<WebSocketServer>>
+  //       mWSSBoostMap;  // for websocket boost
   std::vector<std::thread> mWSSThreads;
   std::mutex mWSSThreadsMutex;
   std::string mWSSPort;
