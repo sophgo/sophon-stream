@@ -95,6 +95,8 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.3.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.4.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.5.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.6.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.7.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.8.tar.gz
 ```
 
 If QT is needed, make sure to download QT of cross-compiling version on x86 device. The environment on the edge device does have QT already, there is no need to re-download/install it. Use the `QTPATH` parameter at compile time to specify the qt path: (If not using QT, this part can be ignored and `QTPATH` while cross-compiling is not necessary)
