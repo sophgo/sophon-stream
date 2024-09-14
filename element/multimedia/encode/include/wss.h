@@ -55,6 +55,7 @@ class WSS {
   void pushImgDataQueue(const std::string& data);
 
   std::string popImgDataQueue();
+  uint getConnectionsNum();
 
  private:
   server m_server;

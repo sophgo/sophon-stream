@@ -76,6 +76,10 @@ void WSS::send() {
   }
 }
 
+uint WSS::getConnectionsNum() {
+    return m_connections.size();
+}
+
 void WSS::stop() { m_server.stop_listening(); }
 
 void WSS::pushImgDataQueue(const std::string& data) {

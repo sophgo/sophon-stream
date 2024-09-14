@@ -393,6 +393,11 @@ void Encode::processWS(int dataPipeId,
     mWSSMap[dataPipeId] = wss;
     serverIt = mWSSMap.find(dataPipeId);
   }
+
+  if (!serverIt->second->getConnectionsNum()) {
+    return;
+  }
+  
   std::string data;
   if (mWsEncType == WSencType::IMG_ONLY) {
     void* jpeg_data = NULL;
