@@ -1,0 +1,11 @@
+{
+  "configure": {
+    "ip": "127.0.0.1",
+    "port": 8001,
+    "path": "/alarm/rev"
+  },
+  "shared_object": "{Stream_path}/build/lib/libhttp_push.so",
+  "name": "http_push",
+  "side": "sophgo",
+  "thread_number": 1
+}

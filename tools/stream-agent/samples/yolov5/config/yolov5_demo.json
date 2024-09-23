@@ -1,0 +1,21 @@
+{
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "/data/media_files/test-h265.mp4",
+      "source_type": "VIDEO",
+      "sample_interval": 150,
+      "loop_num": 5,
+      "fps": 25
+    }
+  ],
+  "class_names": "{Stream_path}/samples/yolov5/data/coco.names",
+  "download_image": false,
+  "draw_func_name": "draw_yolov5_results",
+  "engine_config_path": "config/engine_group.json",
+  "http_report": {
+    "ip": "127.0.0.1",
+    "port": 8001,
+    "path": "/alarm/rev"
+  }
+}

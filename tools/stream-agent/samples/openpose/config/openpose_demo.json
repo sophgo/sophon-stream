@@ -1,0 +1,14 @@
+{
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../openpose/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 10,
+      "fps": -1
+    }
+  ],
+  "download_image": false,
+  "draw_func_name": "draw_openpose_results",
+  "engine_config_path": "config/engine_group.json"
+}

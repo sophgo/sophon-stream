@@ -1,0 +1,9 @@
+{
+    "configure": {
+        "default_port": 0
+    },
+    "shared_object": "{Stream_path}/build/lib/libconverger.so",
+    "name": "converger",
+    "side": "sophgo",
+    "thread_number": 1
+}

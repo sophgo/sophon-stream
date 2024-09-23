@@ -1,0 +1,18 @@
+{
+  "channels": [
+    {
+      "channel_id": 0,
+      "url": "{Stream_path}/samples/tripwire/data/test.mp4",
+      "source_type": "VIDEO",
+      "loop_num": 1,
+      "fps": 25,
+      "sample_interval": 3
+    }
+  ],
+  "engine_config_path": "config/engine_group.json",
+  "http_report": {
+    "ip": "127.0.0.1",
+    "port": 8001,
+    "path": "/alarm/rev"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "configure": {
+    "model_path": "{Stream_path}/samples/yolov5/data/models/BM1684X/yolov5s_v6.1_3output_int8_1b.bmodel",
+    "threshold_conf": 0.5,
+    "threshold_nms": 0.5,
+    "bgr2rgb": true,
+    "mean": [
+      0,
+      0,
+      0
+    ],
+    "std": [
+      255,
+      255,
+      255
+    ],
+    "use_tpu_kernel": false
+  },
+  "shared_object": "{Stream_path}/build/lib/libyolov5.so",
+  "name": "yolov5_group",
+  "side": "sophgo",
+  "thread_number": 4
+}

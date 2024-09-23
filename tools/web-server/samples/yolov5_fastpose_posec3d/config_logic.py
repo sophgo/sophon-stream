@@ -1,3 +1,0 @@
-yolov5_fastpose_posec3d_infos={}
-yolov5_fastpose_posec3d_in_thresh=1
-yolov5_fastpose_posec3d_out_thresh=2

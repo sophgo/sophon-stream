@@ -1,3 +1,0 @@
-license_plate_recognition_infos={}
-license_plate_recognition_in_thresh=1
-license_plate_recognition_out_thresh=1000
