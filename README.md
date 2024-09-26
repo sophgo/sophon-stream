@@ -41,12 +41,21 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [resnet](./samples/resnet)                                        | resnet demo                             |
 |                         | [openpose](./samples/openpose)                                    | openpose demo                           |
 |                         | [retinaface](./samples/retinaface)                                | retinaface demo                         |
-|                         | [yolox_bytetrack_osd_encode](./samples/yolox_bytetrack_osd_encode)| 目标检测-跟踪-算法结果推流demo (detect-track-encode demo)|
-|                         | [yolov5_bytetrack_distributor_resnet_converger](./samples/yolov5_bytetrack_distributor_resnet_converger)| 目标检测-跟踪-分发-属性识别demo|
-|                         | [retinaface_distributor_resnet_faiss_converger](./samples/retinaface_distributor_resnet_faiss_converger)| 人脸检测-分发-人脸识别demo|
-|                         | [license_plate_recognition](./samples/license_plate_recognition/) | 车辆检测-车牌识别demo |
+|                         | [yolox_bytetrack_osd_encode](./samples/yolox_bytetrack_osd_encode)| 目标检测-跟踪-算法结果推流demo |
+|                         | [yolov5_bytetrack_distributor_resnet_converger](./samples/yolov5_bytetrack_distributor_resnet_converger)| 目标检测-跟踪-分发-属性识别demo |
+|                         | [retinaface_distributor_resnet_faiss_converger](./samples/retinaface_distributor_resnet_faiss_converger)| 人脸检测-分发-人脸识别demo |
+|                         | [license_plate_recognition](./samples/license_plate_recognition/) | 车牌检测-车牌识别demo |
 |                         | [ppocr](./samples/ppocr/)                                         | PPOCR demo |
 |                         | [yolov5_fastpose_posec3d](./samples/yolov5_fastpose_posec3d/)     | 姿态识别-行为识别demo |
+|                         | [bird_dwa_blend_encode](./samples/bird_dwa_blend_encode/)         | 鸟瞰拼接demo |
+|                         | [dwa_blend_encode](./samples/dwa_blend_encode/)                   | 鱼眼拼接demo |
+|                         | [dwa_dpu_encode](./samples/dwa_dpu_encode/)                       | 双目深度估计demo |
+|                         | [gdwa_blend_encode](./samples/gdwa_blend_encode/)                 | 广角拼接demo |
+|                         | [license_area_intrusion](./samples/license_area_intrusion/)       | 区域入侵demo |
+|                         | [multi_graph](./samples/multi_graph/)                             | 多graph功能demo |
+|                         | [structured_recognition](./samples/structured_recognition/)       | 单路码流配置不同算法demo |
+|                         | [tripware](./samples/tripwire/)                                   | 越线检测demo |
+|                         | [yolox_bytetrack_osd_qt](./samples/yolox_bytetrack_osd_qt/)       | 目标检测-跟踪-绘图-HDMI显示demo |
 
 ## 2 快速入门
 请参考[sophon-stream用户文档](./docs/Sophon_Stream_User_Guide.md)

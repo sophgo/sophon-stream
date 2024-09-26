@@ -47,6 +47,15 @@ Main Directory Structure and Module Descriptions:
 |                         | [license_plate_recognition](./samples/license_plate_recognition/) | car detect-license plate recognize demo |
 |                         | [ppocr](./samples/ppocr/)                                         | PPOCR demo |
 |                         | [yolov5_fastpose_posec3d](./samples/yolov5_fastpose_posec3d/)     | gesture recognition - behavior recognition demo |
+|                         | [bird_dwa_blend_encode](./samples/bird_dwa_blend_encode/)         | bird's-eye view splicing demo |
+|                         | [dwa_blend_encode](./samples/dwa_blend_encode/)                   | fish-eye stitching demo |
+|                         | [dwa_dpu_encode](./samples/dwa_dpu_encode/)                       | binocular depth estimation demo |
+|                         | [gdwa_blend_encode](./samples/gdwa_blend_encode/)                 | wide-angle stitching demo |
+|                         | [license_area_intrusion](./samples/license_area_intrusion/)       | Regional invasions demo |
+|                         | [multi_graph](./samples/multi_graph/)                             | multi-graph demo |
+|                         | [structured_recognition](./samples/structured_recognition/)       | single stream configuration with different algorithms demo |
+|                         | [tripware](./samples/tripwire/)                                   | crossing the line detection demo |
+|                         | [yolox_bytetrack_osd_qt](./samples/yolox_bytetrack_osd_qt/)       | detect-track-HDMI demo |
 
 ## 2 Quick Start
 
