@@ -61,18 +61,17 @@ chmod -R +x scripts/
 安装驱动需要进入到超级权限，接着系统驱动目录，安装驱动：
 ```bash
 sudo -s
-cd /mnt/system/ko/
-insmod v4l2_os04a10_sync.ko
+insmod /mnt/system/ko/v4l2_os04a10_sync.ko
 ```
 
-（2）isp参数文件配置
+（2）isp参数文件配置,需要在当前dwa_dpu_encode目录下
 
 ```bash
 sudo -s
 mkdir -p /mnt/cfg/param
 cp ./data/cvi_sdr_bin /mnt/cfg/param/
 ```
-
+备注：如需标定，请参考[摄像头标定](Calibration.md)
 ## 5. 程序编译
 
 ### 5.1 SoC平台
