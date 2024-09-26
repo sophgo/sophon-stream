@@ -149,6 +149,24 @@ cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-opencv_<x.y.z>/lib ${soc-
 cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-opencv_<x.y.z>/include ${soc-sdk}
 ```
 
+If an error occurs: `/var/lib/gcc cross/arch64 linux-gnu/9/../../..// aarch64-linux-gnu/bin/ld: /xxx/lib/libopencv_imgcodecs.so: undefined reference to crc32 ......`。
+This is because the program relies on libz. so. 1 and needs to be installed using the following command
+Add the following code to the apt source `/etc/apt/sources.list`:
+```bash
+    deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ focal main restricted
+    deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ focal-updates main restricted
+```
+Run the following command
+```bash
+    sudo dpkg --add-architecture arm64
+    sudo apt-get update
+    sudo apt-get install zlib1g:arm64
+```
+Check if the installation was successful
+```bash
+    dpkg -L zlib1g:arm64 | grep libz.so.1
+```
+
 ## Compilation Results
 
 1. `framework` and `element` will generate dynamic link libraries in `build/lib`.
