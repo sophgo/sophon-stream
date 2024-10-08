@@ -139,27 +139,6 @@ cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-opencv_<x.y.z>/lib ${soc-
 cp -rf sophon-mw-soc_<x.y.z>_aarch64/opt/sophon/sophon-opencv_<x.y.z>/include ${soc-sdk}
  ```
 
-
-如果报错：`/usr/lib/gcc-cross/aarch64-linux-gnu/9/../../../../aarch64-linux-gnu/bin/ld: /xxx/lib/libopencv_imgcodecs.so: undefined reference to crc32 ......`。
-
-这是因为程序依赖了libz.so.1,需要通过以下命令安装
-在apt源 `/etc/apt/sources.list` 最后添加以下代码：
-```bash
-    deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ focal main restricted
-    deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ focal-updates main restricted
-```
-运行以下指令
-```bash
-    sudo dpkg --add-architecture arm64
-    sudo apt-get update
-    sudo apt-get install zlib1g:arm64
-
-```
-查看是否安装成功
-```bash
-    dpkg -L zlib1g:arm64 | grep libz.so.1
-```
-
 ## 编译结果
 1.`framework`和`element`会在`build/lib`中生成动态链接库
 
