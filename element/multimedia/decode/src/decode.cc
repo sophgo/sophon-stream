@@ -15,8 +15,8 @@ namespace decode {
 
 Decode::Decode() {}
 
-std::atomic<int> Decode::mChannelCount = 0;
-std::queue<int> Decode::mChannelIdInternalReleased;
+std::unordered_map<int, std::atomic<int>> Decode::mChannelCountMap;
+std::unordered_map<int, std::queue<int>> Decode::mChannelIdInternalReleasedMap;
 
 Decode::~Decode() {
   std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
@@ -359,17 +359,18 @@ common::ErrorCode Decode::startTask(std::shared_ptr<ChannelTask>& channelTask) {
   mThreadsPool.insert(
       std::make_pair(channelTask->request.channelId, channelInfo));
 
+  int graph_id = channelTask->request.graphId;
   int channel_id = channelTask->request.channelId;
   // 这里不需要判断channel_id是否在占用，因为本函数开头就在mThreadsPool里处理了
   // 更新channel_id。需要判断是否有释放出来的channelIdInternal
-  if (mChannelIdInternalReleased.empty()) {
+  if (mChannelIdInternalReleasedMap[graph_id].empty()) {
     // 没有释放的channelIdInternal，那么只能更新一个。
-    mChannelIdInternal[channel_id] = mChannelCount++;
+    mChannelIdInternalMap[graph_id][channel_id] = mChannelCountMap[graph_id]++;
   } else {
     // 有可以释放的channelIdInternal
-    int channelIdInternal = mChannelIdInternalReleased.front();
-    mChannelIdInternalReleased.pop();
-    mChannelIdInternal[channel_id] = channelIdInternal;
+    int channelIdInternal = mChannelIdInternalReleasedMap[graph_id].front();
+    mChannelIdInternalReleasedMap[graph_id].pop();
+    mChannelIdInternalMap[graph_id][channel_id] = channelIdInternal;
   }
 
   IVS_INFO("add one channel task finished, channel id = {0}", channel_id);
@@ -387,12 +388,12 @@ common::ErrorCode Decode::stopTask(std::shared_ptr<ChannelTask>& channelTask) {
     IVS_ERROR("{0}", error);
     return common::ErrorCode::DECODE_CHANNEL_NOT_FOUND;
   }
-
+  int graph_id = channelTask->request.graphId;
   // 停止一路码流，需要记录释放出来的channelIdInternal，然后erase一对kv
-  auto itChannelId = mChannelIdInternal.find(channelTask->request.channelId);
+  auto itChannelId = mChannelIdInternalMap[graph_id].find(channelTask->request.channelId);
   int channelIdInternal = itChannelId->second;
-  mChannelIdInternalReleased.push(channelIdInternal);
-  mChannelIdInternal.erase(itChannelId);
+  mChannelIdInternalReleasedMap[graph_id].push(channelIdInternal);
+  mChannelIdInternalMap[graph_id].erase(itChannelId);
 
   common::ErrorCode errorCode = itTask->second->mThreadWrapper->stop();
   itTask->second->mSpDecoder->uninit();
@@ -439,6 +440,7 @@ common::ErrorCode Decode::process(
     const std::shared_ptr<ChannelInfo>& channelInfo) {
   std::shared_ptr<common::ObjectMetadata> objectMetadata;
   common::ErrorCode ret = channelInfo->mSpDecoder->process(objectMetadata);
+  int graphId = channelTask->request.graphId;
   mFpsProfiler.add(1);
   if (ret == common::ErrorCode::STREAM_END) {
     // end of stream , detach thread and erase in mThreadsPool,
@@ -455,7 +457,7 @@ common::ErrorCode Decode::process(
   std::vector<int> skip_elements = channelTask->request.skip_element;
   objectMetadata->mSkipElements = skip_elements;
   objectMetadata->mFrame->mChannelId = channel_id;
-  objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternal[channel_id];
+  objectMetadata->mFrame->mChannelIdInternal = mChannelIdInternalMap[graphId][channel_id];
 
   // push data to next element
   if (objectMetadata->mFilter && !objectMetadata->mFrame->mEndOfStream &&

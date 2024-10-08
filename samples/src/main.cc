@@ -499,6 +499,7 @@ int main(int argc, char* argv[]) {
     channelTask->request.operation = sophon_stream::element::decode::
         ChannelOperateRequest::ChannelOperate::START;
     channelTask->request.channelId = channel_config["channel_id"];
+    channelTask->request.graphId = graph_id;
     channelTask->request.json = channel_config.dump();
     int decode_id = channel_config["decode_id"];
 

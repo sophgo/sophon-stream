@@ -161,12 +161,12 @@ class Decode : public ::sophon_stream::framework::Element {
  private:
   std::map<int, std::shared_ptr<ChannelInfo>> mThreadsPool;
   std::mutex mThreadsPoolMtx;
-  // 用于channelIdInternal更新
-  static std::atomic<int> mChannelCount;
-  // channelId -> channelIdInternal 的映射
-  std::map<int, int> mChannelIdInternal;
-  // 已经释放出来的channelIdInternal
-  static std::queue<int> mChannelIdInternalReleased;
+  // 用于channelIdInternal更新, {graph id : channel count}
+  static std::unordered_map<int, std::atomic<int>> mChannelCountMap;
+  // {graphId : {channelId : channelIdInternal}}
+  std::unordered_map<int, std::map<int, int>> mChannelIdInternalMap;
+  // {graphId : 已经释放出来的channelIdInternal}
+  static std::unordered_map<int, std::queue<int>> mChannelIdInternalReleasedMap;
 
 
   void onStart() override;
