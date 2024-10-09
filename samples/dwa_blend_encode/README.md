@@ -108,7 +108,7 @@ dwa_blend_encode demo中各部分参数位于 [config](./config/) 目录，结�
 SoC平台上，动态库、可执行文件、配置文件、模型、视频数据的目录结构关系应与原始sophon-stream仓库中的关系保持一致。
 
 
-1. 运行可执行文件
+1. 运行可执行文件,sensor的出图需要root权限
 ```bash
 ./main --demo_config_path=../dwa_blend_encode/config/camera_dwa_blend_encode_demo.json
 ```
@@ -126,7 +126,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 进入sophon-stream/sample/dwa_dpu_encode/web/ui目录，执行以下命令：
 ```bash
-npm install
+npm install --force
 npm run build
 ```
 编译完成后会在该目录下产生build文件夹。最后，将编译生成的文件拷贝到SoC平台中运行。
