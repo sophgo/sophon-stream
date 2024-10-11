@@ -18,5 +18,5 @@
     }
   ],
   "download_image": false,
-  "engine_config_path": "../dwa_dpu_encode/config/engine_resize2.json"
+  "engine_config_path": "../dwa_dpu_encode/config/engine_dwa_dpu_ive_resize.json"
 }

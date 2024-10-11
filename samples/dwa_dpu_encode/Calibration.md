@@ -18,8 +18,9 @@
 
 （2）加载isp参数，参照[使用手册](README.md)
 
-（3）打开CviIspTool.sh，执行以下命令：
+（3）进入root账户，打开CviIspTool.sh，执行以下命令：
 ```bash
+sudo -s
 cd /opt/sophon/sophon-soc-libisp_1.0.0/bin
 ```
 将cfg.json中的"dev-num":改为2，保证可以读取两路的视频。
