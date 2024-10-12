@@ -20,21 +20,21 @@ const VideoDisplay = () => {
         const canvasCtx = canvas.getContext('2d');
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
-  
+
         // 清除canvas内容
         canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-  
+
         // 计算最适合的缩放比例
         const scale = Math.min(canvasWidth / img.width, canvasHeight / img.height);
-  
+
         // 计算绘制图像的尺寸
         const imgDrawWidth = img.width * scale;
         const imgDrawHeight = img.height * scale;
-  
+
         // 计算绘制图像的位置以使其居中
         const imgDrawX = (canvasWidth - imgDrawWidth) / 2;
         const imgDrawY = (canvasHeight - imgDrawHeight) / 2;
-  
+
         // 绘制图像
         canvasCtx.drawImage(img, imgDrawX, imgDrawY, imgDrawWidth, imgDrawHeight);
       };
@@ -89,15 +89,15 @@ const VideoDisplay = () => {
 
   const handleDisplayType = (event) => {
     setDisplayType(event.target.value)
-    const request_json  = {
-      "type": event.target.value 
+    const request_json = {
+      "type": event.target.value
     }
-    fetch(serverIpWithPort+`/display-type-dpu`, {
-      method: 'PUT', 
+    fetch(serverIpWithPort + `/display-type-dpu`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(request_json), 
+      body: JSON.stringify(request_json),
     })
       .then(response => response.json())
       .then(result => {
@@ -110,20 +110,18 @@ const VideoDisplay = () => {
         alert('Request failed: ' + error.message); // Show an alert with the failure message
       });
 
- }
+  }
 
   return (
     <div className='VideoDisplay'>
 
-    <div>
-      <label>码流选择:</label>
+      <div>
+        <label>码流选择:</label>
 
-      <Select className='DisplayTypeSelector' value={displayType} onChange={handleDisplayType}>
-      <MenuItem value={0}> 原图+深度图 </MenuItem>
-      <MenuItem value={1}> DWA+深度图 </MenuItem>
-      <MenuItem value={2}> 仅深度图 </MenuItem>
-      </Select>
-    </div>
+        <Select className='DisplayTypeSelector' value={displayType} onChange={handleDisplayType}>
+          <MenuItem value={0}> 原图+深度图 </MenuItem>
+        </Select>
+      </div>
 
       <div className='CanvasContainer' id='canvasContainer'>
         <canvas ref={canvasRef} ></canvas>
