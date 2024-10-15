@@ -141,3 +141,5 @@ python3 -m http.server 3000
 ```
 其中，3000是web ui的端口号，可以根据需要修改。
 在浏览器中访问http://localhost:3000/，即可打开web ui界面。（localhost更改为运行环境的ip）
+
+注意本例程web界面使用dpu选项，不支持blend选项
