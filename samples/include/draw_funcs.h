@@ -866,11 +866,20 @@ void draw_yolov5_bytetrack_distributor_resnet_converger_results(
           rect.crop_w, rect.crop_h, imageStorage,
           colors[trackObj->mTrackId % colors_num], true);
     }
-    std::string filename =
-        out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
-        std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
-        std::to_string(objectMetadata->mFrame->mFrameId) + ".bmp";
-    bm_image_write_to_bmp(imageStorage, filename.c_str());
+    void* jpeg_data = NULL;
+    size_t out_size = 0;
+    int ret = bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1,
+                                  &imageStorage, &jpeg_data, &out_size);
+    if (ret == BM_SUCCESS) {
+      std::string img_file =
+          out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+          std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+          std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+      FILE* fp = fopen(img_file.c_str(), "wb");
+      fwrite(jpeg_data, out_size, 1, fp);
+      fclose(fp);
+    }
+    free(jpeg_data);
     bm_image_destroy(imageStorage);
   }
 }
