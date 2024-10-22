@@ -48,7 +48,7 @@ sophon-stream yolov8插件具有一些可配置的参数，可以根据需求进
 |  model_path  |   字符串   | "../data/models/BM1684X/yolov8s_int8_1b.bmodel" | yolov8模型路径 |
 |  threshold_conf   |   浮点数或map   | 0.5 | 目标检测物体置信度阈值，设置为浮点数时，所有类别共用同一个阈值；设置为map时，不同类别可以使用不同阈值，此时还需要正确设置class_names_file |
 |  threshold_nms  |   浮点数   | 0.5 | 目标检测NMS IOU阈值 |
-|  task_type   | 字符串 | "Detect" | yolov8算法类型，支持了 "Detect", "Cls" 和 "Pose" |
+|  task_type   | 字符串 | "Detect" | yolov8算法类型，支持了 "Detect", "Cls", "Pose" 和 "Seg" |
 |  bgr2rgb  |   bool   | true | 解码器解出来的图像默认是bgr格式，是否需要将图像转换成rgb格式 |
 |  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |
@@ -61,6 +61,8 @@ sophon-stream yolov8插件具有一些可配置的参数，可以根据需求进
 |     name    |    字符串     | "yolov8" | element 名称 |
 |     side    |    字符串     | "sophgo"| 设备类型 |
 | thread_number |    整数     | 1 | 启动线程数 |
+| seg_tpu_opt |    bool     | false | yolov8_seg是否使用TPU后处理 |
+| mask_bmodel_path |    字符串     | 无 | 当启用seg_tpu_opt时，后处理的bmodel路径 |
 
 > **注意**：
 1. stage参数，需要设置为"pre"，"infer"，"post" 其中之一或相邻项的组合，并且按前处理-推理-后处理的顺序连接element。将三个阶段分配在三个element上的目的是充分利用各项资源，提高检测效率。

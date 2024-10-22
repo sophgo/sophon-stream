@@ -226,7 +226,7 @@ NLOHMANN_JSONIFY_ALL_THINGS(PosedObjectMetadata, keypoints)
 NLOHMANN_JSONIFY_ALL_THINGS(RecognizedObjectMetadata, mLabelName, mScores,
                             mTopKLabels)
 
-NLOHMANN_JSONIFY_ALL_THINGS(SegmentedObjectMetadata, mFrame)
+NLOHMANN_JSONIFY_ALL_THINGS(SegmentedObjectMetadata, mBox, mScores, mClassify)
 
 NLOHMANN_JSONIFY_ALL_THINGS(FaceObjectMetadata, top, bottom, left, right,
                             points_x, points_y, score)

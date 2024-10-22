@@ -17,13 +17,22 @@ namespace yolov8 {
 
 Yolov8::Yolov8() {}
 
-Yolov8::~Yolov8() {}
+Yolov8::~Yolov8() {
+  if ((mContext->taskType == TaskType::Seg) && (mContext->seg_tpu_opt)) {
+    if (mContext->bmrt != nullptr) {
+      bmrt_destroy(mContext->bmrt);
+      mContext->bmrt = nullptr;
+      bm_dev_free(mContext->tpu_mask_handle);
+    }
+  }
+}
 
 const std::string Yolov8::elementName = "yolov8";
 
 std::unordered_map<std::string, TaskType> taskMap{{"Detect", TaskType::Detect},
                                                   {"Pose", TaskType::Pose},
-                                                  {"Cls", TaskType::Cls}};
+                                                  {"Cls", TaskType::Cls},
+                                                  {"Seg", TaskType::Seg}};
 
 common::ErrorCode Yolov8::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -97,6 +106,68 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
     mContext->stdd = stdIt->get<std::vector<float>>();
     assert(mContext->stdd.size() == 3);
 
+    // yolov8_seg_tpu_opt
+    auto segTpuOptIt = configure.find(CONFIG_INTERNAL_SEG_TPU_OPT_FILED);
+    if (segTpuOptIt != configure.end()) {
+      mContext->seg_tpu_opt = segTpuOptIt->get<bool>();
+
+      if (mContext->seg_tpu_opt) {
+        auto maskBmodelPath = configure.find(CONFIG_INTERNAL_MASK_BMODEL_PATH);
+
+        if (maskBmodelPath != configure.end()) {
+          mContext->mask_bmodel_path =
+              maskBmodelPath->get<std::string>().c_str();
+          // 1. get handle
+          STREAM_CHECK(BM_SUCCESS == bm_dev_request(&mContext->tpu_mask_handle,
+                                                    mContext->deviceId),
+                       "bm_dev_request error");
+          // 2. create bmrt and load bmodel
+          mContext->bmrt = bmrt_create(mContext->tpu_mask_handle);
+          STREAM_CHECK(
+              true == bmrt_load_bmodel(mContext->bmrt,
+                                       mContext->mask_bmodel_path.c_str()),
+              "bmrt_load_bmodel error, please check the path of "
+              "mask_bmodel_path!");
+          // 3. get network names from bmodel
+          const char** names = nullptr;
+          int num = bmrt_get_network_number(mContext->bmrt);
+          if (num > 1) {
+            IVS_WARN(
+                "The tpu mask bmodel have {0:d} networks, and this program "
+                "will "
+                "only take network 0.",
+                num);
+          }
+          bmrt_get_network_names(mContext->bmrt, &names);
+          for (int i = 0; i < num; ++i) {
+            mContext->network_names.emplace_back(names[i]);
+          }
+          free(names);
+          // 4. get netinfo by netname
+          mContext->netinfo = bmrt_get_network_info(
+              mContext->bmrt, mContext->network_names[0].c_str());
+          if (mContext->netinfo->stage_num > 1) {
+            IVS_WARN(
+                "The tpu mask bmodel have {0:d} stages, and this program will "
+                "only "
+                "take stage 0.",
+                mContext->netinfo->stage_num);
+          }
+          // 5. initialize parameters.
+          mContext->m_tpumask_net_h =
+              mContext->netinfo->stages[0].input_shapes[1].dims[2];
+          mContext->m_tpumask_net_w =
+              mContext->netinfo->stages[0].input_shapes[1].dims[3];
+          mContext->tpu_mask_num =
+              mContext->netinfo->stages[0].input_shapes[0].dims[1];  // 32
+          mContext->mask_len =
+              mContext->netinfo->stages[0].input_shapes[1].dims[1];  // 32
+        } else {
+          STREAM_CHECK(false, "The path to mask_bmodel_path is not specified");
+        }
+      }
+    }
+
     // 1. get network
     BMNNHandlePtr handle = std::make_shared<BMNNHandle>(mContext->deviceId);
     mContext->bmContext = std::make_shared<BMNNContext>(
@@ -135,6 +206,10 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
             mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1];
       else if (mContext->taskType == TaskType::Pose)
         mContext->class_num = 1;
+      else if (mContext->taskType == TaskType::Seg)
+        mContext->class_num =
+            mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] -
+            mContext->mask_len - 4;
     }
 
     if (mContext->class_thresh_valid) {

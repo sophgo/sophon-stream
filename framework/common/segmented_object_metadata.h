@@ -14,20 +14,23 @@
 #include <string>
 #include <vector>
 
-#include "frame.h"
+#include "opencv2/opencv.hpp"
+#include "graphics.h"
 
 namespace sophon_stream {
 namespace common {
 
 struct SegmentedObjectMetadata {
-  SegmentedObjectMetadata() {}
+  SegmentedObjectMetadata() : mClassify(-1) {}
 
-  // std::string mItemName;
-  // std::string mLabelName;
-  std::shared_ptr<Frame> mFrame;
-  // std::vector<float> mScores;
-  // std::vector<int> mTopKLabels;
-  // std::vector<std::shared_ptr<LabelMetadata> > mTopKLabelMetadatas;
+  common::Rectangle<int> mBox;  // Box results
+  
+  int mClassify;  // class_id
+  std::vector<float> mScores;  // score
+  cv::Mat mask_img; // the seg mask
+  
+  std::string mItemName;
+  std::string mLabelName;
 };
 
 }  // namespace common

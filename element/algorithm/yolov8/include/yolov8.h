@@ -74,6 +74,10 @@ class Yolov8 : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_HEIGHT_FILED = "height";
   static constexpr const char* CONFIG_INTERNAL_TASK_TYPE_FILED = "task_type";
 
+  // yolov8_seg_tpu_opt
+  static constexpr const char* CONFIG_INTERNAL_SEG_TPU_OPT_FILED = "seg_tpu_opt";      // yolov8_seg是否使用TPU后处理
+  static constexpr const char* CONFIG_INTERNAL_MASK_BMODEL_PATH = "mask_bmodel_path";  // TPU 后处理的bmodel路径
+
  private:
   std::shared_ptr<Yolov8Context> mContext;          // context对象
   std::shared_ptr<Yolov8PreProcess> mPreProcess;    // 预处理对象

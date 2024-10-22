@@ -803,6 +803,40 @@ void draw_yolov5_results(
   bm_image_destroy(imageStorage);
 }
 
+// yolov8_seg
+void draw_yolov8_seg(
+    std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata,
+    std::string& out_dir, std::vector<std::string>& class_names) {
+  cv::Mat res;
+  cv::bmcv::toMAT(objectMetadata->mFrame->mSpData.get(), res);
+  cv::Mat mask = res.clone();
+  for (auto& obj : objectMetadata->mSegmentedObjectMetadatas) {
+    if (obj->mScores[0] < 0.25) continue;
+    int left, top;
+    left = obj->mBox.mX;
+    top = obj->mBox.mY;
+    cv::Scalar color(colors[obj->mClassify % 25][0],
+                     colors[obj->mClassify % 25][1],
+                     colors[obj->mClassify % 25][2]);
+    cv::Rect bound = {obj->mBox.mX, obj->mBox.mY, obj->mBox.mWidth,
+                      obj->mBox.mHeight};
+    cv::rectangle(res, bound, color, 2);
+    if (obj->mask_img.rows && obj->mask_img.cols > 0) {
+      mask(bound).setTo(color, obj->mask_img);
+    }
+    std::string label = std::string(class_names[obj->mClassify]) +
+                        std::to_string(obj->mScores[0]);
+    cv::putText(res, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 1,
+                color, 2);
+  }
+  cv::addWeighted(res, 0.6, mask, 0.4, 0, res);
+  std::string img_file =
+      out_dir + "/" + std::to_string(objectMetadata->mGraphId) + "_" +
+      std::to_string(objectMetadata->mFrame->mChannelId) + "_" +
+      std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+  cv::imwrite(img_file, res);
+}
+
 void draw_yolov5_bytetrack_distributor_resnet_converger_results(
     std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata,
     std::string& out_dir, std::vector<std::string>& car_attr,

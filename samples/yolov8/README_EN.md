@@ -55,6 +55,9 @@ The downloaded models include:
 |   ├── yolov8n_cls_fp32_1b.bmodel  # Compile with TPU-MLIR，FP32 yolov8-cls BModel for BM1684，batch_size=1
 │   ├── yolov8n_pose_fp32_1b.bmodel # Compile with TPU-MLIR，FP32 yolov8-pose BModel for BM1684，batch_size=1
 │   ├── yolov8n_pose_int8_1b.bmodel # Compile with TPU-MLIR，INT8 yolov8-pose BModel for BM1684，batch_size=1
+│   ├── yolov8s_seg_fp32_1b.bmodel  # Compile with TPU-MLIR，FP32 yolov8-seg BModel for BM1684，batch_size=1
+│   ├── yolov8s_seg_int8_1b.bmodel  # Compile with TPU-MLIR，INT8 yolov8-seg BModel for BM1684，batch_size=1
+│   ├── yolov8s_seg_getmask_32_fp32.bmodel  # Compile with TPU-MLIR，FP32 yolov8-seg TPU post-processing BModel for BM1684
 │   ├── yolov8s_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1684, batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684, batch_size=1
 │   ├── yolov8s_int8_4b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684, batch_size=4
@@ -65,6 +68,9 @@ The downloaded models include:
 |   ├── yolov8n_cls_fp32_1b.bmodel  # Compile with TPU-MLIR，FP32 yolov8-cls BModel for BM1684X，batch_size=1
 │   ├── yolov8n_pose_fp32_1b.bmodel # Compile with TPU-MLIR，FP32 yolov8-pose BModel for BM1684X，batch_size=1
 │   ├── yolov8n_pose_int8_1b.bmodel # Compile with TPU-MLIR，INT8 yolov8-pose BModel for BM1684X，batch_size=1
+│   ├── yolov8s_seg_fp32_1b.bmodel  # Compile with TPU-MLIR，FP32 yolov8-seg BModel for BM1684X，batch_size=1
+│   ├── yolov8s_seg_int8_1b.bmodel  # Compile with TPU-MLIR，INT8 yolov8-seg BModel for BM1684X，batch_size=1
+│   ├── yolov8s_seg_getmask_32_fp32.bmodel  # Compile with TPU-MLIR，FP32 yolov8-seg TPU post-processing BModel for BM1684X
 │   ├── yolov8s_fp32_1b.bmodel   # Compile with TPU-MLIR, FP32 BModel for BM1684X, batch_size=1
 │   ├── yolov8s_fp16_1b.bmodel   # Compile with TPU-MLIR, FP16 BModel for BM1684X, batch_size=1
 │   ├── yolov8s_int8_1b.bmodel   # Compile with TPU-MLIR, INT8 BModel for BM1684X, batch_size=1
@@ -80,6 +86,11 @@ The downloaded models include:
 │   ├── yolov8n_pose_fp32_1b_2core.bmodel   # Compile with TPU-MLIR, FP32 2core yolov8-pose BModel for BM1688, batch_size=1
 │   ├── yolov8n_pose_int8_1b_1core.bmodel   # Compile with TPU-MLIR, INT8 1core yolov8-pose BModel for BM1688, batch_size=1
 │   ├── yolov8n_pose_int8_1b_2core.bmodel   # Compile with TPU-MLIR, INT8 2core yolov8-pose BModel for BM1688, batch_size=1
+│   ├── yolov8s_seg_fp32_1b_1core.bmodel   # Compile with TPU-MLIR, FP32 1core yolov8-seg BModel for BM1688, batch_size=1
+│   ├── yolov8s_seg_fp32_1b_2core.bmodel   # Compile with TPU-MLIR, FP32 2core yolov8-seg BModel for BM1688, batch_size=1
+│   ├── yolov8s_seg_int8_1b_1core.bmodel   # Compile with TPU-MLIR, INT8 1core yolov8-seg BModel for BM1688, batch_size=1
+│   ├── yolov8s_seg_int8_1b_2core.bmodel   # Compile with TPU-MLIR, INT8 2core yolov8-seg BModel for BM1688, batch_size=1
+│   ├── yolov8s_seg_getmask_32_fp32.bmodel  # Compile with TPU-MLIR，FP32 yolov8-seg TPU post-processing BModel for BM1688
 │   ├── yolov8s_fp16_1b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=1
 │   ├── yolov8s_fp16_1b.bmodel        # Compile with TPU-MLIR, FP16 1 core BModel for BM1688, batch_size=1
 │   ├── yolov8s_fp16_4b_2core.bmodel  # Compile with TPU-MLIR, FP16 2 core BModel for BM1688, batch_size=4
@@ -119,7 +130,7 @@ Among them, the model named `yolov8n_cls` supports a 1000-class classification t
 
 For task configuration, you need to refer to [yolov8_element](../../element/algorithm/yolov8/README.md) for instructions on how to modify the configuration file.
 
-Currently, the default configuration implements the target detection function. If you wish to run the attitude detection algorithm, you will need to change the name of the visualisation algorithm in [yolov8_demo.json](./config/yolov8_demo.json) in the visualisation algorithm name to `draw_yolov8_det_pose`. For the classification algorithm, since the classification task does not visualise the results, there is no need to configure the visualisation algorithm name or to save the image; it is sufficient to observe the logs as the program runs.
+Currently, the default configuration implements the target detection function. If you wish to run the attitude detection algorithm, you will need to change the name of the visualisation algorithm in [yolov8_demo.json](./config/yolov8_demo.json) in the visualisation algorithm name to `draw_yolov8_det_pose`. For the classification algorithm, since the classification task does not visualise the results, there is no need to configure the visualisation algorithm name or to save the image; it is sufficient to observe the logs as the program runs. For the segmentation algorithm, in addition to modifying the model and task, the visualization algorithm name in [yolov8_demo.json](./config/yolov8_demo.json) needs to be changed to `draw_yolov8_seg`. In addition, yolov8_seg can use TPU for post-processing. In this case, set "seg_tpu_opt" to true and "mask_bmodel_path" to the bmodel path required for post-processing of TPU.
 
 The downloaded data include:
 

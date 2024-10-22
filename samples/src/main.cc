@@ -291,6 +291,8 @@ drawFuncType getDrawFunc(demo_config& demo_json) {
     draw_func = std::bind(draw_ppocr_results, std::placeholders::_1, out_dir);
   else if (demo_json.draw_func_name == "draw_yolov8_det_pose")
     draw_func = std::bind(draw_yolov8_det_pose, std::placeholders::_1, out_dir);
+  else if (demo_json.draw_func_name == "draw_yolov8_seg")
+    draw_func = std::bind(draw_yolov8_seg, std::placeholders::_1, out_dir, demo_json.class_names);
   else
     IVS_ERROR("No such function! Please check your 'draw_func_name'.");
 
