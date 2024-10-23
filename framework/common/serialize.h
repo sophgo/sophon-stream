@@ -128,7 +128,17 @@ std::string base64_encode(unsigned char const* input, size_t len) {
 
   return ret;
 }
-
+std::string base64_encode_bmcv(bm_handle_t handle_, unsigned char* jpegData,
+                               size_t nBytes) {
+  // for bmcv
+  unsigned long origin_len[2] = {nBytes, 0};
+  unsigned long encode_len[2] = {(origin_len[0] + 2) / 3 * 4, 0};
+  std::string res(encode_len[0], '\0');
+  bmcv_base64_enc(handle_, bm_mem_from_system(jpegData),
+                  bm_mem_from_system(const_cast<char*>(res.c_str())),
+                  origin_len);
+  return res;
+}
 std::string frame_to_base64(Frame& frame) {
 #if ENABLE_TIME_LOG
   timeval time1, time2, time3, time4, time5;
@@ -137,9 +147,9 @@ std::string frame_to_base64(Frame& frame) {
   unsigned char* jpegData = nullptr;
   size_t nBytes = 0;
   bm_image bgr_;
-  if(frame.mSpDataOsd!=nullptr){
+  if (frame.mSpDataOsd != nullptr) {
     bgr_ = *(frame.mSpDataOsd);
-  }else{
+  } else {
     bgr_ = *(frame.mSpData);
   }
   bm_handle_t handle_ = bm_image_get_handle(&bgr_);
@@ -163,18 +173,11 @@ std::string frame_to_base64(Frame& frame) {
   gettimeofday(&time4, NULL);
 #endif
   bm_image_destroy(yuv_);
-
 #if BASE64_CPU
   // for cpu
   std::string res = base64_encode(jpegData, nBytes);
 #else
-  // for bmcv
-  unsigned long origin_len[2] = {nBytes, 0};
-  unsigned long encode_len[2] = {(origin_len[0] + 2) / 3 * 4, 0};
-  std::string res(encode_len[0], '\0');
-  bmcv_base64_enc(handle_, bm_mem_from_system(jpegData),
-                  bm_mem_from_system(const_cast<char*>(res.c_str())),
-                  origin_len);
+  std::string res = base64_encode_bmcv(handle_, jpegData, nBytes);
 #endif
 
 #if ENABLE_TIME_LOG

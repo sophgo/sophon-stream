@@ -407,7 +407,7 @@ void Encode::processWS(int dataPipeId,
       mWSSMap[dataPipeId] = std::make_shared<WSSManager>(wss);
       serverIt = mWSSMap.find(dataPipeId);
     } else if (mWssBackend == WSSBackend::BOOST) {
-      auto wss = std::make_shared<WebSocketServer>(server_port, mFps, 4);
+      auto wss = std::make_shared<WebSocketServer>(server_port, mFps);
       std::thread t([wss]() { wss->run(); });
       std::lock_guard<std::mutex> lk(mWSSThreadsMutex);
       mWSSThreads.push_back(std::move(t));
@@ -419,7 +419,7 @@ void Encode::processWS(int dataPipeId,
   if (!serverIt->second->getConnectionsNum()) {
     return;
   }
-  
+
   std::string data;
   if (mWsEncType == WSencType::IMG_ONLY) {
     void* jpeg_data = NULL;
@@ -443,6 +443,7 @@ void Encode::processWS(int dataPipeId,
       bm_image_create(objectMetadata->mFrame->mHandle, height, width,
                       FORMAT_YUV420P, image.data_type, &(*img_to_enc));
       bmcv_rect_t crop_rect = {0, 0, img->width, img->height};
+      bm_image_alloc_dev_mem(*img_to_enc, 1);
       bmcv_image_vpp_convert(objectMetadata->mFrame->mHandle, 1, *img,
                              img_to_enc.get(), &crop_rect);
     } else {
@@ -451,8 +452,13 @@ void Encode::processWS(int dataPipeId,
 
     bmcv_image_jpeg_enc(objectMetadata->mFrame->mHandle, 1, img_to_enc.get(),
                         &jpeg_data, &out_size);
-    data =
-        websocketpp::base64_encode((const unsigned char*)jpeg_data, out_size);
+#if BASE64_CPU
+    // for cpu
+    data = common::base64_encode((const unsigned char*)jpeg_data, out_size);
+#else
+    data = common::base64_encode_bmcv(objectMetadata->mFrame->mHandle,
+                                      (unsigned char*)jpeg_data, out_size);
+#endif
     free(jpeg_data);
   }
   if (mWsEncType == WSencType::SERIALIZED) {
