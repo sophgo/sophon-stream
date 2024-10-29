@@ -44,13 +44,13 @@ chmod -R +x scripts/
 ```
 
 脚本执行完毕后，会在当前目录下生成`data`目录，其中包含`models`和`videos`两个子目录。
-
+```bash
 .
 ├── gridinfo # 用于dwa模块的参数文件
 ├── images   # 测试图片
 ├── maps     # 用于ive模块的染色文件
 └── videos   # 测试视频
-
+```
 
 ## 4. 环境准备
 
@@ -142,4 +142,8 @@ python3 -m http.server 3000
 其中，3000是web ui的端口号，可以根据需要修改。
 在浏览器中访问http://localhost:3000/，即可打开web ui界面。（localhost更改为运行环境的ip）
 
-注意本例程web界面使用dpu选项，不支持blend选项
+备注：
+
+1.注意本例程web界面使用dpu选项，不支持blend选项
+
+2.推荐使用google或者edge浏览器，不推荐firefox浏览器
