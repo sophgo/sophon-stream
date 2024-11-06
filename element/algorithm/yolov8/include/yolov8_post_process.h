@@ -44,6 +44,12 @@ struct Paras {
 
 using YoloV8BoxVec = std::vector<YoloV8Box>;
 
+struct obbBox{
+  float x, y, w, h, angle, score;
+  int class_id;
+};
+using obbBoxVec = std::vector<obbBox>;
+
 class Yolov8PostProcess : public ::sophon_stream::element::PostProcess {
  public:
   void init(std::shared_ptr<Yolov8Context> context);
@@ -71,6 +77,8 @@ class Yolov8PostProcess : public ::sophon_stream::element::PostProcess {
                       common::ObjectMetadatas& objectMetadatas);
   void postProcessSeg(std::shared_ptr<Yolov8Context> context,
                       common::ObjectMetadatas& objectMetadatas);
+  void postProcessObb(std::shared_ptr<Yolov8Context> context,
+                      common::ObjectMetadatas& objectMetadatas);
   void clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w, int src_h);
 
   // yolov8 seg
@@ -81,6 +89,13 @@ class Yolov8PostProcess : public ::sophon_stream::element::PostProcess {
                    YoloV8BoxVec& yolov8box_input, int start,
                    const bm_tensor_t& segmentation_tensor, Paras& paras,
                    YoloV8BoxVec& yolov8box_output, float confThreshold);
+
+  //obb utils.
+  void nms_rotated(obbBoxVec& dets, float nmsConfidence = 0.5);
+  std::tuple<float, float, float> convariance_matrix(const obbBox& obb);
+  float probiou(const obbBox& obb1, const obbBox& obb2, float eps = 1e-7);
+  void regularize_rbox(obbBoxVec& obb);
+  common::ObbObjectMetadata xywhr2xyxyxyxy(const obbBox& obb);
 };
 
 }  // namespace yolov8

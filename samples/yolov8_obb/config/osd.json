@@ -1,0 +1,13 @@
+{
+    "configure": {
+      "osd_type": "OBB",
+      "class_names_file": "../yolov8_obb/data/dotav1.names",
+      "draw_utils": "OPENCV",
+      "draw_interval": false,
+      "put_text": false
+    },
+    "shared_object": "../../build/lib/libosd.so",
+    "name": "osd",
+    "side": "sophgo",
+    "thread_number": 4
+}

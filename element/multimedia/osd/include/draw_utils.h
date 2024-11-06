@@ -1135,6 +1135,38 @@ void draw_text_results(
     }
   }
 }
+
+void draw_opencv_obb_result(
+    std::shared_ptr<common::ObjectMetadata> objectMetadata,
+    std::vector<std::string>& class_names, cv::Mat& frame, bool put_text_flag,
+    bool draw_interval) {
+  std::shared_ptr<common::ObjectMetadata> objData;
+  {
+    std::lock_guard<std::mutex> lk(mLastObjectMetaDataMtx);
+    objData = (objectMetadata->mFilter && draw_interval)
+                  ? lastObjectMetadataMap[objectMetadata->mFrame->mChannelId]
+                  : objectMetadata;
+    lastObjectMetadataMap[objectMetadata->mFrame->mChannelId] = objData;
+  }
+  auto box_vec = objData->mObbObjectMetadatas;
+  for (int n = 0; n < box_vec.size(); n++) {
+    cv::Point rook_points[4];
+    rook_points[0] = cv::Point(int(box_vec[n]->x1), int(box_vec[n]->y1));
+    rook_points[1] = cv::Point(int(box_vec[n]->x2), int(box_vec[n]->y2));
+    rook_points[2] = cv::Point(int(box_vec[n]->x3), int(box_vec[n]->y3));
+    rook_points[3] = cv::Point(int(box_vec[n]->x4), int(box_vec[n]->y4));
+    const cv::Point* ppt[1] = {rook_points};
+    int npt[] = {4};
+    std::string label = class_names[box_vec[n]->class_id] + cv::format(":%.2f", box_vec[n]->score);
+    cv::Scalar color(colors[box_vec[n]->class_id][0], colors[box_vec[n]->class_id][1], colors[box_vec[n]->class_id][2]);
+    cv::polylines(frame, ppt, npt, 1, 1, color, 2, 8, 0);
+    if(put_text_flag){
+      cv::putText(frame, label, cv::Point(int(box_vec[n]->x1), int(box_vec[n]->y1 - 5)),
+                  cv::FONT_HERSHEY_SIMPLEX, 0.7, color, 2);
+    }
+  }
+}
+
 }  // namespace osd
 }  // namespace element
 }  // namespace sophon_stream

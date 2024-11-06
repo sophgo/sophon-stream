@@ -1,0 +1,12 @@
+{
+    "configure": {
+      "encode_type": "VIDEO",
+      "enc_fmt": "h264_bm",
+      "pix_fmt": "I420",
+      "fps": 25
+    },
+    "shared_object": "../../build/lib/libencode.so",
+    "name": "encode",
+    "side": "sophgo",
+    "thread_number": 4
+}

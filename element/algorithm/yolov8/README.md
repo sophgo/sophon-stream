@@ -48,7 +48,7 @@ sophon-stream yolov8插件具有一些可配置的参数，可以根据需求进
 |  model_path  |   字符串   | "../data/models/BM1684X/yolov8s_int8_1b.bmodel" | yolov8模型路径 |
 |  threshold_conf   |   浮点数或map   | 0.5 | 目标检测物体置信度阈值，设置为浮点数时，所有类别共用同一个阈值；设置为map时，不同类别可以使用不同阈值，此时还需要正确设置class_names_file |
 |  threshold_nms  |   浮点数   | 0.5 | 目标检测NMS IOU阈值 |
-|  task_type   | 字符串 | "Detect" | yolov8算法类型，支持了 "Detect", "Cls", "Pose" 和 "Seg" |
+|  task_type   | 字符串 | "Detect" | yolov8算法类型，支持了 "Detect", "Cls", "Pose", "Seg"和"obb" |
 |  bgr2rgb  |   bool   | true | 解码器解出来的图像默认是bgr格式，是否需要将图像转换成rgb格式 |
 |  mean  |   浮点数组   | 无 | 图像前处理均值，长度为3；计算方式为: y=(x-mean)/std；若bgr2rgb=true，数组中数组顺序需为r、g、b，否则需为b、g、r |
 |  std  |   浮点数组   | 无 | 图像前处理方差，长度为3；计算方式同上；若bgr2rgb=true数组中数组顺序需为r、g、b，否则需为b、g、r |

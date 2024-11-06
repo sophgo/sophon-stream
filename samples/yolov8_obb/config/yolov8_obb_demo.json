@@ -1,0 +1,40 @@
+{
+  "channels": [
+    {
+      "channel_id": 2,
+      "url": "../yolov8_obb/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": 25
+    },
+    {
+      "channel_id": 3,
+      "url": "../yolov8_obb/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": 25
+    },
+    {
+      "channel_id": 4,
+      "url": "../yolov8_obb/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": 25
+    },
+    {
+      "channel_id": 5,
+      "url": "../yolov8_obb/data/videos/test.mp4",
+      "source_type": "VIDEO",
+      "sample_interval": 1,
+      "loop_num": 1,
+      "fps": 25
+    }
+  ],
+  "class_names": "../yolov8_obb/data/dotav1.names",
+  "download_image": false,
+  "draw_func_name": "draw_yolov8_obb_results",
+  "engine_config_path": "../yolov8_obb/config/engine_obb_group.json"
+}

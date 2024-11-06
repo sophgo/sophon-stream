@@ -36,6 +36,7 @@ Main Directory Structure and Module Descriptions:
 | [samples](./samples)    | [yolov5](./samples/yolov5)                                        | yolov5 demo                             |
 |                         | [yolov7](./samples/yolov7)                                        | yolov7 demo                            |
 |                         | [yolov8](./samples/yolov8/)                                       | yolov8 demo                             |
+|                         | [yolov8_obb](./samples/yolov8_obb/)                               | yolov8_obb demo                             |
 |                         | [yolox](./samples/yolox)                                          | yolox demo                              |
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo                          |
 |                         | [resnet](./samples/resnet)                                        | resnet demo                             |

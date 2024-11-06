@@ -47,6 +47,7 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
     if (osd_type == "TRACK") mOsdType = OsdType::TRACK;
     if (osd_type == "POSE") mOsdType = OsdType::POSE;
     if (osd_type == "AREA") mOsdType = OsdType::AREA;
+    if (osd_type == "OBB") mOsdType = OsdType::OBB;
     if (osd_type == "ALGORITHM") mOsdType = OsdType::ALGORITHM;
     if (osd_type == "TEXT") mOsdType = OsdType::TEXT;
     if (mOsdType == OsdType::TEXT) {
@@ -98,7 +99,7 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
         abort();
       }
     }
-    if (mOsdType == OsdType::DET) {
+    if (mOsdType == OsdType::DET || mOsdType == OsdType::OBB) {
       std::string class_names_file =
           configure.find(CONFIG_INTERNAL_CLASS_NAMES_FIELD)->get<std::string>();
       std::ifstream istream;
@@ -318,6 +319,12 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
       case OsdType::AREA:
         draw_opencv_areas(objectMetadata, frame_to_draw);
         break;
+
+      case OsdType::OBB:
+        draw_opencv_obb_result(objectMetadata, mClassNames, frame_to_draw, 
+                              mPutText, mDrawInterval);
+        break;
+        
       case OsdType::ALGORITHM:
         draw_func_opencv(objectMetadata, frame_to_draw);
         break;
