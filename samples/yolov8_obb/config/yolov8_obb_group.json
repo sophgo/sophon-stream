@@ -1,0 +1,23 @@
+{
+  "configure": {
+    "model_path": "../yolov8_obb/data/models/BM1684X/yolov8s-obb_fp16_1b.bmodel",
+    "threshold_conf": 0.25,
+    "threshold_nms": 0.7,
+    "bgr2rgb": true,
+    "task_type": "Obb",
+    "mean": [
+      0,
+      0,
+      0
+    ],
+    "std": [
+      255,
+      255,
+      255
+    ]
+  },
+  "shared_object": "../../build/lib/libyolov8.so",
+  "name": "yolov8_group",
+  "side": "sophgo",
+  "thread_number": 1
+}

@@ -996,3 +996,29 @@ void draw_ppocr_results(
   }
   bm_image_destroy(imageStorage);
 }
+
+void draw_yolov8_obb_results(
+    std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata,
+    std::string& out_dir, std::vector<std::string>& class_names) {
+  cv::Mat frame;
+  cv::bmcv::toMAT(objectMetadata->mFrame->mSpData.get(), frame);
+  auto box_vec = objectMetadata->mObbObjectMetadatas;
+  for (int n = 0; n < box_vec.size(); n++) {
+    cv::Point rook_points[4];
+    rook_points[0] = cv::Point(int(box_vec[n]->x1), int(box_vec[n]->y1));
+    rook_points[1] = cv::Point(int(box_vec[n]->x2), int(box_vec[n]->y2));
+    rook_points[2] = cv::Point(int(box_vec[n]->x3), int(box_vec[n]->y3));
+    rook_points[3] = cv::Point(int(box_vec[n]->x4), int(box_vec[n]->y4));
+    const cv::Point* ppt[1] = {rook_points};
+    int npt[] = {4};
+    std::string label = class_names[box_vec[n]->class_id] + cv::format(":%.2f", box_vec[n]->score);
+    cv::Scalar color(colors[box_vec[n]->class_id][0], colors[box_vec[n]->class_id][1], colors[box_vec[n]->class_id][2]);
+    cv::polylines(frame, ppt, npt, 1, 1, color, 2, 8, 0);
+    cv::putText(frame, label, cv::Point(int(box_vec[n]->x1), int(box_vec[n]->y1 - 5)),
+                cv::FONT_HERSHEY_SIMPLEX, 0.7, color, 2);
+  }
+  std::string img_file =
+      out_dir + "/" + std::to_string(objectMetadata->mFrame->mChannelId) +
+      "_" + std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
+  cv::imwrite(img_file, frame);
+}

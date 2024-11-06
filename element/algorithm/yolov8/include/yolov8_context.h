@@ -18,7 +18,7 @@ namespace yolov8 {
 
 #define USE_ASPECT_RATIO 1
 
-enum class TaskType { Detect = 0, Pose, Cls, Seg };
+enum class TaskType { Detect = 0, Pose, Cls, Seg, Obb };
 
 class Yolov8Context : public ::sophon_stream::element::Context {
  public:
