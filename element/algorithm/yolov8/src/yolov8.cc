@@ -32,8 +32,7 @@ const std::string Yolov8::elementName = "yolov8";
 std::unordered_map<std::string, TaskType> taskMap{{"Detect", TaskType::Detect},
                                                   {"Pose", TaskType::Pose},
                                                   {"Cls", TaskType::Cls},
-                                                  {"Seg", TaskType::Seg},
-                                                  {"Obb", TaskType::Obb}};
+                                                  {"Seg", TaskType::Seg}};
 
 common::ErrorCode Yolov8::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -211,17 +210,6 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
         mContext->class_num =
             mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1] -
             mContext->mask_len - 4;
-      else if (mContext->taskType == TaskType::Obb){
-        int ndim1 = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1];
-        int ndim2 = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2];
-        if (ndim1 < ndim2){
-          IVS_CRITICAL(
-            "We only support bmodel's output_shape like [N, box_num, nout], usually box_num > nout. "
-            "But your bmodel's shape is [{0:d}, {1:d}, {2:d}].", mContext->max_batch, ndim1, ndim2);
-          abort();
-        }
-        mContext->class_num = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2] - 5;
-      }
     }
 
     if (mContext->class_thresh_valid) {

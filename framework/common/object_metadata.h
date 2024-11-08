@@ -25,7 +25,6 @@
 #include "recognized_object_metadata.h"
 #include "segmented_object_metadata.h"
 #include "tracked_object_metadata.h"
-#include "obb_object_metadata.h"
 
 namespace sophon_stream {
 namespace common {
@@ -173,11 +172,6 @@ struct ObjectMetadata {
    */
   std::vector<int> resize_vector;
   std::vector<std::vector<common::Point<int>>> areas;
-
-  /**
-   * @brief obb检测结果的vector，一个目标对应一个ObbObjectMetadata
-   */
-  std::vector<std::shared_ptr<common::ObbObjectMetadata>> mObbObjectMetadatas;
 };
 
 using ObjectMetadatas = std::vector<std::shared_ptr<ObjectMetadata>>;
