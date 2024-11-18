@@ -111,3 +111,4 @@ IMG_DIR/
 >3. 假设输入BASE64的URL为`/base64`，则http请求的格式需为「POST」(http://{host_ip}:{base64_port}/base64)，request body的data字段存储base64数据，如{"data": "{base64 string，不含头部(data:image/xxx;base64,)}"}
 >4. 输入GB28181数据流的URL须以`gb28181://`开头
 >5. 输入CAMERA数据流的URL须以`/dev/video`开头
+>6. 不推荐同时解码本地视频和网络流
