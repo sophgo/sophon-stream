@@ -274,6 +274,21 @@ void Distributor::makeSubFaceObjectMetadata(
       rect.start_y = new_y1;
       rect.crop_w = new_x2 - new_x1;
       rect.crop_h = new_y2 - new_y1;
+      // BM1688/CV186有VPSS_MIN_H和VPSS_MIN_W等于16，BM1684X有VPP1684X_MIN_W和VPP1684X_MIN_H等于8
+      #if BMCV_VERSION_MAJOR > 1
+          if (rect.crop_w < 16) rect.crop_w = 16;
+          if (rect.crop_h < 16) rect.crop_h = 16;
+      #else
+          if (rect.crop_w < 8) rect.crop_w = 8;
+          if (rect.crop_h < 8) rect.crop_h = 8;
+      #endif
+      // 裁剪超出图像范围时缩小start_x和start_y
+      if (rect.start_x + rect.crop_w >= obj->mFrame->mWidth)
+          rect.start_x = (obj->mFrame->mWidth - rect.crop_w > 0)? \
+                         (obj->mFrame->mWidth - rect.crop_w) : 0;
+      if (rect.start_y + rect.crop_h >= obj->mFrame->mHeight)
+          rect.start_y = (obj->mFrame->mHeight - rect.crop_h > 0)? \
+                         (obj->mFrame->mHeight - rect.crop_h) : 0;
 
       bm_image corp_img;
       bm_status_t ret =
@@ -288,7 +303,7 @@ void Distributor::makeSubFaceObjectMetadata(
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect,
                             *obj->mFrame->mSpData, &corp_img);
       // #endif
-      // STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
+      STREAM_CHECK(ret == 0, "Bmcv Crop Failed! Program Terminated.")
 
       // 得到原始图中关键点
       float left_eye_x = faceObj->points_x[0];
