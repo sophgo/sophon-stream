@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 #include "faiss.h"
 
-#if BMCV_VERSION_MAJOR <= 1
+//#if BMCV_VERSION_MAJOR <= 1
 
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -35,6 +35,7 @@ Faiss::~Faiss() {
 
 common::ErrorCode Faiss::initInternal(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
+  STREAM_CHECK(bmcv_faiss_indexflatIP != nullptr, "bmcv_faiss_indexflatIP not support, please update SDK version");
   do {
     auto configure = nlohmann::json::parse(json, nullptr, false);
     if (!configure.is_object()) {
@@ -181,4 +182,4 @@ REGISTER_WORKER("faiss", Faiss)
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif
+//#endif

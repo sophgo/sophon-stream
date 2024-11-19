@@ -12,10 +12,26 @@
 
 #include "bmcv_api_ext.h"
 
-#if BMCV_VERSION_MAJOR <= 1
+//#if BMCV_VERSION_MAJOR <= 1
 
 #include "common/object_metadata.h"
 #include "element.h"
+
+extern "C" {
+extern bm_status_t bmcv_faiss_indexflatIP(bm_handle_t handle,
+                                    bm_device_mem_t input_data_global_addr,
+                                    bm_device_mem_t db_data_global_addr,
+                                    bm_device_mem_t buffer_global_addr,
+                                    bm_device_mem_t output_sorted_similarity_global_addr,
+                                    bm_device_mem_t output_sorted_index_global_addr,
+                                    int vec_dims,
+                                    int query_vecs_num,
+                                    int database_vecs_num,
+                                    int sort_cnt,
+                                    int is_transpose,
+                                    int input_dtype,
+                                    int output_dtype) __attribute__((weak));
+}
 
 namespace sophon_stream {
 namespace element {
@@ -66,5 +82,5 @@ class Faiss : public ::sophon_stream::framework::Element {
 }  // namespace element
 }  // namespace sophon_stream
 
-#endif
+//#endif
 #endif
