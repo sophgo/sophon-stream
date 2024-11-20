@@ -28,9 +28,11 @@ This sample is used to illustrate how to use sophon-stream to quickly build comp
 * Use retinaface for detection;
 * Use resnet for face feature extraction;
 * Use faiss for face recognition;
-* Support BM1684X (x86 PCIe, SoC);
+* Support BM1684X (x86 PCIe, SoC), BM1688(Soc);
 * Supports multiple video streams;
 * Support multi-threading.
+
+Note: BM1688 needs SDK version >= 1.8
 
 ## 3. Prepare Models and Data
 
@@ -49,7 +51,10 @@ The downloaded models include:
 
 ```bash
 ./models
-└── BM1684X
+├── BM1684X
+│   ├── resnet_arcface_fp32_1b.bmodel           # resnet for face feature extraction
+│   └── retinaface_mobilenet0.25_fp32_1b.bmodel # retinaface for face detection
+└── BM1688
     ├── resnet_arcface_fp32_1b.bmodel           # resnet for face feature extraction
     └── retinaface_mobilenet0.25_fp32_1b.bmodel # retinaface for face detection
 ```

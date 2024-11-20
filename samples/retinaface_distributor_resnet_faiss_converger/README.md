@@ -28,9 +28,11 @@
 * 检测模型使用retinaface；
 * 人脸特征模型使用resnet；
 * 人脸识别使用faiss；
-* 支持BM1684X(x86 PCIe、SoC)；
+* 支持BM1684X(x86 PCIe、SoC)、BM1688(SoC)；
 * 支持多路视频流；
 * 支持多线程。
+
+备注：BM1688需要SDK版本1.8及以上
 
 ## 3. 准备模型与数据
 
@@ -49,9 +51,12 @@ chmod -R +x scripts/
 
 ```bash
 ./models
-└── BM1684X
+├── BM1684X
+│   ├── resnet_arcface_fp32_1b.bmodel # resnet人脸特征提取模型
+│   └── retinaface_mobilenet0.25_fp32_1b.bmodel # BM1684X FP32人脸检测模型
+└── BM1688
     ├── resnet_arcface_fp32_1b.bmodel # resnet人脸特征提取模型
-    └── retinaface_mobilenet0.25_fp32_1b.bmodel # BM1684X FP32人脸检测模型
+    └── retinaface_mobilenet0.25_fp32_1b.bmodel # BM1688 FP32人脸检测模型
 ```
 
 下载的数据包括：
