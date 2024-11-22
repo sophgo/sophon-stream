@@ -13,7 +13,8 @@ namespace sophon_stream {
 namespace element {
 namespace qt_display {
 
-BMLabel::BMLabel(QWidget* parent, Qt::WindowFlags f) {
+BMLabel::BMLabel(QWidget* parent, int width, int height) :QLabel(parent){
+  setFixedSize(width, height);
   connect(this, &BMLabel::show_signals, this, &BMLabel::show_pixmap);
 
 }

@@ -35,16 +35,20 @@ int QtDisplay::qt_func() {
 
   qwidget_ptr->setGeometry(0, 0, screen_width, screen_height);
   layout = new QGridLayout(qwidget_ptr);
-  qwidget_ptr->setLayout(layout);
+
+  int label_width = screen_width/cols;
+  int label_height = screen_height/rows;
+
   for (int row = 0; row < rows; row++) {
     for (int col = 0; col < cols; col++) {
       std::shared_ptr<BMLabel> label_ptr =
-          std::make_shared<BMLabel>(qwidget_ptr);
+          std::make_shared<BMLabel>(qwidget_ptr, label_width, label_height);
       layout->addWidget(label_ptr.get(), row, col);
       label_vec.push_back(label_ptr);
     }
   }
 
+  qwidget_ptr->setLayout(layout);
   qwidget_ptr->show();
 
   return qapp->exec();

@@ -25,8 +25,7 @@ namespace qt_display {
 class BMLabel : public QLabel {
   Q_OBJECT
  public:
-  explicit BMLabel(QWidget* parent = nullptr,
-                   Qt::WindowFlags f = Qt::WindowFlags());
+  explicit BMLabel(QWidget* parent, int width, int height);
   ~BMLabel();
 
   void show_img(std::shared_ptr<bm_image> bmimg_ptr);
