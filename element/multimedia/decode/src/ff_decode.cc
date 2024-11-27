@@ -454,12 +454,14 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
 
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
+    av_dict_free(&dict);
     av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
     return ret;
   }
 
   ret = avformat_find_stream_info(ifmt_ctx, NULL);
   if (ret < 0) {
+    av_dict_free(&dict);
     av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
     return ret;
   }
