@@ -347,7 +347,8 @@ void Encode::processVideoStream(
 void Encode::processImgDir(
     int dataPipeId, std::shared_ptr<common::ObjectMetadata> objectMetadata) {
   const char* dir_path =
-      ("./results/" + std::to_string(objectMetadata->mFrame->mChannelId))
+      ("./results/" + std::to_string(objectMetadata->mGraphId) + "_" +
+       std::to_string(objectMetadata->mFrame->mChannelId))
           .c_str();
   struct stat info;
   if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
