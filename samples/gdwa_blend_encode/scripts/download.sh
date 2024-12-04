@@ -20,9 +20,9 @@ pushd $scripts_dir
 if [ ! -d "../data" ]; 
 then
 
-    python3 -m dfss --url=open@sophgo.com:/sophon-stream/gdwa_blend_encode/data.zip
-    unzip data.zip
-    rm -f data.zip
+    python3 -m dfss --url=open@sophgo.com:/sophon-stream/gdwa_blend_encode/data_241204.zip
+    unzip data_241204.zip
+    rm -f data_241204.zip
     mv data ..
     python3 -m dfss --url=open@sophgo.com:/sophon-stream/dwa_blend_encode/cvi_sdr_bin
     mv cvi_sdr_bin ../data

@@ -1,9 +1,9 @@
 {
   "configure": {
-    "wgt1": "../gdwa_blend_encode/data/wgt/c01_alpha_444p_m2__0_1440x32_b.bin",
-    "wgt2": "../gdwa_blend_encode/data/wgt/c01_beta_444p_m2__0_1440x32_b.bin",
+    "wgt1": "../gdwa_blend_encode/data/wgt/c01_alpha_444p_m2__0_1440x64.bin",
+    "wgt2": "../gdwa_blend_encode/data/wgt/c01_beta_444p_m2__0_1440x64.bin",
     "src_h": 1440,
-    "ovlp_lx": 2528,
+    "ovlp_lx": 2496,
     "ovlp_rx": 2559,
     "bd_lx0": 0,
     "bd_rx0": 0,
