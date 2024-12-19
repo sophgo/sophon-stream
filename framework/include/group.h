@@ -59,7 +59,7 @@ class Group : public ::sophon_stream::framework::Element {
     return errorCode;
   }
   common::ErrorCode doWork(int dataPipeId) {
-    std::this_thread::sleep_for(std::chrono::microseconds(40));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     return common::ErrorCode::SUCCESS;
   }
 
