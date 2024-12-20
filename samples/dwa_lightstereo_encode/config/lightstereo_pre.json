@@ -1,0 +1,13 @@
+{
+    "configure": {
+      "model_path": "../dwa_lightstereo_encode/data/models/BM1688/LightStereo-S-SceneFlow_int8_1b_480x736.bmodel",
+      "bgr2rgb": true,
+      "mean": [0.485, 0.456, 0.406],
+      "std": [0.229, 0.224, 0.225],
+      "stage": ["pre"]
+    },
+    "shared_object": "../../build/lib/liblightstereo.so",
+    "name": "lightstereo",
+    "side": "sophgo",
+    "thread_number": 1
+  }
