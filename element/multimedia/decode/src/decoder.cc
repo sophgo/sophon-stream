@@ -72,6 +72,7 @@ Decoder::Decoder() {
 }
 
 Decoder::~Decoder() {
+  numThreadsTotal.fetch_sub(1);
   // bm_dev_free(m_handle);
 }
 

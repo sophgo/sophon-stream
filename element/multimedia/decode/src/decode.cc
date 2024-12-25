@@ -51,6 +51,8 @@ void Decode::onStop() {
   std::lock_guard<std::mutex> lk(mThreadsPoolMtx);
   for (auto& channelInfo : mThreadsPool) {
     channelInfo.second->mThreadWrapper->stop();
+    channelInfo.second->mSpDecoder->uninit();
+    channelInfo.second->mThreadWrapper.reset();
   }
   mThreadsPool.clear();
 }

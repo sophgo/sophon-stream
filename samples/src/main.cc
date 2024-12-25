@@ -292,10 +292,11 @@ drawFuncType getDrawFunc(demo_config& demo_json) {
   else if (demo_json.draw_func_name == "draw_yolov8_det_pose")
     draw_func = std::bind(draw_yolov8_det_pose, std::placeholders::_1, out_dir);
   else if (demo_json.draw_func_name == "draw_yolov8_seg")
-    draw_func = std::bind(draw_yolov8_seg, std::placeholders::_1, out_dir, demo_json.class_names);
-  else if (demo_json.draw_func_name == "draw_yolov8_obb_results")
-    draw_func = std::bind(draw_yolov8_obb_results, std::placeholders::_1, out_dir,
+    draw_func = std::bind(draw_yolov8_seg, std::placeholders::_1, out_dir,
                           demo_json.class_names);
+  else if (demo_json.draw_func_name == "draw_yolov8_obb_results")
+    draw_func = std::bind(draw_yolov8_obb_results, std::placeholders::_1,
+                          out_dir, demo_json.class_names);
   else
     IVS_ERROR("No such function! Please check your 'draw_func_name'.");
 
@@ -414,6 +415,9 @@ void stopChannel(const httplib::Request& request, httplib::Response& response) {
   return;
 }
 
+std::mutex mtx;
+std::condition_variable stop_cv;
+
 int main(int argc, char* argv[]) {
   const char* keys =
       "{demo_config_path | "
@@ -429,18 +433,21 @@ int main(int argc, char* argv[]) {
 
   ::logInit("debug", "");
 
-  std::mutex mtx;
-  std::condition_variable cv;
-
   sophon_stream::common::Clocker clocker;
   std::atomic_uint32_t frameCount(0);
   std::atomic_int32_t finishedChannelCount(0);
-
   auto& engine = sophon_stream::framework::SingletonEngine::getInstance();
 
   std::ifstream istream;
   nlohmann::json engine_json;
   demo_config demo_json = parse_demo_json(demo_config_fpath);
+
+  auto handler = [](int sig) -> void {
+    stop_cv.notify_one();
+  };
+
+  signal(SIGINT, handler);
+  signal(SIGTERM, handler);
 
   // 启动每个graph, graph之间没有联系，可以是完全不同的配置
   istream.open(demo_json.engine_config_file);
@@ -478,7 +485,7 @@ int main(int argc, char* argv[]) {
       printf("meet a eof\n");
       finishedChannelCount++;
       if (finishedChannelCount == num_channels) {
-        cv.notify_one();
+        stop_cv.notify_one();
       }
       return;
     }
@@ -528,7 +535,7 @@ int main(int argc, char* argv[]) {
 
   {
     std::unique_lock<std::mutex> uq(mtx);
-    cv.wait(uq);
+    stop_cv.wait(uq);
   }
   for (int i = 0; i < demo_json.num_graphs; i++) {
     std::cout << "graph stop" << std::endl;

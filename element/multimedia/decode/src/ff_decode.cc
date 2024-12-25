@@ -487,6 +487,15 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
 }
 
 void VideoDecFFM::closeDec() {
+  if (frame) {
+    av_frame_unref(frame);
+    av_frame_free(&frame);
+    frame = NULL;
+  }
+  if (pkt) {
+    av_packet_unref(pkt);
+    av_packet_free(&pkt);
+  }
   if (video_dec_ctx) {
     avcodec_close(video_dec_ctx);
     avcodec_free_context(&video_dec_ctx);
@@ -496,15 +505,6 @@ void VideoDecFFM::closeDec() {
     avformat_close_input(&ifmt_ctx);
     avformat_free_context(ifmt_ctx);
     ifmt_ctx = NULL;
-  }
-  if (frame) {
-    av_frame_unref(frame);
-    av_frame_free(&frame);
-    frame = NULL;
-  }
-  if (pkt) {
-    av_packet_unref(pkt);
-    av_packet_free(&pkt);
   }
   frame_id = 0;
   quit_flag = false;
