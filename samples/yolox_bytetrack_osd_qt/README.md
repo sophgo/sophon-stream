@@ -71,9 +71,9 @@ chmod -R +x scripts/
 ```
 模型说明:
 
-1.`yolox_bytetrack_s`系列模型移植于[bytetrack官方](https://github.com/ifzhang/ByteTrack)，插件配置`mean=[0,0,0]`，`std=[255,255,255]`，支持person类别的检测任务。
+1.`yolox_bytetrack_s`系列模型移植于[bytetrack官方](https://github.com/ifzhang/ByteTrack)，插件配置`mean=[0.485, 0.456, 0.406]`，`std=[0.229, 0.224, 0.225]`，支持person类别的检测任务。
 
-2.`yolox_s`系列模型移植于[yolox官方](https://github.com/Megvii-BaseDetection/YOLOX)，插件配置`mean=[0,0,0]`，`std=[1,1,1]`，支持COCO数据集的80分类检测任务。
+2.`yolox_s`系列模型移植于[yolox官方](https://github.com/Megvii-BaseDetection/YOLOX)，插件配置`mean=[0,0,0]`，`std=[0.0039216,0.0039216,0.0039216]`，支持COCO数据集的80分类检测任务。
 
 下载的数据包括：
 ```bash
