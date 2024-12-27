@@ -73,6 +73,7 @@ Decoder::Decoder() {
 
 Decoder::~Decoder() {
   numThreadsTotal.fetch_sub(1);
+  decoder_cv.notify_all();
   // bm_dev_free(m_handle);
 }
 
@@ -265,14 +266,13 @@ common::ErrorCode Decoder::process(
    {  // 在所有线程等待执行decoder.grab前添加一个等待点
       std::unique_lock<std::mutex> lock(decoder_mutex);
       numThreadsReady ++;
-      if(numThreadsReady == numThreadsTotal){
+      if(numThreadsReady >= numThreadsTotal){
         numThreadsReady = 0;
         lock.unlock();
         decoder_cv.notify_all();
       }else{
         decoder_cv.wait(lock);
       }
-      
     }
     spBmImage =
         decoder.grab(frame_id, eof, pts, mSampleInterval, mSampleStrategy);
