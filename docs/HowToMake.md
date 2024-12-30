@@ -22,6 +22,12 @@ pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/docker/stream_dev.tar
 ```
 
+如果设备为bm1688/cv186ah，而且SDK版本大于等于1.9，则需要拉取如下镜像：
+```bash
+pip3 install dfss
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/docker/stream_dev_22.04.tar
+```
+
 如果是首次使用Docker, 可执行下述命令进行安装和配置(仅首次执行):
 ```bash
 sudo apt install docker.io
@@ -36,7 +42,7 @@ newgrp docker
 ```bash
 docker load -i stream_dev.tar
 ```
-可以通过`docker images`查看加载好的镜像，默认为stream_dev:latest
+可以通过`docker images`查看加载好的镜像。需要注意镜像版本号，stream_dev_22.04镜像版本号为0.2。
 
 创建容器
 ```bash
@@ -80,12 +86,12 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0701.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc1001.tar.gz
 ```
 
-下面三个文件，分别对应BM1688 SDK的1.6、1.7、1.8版本。
+下面三个文件，分别对应BM1688 SDK的1.7、1.8、1.9版本。
 ```bash
 pip3 install dfss
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.6.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.7.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.8.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.9.tar.gz
 ```
 
 如果需要使用qt，只需要在x86上下载用于交叉编译的Qt。盒子上环境已经是齐全的，不需要重新下载/安装Qt，并在编译时用`QTPATH`参数指定qt的路径：（如果不需要使用QT，可以忽略这部分，并且不添加交叉编译时的`QTPATH`参数）

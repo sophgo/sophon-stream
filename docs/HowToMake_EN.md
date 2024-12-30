@@ -23,6 +23,13 @@ pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/docker/stream_dev.tar
 ```
 
+If the device is bm1688/cv186ah, please pull this image:
+
+```bash
+pip3 install dfss
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/docker/stream_dev_22.04.tar
+```
+
 If you're using Docker for the first time, you can execute the following commands to install and configure it (only for the first-time setup):
 
 ```bash
@@ -90,9 +97,9 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc1001.tar.gz
 For BM1688, these files are available:
 ```bash
 pip3 install dfss
-python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.6.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.7.tar.gz
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.8.tar.gz
+python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.9.tar.gz
 ```
 
 If QT is needed, make sure to download QT of cross-compiling version on x86 device. The environment on the edge device does have QT already, there is no need to re-download/install it. Use the `QTPATH` parameter at compile time to specify the qt path: (If not using QT, this part can be ignored and `QTPATH` while cross-compiling is not necessary)
