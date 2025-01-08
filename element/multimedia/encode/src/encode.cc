@@ -25,6 +25,11 @@ Encode::~Encode() {
       it->second->release();
     }
   } else if (mEncodeType == EncodeType::WS) {
+    if (mWssBackend == WSSBackend::WEBSOCKETPP) {
+      for(int i = 0; i < getThreadNumber(); ++i) {
+        stopWS(i);
+      }
+    }
     for (auto& thread : mWSSThreads) thread.join();
   } else {
   }
