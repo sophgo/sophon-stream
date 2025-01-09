@@ -111,6 +111,11 @@ python3 -m dfss --url=open@sophgo.com:sophon-pipeline/a2_bringup/qtbase.zip
 python3 -m dfss --dflag=openssl_1.1.1f_aarch64
 ```
 
+如果使用1.9及之后的SDK版本，需要使用如下命令下载较新的openssl。
+```bash
+python3 -m dfss --url=open@sophgo.com:sophon-stream/soc-sdk/openssl_3_aarch64.tar.gz
+```
+
 交叉编译时，`SOPHON_SDK_SOC`、`QTPATH`，`OPENSSL_PATH`需要填写绝对路径
 
 ```bash

@@ -119,6 +119,11 @@ If https is needed in http_push unit, make sure to download OPENSSL of cross-com
 python3 -m dfss --dflag=openssl_1.1.1f_aarch64
 ```
 
+Use command below to get newer openssl for SDK 1.9 or after.
+```bash
+python3 -m dfss --url=open@sophgo.com:sophon-stream/soc-sdk/openssl_3_aarch64.tar.gz
+```
+
 When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC`, `QTPATH` and `OPENSSL_PATH`:
 
 ```bash
