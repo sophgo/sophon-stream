@@ -111,9 +111,6 @@ void Faiss::getFaceId(
   if (resnetObj != nullptr) {
     // float *input_data = new float[query_vecs_num * vec_dims];
     float* input_data = resnetObj->feature_vector.get();
-    for (int i = 0; i < 10; i++) {
-      std::cout << input_data[i] << " ";
-    }
     // 将 input_data 的值赋给 feature_vector
     // bm_handle_t handle=obj->mFrame->mHandle;
    {
