@@ -198,7 +198,7 @@ common::ErrorCode ResNetMultiTask::pre_process(
 
     STREAM_CHECK(ret == 0, "Vpp Convert Padding Failed! Program Terminated.")
 
-    if (image0.image_format != FORMAT_BGR_PLANAR) {
+    if (image0.image_format != jsonPlanner) {
       bm_image_destroy(image1);
     }
     if (need_copy) bm_image_destroy(image_aligned);
