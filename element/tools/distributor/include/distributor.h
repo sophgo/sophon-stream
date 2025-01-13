@@ -66,6 +66,7 @@ class Distributor : public ::sophon_stream::framework::Element {
   bm_image get_rotate_crop_image(bm_handle_t handle,
                                  bm_image input_bmimg_planar,
                                  std::vector<std::vector<int>>);
+  void normalize_rect(bmcv_rect_t& rect, int frame_width, int frame_height);
 
   /**
    * @brief 按时间间隔分发的所有规则。key：时间间隔，value：{类名，端口}

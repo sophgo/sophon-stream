@@ -274,21 +274,7 @@ void Distributor::makeSubFaceObjectMetadata(
       rect.start_y = new_y1;
       rect.crop_w = new_x2 - new_x1;
       rect.crop_h = new_y2 - new_y1;
-      // BM1688/CV186有VPSS_MIN_H和VPSS_MIN_W等于16，BM1684X有VPP1684X_MIN_W和VPP1684X_MIN_H等于8
-      #if BMCV_VERSION_MAJOR > 1
-          if (rect.crop_w < 16) rect.crop_w = 16;
-          if (rect.crop_h < 16) rect.crop_h = 16;
-      #else
-          if (rect.crop_w < 8) rect.crop_w = 8;
-          if (rect.crop_h < 8) rect.crop_h = 8;
-      #endif
-      // 裁剪超出图像范围时缩小start_x和start_y
-      if (rect.start_x + rect.crop_w >= obj->mFrame->mWidth)
-          rect.start_x = (obj->mFrame->mWidth - rect.crop_w > 0)? \
-                         (obj->mFrame->mWidth - rect.crop_w) : 0;
-      if (rect.start_y + rect.crop_h >= obj->mFrame->mHeight)
-          rect.start_y = (obj->mFrame->mHeight - rect.crop_h > 0)? \
-                         (obj->mFrame->mHeight - rect.crop_h) : 0;
+      normalize_rect(rect, obj->mFrame->mWidth, obj->mFrame->mHeight);
 
       bm_image corp_img;
       bm_status_t ret =
@@ -375,11 +361,16 @@ void Distributor::makeSubFaceObjectMetadata(
         delete p;
         p = nullptr;
       });
-      ret = bm_image_create(obj->mFrame->mHandle, 120, 100, FORMAT_BGR_PLANAR,
+      ret = bm_image_create(obj->mFrame->mHandle, rect_after_warp.crop_w, rect_after_warp.crop_h, FORMAT_BGR_PLANAR,
                             DATA_TYPE_EXT_1N_BYTE, crop_after_warp.get());
 
+      if ( corp_img.width < rect_after_warp.crop_w || corp_img.height < rect_after_warp.crop_h ){
+          bmcv_rect_t crop_rect = {0, 0, corp_img.width, corp_img.height};
+          bmcv_image_vpp_convert(obj->mFrame->mHandle, 1, *affine_image_ptr, crop_after_warp.get(), &crop_rect, BMCV_INTER_LINEAR);
+      } else {
       ret = bmcv_image_crop(obj->mFrame->mHandle, 1, &rect_after_warp,
                             *affine_image_ptr, crop_after_warp.get());
+      }
 
       subObj->mFrame->mSpData = crop_after_warp;
       bm_image_destroy(planar_image);
@@ -389,6 +380,8 @@ void Distributor::makeSubFaceObjectMetadata(
       rect.start_y = std::max(y1, 0);
       rect.crop_w = std::max(x2 - x1 + 1, 0);
       rect.crop_h = std::max(y2 - y1 + 1, 0);
+
+      normalize_rect(rect, obj->mFrame->mWidth, obj->mFrame->mHeight);
 
       std::shared_ptr<bm_image> cropped = nullptr;
       cropped.reset(new bm_image, [](bm_image* p) {
@@ -542,6 +535,24 @@ bm_image Distributor::get_rotate_crop_image(bm_handle_t handle,
     bm_image_destroy(crop_bmimg);
     return rot_bmimg;
   }
+}
+
+void Distributor::normalize_rect(bmcv_rect_t& rect, int frame_width, int frame_height){
+      // BM1688/CV186有VPSS_MIN_H和VPSS_MIN_W等于16，BM1684X有VPP1684X_MIN_W和VPP1684X_MIN_H等于8
+      #if BMCV_VERSION_MAJOR > 1
+          if (rect.crop_w < 16) rect.crop_w = 16;
+          if (rect.crop_h < 16) rect.crop_h = 16;
+      #else
+          if (rect.crop_w < 8) rect.crop_w = 8;
+          if (rect.crop_h < 8) rect.crop_h = 8;
+      #endif
+      // 裁剪超出图像范围时缩小start_x和start_y
+      if (rect.start_x + rect.crop_w >= frame_width)
+          rect.start_x = (frame_width - rect.crop_w > 0)? \
+                         (frame_height - rect.crop_w) : 0;
+      if (rect.start_y + rect.crop_h >= frame_height)
+          rect.start_y = (frame_height - rect.crop_h > 0)? \
+                         (frame_height - rect.crop_h) : 0;
 }
 
 common::ErrorCode Distributor::doWork(int dataPipeId) {
