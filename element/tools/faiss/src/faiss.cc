@@ -128,6 +128,7 @@ void Faiss::getFaceId(
     int label_index = output_inx[0];
     resnetObj->mLabelName = mClassNames[label_index];
     resnetObj->mTopKLabels.push_back(output_inx[0]);
+    resnetObj->mScores.push_back(output_dis[0]);
   }
 }
 
