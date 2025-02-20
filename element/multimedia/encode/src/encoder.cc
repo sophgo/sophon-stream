@@ -315,7 +315,11 @@ void Encoder::Encoder_CC::init_writer() {
         }
       }
     }
-    ret = avformat_write_header(enc_format_ctx_, NULL);
+    AVDictionary *header_options = NULL;
+    // av_dict_set(&header_options, "rtsp_transport", "tcp", 0);
+    av_dict_set(&header_options, "timeout", "3000000", 0); // 3s
+    ret = avformat_write_header(enc_format_ctx_, &header_options);
+    av_dict_free(&header_options);
     if (ret < 0) {
       IVS_ERROR("avformat_write_header failed {0}", ret);
       IVS_ERROR(
