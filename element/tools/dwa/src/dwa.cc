@@ -364,15 +364,13 @@ common::ErrorCode Dwa::dwa_gdc_work(
         p = nullptr;
       });
       bm_status_t ret = bm_image_create(dwaObj->mFrame->mHandle,
-                                        dwaObj->mFrame->mSpData->height,
-                                        dwaObj->mFrame->mSpData->width, src_fmt,
+                                        dst_h, dst_w, src_fmt,
                                         DATA_TYPE_EXT_1N_BYTE, dwa_image.get());
       bm_image_alloc_dev_mem(*dwa_image, 1);
 
       bm_image input;
       ret = bm_image_create(dwaObj->mFrame->mHandle,
-                            dwaObj->mFrame->mSpData->height,
-                            dwaObj->mFrame->mSpData->width, src_fmt,
+                            dst_h, dst_w, src_fmt,
                             dwaObj->mFrame->mSpData->data_type, &input, NULL);
       bm_image_alloc_dev_mem(input, 1);
       ret = bmcv_image_storage_convert(dwaObj->mFrame->mHandle, 1,

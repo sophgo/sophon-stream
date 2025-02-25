@@ -168,6 +168,11 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
         ip = ipIt->get<std::string>();
       }
 
+      auto prefixIt = configure.find(CONFIG_INTERNAL_PREFIX);
+      if (prefixIt != configure.end()) {
+        prefix = prefixIt->get<std::string>();
+      }
+
       std::map<std::string, int> mEncodeParams;
       mEncodeParams["framerate"] = mFps;
 
@@ -303,12 +308,12 @@ void Encode::processVideoStream(
       std::string output_path;
       switch (mEncodeType) {
         case EncodeType::RTSP:
-          output_path = "rtsp://" + ip + ":" + mRtspPort + "/live/" +
+          output_path = "rtsp://" + ip + ":" + mRtspPort + "/" + prefix +
                         std::to_string(objectMetadata->mGraphId) + "_" +
                         std::to_string(channel_id);
           break;
         case EncodeType::RTMP:
-          output_path = "rtmp://" + ip + ":" + mRtmpPort + "/" +
+          output_path = "rtmp://" + ip + ":" + mRtmpPort + "/" + prefix +
                         std::to_string(objectMetadata->mGraphId) + "_" +
                         std::to_string(channel_id);
           break;
@@ -324,7 +329,7 @@ void Encode::processVideoStream(
               IVS_INFO("Error creating directory.");
             }
           }
-          output_path = dir_path_ + std::to_string(objectMetadata->mGraphId) +
+          output_path = dir_path_ + prefix + std::to_string(objectMetadata->mGraphId) +
                         "_" + std::to_string(channel_id) +
                         (encFmt == "h265_bm" ? ".mp4" : ".avi");
         } break;
@@ -352,12 +357,12 @@ void Encode::processVideoStream(
 void Encode::processImgDir(
     int dataPipeId, std::shared_ptr<common::ObjectMetadata> objectMetadata) {
   const char* dir_path =
-      ("./results/" + std::to_string(objectMetadata->mGraphId) + "_" +
+      ("./results/" + prefix + std::to_string(objectMetadata->mGraphId) + "_" +
        std::to_string(objectMetadata->mFrame->mChannelId))
           .c_str();
   struct stat info;
   if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
-    IVS_INFO("Directory already exists.");
+    IVS_DEBUG("Directory already exists.");
   } else {
     if (mkdir(dir_path, 0777) == 0) {
       IVS_INFO("Directory created successfully.");
@@ -384,7 +389,7 @@ void Encode::processImgDir(
                                 &imageStorage, &jpeg_data, &out_size);
   if (ret == BM_SUCCESS) {
     std::string img_file =
-        "./results/" + std::to_string(objectMetadata->mGraphId) + "_" +
+        "./results/" + prefix + std::to_string(objectMetadata->mGraphId) + "_" +
         std::to_string(objectMetadata->mFrame->mChannelId) + "/" +
         std::to_string(objectMetadata->mFrame->mFrameId) + ".jpg";
     FILE* fp = fopen(img_file.c_str(), "wb");

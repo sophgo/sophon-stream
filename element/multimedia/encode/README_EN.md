@@ -6,15 +6,15 @@ sophon-stream encode element is a plugin within the sophon-stream framework used
 
 ## Content
 - [sophon-stream encode element](#sophon-stream-encode-element)
-  - [Content](#Content)
+  - [Content](#content)
   - [1. feature](#1-feature)
-  - [2. Configuration parameters](#2-Configuration-parameters)
-  - [3. RTSP Usage Instructions](#3-RTSP-Usage-Instructions)
-  - [4. RTMP Usage Instructions](#4-RTMP-Usage-Instructions)
-  - [5. Output Local Video File](#5-Output-Local-Video-File)
-  - [6. Output local image folder](#6-Output-local-image-folder)
-  - [7. WebSocket-Usage-Instructions](#7-WebSocket-Usage-Instructions)
-  - [8. Streaming-Server](#8-Streaming-Server)
+  - [2. Configuration parameters](#2-configuration-parameters)
+  - [3. RTSP Usage Instructions](#3-rtsp-usage-instructions)
+  - [4. RTMP Usage Instructions](#4-rtmp-usage-instructions)
+  - [5. Output Local Video File](#5-output-local-video-file)
+  - [6. Output local image folder](#6-output-local-image-folder)
+  - [7. WebSocket Usage Instructions](#7-websocket-usage-instructions)
+  - [8. Streaming Server](#8-streaming-server)
 
 ## 1. feature
 * Supports various output formats such as RTSP, RTMP, local video files, local image folders, etc.
@@ -62,6 +62,7 @@ sophon-stream encoder plugin has several configurable parameters that can be adj
 | wss_backend   | string |          "WEBSOCKETPP"            | websocket server type, supports "WEBSOCKETPP" and "BOOST"      |
 |      fps      |  int  |                25                 |                  RTSP,RTMP,VIDEO frame rate             |
 |      ip       | string |             "localhost"           |                       ip of stream server              |
+|      prefix   | string |                ""                 |          the prefix of output_path's last name                      |
 |     width     | int    |               -1                 |           width of encoder output, default to img.width  |
 |     height     | int    |               -1                 |           width of encoder output, default to img.height  |
 | shared_object | string | "../../../build/lib/libencode.so" |                  libencode dynamic library path        |

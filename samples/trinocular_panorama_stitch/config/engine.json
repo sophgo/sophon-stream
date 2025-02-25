@@ -1,0 +1,218 @@
+[
+    {
+      "graph_id": 0,
+      "device_id": 0,
+      "graph_name": "lightstereo",
+      "elements": [
+        {
+          "element_id": 5000,
+          "element_config": "../trinocular_panorama_stitch/config/decode.json",
+          "ports": {
+            "input": [
+              {
+                "port_id": 0,
+                "is_sink": false,
+                "is_src": true
+              }
+            ]
+          }
+        },
+        {
+          "element_id": 5001,
+          "element_config": "../trinocular_panorama_stitch/config/decode.json",
+          "ports": {
+            "input": [
+              {
+                "port_id": 0,
+                "is_sink": false,
+                "is_src": true
+              }
+            ]
+          }
+        },
+        {
+          "element_id": 5002,
+          "element_config": "../trinocular_panorama_stitch/config/decode.json",
+          "ports": {
+            "input": [
+              {
+                "port_id": 0,
+                "is_sink": false,
+                "is_src": true
+              }
+            ]
+          }
+        },
+        {
+          "element_id": 5003,
+          "element_config": "../trinocular_panorama_stitch/config/distributor_full_frame.json"
+        },
+        {
+          "element_id": 5004,
+          "element_config": "../trinocular_panorama_stitch/config/distributor_full_frame.json"
+        },
+        {
+          "element_id": 5005,
+          "element_config": "../trinocular_panorama_stitch/config/distributor_full_frame.json"
+        },
+        {
+            "element_id": 5006,
+            "element_config": "../trinocular_panorama_stitch/config/encode.json",
+            "ports": {
+                "output": [
+                    {
+                        "port_id": 0,
+                        "is_sink": true,
+                        "is_src": false
+                    }
+                ]
+            }
+        },
+        {
+          "element_id": 5007,
+          "element_config": "../trinocular_panorama_stitch/config/encode.json",
+          "ports": {
+              "output": [
+                  {
+                      "port_id": 0,
+                      "is_sink": true,
+                      "is_src": false
+                  }
+              ]
+          }
+       },
+       {
+        "element_id": 5008,
+        "element_config": "../trinocular_panorama_stitch/config/encode.json",
+        "ports": {
+            "output": [
+                {
+                    "port_id": 0,
+                    "is_sink": true,
+                    "is_src": false
+                }
+            ]
+        }
+        },
+        {
+          "element_id": 5009,
+          "element_config": "../trinocular_panorama_stitch/config/dwa_L.json"
+        },
+        {
+          "element_id": 5010,
+          "element_config": "../trinocular_panorama_stitch/config/dwa_R.json"
+        },
+        {
+          "element_id": 5011,
+          "element_config": "../trinocular_panorama_stitch/config/dwa_D.json"
+        },
+        {
+          "element_id": 5012,
+          "element_config": "../trinocular_panorama_stitch/config/blend_left_right.json"
+        },
+        {
+          "element_id": 5013,
+          "element_config": "../trinocular_panorama_stitch/config/blend_up_down.json"
+        },
+        {
+          "element_id": 5014,
+          "element_config": "../trinocular_panorama_stitch/config/encode_dwa.json",
+          "ports": {
+              "output": [
+                  {
+                      "port_id": 0,
+                      "is_sink": true,
+                      "is_src": false
+                  }
+              ]
+          }
+        }
+      ],
+      "connections": [
+        {
+          "src_element_id": 5000,
+          "src_port": 0,
+          "dst_element_id": 5003,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5001,
+          "src_port": 0,
+          "dst_element_id": 5004,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5002,
+          "src_port": 0,
+          "dst_element_id": 5005,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5003,
+          "src_port": 0,
+          "dst_element_id": 5006,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5004,
+          "src_port": 0,
+          "dst_element_id": 5007,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5005,
+          "src_port": 0,
+          "dst_element_id": 5008,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5003,
+          "src_port": 1,
+          "dst_element_id": 5009,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5004,
+          "src_port": 1,
+          "dst_element_id": 5010,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5005,
+          "src_port": 1,
+          "dst_element_id": 5011,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5009,
+          "src_port": 0,
+          "dst_element_id": 5012,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5010,
+          "src_port": 0,
+          "dst_element_id": 5012,
+          "dst_port": 1
+        },
+        {
+          "src_element_id": 5012,
+          "src_port": 0,
+          "dst_element_id": 5013,
+          "dst_port": 0
+        },
+        {
+          "src_element_id": 5011,
+          "src_port": 0,
+          "dst_element_id": 5013,
+          "dst_port": 1
+        },
+        {
+          "src_element_id": 5013,
+          "src_port": 0,
+          "dst_element_id": 5014,
+          "dst_port": 0
+        }
+      ]
+    }
+]

@@ -61,6 +61,7 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 | wss_backend   | 字符串 |          "WEBSOCKETPP"            | websocket server类型。支持"WEBSOCKETPP"和"BOOST"      |
 |      fps      |  整数  |                25                 |                  RTSP、RTMP、VIDEO帧率                  |
 |      ip       | 字符串 |             "localhost"           |                       流服务器地址                      |
+|      prefix   | 字符串 |                ""                 |                       推流地址名称前缀                      |
 |     width     | 整数   |                -1                 |         编码器输出的宽度，默认和输入图片相同              |
 |     height     | 整数   |                -1                 |         编码器输出的高度，默认和输入图片相同              |
 | shared_object | 字符串 | "../../../build/lib/libencode.so" |                  libencode 动态库路径                   |

@@ -1,0 +1,17 @@
+{
+    "configure": {
+      "wgt1": "../trinocular_panorama_stitch/datasets/mask/left.bin",
+      "wgt2": "../trinocular_panorama_stitch/datasets/mask/right.bin",
+      "src_h": 2880,
+      "ovlp_lx": 0,
+      "ovlp_rx": 2879,
+      "bd_lx0": 0,
+      "bd_rx0": 0,
+      "bd_lx1": 0,
+      "bd_rx1": 0
+    },
+    "shared_object": "../../build/lib/libblend.so",
+    "name": "blend",
+    "side": "sophgo",
+    "thread_number": 1
+  }

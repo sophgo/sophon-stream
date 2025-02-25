@@ -77,6 +77,7 @@ class Encode : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_HEIGHT_FIELD = "height";
   static constexpr const char* CONFIG_INTERNAL_WSENCTYPE_FIELD = "ws_enc_type";
   static constexpr const char* CONFIG_INTERNAL_IP_FIELD = "ip";
+  static constexpr const char* CONFIG_INTERNAL_PREFIX = "prefix";
 
  private:
   std::map<int, std::shared_ptr<Encoder>> mEncoderMap;
@@ -99,6 +100,7 @@ class Encode : public ::sophon_stream::framework::Element {
   WSSBackend mWssBackend = WSSBackend::WEBSOCKETPP;
 
   std::string ip = "localhost";
+  std::string prefix = "";
 
   std::map<int, std::shared_ptr<WSSManager>> mWSSMap;
   //   std::map<int, std::shared_ptr<WSS>> mWSSMap;  // for websocketpp

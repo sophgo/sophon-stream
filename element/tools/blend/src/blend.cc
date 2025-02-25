@@ -153,7 +153,7 @@ common::ErrorCode Blend::blend_work(
     std::shared_ptr<common::ObjectMetadata> rightObj,
     std::shared_ptr<common::ObjectMetadata> blendObj) {
   std::lock_guard<std::mutex> lk(mtx);
-  IVS_INFO("Now DisplayType is {0}", dis_type);
+  IVS_DEBUG("Now DisplayType is {0}", dis_type);
 
   // dispaly image
   if (dis_type == ONLY_RAW_DIS) {
@@ -287,7 +287,7 @@ common::ErrorCode Blend::doWork(int dataPipeId) {
     auto objectMetadata =
         std::static_pointer_cast<common::ObjectMetadata>(data);
     inputs.emplace_back(objectMetadata);
-    IVS_INFO("Got Input, port id = {0}, channel_id = {1}, frame_id = {2}",
+    IVS_DEBUG("Got Input, port id = {0}, channel_id = {1}, frame_id = {2}",
              inputPort, objectMetadata->mFrame->mChannelId,
              objectMetadata->mFrame->mFrameId);
   }

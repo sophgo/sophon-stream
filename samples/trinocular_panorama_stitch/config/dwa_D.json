@@ -1,0 +1,19 @@
+{
+    "configure": {
+      "is_gray": false,
+      "is_resize": false,
+      "dst_h": 2880,
+      "dst_w": 2880,
+      "dwa_mode": "DWA_GDC_MODE",
+      "is_rot": false,
+      "dis_mode": "BMCV_MODE_PANORAMA_360",
+      "use_grid": true,
+      "grid_name": "../trinocular_panorama_stitch/gridinfo/down_grid_info_bev_90_90_4589_90_90_dst_2880x2880_src_2560x1440.1.dat",
+      "grid_size": 500016
+    },
+    "shared_object": "../../build/lib/libdwa.so",
+    "name": "dwa",
+    "side": "sophgo",
+    "thread_number": 1
+  }
+  
