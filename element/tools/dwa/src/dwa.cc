@@ -370,7 +370,9 @@ common::ErrorCode Dwa::dwa_gdc_work(
 
       bm_image input;
       ret = bm_image_create(dwaObj->mFrame->mHandle,
-                            dst_h, dst_w, src_fmt,
+                            dwaObj->mFrame->mSpData->height,
+                            dwaObj->mFrame->mSpData->width, 
+                            src_fmt,
                             dwaObj->mFrame->mSpData->data_type, &input, NULL);
       bm_image_alloc_dev_mem(input, 1);
       ret = bmcv_image_storage_convert(dwaObj->mFrame->mHandle, 1,
