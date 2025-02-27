@@ -74,7 +74,19 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
   dwa_mode = dwa_mode_map[dwa_mode_str];
 
   auto use_grid = configure.find(CONFIG_INTERNAL_USE_GRIDE_FILED)->get<bool>();
-
+  auto resize_h_it = configure.find(CONFIG_INTERNAL_RESIZE_H_FILED);
+  if (resize_h_it != configure.end()){
+    resize_h = resize_h_it->get<int>();
+  } else{
+    resize_h = dst_h;
+  }
+  auto resize_w_it = configure.find(CONFIG_INTERNAL_RESIZE_W_FILED);
+  if (resize_w_it != configure.end()){
+    resize_w = resize_w_it->get<int>();
+  } else{
+    resize_w = dst_h;
+  }
+  
   if (dwa_mode == DWA_GDC_MODE) {  // 用于04a10 dpu 2560x1440 需要resize
     is_rot = configure.find(CONFIG_INTERNAL_IS_ROT_FILED)->get<bool>();
     if (is_rot == true) {
@@ -110,8 +122,6 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
 
   } else if (dwa_mode ==
              DWA_FISHEYE_MODE) {  // 用于04e10 blend 2240x2240 不需要resize
-    resize_h = configure.find(CONFIG_INTERNAL_RESIZE_H_FILED)->get<int>();
-    resize_w = configure.find(CONFIG_INTERNAL_RESIZE_W_FILED)->get<int>();
     fisheye_attr = {0};
     // set_fish_default_param(&fisheye_attr);
     rot_mode = BMCV_ROTATION_180;
