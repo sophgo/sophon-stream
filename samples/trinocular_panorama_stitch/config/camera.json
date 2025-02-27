@@ -2,7 +2,7 @@
   "channels": [
     {
       "channel_id": 1,
-      "url": "../trinocular_panorama_stitch/datasets/0106/left/",
+      "url": "../panorama_stitch/datasets/0106/left/",
       "source_type": "IMG_DIR",
       "sample_interval": 1,
       "loop_num": -1,
@@ -11,7 +11,7 @@
     },
     {
       "channel_id": 2,
-      "url": "../trinocular_panorama_stitch/datasets/0106/right/",
+      "url": "../panorama_stitch/datasets/0106/right/",
       "source_type": "IMG_DIR",
       "sample_interval": 1,
       "loop_num": -1,
@@ -20,7 +20,7 @@
     },
     {
       "channel_id": 3,
-      "url": "../trinocular_panorama_stitch/datasets/0106/down/",
+      "url": "../panorama_stitch/datasets/0106/down/",
       "source_type": "IMG_DIR",
       "sample_interval": 1,
       "loop_num": -1,
@@ -29,5 +29,5 @@
     }
   ],
   "download_image": false,
-  "engine_config_path": "../trinocular_panorama_stitch/config/engine.json"
+  "engine_config_path": "../panorama_stitch/config/engine.json"
 }

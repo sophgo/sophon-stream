@@ -1,7 +1,9 @@
 {
   "configure": {
     "is_gray": false,
-    "is_resize": false,
+    "is_resize": true,
+    "resize_h": 2160,
+    "resize_w": 2560,
     "dst_h": 2880,
     "dst_w": 2880,
     "dwa_mode": "DWA_GDC_MODE",

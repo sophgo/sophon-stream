@@ -431,7 +431,7 @@ int main(int argc, char* argv[]) {
   }
   std::string demo_config_fpath = parser.get<std::string>("demo_config_path");
 
-  ::logInit("debug", "");
+  ::logInit("info", "");
 
   sophon_stream::common::Clocker clocker;
   std::atomic_uint32_t frameCount(0);

@@ -244,7 +244,6 @@ common::ErrorCode Dwa::dwa_gdc_work(
   if (dwaObj != nullptr) {
     // resize
     if (is_resize == true) {
-      // resize 2560x1440 -->1920x1090
       std::shared_ptr<bm_image> resized_img = nullptr;
       resized_img.reset(new bm_image, [](bm_image* p) {
         bm_image_destroy(*p);
@@ -281,7 +280,7 @@ common::ErrorCode Dwa::dwa_gdc_work(
       float ratio =
           get_aspect_scaled_ratio((unsigned int)dwaObj->mFrame->mSpData->width,
                                   (unsigned int)dwaObj->mFrame->mSpData->height,
-                                  dst_w, dst_h, &isAlignWidth);
+                                  resize_w, resize_h, &isAlignWidth);
 
       bmcv_rect_t crop_rect{0, 0, (unsigned int)dwaObj->mFrame->mSpData->width,
                             (unsigned int)dwaObj->mFrame->mSpData->height};
@@ -293,23 +292,23 @@ common::ErrorCode Dwa::dwa_gdc_work(
       padding_attr.padding_g = 114;
       padding_attr.padding_r = 114;
       padding_attr.if_memset = 1;
-      padding_attr.dst_crop_h = dst_h;
+      padding_attr.dst_crop_h = resize_h;
       padding_attr.dst_crop_w =
           ((unsigned int)dwaObj->mFrame->mSpData->width * ratio);
 
-      int tx1 = (int)((dst_w - padding_attr.dst_crop_w) / 2);
+      int tx1 = (int)((resize_w - padding_attr.dst_crop_w) / 2);
       padding_attr.dst_crop_sty = 0;
       padding_attr.dst_crop_stx = tx1;
 
-      int aligned_net_w = FFALIGN(dst_w, 64);
+      int aligned_net_w = FFALIGN(resize_w, 64);
       int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
-      bm_image_create(dwaObj->mFrame->mHandle, dst_h, dst_w, src_fmt,
+      bm_image_create(dwaObj->mFrame->mHandle, resize_h, resize_w, src_fmt,
                       DATA_TYPE_EXT_1N_BYTE, resized_img.get(), strides);
 
       bm_image_alloc_dev_mem(*resized_img, 2);
 
       bm_status_t ret = bmcv_image_vpp_convert_padding(
-          dwaObj->mFrame->mHandle, 1, *dwaObj->mFrame->mSpData,
+          dwaObj->mFrame->mHandle, 1, image_aligned,
           resized_img.get(), &padding_attr, &crop_rect);
       assert(BM_SUCCESS == ret);
 
@@ -339,8 +338,8 @@ common::ErrorCode Dwa::dwa_gdc_work(
         p = nullptr;
       });
 
-      ret = bm_image_create(dwaObj->mFrame->mHandle, resized_img->height,
-                            resized_img->width, src_fmt, DATA_TYPE_EXT_1N_BYTE,
+      ret = bm_image_create(dwaObj->mFrame->mHandle, dst_h,
+                            dst_w, src_fmt, DATA_TYPE_EXT_1N_BYTE,
                             dwa_image.get());
       bm_image_alloc_dev_mem(*dwa_image, 2);
 
