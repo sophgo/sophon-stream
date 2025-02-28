@@ -2,8 +2,8 @@
   "channels": [
     {
       "channel_id": 1,
-      "url": "../trinocular_panorama_stitch/datasets/0106/left/",
-      "source_type": "IMG_DIR",
+      "url": "/dev/video0",
+      "source_type": "CAMERA",
       "sample_interval": 1,
       "loop_num": -1,
       "fps": -1,
@@ -11,8 +11,8 @@
     },
     {
       "channel_id": 2,
-      "url": "../trinocular_panorama_stitch/datasets/0106/right/",
-      "source_type": "IMG_DIR",
+      "url": "/dev/video1",
+      "source_type": "CAMERA",
       "sample_interval": 1,
       "loop_num": -1,
       "fps": -1,
@@ -20,8 +20,8 @@
     },
     {
       "channel_id": 3,
-      "url": "../trinocular_panorama_stitch/datasets/0106/down/",
-      "source_type": "IMG_DIR",
+      "url": "/dev/video2",
+      "source_type": "CAMERA",
       "sample_interval": 1,
       "loop_num": -1,
       "fps": -1,
