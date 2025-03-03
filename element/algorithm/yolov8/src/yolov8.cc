@@ -238,11 +238,14 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
     // 4.converto
     float input_scale = inputTensor->get_scale();
     mContext->converto_attr.alpha_0 = input_scale / (mContext->stdd[0]);
-    mContext->converto_attr.beta_0 = -(mContext->mean[0]) / (mContext->stdd[0]);
+    mContext->converto_attr.beta_0 =
+        -(mContext->mean[0]) / (mContext->stdd[0]) * input_scale;
     mContext->converto_attr.alpha_1 = input_scale / (mContext->stdd[1]);
-    mContext->converto_attr.beta_1 = -(mContext->mean[1]) / (mContext->stdd[1]);
+    mContext->converto_attr.beta_1 =
+        -(mContext->mean[1]) / (mContext->stdd[1]) * input_scale;
     mContext->converto_attr.alpha_2 = input_scale / (mContext->stdd[2]);
-    mContext->converto_attr.beta_2 = -(mContext->mean[2]) / (mContext->stdd[2]);
+    mContext->converto_attr.beta_2 =
+        -(mContext->mean[2]) / (mContext->stdd[2]) * input_scale;
 
     // 7. roi
     auto roi_it = configure.find(CONFIG_INTERNAL_ROI_FILED);
