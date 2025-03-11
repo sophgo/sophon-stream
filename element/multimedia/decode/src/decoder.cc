@@ -67,13 +67,14 @@ void bm_image2Frame(std::shared_ptr<common::Frame>& f, bm_image& img) {
 }
 
 Decoder::Decoder() {
-  // 获取线程数
-  numThreadsTotal.fetch_add(1);
+
 }
 
 Decoder::~Decoder() {
-  numThreadsTotal.fetch_sub(1);
-  decoder_cv.notify_all();
+  if (mSourceType == ChannelOperateRequest::SourceType::CAMERA){
+    numThreadsTotal.fetch_sub(1);
+    decoder_cv.notify_all();
+  }
   // bm_dev_free(m_handle);
 }
 
@@ -99,6 +100,11 @@ common::ErrorCode Decoder::init(int graphId,
       mRoi.start_y = request.roi.start_y;
       mRoi.crop_w = request.roi.crop_w;
       mRoi.crop_h = request.roi.crop_h;
+    }
+
+    // 获取线程数
+    if (mSourceType == ChannelOperateRequest::SourceType::CAMERA){
+      numThreadsTotal.fetch_add(1);
     }
 
     if (mSourceType == ChannelOperateRequest::SourceType::VIDEO) {
@@ -262,8 +268,7 @@ common::ErrorCode Decoder::process(
     int eof = 0;
     std::shared_ptr<bm_image> spBmImage = nullptr;
     int64_t pts = 0;
-
-   {  // 在所有线程等待执行decoder.grab前添加一个等待点
+    {  // 在所有线程等待执行decoder.grab前添加一个等待点
       std::unique_lock<std::mutex> lock(decoder_mutex);
       numThreadsReady ++;
       if(numThreadsReady >= numThreadsTotal){

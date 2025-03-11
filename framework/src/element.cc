@@ -227,7 +227,7 @@ common::ErrorCode Element::pushOutputData(int outputPort, int dataPipeId,
     }
   }
   while (mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) !=
-         common::ErrorCode::SUCCESS) {
+         common::ErrorCode::SUCCESS && mThreadStatus != ThreadStatus::STOP) {
     listenThreadPtr->report_status(common::ErrorCode::DATA_PIPE_FULL);
     IVS_DEBUG(
         "DataPipe is full, now sleeping. ElementID is {0}, outputPort is {1}, "
