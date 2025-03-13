@@ -375,19 +375,25 @@ common::ErrorCode Dwa::dwa_gdc_work(
       bm_status_t ret = bm_image_create(dwaObj->mFrame->mHandle,
                                         dst_h, dst_w, src_fmt,
                                         DATA_TYPE_EXT_1N_BYTE, dwa_image.get());
-      bm_image_alloc_dev_mem(*dwa_image, 1);
-
+      ret = bm_image_alloc_dev_mem(*dwa_image, 1);
+      STREAM_CHECK(BM_SUCCESS == ret, "Allocating dev mem for dwa output bm_image Failed!");
       bm_image input;
-      ret = bm_image_create(dwaObj->mFrame->mHandle,
-                            dwaObj->mFrame->mSpData->height,
-                            dwaObj->mFrame->mSpData->width, 
-                            src_fmt,
-                            dwaObj->mFrame->mSpData->data_type, &input, NULL);
-      bm_image_alloc_dev_mem(input, 1);
-      ret = bmcv_image_storage_convert(dwaObj->mFrame->mHandle, 1,
-                                       dwaObj->mFrame->mSpData.get(), &input);
-
-      bmcv_dwa_gdc(dwaObj->mFrame->mHandle, input, *dwa_image, ldc_attr);
+      if(dwaObj->mFrame->mSpData->image_format != src_fmt){
+        ret = bm_image_create(dwaObj->mFrame->mHandle,
+                              dwaObj->mFrame->mSpData->height,
+                              dwaObj->mFrame->mSpData->width, 
+                              src_fmt,
+                              dwaObj->mFrame->mSpData->data_type, &input, NULL);
+        ret = bm_image_alloc_dev_mem(input, 1);
+        STREAM_CHECK(BM_SUCCESS == ret, "Allocating dev mem for dwa input bm_image failed!");
+        ret = bmcv_image_storage_convert(dwaObj->mFrame->mHandle, 1,
+                                        dwaObj->mFrame->mSpData.get(), &input);
+        ret = bmcv_dwa_gdc(dwaObj->mFrame->mHandle, input, *dwa_image, ldc_attr);
+        STREAM_CHECK(BM_SUCCESS == ret, "bmvc_dwa_gdc failed!");
+      }else{
+        ret = bmcv_dwa_gdc(dwaObj->mFrame->mHandle, *dwaObj->mFrame->mSpData, *dwa_image, ldc_attr);
+        STREAM_CHECK(BM_SUCCESS == ret, "bmvc_dwa_gdc failed!");
+      }
 
       dwaObj->mFrame->mSpDataDwa = dwa_image;  // dwa
 

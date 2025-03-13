@@ -100,7 +100,7 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 
 1. 参考[推流服务器使用方法](../../element/multimedia/encode/README.md#8-推流服务器)运行rtsp推流服务器。
    
-2. 运行可执行文件， 如果使用sensor输入则需要运行`sudo -s`进入root环境，安装相关驱动，将--demo_config_path换成`config/camera_sensor.json`。
+2. 运行可执行文件， 如果使用sensor输入则需要运行`sudo -s`进入root环境，安装相关驱动，将--demo_config_path换成`config/camera_sensor.json`，并注意修改dwa和resize等配置文件的参数。
 ```bash
 ./main --demo_config_path=../samples/trinocular_panorama_stitch/config/camera.json
 ```

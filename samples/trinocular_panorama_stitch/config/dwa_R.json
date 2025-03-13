@@ -1,7 +1,7 @@
 {
   "configure": {
     "is_gray": false,
-    "is_resize": true,
+    "is_resize": false,
     "resize_h": 1440,
     "resize_w": 2560,
     "dst_h": 2880,

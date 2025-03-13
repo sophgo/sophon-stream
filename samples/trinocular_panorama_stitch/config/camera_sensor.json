@@ -29,5 +29,5 @@
     }
   ],
   "download_image": false,
-  "engine_config_path": "../trinocular_panorama_stitch/config/engine.json"
+  "engine_config_path": "../trinocular_panorama_stitch/config/engine_resize.json"
 }
