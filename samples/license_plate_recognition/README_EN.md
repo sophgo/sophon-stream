@@ -4,7 +4,7 @@ English | [简体中文](README.md)
 
 ## Catalogs
 
-- [license_plate_recognition Demo](#license_plate_recognition-demo)
+- [license\_plate\_recognition Demo](#license_plate_recognition-demo)
   - [Catalogs](#catalogs)
   - [1. Introduction](#1-introduction)
   - [2. Features](#2-features)
@@ -147,7 +147,7 @@ Various parameters in the license_plate_recognition demo are located in the [con
 └── yolov5_pre.json
 ```
 
-Among them, [license_plate_recognition.json](./config/license_plate_recognition.json) is the overall configuration file for the example, managing information such as input streams. Multiple channels can be supported on a single image, with the channels parameter configuring the number of input channels, sample_interval setting the frame skip interval, and loop_num setting the number of loop plays. The channel section includes information such as stream URL.
+Among them, [license_plate_recognition_demo.json](./config/license_plate_recognition_demo.json) is the overall configuration file for the example, managing information such as input streams. Multiple channels can be supported on a single image, with the channels parameter configuring the number of input channels, sample_interval setting the frame skip interval, and loop_num setting the number of loop plays. The channel section includes information such as stream URL.
 
 In cases where the channel_id property is not specified in the configuration file, the demo will default to assigning channel_id for each data channel, starting from 0.
 
