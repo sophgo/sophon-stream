@@ -448,9 +448,11 @@ int VideoDecFFM::openDec(bm_handle_t* dec_handle, const char* input) {
     // av_dict_set_int(&dict, "use_isp", 0, 0);  // int isusemw = 0
   }
 
-  av_dict_set(
-      &dict, FFMPEG_TIMEOUT_PARAM, "5*1000*1000",
-      0);  // Returns (Connection timed out) every  5 seconds ,when disconnect
+  if (!this->is_rtmp) {
+    av_dict_set(
+        &dict, FFMPEG_TIMEOUT_PARAM, "5*1000*1000",
+        0);  // Returns (Connection timed out) every  5 seconds ,when disconnect
+  }
 
   ret = avformat_open_input(&ifmt_ctx, input, NULL, &dict);
   if (ret < 0) {
@@ -602,6 +604,12 @@ void VideoDecFFM::reConnectVideoStream() {
       av_dict_set(&dict, "rtsp_flags", "prefer_tcp", 0);
     }
 
+    if (!this->is_rtmp) {
+      av_dict_set(
+          &dict, FFMPEG_TIMEOUT_PARAM, "5*1000*1000",
+          0);  // Returns (Connection timed out) every  5 seconds ,when disconnect
+    }
+
     if (this->is_camera) {
       av_dict_set_int(&dict, "v4l2_buffer_num", 8, 0);  // v4l2bufnum = 8
       // av_dict_set_int(&dict, "use_mw", 0, 0);           // int isusemw = 0
@@ -717,8 +725,10 @@ AVFrame* VideoDecFFM::grabFrame(int& eof) {
     if (refcount) av_frame_unref(frame);
     gettimeofday(&tv1, NULL);
     ret = avcodec_decode_video2(video_dec_ctx, frame, &got_frame, pkt);
-    STREAM_CHECK(ret != AVERROR(ENOMEM), "Error decoding video frame, memory allocation failed\n");
-    STREAM_CHECK(ret != AVERROR_EXTERNAL, "Error decoding video frame, decoder hardware exception\n");
+    STREAM_CHECK(ret != AVERROR(ENOMEM),
+                 "Error decoding video frame, memory allocation failed\n");
+    STREAM_CHECK(ret != AVERROR_EXTERNAL,
+                 "Error decoding video frame, decoder hardware exception\n");
     if (ret < 0) {
       av_log(video_dec_ctx, AV_LOG_ERROR, "Error decoding video frame (%d)\n",
              ret);
