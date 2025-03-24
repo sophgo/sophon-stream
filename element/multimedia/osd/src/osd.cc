@@ -291,12 +291,20 @@ common::ErrorCode Osd::doWork(int dataPipeId) {
 }
 void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
   std::shared_ptr<bm_image> imageStorage;
+  bm_image image;
+  // 判断是否已有 OSD 图像
+  if (objectMetadata->mFrame->mSpDataOsd) {
+    // 如果已有 OSD 图像，则绘制到 OSD 图像
+    image = *(objectMetadata->mFrame->mSpDataOsd);
+  } else {
+    // 如果没有 OSD 图像，则绘制到原图
+    image = *(objectMetadata->mFrame->mSpData);
+  }
   imageStorage.reset(new bm_image, [&](bm_image* img) {
     bm_image_destroy(*img);
     delete img;
     img = nullptr;
   });
-  bm_image image = *(objectMetadata->mFrame->mSpData);
   if (mDrawUtils == DrawUtils::OPENCV) {
     cv::Mat frame_to_draw;
     cv::bmcv::toMAT(&image, frame_to_draw);
