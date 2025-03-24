@@ -84,7 +84,7 @@ sudo apt install libssl-dev
 ## SoC Platform
 Usually, when cross-compiling programs on an x86 host, you need to set up a cross-compilation environment using the SOPHON SDK on the x86 host. You will package the required header files and library files into the `sophon_sdk_soc` directory. You can either download the SOPHON SDK and package it yourself or download our pre-packaged files (choose one based on your SOC environment).
 
-The following four files correspond to the v23.03.01, v23.05.01, v23.07.01, v23.10.01 and v25.03.01 versions of the official SDK, for BM1684/BM1684X.
+The following files correspond to the v23.03.01, v23.05.01, v23.07.01, v23.10.01 and v25.03.01 versions of the official SDK, for BM1684/BM1684X.
 
 ```bash
 pip3 install dfss

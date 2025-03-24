@@ -77,7 +77,7 @@ sudo apt install libssl-dev
 ## SoC平台
 通常在x86主机上交叉编译程序，您需要在x86主机上使用SOPHON SDK搭建交叉编译环境，将程序所依赖的头文件和库文件打包至sophon_sdk_soc目录中。您可以下载SOPHON SDK自行打包，也可以下载我们打包好的文件(根据您的SOC环境选择一个即可)。
 
-下面的四个文件，分别对应官网BM1684/BM1684X SDK的v23.03.01、v23.05.01、v23.07.01、v23.10.01、v25.03.01版本。
+下列文件，分别对应官网BM1684/BM1684X SDK的v23.03.01、v23.05.01、v23.07.01、v23.10.01、v25.03.01版本。
 ```bash
 pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc0301.tar.gz
@@ -87,7 +87,7 @@ python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/soc1001.tar.gz
 python3 -m dfss --url=open@sophgo.com:/soc-sdk-allin/v25.03.01/soc-sdk-allin.tgz
 ```
 
-下面三个文件，分别对应BM1688 SDK的1.7、1.8、1.9版本。
+下列文件，分别对应BM1688 SDK的1.7、1.8、1.9版本。
 ```bash
 pip3 install dfss
 python3 -m dfss --url=open@sophgo.com:/sophon-stream/soc-sdk/1688_1.7.tar.gz
