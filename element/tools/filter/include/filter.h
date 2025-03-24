@@ -26,6 +26,7 @@ struct Area {
 class Filter_Imp {
  public:
   Filter_Imp(){};
+  bool isInDirection(std::shared_ptr<common::ObjectMetadata> objectMetadata);
   bool isInPolygon(std::shared_ptr<common::ObjectMetadata> objectMetadata);
   bool isinclasses(std::shared_ptr<common::ObjectMetadata> objectMetadata);
   bool isOutsideWorkingHours(
@@ -42,6 +43,8 @@ class Filter_Imp {
   void push_time(std::pair<int64_t, int64_t> time) { times.push_back(time); };
   void push_area(Area area) { areas.push_back(area); };
   void set_type(int type_) { type = type_; };
+  void set_direction(int x, int y) { direction.mX = x; direction.mY = y; }
+  void set_trajectory_interval(int t) { trajectory_interval = t; };
 
  private:
   std::vector<int> classes;
@@ -50,7 +53,11 @@ class Filter_Imp {
   std::vector<std::pair<int64_t, int64_t>> times;
   std::vector<Area> areas;
   int type;  // 筛选类型
-
+  common::Point<int> direction; //预设方向，如不设置则不限方向筛选，如设置则只筛选轨迹方向与预设方向夹角<=90°的框
+  int trajectory_interval = 5;
+  int frame_count = 0;
+  std::unordered_map<std::string, common::Point<int>> trajectories_cnt; // 每个trackId的轨迹数据(当前帧)。
+  std::unordered_map<std::string, common::Point<int>> trajectories_pre; // 每个trackId的轨迹数据(trajectory_interval帧前)。
   bool onSegment(const common::Point<int>& p, const common::Point<int>& q,
                  const common::Point<int>& r);
 
@@ -91,6 +98,8 @@ class Filter : public ::sophon_stream::framework::Element {
   static constexpr const char* CONFIG_INTERNAL_TIME_START_FILED = "time_start";
   static constexpr const char* CONFIG_INTERNAL_TIME_END_FILED = "time_end";
   static constexpr const char* CONFIG_INTERNAL_TYPE_FILED = "type";
+  static constexpr const char* CONFIG_INTERNAL_DIRECTION = "direction";
+  static constexpr const char* CONFIG_INTERNAL_TRAJECTORY_INTERVAL = "trajectory_interval";
 
  private:
   int64_t timeToMilliseconds(

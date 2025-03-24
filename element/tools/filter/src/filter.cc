@@ -120,6 +120,27 @@ common::ErrorCode Filter::initInternal(const std::string& json) {
         // STREAM_CHECK((typeIt->get<int>() == 0 || typeIt->get<int>() == 1 ),
         //              "type only support 0, please check your Filter element "
         //              "configuration file");
+
+        // Parse direction
+        auto directionIt = filter.find(CONFIG_INTERNAL_DIRECTION);
+        if(directionIt != filter.end() && directionIt->is_array()) {
+          std::vector<int> direction_array;
+          for(auto& dir_obj : *directionIt) {
+            STREAM_CHECK(dir_obj.is_number_integer(),
+                        "dir_obj must be int, please check your Filter element "
+                        "configuration file");
+            direction_array.push_back(dir_obj.get<int>());
+          }
+          STREAM_CHECK(direction_array.size() == 2, 
+                      "direction_array must have 2 values.");
+          Filter_Imp_.set_direction(direction_array[0], direction_array[1]);
+        }
+        auto trajectionIntervalIt = filter.find(CONFIG_INTERNAL_TRAJECTORY_INTERVAL);
+        if(trajectionIntervalIt != filter.end() 
+        && trajectionIntervalIt->is_number_integer()) {
+          Filter_Imp_.set_trajectory_interval(trajectionIntervalIt->get<int>());
+        }
+
         Filter_Imp_s.push_back(Filter_Imp_);
       }
       Filter_imps.push_back(Filter_Imp_s);
@@ -201,6 +222,10 @@ common::ErrorCode Filter::doWork(int dataPipeId) {
 
     flag &= Filter_imps[channel_id_internal][i].isInPolygon(objectMetadata);
 
+    if (!flag) continue;
+
+    flag &= Filter_imps[channel_id_internal][i].isInDirection(objectMetadata);
+    
     if (!flag) continue;
 
     {
@@ -395,6 +420,50 @@ bool Filter_Imp::isInPolygon(
   }
 
   return flag_tot;
+}
+
+bool Filter_Imp::isInDirection(
+    std::shared_ptr<common::ObjectMetadata> objectMetadata) {
+  if((direction.mX == 0 && direction.mY == 0) || type != 1){
+    return true; //没有方向，跳过筛选。
+  }
+  bool flag = false;
+  if(frame_count % trajectory_interval == 0){
+    //记录轨迹
+    for (int i = 0; i < objectMetadata->mDetectedObjectMetadatas.size(); i++) {
+      std::string name = std::to_string(objectMetadata->mTrackedObjectMetadatas[i]->mTrackId);
+      int top = objectMetadata->mDetectedObjectMetadatas[i]->mBox.top();
+      int left = objectMetadata->mDetectedObjectMetadatas[i]->mBox.left();
+      int bottom = objectMetadata->mDetectedObjectMetadatas[i]->mBox.bottom();
+      int right = objectMetadata->mDetectedObjectMetadatas[i]->mBox.right();
+      common::Point<int> trajectory((left + right) / 2, (top + bottom) / 2);
+      if(trajectories_pre.find(name) == trajectories_pre.end()) {
+        trajectories_pre[name] = trajectory;
+      }else {
+        trajectories_cnt[name] = trajectory;
+      }
+    }
+    //计算目标方向与预设方向的点积：
+    //因为a·b=|a|·|b|·cosθ, 当90°>=θ>=-90°时, cosθ>=0，
+    //即a·b>=0，此时可认为在目标方向与预设方向的夹角<=90°。
+    for (auto& pair : trajectories_pre){
+      auto name = pair.first;
+      if(trajectories_cnt.find(name) != trajectories_cnt.end()){
+        common::Point<int> cnt = trajectories_cnt[name];
+        common::Point<int> pre = trajectories_pre[name];
+        common::Point<int> dir_obj(cnt.mX - pre.mX, cnt.mY - pre.mY);
+        int dot_product = dir_obj.mX * direction.mX 
+                        + dir_obj.mY * direction.mY;
+        if(dot_product >= 0){
+          flag = true;
+        }
+        trajectories_pre[name] = trajectories_cnt[name];
+        trajectories_cnt.erase(name);
+      }
+    }
+  }
+  frame_count++;
+  return flag;
 }
 bool Filter_Imp::istrack(
     std::shared_ptr<common::ObjectMetadata> objectMetadata,

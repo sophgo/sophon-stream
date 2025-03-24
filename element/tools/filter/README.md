@@ -46,7 +46,9 @@ sophon-stream http_push插件具有一些可配置的参数，可以根据需求
                                 "time_end": "23 59 59"
                             }
                         ],
-                        "type": 0
+                        "type": 0,
+                        "direction": [1,0],
+                        "trajectory_interval": 5
                     }
                 ]
             }
@@ -74,5 +76,5 @@ sophon-stream http_push插件具有一些可配置的参数，可以根据需求
 | name          | string | "filter"                          | element名称                     |
 | side          | string | "sophgo"                             | 设备类型                        |
 | thread_number | int    | 1                                    | 启动线程数                      |
-
-
+| direction     | list[int]  | 无                              | 预设方向[x,y]，如不设置则不限方向筛选，如设置则只筛选轨迹方向与预设方向夹角<=90°的框  |
+| trajectory_interval | int  | 5                              | 间隔几帧计算一次目标运动方向                     |

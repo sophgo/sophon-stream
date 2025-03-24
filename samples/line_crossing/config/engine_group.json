@@ -1,0 +1,88 @@
+[
+  {
+    "graph_id": 0,
+    "device_id": 0,
+    "graph_name": "yolox_osd_encode",
+    "elements": [
+      {
+        "element_id": 5000,
+        "element_config": "../line_crossing/config/decode.json",
+        "ports": {
+          "input": [
+            {
+              "port_id": 0,
+              "is_sink": false,
+              "is_src": true
+            }
+          ]
+        }
+      },
+      {
+        "element_id": 5001,
+        "element_config": "../line_crossing/config/yolox_group.json",
+        "inner_elements_id": [
+          10001,
+          10002,
+          10003
+        ]
+      },
+      {
+        "element_id": 5004,
+        "element_config": "../line_crossing/config/bytetrack.json"
+      },
+      {
+        "element_id": 5005,
+        "element_config": "../line_crossing/config/filter.json"
+      },
+      {
+        "element_id": 5006,
+        "element_config": "../line_crossing/config/osd.json"
+      },
+      {
+        "element_id": 5007,
+        "element_config": "../line_crossing/config/encode.json",
+        "ports": {
+          "output": [
+            {
+              "port_id": 0,
+              "is_sink": true,
+              "is_src": false
+            }
+          ]
+        }
+      }
+    ],
+    "connections": [
+      {
+        "src_element_id": 5000,
+        "src_port": 0,
+        "dst_element_id": 5001,
+        "dst_port": 0
+      },
+      {
+        "src_element_id": 5001,
+        "src_port": 0,
+        "dst_element_id": 5004,
+        "dst_port": 0
+      },
+      {
+        "src_element_id": 5004,
+        "src_port": 0,
+        "dst_element_id": 5005,
+        "dst_port": 0
+      },
+      {
+        "src_element_id": 5005,
+        "src_port": 0,
+        "dst_element_id": 5006,
+        "dst_port": 0
+      },
+      {
+        "src_element_id": 5006,
+        "src_port": 0,
+        "dst_element_id": 5007,
+        "dst_port": 0
+      }
+    ]
+  }
+]
