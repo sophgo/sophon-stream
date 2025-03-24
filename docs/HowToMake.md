@@ -54,6 +54,7 @@ docker run --privileged --name stream_dev -v $PWD:/workspace  -it stream_dev:lat
 
 ## x86/arm PCIe平台
 ```bash
+# 以下命令需要在sophon-stream项目根目录执行
 mkdir build
 cd build
 cmake ..
@@ -120,6 +121,7 @@ python3 -m dfss --url=open@sophgo.com:sophon-stream/soc-sdk/openssl_3_aarch64.ta
 交叉编译时，`SOPHON_SDK_SOC`、`QTPATH`，`OPENSSL_PATH`需要填写绝对路径
 
 ```bash
+# 以下命令需要在sophon-stream项目根目录执行
 mkdir build
 cd build
 cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt -DOPENSSL_PATH=/path/to/openssl

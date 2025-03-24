@@ -60,6 +60,7 @@ The `workspace` directory in the container will be mounted to the directory of t
 
 ## x86/arm PCIe Platform
 ```bash
+# The following commands need to be executed in the sophon-stream project root directory
 mkdir build
 cd build
 cmake ..
@@ -128,6 +129,7 @@ python3 -m dfss --url=open@sophgo.com:sophon-stream/soc-sdk/openssl_3_aarch64.ta
 When cross-compiling, make sure to provide the absolute path to `SOPHON_SDK_SOC`, `QTPATH` and `OPENSSL_PATH`:
 
 ```bash
+# The following commands need to be executed in the sophon-stream project root directory
 mkdir build
 cd build
 cmake ../ -DTARGET_ARCH=soc -DSOPHON_SDK_SOC=/path/to/sophon_sdk_soc -DQTPATH=/path/to/qt -DOPENSSL_PATH=/path/to/openssl
