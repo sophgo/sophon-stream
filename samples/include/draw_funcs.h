@@ -79,8 +79,8 @@ static void _draw_rectangle_and_text_bmcv(
   rect.start_y = top;
   rect.crop_w = width;
   rect.crop_h = height;
-  std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
-            << rect.crop_h << std::endl;
+  // std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w << ","
+  //           << rect.crop_h << std::endl;
   int ret = bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0],
                                       color[1], color[2]);
   if (put_text_flag) {
@@ -111,8 +111,8 @@ static void _draw_face_rectangle_bmcv(
     rect.crop_h = results->mFaceObjectMetadatas[j]->bottom -
                   results->mFaceObjectMetadatas[j]->top + 1;
 
-    std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w
-              << "," << rect.crop_h << std::endl;
+    // std::cout << rect.start_x << "," << rect.start_y << "," << rect.crop_w
+    //           << "," << rect.crop_h << std::endl;
 
     bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, 255, 2, 2);
   }
@@ -672,7 +672,7 @@ void draw_retinaface_distributor_resnet_faiss_converger_results(
       _draw_text_bmcv(objectMetadata->mFrame->mHandle, rect.start_x,
                       rect.start_y, imageStorage, label);
 
-      std::cout << "label:" << label << std::endl;
+      // std::cout << "label:" << label << std::endl;
     }
 
     std::string filename =
