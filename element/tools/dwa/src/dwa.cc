@@ -96,28 +96,18 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
     if (use_grid) {
       grid_name =
           configure.find(CONFIG_INTERNAL_GRID_NAME_FILED)->get<std::string>();
-      int grid_size =
-          configure.find(CONFIG_INTERNAL_GRIDE_SIZE_FILED)->get<int>();
-      char* buffer = (char*)malloc(grid_size);
-      memset(buffer, 0, grid_size);
 
       FILE* fp = fopen(grid_name.c_str(), "rb");
-
       fseek(fp, 0, SEEK_END);
       int fileSize = ftell(fp);
-
-      if (grid_size != (unsigned int)fileSize) {
-        IVS_DEBUG("load grid_info file:{0} size is not match.",
-                  grid_name.c_str());
-        fclose(fp);
-        return common::ErrorCode::UNKNOWN;
-      }
+      char* buffer = (char*)malloc(fileSize);
+      memset(buffer, 0, fileSize);
 
       rewind(fp);
-      fread(buffer, grid_size, 1, fp);
+      fread(buffer, fileSize, 1, fp);
       fclose(fp);
       ldc_attr.grid_info.u.system.system_addr = (void*)buffer;
-      ldc_attr.grid_info.size = grid_size;
+      ldc_attr.grid_info.size = fileSize;
     }
 
   } else if (dwa_mode ==
@@ -136,28 +126,16 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
     if (use_grid) {
       grid_name =
           configure.find(CONFIG_INTERNAL_GRID_NAME_FILED)->get<std::string>();
-      int grid_size =
-          configure.find(CONFIG_INTERNAL_GRIDE_SIZE_FILED)->get<int>();
-      char* buffer = (char*)malloc(grid_size);
-      memset(buffer, 0, grid_size);
-
       FILE* fp = fopen(grid_name.c_str(), "rb");
-
       fseek(fp, 0, SEEK_END);
       int fileSize = ftell(fp);
-
-      if (grid_size != (unsigned int)fileSize) {
-        IVS_DEBUG("load grid_info file:{0} size is not match.",
-                  grid_name.c_str());
-        fclose(fp);
-        return common::ErrorCode::UNKNOWN;
-      }
-
+      char* buffer = (char*)malloc(fileSize);
+      memset(buffer, 0, fileSize);
       rewind(fp);
-      fread(buffer, grid_size, 1, fp);
+      fread(buffer, fileSize, 1, fp);
       fclose(fp);
       fisheye_attr.grid_info.u.system.system_addr = (void*)buffer;
-      fisheye_attr.grid_info.size = grid_size;
+      fisheye_attr.grid_info.size = fileSize;
       fisheye_attr.bEnable = true;
     }
   }

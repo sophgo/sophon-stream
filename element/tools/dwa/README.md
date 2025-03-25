@@ -23,7 +23,6 @@ sophon-stream dwa插件具有一些可配置的参数，可以根据需求进行
       "dwa_mode":"DWA_GDC_MODE",
       "use_grid": true,
       "grid_name": "../dwa_dpu_encode/data/gridinfo/rrr.dat",
-      "grid_size":183120
     },
     "shared_object": "../../build/lib/libdwa.so",
     "name": "dwa",
@@ -43,7 +42,6 @@ sophon-stream dwa插件具有一些可配置的参数，可以根据需求进行
 | dwa_mode      | string | 无                              | 选择使用鱼眼展开(DWA_FISHEYE_MODE)还是镜头畸变矫正(DWA_GDC_MODE) |
 | use_grid      | bool   | 无                                      | 选择是否使用gridinfo进行畸变矫正                                 |
 | grid_name     | string | 无 | 选择使用gridinfo的路径                                           |
-| grid_size     | int    | 无                                   | gridinfo的文件大小                                               |
 | shared_object | string | "../../../build/lib/libdwa.so"            | libdwa动态库路径                                                 |
 | name          | string | "dwa"                             | element名称                                                      |
 | side          | string | "sophgo"                                  | 设备类型                                                         |
