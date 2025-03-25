@@ -250,8 +250,10 @@ void Yolov5PostProcess::postProcessTPUKERNEL(
           std::make_shared<common::DetectedObjectMetadata>();
       detData->mBox.mX = temp_bbox.x;
       detData->mBox.mY = temp_bbox.y;
-      detData->mBox.mWidth = temp_bbox.width;
-      detData->mBox.mHeight = temp_bbox.height;
+      detData->mBox.mWidth =
+          std::min(temp_bbox.width, image.width - temp_bbox.x);
+      detData->mBox.mHeight =
+          std::min(temp_bbox.height, image.height - temp_bbox.y);
       detData->mScores.push_back(temp_bbox.score);
       detData->mClassify = temp_bbox.class_id;
       if (context->roi_predefined) {
@@ -484,11 +486,12 @@ void Yolov5PostProcess::postProcessCPU(
         int class_id = argmax(&ptr[5], context->class_num);
         float confidence = ptr[class_id + 5];
         if (score > (context->class_thresh_valid
-                 ? context->thresh_conf[context->class_names[class_id]]
-                 : context->thresh_conf_min) && confidence * score >
-            (context->class_thresh_valid
-                 ? context->thresh_conf[context->class_names[class_id]]
-                 : context->thresh_conf_min)) {
+                         ? context->thresh_conf[context->class_names[class_id]]
+                         : context->thresh_conf_min) &&
+            confidence * score >
+                (context->class_thresh_valid
+                     ? context->thresh_conf[context->class_names[class_id]]
+                     : context->thresh_conf_min)) {
           float centerX = ptr[0];
           float centerY = ptr[1];
           float width = ptr[2];
