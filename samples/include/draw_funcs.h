@@ -807,6 +807,7 @@ void draw_yolov5_results(
 void draw_yolov8_seg(
     std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata,
     std::string& out_dir, std::vector<std::string>& class_names) {
+  int colors_num = colors.size();
   cv::Mat res;
   cv::bmcv::toMAT(objectMetadata->mFrame->mSpData.get(), res);
   cv::Mat mask = res.clone();
@@ -815,9 +816,9 @@ void draw_yolov8_seg(
     int left, top;
     left = obj->mBox.mX;
     top = obj->mBox.mY;
-    cv::Scalar color(colors[obj->mClassify % 25][0],
-                     colors[obj->mClassify % 25][1],
-                     colors[obj->mClassify % 25][2]);
+    cv::Scalar color(colors[obj->mClassify % colors_num][0],
+                     colors[obj->mClassify % colors_num][1],
+                     colors[obj->mClassify % colors_num][2]);
     cv::Rect bound = {obj->mBox.mX, obj->mBox.mY, obj->mBox.mWidth,
                       obj->mBox.mHeight};
     cv::rectangle(res, bound, color, 2);
