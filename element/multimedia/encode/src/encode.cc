@@ -308,12 +308,12 @@ void Encode::processVideoStream(
       std::string output_path;
       switch (mEncodeType) {
         case EncodeType::RTSP:
-          output_path = "rtsp://" + ip + ":" + mRtspPort + "/" + prefix +
+          output_path = "rtsp://" + ip + ":" + mRtspPort + "/live/" + prefix +
                         std::to_string(objectMetadata->mGraphId) + "_" +
                         std::to_string(channel_id);
           break;
         case EncodeType::RTMP:
-          output_path = "rtmp://" + ip + ":" + mRtmpPort + "/" + prefix +
+          output_path = "rtmp://" + ip + ":" + mRtmpPort + "/live/" + prefix +
                         std::to_string(objectMetadata->mGraphId) + "_" +
                         std::to_string(channel_id);
           break;

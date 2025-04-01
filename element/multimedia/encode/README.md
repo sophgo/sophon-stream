@@ -84,9 +84,9 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 "rtsp_port": "8554"
 ```
 
-输出视频流URL的格式为：`rtsp://localhost:{rtsp_port}/{graph_id}_{channel_id}`
+输出视频流URL的格式为：`rtsp://localhost:{rtsp_port}/live/{graph_id}_{channel_id}`
 
-假设rtsp_port为8554，channel_id为0, graph_id为0, 此时URL为`rtsp://localhost:8554/0_0`
+假设rtsp_port为8554，channel_id为0, graph_id为0, 此时URL为`rtsp://localhost:8554/live/0_0`
 
 ## 4. rtmp使用说明
 需要本地启动推流服务器，具体用法见[8. 推流服务器](#8-推流服务器)
@@ -97,9 +97,9 @@ sophon-stream编码器插件具有一些可配置的参数，可以根据需求�
 "rtmp_port": "1935"
 ```
 
-输出视频流URL格式为：`rtmp://localhost:{rtmp_port}/{channel_id}`
+输出视频流URL格式为：`rtmp://localhost:{rtmp_port}/live/{channel_id}`
 
-假设rtmp_port 为1935，channel_id为0, 此时URL为`rtmp://localhost:1935/0`
+假设rtmp_port 为1935，channel_id为0, 此时URL为`rtmp://localhost:1935/live/0`
 
 ## 5. 输出本地视频文件
 在`encode.json`中做出以下设置
