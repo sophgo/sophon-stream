@@ -35,15 +35,15 @@ void BMLabel::show_img(std::shared_ptr<bm_image> bmimg_ptr) {
   cv::Mat o_mat;
   cv::cvtColor(mat_resized, o_mat, cv::COLOR_BGR2RGB);
 
-  QImage _image((uchar*)o_mat.data, label_width, label_height, o_mat.step,
-                QImage::Format_RGB888);
+  QImage _image = QImage((uchar*)o_mat.data, label_width, label_height, o_mat.step,
+    QImage::Format_RGB888).copy();
   image_pixmap = QPixmap::fromImage(_image);
   emit BMLabel::show_signals();
 }
 
 void BMLabel::show_pixmap() {
-  this->setPixmap(image_pixmap);
-  this->update();
+    this->setPixmap(image_pixmap);
+    this->update();
 }
 
 }  // namespace qt_display
