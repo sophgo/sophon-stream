@@ -11,7 +11,7 @@
     "grid_name": "../gdwa_blend_encode/data/gridinfo/LL4.dat",
     "grid_size": 348016,
     "resize_h": 1440,
-    "resize_w": 1440
+    "resize_w": 2560
   },
   "shared_object": "../../build/lib/libdwa.so",
   "name": "dwa",

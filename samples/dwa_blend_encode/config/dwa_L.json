@@ -10,7 +10,7 @@
     "grid_name": "../dwa_blend_encode/data/gridinfo/Lgrid_info_bev_128_64_4496_128_64_dst_4096x2048_src_2240x2240.dat",
     "grid_size": 494240,
     "resize_h": 2240,
-    "resize_w": 2240
+    "resize_w": 4096
   },
   "shared_object": "../../build/lib/libdwa.so",
   "name": "dwa",
