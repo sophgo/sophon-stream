@@ -43,6 +43,7 @@ checkAndAddElement(element/algorithm/retinaface)
 checkAndAddElement(element/algorithm/lprnet)
 checkAndAddElement(element/algorithm/ppocr)
 checkAndAddElement(element/algorithm/yolov8)
+checkAndAddElement(element/algorithm/lightstereo)
 
 checkAndAddElement(element/multimedia/decode)
 checkAndAddElement(element/multimedia/osd)
