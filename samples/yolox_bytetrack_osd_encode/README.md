@@ -30,7 +30,7 @@
 ## 2. 特性
 * 检测模型使用yolox；
 * 跟踪模型使用bytetrack；
-* 支持BM1684X(x86 PCIe、SoC)，BM1684(x86 PCIe、SoC、arm PCIe)，BM1688(SoC)
+* 支持BM1684X(x86 PCIe、SoC)，BM1684(x86 PCIe、SoC、arm PCIe)，BM1688(arm PCIe、SoC)
 * 支持多路视频流
 * 支持多线程
 

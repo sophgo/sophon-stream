@@ -31,7 +31,7 @@ In this example, the preprocessing, inference, and post-processing of the YOLOv5
 
 ## 2. Features
 
-- Support for BM1684X, BM1684 (x86 PCIe, SoC), BM1688 (SoC)
+- Support for BM1684X, BM1684 (x86 PCIe, SoC), BM1688 (arm PCIe、SoC)
 - Support for multiple video streams
 - Support for multi-threading
 

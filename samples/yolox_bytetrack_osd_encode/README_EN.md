@@ -31,7 +31,7 @@ The connection method for this example plugin is shown in the following diagram.
 
 * Use yolox for detection;
 * Use bytetrack for track;
-* Supports BM1684X, BM1684(x86 PCIe、SoC), supports BM1688(SoC)
+* Supports BM1684X, BM1684(x86 PCIe、SoC), supports BM1688(arm PCIe、SoC)
 * Supports multiple video streams;
 * Supports multi-threading.
 

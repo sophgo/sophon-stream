@@ -30,7 +30,7 @@
 
 ## 2. 特性
 
-- 支持 BM1684X、BM1684(x86 PCIe、SoC)、BM1688(SoC)
+- 支持 BM1684X、BM1684(x86 PCIe、SoC)、BM1688(arm PCIe、SoC)
 - 支持多路视频流
 - 支持多线程
 

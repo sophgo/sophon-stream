@@ -33,7 +33,7 @@ In this example, the pre-processing, inference, and post-processing of the YOLOv
 
 ## 2. Feature
 
-* Supports BM1684X, BM1684(x86 PCIe、SoC), supports BM1688(SoC).
+* Supports BM1684X, BM1684(x86 PCIe、SoC), supports BM1688(arm PCIe、SoC).
 * Supports tpu_kernel post-process on BM1684X.
 * Supports multiple video streams.
 * Supports multi-threading.
