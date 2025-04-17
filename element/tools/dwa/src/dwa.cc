@@ -84,7 +84,7 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
   if (resize_w_it != configure.end()){
     resize_w = resize_w_it->get<int>();
   } else{
-    resize_w = dst_h;
+    resize_w = dst_w;
   }
   
   if (dwa_mode == DWA_GDC_MODE) {  // 用于04a10 dpu 2560x1440 需要resize

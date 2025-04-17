@@ -38,7 +38,7 @@ sophon-stream dwa插件具有一些可配置的参数，可以根据需求进行
 | dst_h         | int    | 无                                      | 输出图像的高                                                 |
 | dst_w         | int    | 无                                      | 输出图像的宽
 | resize_h         | int    | 无                                      | dwa输入图像的高                                                 |
-| resize_h         | int    | 无                                      | dwa输入图像的宽                                                 |
+| resize_w         | int    | 无                                      | dwa输入图像的宽                                                 |
 | dwa_mode      | string | 无                              | 选择使用鱼眼展开(DWA_FISHEYE_MODE)还是镜头畸变矫正(DWA_GDC_MODE) |
 | use_grid      | bool   | 无                                      | 选择是否使用gridinfo进行畸变矫正                                 |
 | grid_name     | string | 无 | 选择使用gridinfo的路径                                           |
