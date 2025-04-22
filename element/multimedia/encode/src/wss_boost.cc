@@ -21,7 +21,8 @@ void WebSocketServer::pushImgDataQueue(const std::string& data) {
 
 
 void WebSocketServer::do_accept() {
-  while (1) {
+  int ret = 0;
+  while (!ret) {
     tcp::socket socket(ioc_);
 
     acceptor_.accept(socket);
@@ -29,7 +30,7 @@ void WebSocketServer::do_accept() {
     auto session_ = std::make_shared<Session>(std::move(socket), message_queue_,
                                               mutex_, cv_, barrier_);
 
-    session_->run();
+    ret = session_->run();
   }
 }
 

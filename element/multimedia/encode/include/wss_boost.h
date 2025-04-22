@@ -24,6 +24,7 @@
 #include <thread>
 #include <vector>
 
+#include "wss.h"
 #include "common/logger.h"
 
 namespace sophon_stream {
@@ -120,7 +121,7 @@ class WebSocketServer {
 
   const int MAX_WSS_QUEUE_LENGTH = 5;
 
-  class Session : public std::enable_shared_from_this<Session> {
+  class Session: public std::enable_shared_from_this<Session> {
    public:
     Session(tcp::socket socket, std::queue<std::string>& message_queue,
             std::mutex& mutex, std::condition_variable& cv,
@@ -139,12 +140,14 @@ class WebSocketServer {
       
     }
 
-    void run() {
+    int run() {
+      int ret = 0;
       boost::system::error_code ec;
       ws_.accept(ec);
       if (!ec) {
-        do_write();
+        ret = do_write();
       }
+      return ret;
     }
 
     bool is_open() { return ws_.is_open(); }
@@ -154,7 +157,8 @@ class WebSocketServer {
       ws_.close(websocket::close_code::normal, ec);
     }
 
-    void do_write() {
+    int do_write() {
+      int ret = 0;
       barrier_->add_thread();
       while (true) {
         std::string message;
@@ -164,11 +168,16 @@ class WebSocketServer {
 
           message = message_queue_.front();
         }
-
+        if(WS_STOP_FLAG == message){
+          ret = 1;
+          barrier_->arrive_and_wait();
+          barrier_->del_thread();
+          close();
+          break;
+        }
+        
         barrier_->arrive_and_wait();
-
         ws_.text(true);
-
         boost::system::error_code ec;
         // Synchronously write the message to the WebSocket
         ws_.write(net::buffer(message), ec);
@@ -182,6 +191,7 @@ class WebSocketServer {
           break;
         }
       }
+      return ret;
     }
 
    private:
@@ -196,7 +206,7 @@ class WebSocketServer {
     std::mutex& mutex_;
     std::condition_variable& cv_;
     std::shared_ptr<FlexibleBarrier> barrier_;  // std::thread writeThread_;
-  };
+};
 
   net::io_context ioc_;  // 管理IO上下文
   tcp::acceptor acceptor_;  // 侦听传入的连接请求，创建新的tcp::socket
