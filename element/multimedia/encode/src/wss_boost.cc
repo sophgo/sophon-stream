@@ -3,7 +3,6 @@
 namespace sophon_stream {
 namespace element {
 namespace encode {
-bool WebSocketServer::Session::shouldExit_ = false;
 
 void WebSocketServer::run() {
   do_accept();
@@ -29,6 +28,7 @@ void WebSocketServer::do_accept() {
 
     auto session_ = std::make_shared<Session>(std::move(socket), message_queue_,
                                               mutex_, cv_, barrier_);
+
     session_->run();
   }
 }

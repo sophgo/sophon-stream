@@ -136,23 +136,14 @@ class WebSocketServer {
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
     ~Session() {
-      futureObj.wait();
-      if (writeThread_.joinable()) {
-        writeThread_.join();
-      }
+      
     }
 
-    static bool shouldExit_;
-
     void run() {
-      
       boost::system::error_code ec;
       ws_.accept(ec);
       if (!ec) {
-        std::promise<void> promiseObj;
-        futureObj = promiseObj.get_future();
-        writeThread_ = std::thread(&Session::do_write, shared_from_this(),
-                                   std::move(promiseObj));
+        do_write();
       }
     }
 
@@ -163,9 +154,9 @@ class WebSocketServer {
       ws_.close(websocket::close_code::normal, ec);
     }
 
-    void do_write(std::promise<void> promiseObj) {
+    void do_write() {
       barrier_->add_thread();
-      while (!shouldStop) {
+      while (true) {
         std::string message;
         {
           std::unique_lock<std::mutex> lock(mutex_);
@@ -177,7 +168,6 @@ class WebSocketServer {
         barrier_->arrive_and_wait();
 
         ws_.text(true);
-      
 
         boost::system::error_code ec;
         // Synchronously write the message to the WebSocket
@@ -187,13 +177,11 @@ class WebSocketServer {
         if (!ec) {
  
         } else {
-          Session::shouldExit_ = true;
           barrier_->del_thread();
           close();
           break;
         }
       }
-      promiseObj.set_value();
     }
 
    private:
@@ -206,9 +194,7 @@ class WebSocketServer {
     beast::flat_buffer buffer_;               // 从客户端接收到的数据
     std::queue<std::string>& message_queue_;  // 要发送的消息队列
     std::mutex& mutex_;
-    std::atomic<bool> shouldStop;
     std::condition_variable& cv_;
-    std::future<void> futureObj;
     std::shared_ptr<FlexibleBarrier> barrier_;  // std::thread writeThread_;
   };
 
