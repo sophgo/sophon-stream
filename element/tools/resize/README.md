@@ -4,23 +4,26 @@
 sophon-stream resize element是sophon-stream框架中的一个插件，是一个用于尺寸变换的插件。
 
 ## 1. 特性
-目前插件可以支持按比例缩放，若ratio为0或1则采用宽高进行缩放，否则直接采用比例因子进行缩放。
+目前插件支持从原图裁剪指定区域的图像，并缩放到指定大小。
 
 ## 2. 配置参数
 sophon-stream resize插件具有一些可配置的参数，可以根据需求进行设置。以下是一些常用的参数：
 
 ```json
 {
-    "configure": {
-      "ratio":0.4,
-      "dst_h":1080,
-      "dst_w":1920
-    },
-    "shared_object": "../../build/lib/libresize.so",
-    "name": "resize",
-    "side": "sophgo",
-    "thread_number": 2
-  }
+  "configure": {
+    "dst_h": 512,
+    "dst_w": 1024,
+    "crop_w": 4096,
+    "crop_h": 2048,
+    "crop_top": 0,
+    "crop_left": 0
+  },
+  "shared_object": "../../build/lib/libresize.so",
+  "name": "resize",
+  "side": "sophgo",
+  "thread_number": 1
+}
 
 ```
 
