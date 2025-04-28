@@ -188,7 +188,12 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 由于全流程依赖输入视频fps且画图速度慢，本例程暂不提供性能测试结果，如需各模型推理性能，请到对应模型例程查看。
 
 ## 8. 数据库生成方法
-该例程中，通过对比resnet模型输出的向量与faiss索引库中已有的向量进行对比，返回人脸索引，然后通过索引获取对应的人脸标签。这里，我们也提供生成人脸数据库的方法，具体方法如下：
+该例程中，通过对比resnet模型输出的向量与faiss索引库中已有的向量进行对比，返回人脸索引，然后通过索引获取对应的人脸标签。这里，我们也提供生成人脸数据库的方法。
+
+此脚本依赖opencv和sophon-sail，请参考官网最新的SDK使用手册进行安装。
+
+具体方法如下：
+
 ```bash
 python3 scripts/resnet_opencv_faiss_write.py --input data/images/face_data_train --bmodel data/models/BM1684X/resnet_arcface_fp32_1b.bmodel --db_data faiss_db_data.txt --index_label faiss_index_label.name --dev_id 0 
 ```
