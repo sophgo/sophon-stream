@@ -10,9 +10,9 @@
       0
     ],
     "std": [
-      255,
-      255,
-      255
+      1,
+      1,
+      1
     ]
   },
   "shared_object": "../../build/lib/libyolox.so",
