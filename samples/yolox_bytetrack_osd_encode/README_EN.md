@@ -6,12 +6,12 @@ English | [简体中文](README.md)
 - [Detection-Track-UpStreaming Demo](#detection-track-upstreaming-demo)
   - [Catalogs](#catalogs)
   - [1. Introduction](#1-introduction)
-  - [2. Features](#2-features)
+  - [2. Feature](#2-feature)
   - [3. Prepare Models and Data](#3-prepare-models-and-data)
   - [4. Prepare Environment](#4-prepare-environment)
     - [4.1 x86/arm PCIe Platform](#41-x86arm-pcie-platform)
     - [4.2 SoC Platform](#42-soc-platform)
-  - [5. Program Compilation](#5-program-pompilation)
+  - [5. Program Compilation](#5-program-compilation)
     - [5.1 x86/arm PCIe Platform](#51-x86arm-pcie-platform)
     - [5.2 SoC Platform](#52-soc-platform)
   - [6. Program Execution](#6-program-execution)
@@ -61,18 +61,16 @@ The downloaded models include:
 │   ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684，batch_size=4
 │   ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684，batch_size=1
 │   └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684，batch_size=4
-├── BM1684X
-│   ├── yolox_bytetrack_s_fp16_1b.bmodel    # FP16 BModel for BM1684X，batch_size=1
-│   ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1684X，batch_size=1
-│   ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1684X，batch_size=1
-│   ├── yolox_bytetrack_s_int8_4b.bmodel    # INT8 BModel for BM1684X，batch_size=4
-│   ├── yolox_s_fp32_1b.bmodel              # FP32 BModel for BM1684X，batch_size=1
-│   ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684X，batch_size=4
-│   ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684X，batch_size=1
-│   └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684X，batch_size=4
-└── BM1688_2cores
-    ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1688，batch_size=1
-    └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1688，batch_size=4
+└── BM1684X
+    ├── yolox_bytetrack_s_fp16_1b.bmodel    # FP16 BModel for BM1684X，batch_size=1
+    ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1684X，batch_size=1
+    ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1684X，batch_size=1
+    ├── yolox_bytetrack_s_int8_4b.bmodel    # INT8 BModel for BM1684X，batch_size=4
+    ├── yolox_s_fp32_1b.bmodel              # FP32 BModel for BM1684X，batch_size=1
+    ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684X，batch_size=4
+    ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684X，batch_size=1
+    └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684X，batch_size=4
+
 ```
 
 Model description:
