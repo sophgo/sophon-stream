@@ -61,16 +61,20 @@ The downloaded models include:
 │   ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684，batch_size=4
 │   ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684，batch_size=1
 │   └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684，batch_size=4
-└── BM1684X
-    ├── yolox_bytetrack_s_fp16_1b.bmodel    # FP16 BModel for BM1684X，batch_size=1
-    ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1684X，batch_size=1
-    ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1684X，batch_size=1
-    ├── yolox_bytetrack_s_int8_4b.bmodel    # INT8 BModel for BM1684X，batch_size=4
-    ├── yolox_s_fp32_1b.bmodel              # FP32 BModel for BM1684X，batch_size=1
-    ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684X，batch_size=4
-    ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684X，batch_size=1
-    └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684X，batch_size=4
-
+├── BM1684X
+│   ├── yolox_bytetrack_s_fp16_1b.bmodel    # FP16 BModel for BM1684X，batch_size=1
+│   ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1684X，batch_size=1
+│   ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1684X，batch_size=1
+│   ├── yolox_bytetrack_s_int8_4b.bmodel    # INT8 BModel for BM1684X，batch_size=4
+│   ├── yolox_s_fp32_1b.bmodel              # FP32 BModel for BM1684X，batch_size=1
+│   ├── yolox_s_fp32_4b.bmodel              # FP32 BModel for BM1684X，batch_size=4
+│   ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1684X，batch_size=1
+│   └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1684X，batch_size=4
+└── BM1688
+    ├── yolox_bytetrack_s_fp32_1b.bmodel    # FP32 BModel for BM1688，batch_size=1
+    ├── yolox_bytetrack_s_int8_1b.bmodel    # INT8 BModel for BM1688，batch_size=1
+    ├── yolox_s_int8_1b.bmodel              # INT8 BModel for BM1688，batch_size=1
+    └── yolox_s_int8_4b.bmodel              # INT8 BModel for BM1688，batch_size=4
 ```
 
 Model description:

@@ -65,7 +65,9 @@ chmod -R +x scripts/
 │   ├── yolox_s_fp32_4b.bmodel              # 用于BM1684X的FP32 BModel，batch_size=4
 │   ├── yolox_s_int8_1b.bmodel              # 用于BM1684X的INT8 BModel，batch_size=1
 │   └── yolox_s_int8_4b.bmodel              # 用于BM1684X的INT8 BModel，batch_size=4
-└── BM1688_2cores
+└── BM1688
+    ├── yolox_bytetrack_s_fp32_1b.bmodel    # 用于BM1688的bytetrack的FP32 BModel，batch_size=1
+    ├── yolox_bytetrack_s_int8_1b.bmodel    # 用于BM1688的bytetrack的INT8 BModel，batch_size=1
     ├── yolox_s_int8_1b.bmodel              # 用于BM1688的INT8 BModel，batch_size=1
     └── yolox_s_int8_4b.bmodel              # 用于BM1688的INT8 BModel，batch_size=4
 ```
