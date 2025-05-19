@@ -240,17 +240,19 @@ common::ErrorCode Dwa::dwa_gdc_work(
       });
 
       bm_image image_aligned;
-      bool need_copy = (unsigned int)dwaObj->mFrame->mSpData->width & (64 - 1);
+      bool need_copy = (unsigned int)dwaObj->mFrame->mSpData->width & (32 - 1);
       if (need_copy) {
         int stride1[3], stride2[3];
         bm_image_get_stride(*dwaObj->mFrame->mSpData, stride1);
-        stride2[0] = FFALIGN(stride1[0], 64);
-        stride2[1] = FFALIGN(stride1[1], 64);
-        stride2[2] = FFALIGN(stride1[2], 64);
+        stride2[0] = FFALIGN(stride1[0], 32);
+        stride2[1] = FFALIGN(stride1[1], 32);
+        stride2[2] = FFALIGN(stride1[2], 32);
         bm_image_create(dwaObj->mFrame->mHandle,
                         (unsigned int)dwaObj->mFrame->mSpData->height,
-                        (unsigned int)dwaObj->mFrame->mSpData->width, src_fmt,
-                        DATA_TYPE_EXT_1N_BYTE, &image_aligned, stride2);
+                        (unsigned int)dwaObj->mFrame->mSpData->width, 
+                        dwaObj->mFrame->mSpData->image_format,
+                        DATA_TYPE_EXT_1N_BYTE, &image_aligned, 
+                        stride2);
 
         bm_image_alloc_dev_mem(image_aligned, 1);
         bmcv_copy_to_atrr_t copyToAttr;
@@ -288,7 +290,7 @@ common::ErrorCode Dwa::dwa_gdc_work(
       padding_attr.dst_crop_sty = 0;
       padding_attr.dst_crop_stx = tx1;
 
-      int aligned_net_w = FFALIGN(resize_w, 64);
+      int aligned_net_w = FFALIGN(resize_w, 32);
       int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
       bm_image_create(dwaObj->mFrame->mHandle, resize_h, resize_w, src_fmt,
                       DATA_TYPE_EXT_1N_BYTE, resized_img.get(), strides);
