@@ -471,40 +471,53 @@ common::ErrorCode Dpu::dpu_work(
     p = nullptr;
   });
 
-  bm_image_create(leftObj->mFrame->mHandle, leftObj->mFrame->mSpDataDwa->height,
-                  leftObj->mFrame->mSpDataDwa->width, dpu_fmt,
+  bm_image left, right;
+  if (leftObj->mFrame->mSpDataDwa != nullptr){
+    left = *leftObj->mFrame->mSpDataDwa;
+  } else if(leftObj->mFrame->mSpData != nullptr){
+    left = *leftObj->mFrame->mSpData;
+  }
+  if (rightObj->mFrame->mSpDataDwa != nullptr){
+    right = *rightObj->mFrame->mSpDataDwa;
+  } else if(rightObj->mFrame->mSpData != nullptr){
+    right = *rightObj->mFrame->mSpData;
+  }
+  bm_image_create(leftObj->mFrame->mHandle, left.height,
+                  left.width, dpu_fmt,
                   DATA_TYPE_EXT_1N_BYTE, dpu_out.get());
   bm_image_alloc_dev_mem(*dpu_out, 1);
 
   if (dpu_type == DPU_ONLINE) {
     bmcv_dpu_online_disp(leftObj->mFrame->mHandle,
-                         leftObj->mFrame->mSpDataDwa.get(),
-                         rightObj->mFrame->mSpDataDwa.get(), dpu_out.get(),
+                         &left,
+                         &right, 
+                         dpu_out.get(),
                          &dpu_sgbm_attr, &dpu_fgs_attr, dpu_online_mode);
 
   } else if (dpu_type == DPU_SGBM) {
     // dpu_sgbm_mode = DPU_SGBM_MUX2;
     bmcv_dpu_sgbm_disp(leftObj->mFrame->mHandle,
-                       leftObj->mFrame->mSpDataDwa.get(),
-                       rightObj->mFrame->mSpDataDwa.get(), dpu_out.get(),
+                       &left,
+                       &right, 
+                       dpu_out.get(),
                        &dpu_sgbm_attr, dpu_sgbm_mode);
 
   } else if (dpu_type == DPU_FGS) {
     bm_image sgbm_out;
 
     bm_image_create(leftObj->mFrame->mHandle,
-                    leftObj->mFrame->mSpDataDwa->height,
-                    leftObj->mFrame->mSpDataDwa->width, dpu_fmt,
+                    left.height,
+                    left.width, dpu_fmt,
                     DATA_TYPE_EXT_1N_BYTE, &sgbm_out, NULL);
     bm_image_alloc_dev_mem(sgbm_out, 1);
 
     // dpu_sgbm_mode = DPU_SGBM_MUX2;
     bmcv_dpu_sgbm_disp(leftObj->mFrame->mHandle,
-                       leftObj->mFrame->mSpDataDwa.get(),
-                       rightObj->mFrame->mSpDataDwa.get(), &sgbm_out,
+                       &left,
+                       &right, &sgbm_out,
                        &dpu_sgbm_attr, dpu_sgbm_mode);
     bmcv_dpu_fgs_disp(leftObj->mFrame->mHandle,
-                      leftObj->mFrame->mSpDataDwa.get(), &sgbm_out,
+                      &left, &sgbm_out,
                       dpu_out.get(), &dpu_fgs_attr, dpu_fgs_mode);
     bm_image_destroy(sgbm_out);
   }
