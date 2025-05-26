@@ -886,13 +886,17 @@ void draw_retinaface_results(
 
 void draw_retinaface_distributor_resnet_faiss_converger_results(
     std::shared_ptr<sophon_stream::common::ObjectMetadata> objectMetadata,
-    bm_image& frame) {
-  if (objectMetadata->mSubObjectMetadatas.size() > 0) {
-    for (auto subObj : objectMetadata->mSubObjectMetadatas) {
+    bm_image &frame) {
+  bm_handle_t &handle = objectMetadata->mFrame->mHandle;
+
+  if (objectMetadata->mSubObjectMetadatas.size() > 0)
+  {
+    for (auto &subObj : objectMetadata->mSubObjectMetadatas)
+    {
       int subId = subObj->mSubId;
-      auto faceObj = objectMetadata->mFaceObjectMetadatas[subId];  // 第一张脸
+      auto faceObj = objectMetadata->mFaceObjectMetadatas[subId]; // 第一张脸
       auto resnetObj =
-          subObj->mRecognizedObjectMetadatas[0];  // 第一张脸对应的resnet
+          subObj->mRecognizedObjectMetadatas[0]; // 第一张脸对应的resnet
       int class_id = subObj->mRecognizedObjectMetadatas[0]->mTopKLabels[0];
       auto label = subObj->mRecognizedObjectMetadatas[0]->mLabelName;
 
@@ -902,10 +906,23 @@ void draw_retinaface_distributor_resnet_faiss_converger_results(
       rect.crop_w = std::max(faceObj->right - faceObj->left + 1, 0);
       rect.crop_h = std::max(faceObj->bottom - faceObj->top + 1, 0);
 
-      _draw_text_bmcv(objectMetadata->mFrame->mHandle, rect.start_x,
-                      rect.start_y, frame, label);
-
-      std::cout << "label:" << label << std::endl;
+      // 1. 画人脸框：
+      bmcv_image_draw_rectangle(handle, frame, 1, &rect, 2, 255, 2, 2);
+      // 2. 在人脸框左上角绘制标签文字
+      constexpr int TEXT_INTERNAL_OFFSET = 40;
+      int call_top = rect.start_y - TEXT_INTERNAL_OFFSET;
+      call_top = std::max(call_top, 0);
+      _draw_text_bmcv(handle,
+                      rect.start_x,
+                      call_top,
+                      frame,
+                      label);
+      // Debug 输出
+      std::cout << "Draw face #" << subId
+                << " rect(" << rect.start_x << "," << rect.start_y
+                << "," << rect.crop_w << "," << rect.crop_h << ")"
+                << " label=" << label
+                << std::endl;
     }
   }
 }

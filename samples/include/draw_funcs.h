@@ -669,9 +669,16 @@ void draw_retinaface_distributor_resnet_faiss_converger_results(
       rect.crop_w = std::max(faceObj->right - faceObj->left + 1, 0);
       rect.crop_h = std::max(faceObj->bottom - faceObj->top + 1, 0);
 
-      _draw_text_bmcv(objectMetadata->mFrame->mHandle, rect.start_x,
-                      rect.start_y, imageStorage, label);
+      bmcv_image_draw_rectangle(objectMetadata->mFrame->mHandle, imageStorage, 1, &rect, 2, 255, 2, 2);
 
+      constexpr int TEXT_INTERNAL_OFFSET = 40;
+      int call_top = rect.start_y - TEXT_INTERNAL_OFFSET;
+      call_top = std::max(call_top, 0);
+      _draw_text_bmcv(objectMetadata->mFrame->mHandle,
+                      rect.start_x,
+                      call_top,
+                      imageStorage,
+                      label);
       // std::cout << "label:" << label << std::endl;
     }
 
