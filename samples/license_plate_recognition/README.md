@@ -101,6 +101,7 @@ chmod -R +x scripts/
 ```bash
 ./datasets
 ├── coco.names
+├── wqy-microhei.ttc // 字体文件
 └── test // 用于测试的车辆数据集
 ```
 
@@ -148,7 +149,7 @@ license_plate_recognition demo 中各部分参数位于 [config](./config/) 目�
 └── yolov5_pre.json
 ```
 
-其中，[license_plate_recognition_demo.json](./config/license_plate_recognition_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels 参数配置输入的路数，sample_interval 设置跳帧数，loop_num 设置循环播放次数，channel 中包含码流 url 等信息。
+其中，[license_plate_recognition_demo.json](./config/license_plate_recognition_demo.json)是例程的整体配置文件，管理输入码流等信息。在一张图上可以支持多路数据的输入，channels 参数配置输入的路数，loop_num 设置循环播放次数，channel 中包含码流 url 等信息。
 
 配置文件中不指定`channel_id`属性的情况，会在 demo 中对每一路数据的`channel_id`从 0 开始默认赋值。
 
