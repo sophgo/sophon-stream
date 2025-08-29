@@ -71,13 +71,7 @@ void WSS::send() {
       std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
     gettimeofday(&m_last_send_time, NULL);
     for (auto it : m_connections) {
-      try {
-        m_server.send(it, data, websocketpp::frame::opcode::binary);
-      } catch (const std::exception& e) {
-        IVS_ERROR("wss send error: {}", e.what());
-        m_connections.clear();
-        break;
-      }
+      m_server.send(it, data, websocketpp::frame::opcode::text);
     }
   }
 }
