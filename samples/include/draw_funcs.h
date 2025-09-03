@@ -84,11 +84,17 @@ static void _draw_rectangle_and_text_bmcv(
   int ret = bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0],
                                       color[1], color[2]);
   if (put_text_flag) {
+#if BMCV_VERSION_MAJOR >= 19
+    bmcv_point_t org = {left, top - 20};
+    int thickness = 0;
+    float fontScale = 1;
+#else
     bmcv_point_t org = {left, top - 10};
-    bmcv_color_t bmcv_color = {color[0], color[1], color[2]};
     int thickness = 2;
     float fontScale = 1.5;
+#endif
 
+    bmcv_color_t bmcv_color = {color[0], color[1], color[2]};
     if (BM_SUCCESS != bmcv_image_put_text(handle, frame, lable.c_str(), org,
                                           bmcv_color, fontScale, thickness)) {
       std::cout << "bmcv put text error !!!" << std::endl;

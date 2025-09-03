@@ -12,6 +12,40 @@ if (${TARGET_ARCH} STREQUAL "soc")
     endif()
 endif()
 
+# ===== BMCV version detection =====
+unset(LIBSOPHON_INCLUDE_DIRS)
+
+if (DEFINED TARGET_ARCH AND TARGET_ARCH STREQUAL "soc")
+    if (NOT DEFINED SOPHON_SDK_SOC)
+        message(FATAL_ERROR "SOPHON_SDK_SOC must be set when TARGET_ARCH=soc")
+    endif()
+    set(LIBSOPHON_INCLUDE_DIRS "${SOPHON_SDK_SOC}/include")
+else()
+    set(LIBSOPHON_INCLUDE_DIRS "/opt/sophon/libsophon-current/include")
+endif()
+
+set(_bmcv_header)
+if (EXISTS "${LIBSOPHON_INCLUDE_DIRS}/bmcv_api_ext.h")
+    set(_bmcv_header "${LIBSOPHON_INCLUDE_DIRS}/bmcv_api_ext.h")
+else()
+    message(FATAL_ERROR "bmcv_api_ext.h not found in ${LIBSOPHON_INCLUDE_DIRS}. \
+For soc, set SOPHON_SDK_SOC correctly; for pcie, ensure /opt/sophon/libsophon-current is installed.")
+endif()
+
+file(READ "${_bmcv_header}" _BMCV_HEADER_CONTENT)
+
+unset(BMCV_VERSION_MINOR)
+string(REGEX MATCH "#define[ \t]+BMCV_VERSION_MINOR[ \t]+([0-9]+)"
+       _BMCV_MINOR_MATCH "${_BMCV_HEADER_CONTENT}")
+if (_BMCV_MINOR_MATCH)
+    set(BMCV_VERSION_MINOR "${CMAKE_MATCH_1}")
+    add_definitions(-DBMCV_VERSION_MINOR=${BMCV_VERSION_MINOR})
+    message(STATUS "Detected BMCV_VERSION_MINOR=${BMCV_VERSION_MINOR} (from ${_bmcv_header})")
+else()
+    message(STATUS "BMCV_VERSION_MINOR not found in ${_bmcv_header}; skipping this macro definition.")
+endif()
+# ===== end BMCV version detection =====
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/lib)
 add_subdirectory(framework)
 
