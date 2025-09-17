@@ -84,8 +84,8 @@ static void _draw_rectangle_and_text_bmcv(
   int ret = bmcv_image_draw_rectangle(handle, frame, 1, &rect, 3, color[0],
                                       color[1], color[2]);
   if (put_text_flag) {
-#if BMCV_VERSION_MAJOR >= 19
-    bmcv_point_t org = {left, top - 20};
+#if BMCV_VERSION_MINOR >= 19
+    bmcv_point_t org = {left, top};
     int thickness = 0;
     float fontScale = 1;
 #else
