@@ -287,10 +287,10 @@ SoC平台上，动态库、可执行文件、配置文件、模型、视频数�
 ./main --demo_config_path=../yolov5/config/yolov5_demo.json
 ```
 
-2路视频流运行结果如下
+4路视频流运行结果如下
 ```bash
- total time cost 6898372 us.
-frame count is 1421 | fps is 205.991 fps.
+total time cost 12150217 us.
+frame count is 2848 | fps is 234.399 fps.
 ```
 
 **双核TPU推理**：

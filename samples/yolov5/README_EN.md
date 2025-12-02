@@ -6,12 +6,12 @@ English | [简体中文](README.md)
 - [YOLOv5 Demo](#yolov5-demo)
   - [Catalogs](#catalogs)
   - [1. Introduction](#1-introduction)
-  - [2. Features](#2-features)
+  - [2. Feature](#2-feature)
   - [3. Prepare Models and Data](#3-prepare-models-and-data)
   - [4. Prepare Environment](#4-prepare-environment)
     - [4.1 x86/arm PCIe Platform](#41-x86arm-pcie-platform)
     - [4.2 SoC Platform](#42-soc-platform)
-  - [5. Program Compilation](#5-program-pompilation)
+  - [5. Program Compilation](#5-program-compilation)
     - [5.1 x86/arm PCIe Platform](#51-x86arm-pcie-platform)
     - [5.2 SoC Platform](#52-soc-platform)
   - [6. Program Execution](#6-program-execution)
@@ -288,10 +288,10 @@ Run the executable file
 ./main --demo_config_path=../yolov5/config/yolov5_demo.json
 ```
 
-The running results of two video streams are as follows
+The running results of 4 video streams are as follows
 ```bash
-total time cost 6898372 us.
-frame count is 1421 | fps is 205.991 fps.
+total time cost 12150217 us.
+frame count is 2848 | fps is 234.399 fps.
 ```
 
 ## 7. Performance Testing
