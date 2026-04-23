@@ -114,7 +114,7 @@ static int avcodec_decode_video2(AVCodecContext* dec_ctx, AVFrame* frame,
     char err[256] = {0};
     av_strerror(ret, err, sizeof(err));
     fprintf(stderr, "Error sending a packet for decoding, %s\n", err);
-    return -1;
+    return ret;
   }
   while (ret >= 0) {
     ret = avcodec_receive_frame(dec_ctx, frame);
