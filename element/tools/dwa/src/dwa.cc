@@ -104,7 +104,7 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
       memset(buffer, 0, fileSize);
 
       rewind(fp);
-      fread(buffer, fileSize, 1, fp);
+      fread(buffer, 1, fileSize, fp);
       fclose(fp);
       ldc_attr.grid_info.u.system.system_addr = (void*)buffer;
       ldc_attr.grid_info.size = fileSize;
@@ -132,7 +132,7 @@ common::ErrorCode Dwa::initInternal(const std::string& json) {
       char* buffer = (char*)malloc(fileSize);
       memset(buffer, 0, fileSize);
       rewind(fp);
-      fread(buffer, fileSize, 1, fp);
+      fread(buffer, 1, fileSize, fp);
       fclose(fp);
       fisheye_attr.grid_info.u.system.system_addr = (void*)buffer;
       fisheye_attr.grid_info.size = fileSize;
@@ -411,8 +411,7 @@ common::ErrorCode Dwa::doWork(int dataPipeId) {
       fisheye_work(objectMetadata);
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double, std::milli> duration = end - start;
-      std::cout << "fisheye_work程序执行时间：" << duration.count() << " ms"
-                << std::endl;
+      IVS_INFO("fisheye_work程序执行时间：{} ms", duration.count());
     }
   }
   mFpsProfiler.add(1);

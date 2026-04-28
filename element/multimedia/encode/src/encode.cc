@@ -190,7 +190,7 @@ common::ErrorCode Encode::initInternal(const std::string& json) {
       if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
         IVS_INFO("Directory already exists.");
       } else {
-        if (mkdir(dir_path, 0777) == 0) {
+        if (mkdir(dir_path, 0755) == 0) {
           IVS_INFO("Directory created successfully.");
         } else {
           IVS_INFO("Error creating directory.");
@@ -323,7 +323,7 @@ void Encode::processVideoStream(
           if (stat(dir_path_.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
             IVS_INFO("Directory already exists.");
           } else {
-            if (mkdir(dir_path_.c_str(), 0777) == 0) {
+            if (mkdir(dir_path_.c_str(), 0755) == 0) {
               IVS_INFO("Directory created successfully.");
             } else {
               IVS_INFO("Error creating directory.");
@@ -364,7 +364,7 @@ void Encode::processImgDir(
   if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
     IVS_DEBUG("Directory already exists.");
   } else {
-    if (mkdir(dir_path, 0777) == 0) {
+    if (mkdir(dir_path, 0755) == 0) {
       IVS_INFO("Directory created successfully.");
     } else {
       IVS_INFO("Error creating directory.");

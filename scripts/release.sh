@@ -9,6 +9,12 @@ commit_id=$(git log -1 | awk 'NR==1 {print substr($2,0,8)}')
 times=`date +%Y%m%d`
 VERSION_PATH=$basic_dir/VERSION
 echo $VERSION_PATH
+
+if [ ! -f "$VERSION_PATH" ]; then
+    echo "Error: VERSION file not found"
+    exit 1
+fi
+
 exec < $VERSION_PATH
 read -r line
 version=$line

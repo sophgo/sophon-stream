@@ -463,7 +463,7 @@ void BYTETracker::lapjv(const std::vector<std::vector<float>>& cost,
     n = n_rows;
   } else {
     if (!extend_cost) {
-      std::cout << "set extend_cost=True" << std::endl;
+      IVS_INFO("set extend_cost=True");
       system("pause");
       exit(0);
     }
@@ -523,7 +523,7 @@ void BYTETracker::lapjv(const std::vector<std::vector<float>>& cost,
 
   int ret = lapjv_internal(n, cost_ptr, x_c, y_c);
   if (ret != 0) {
-    std::cout << "Calculate Wrong!" << std::endl;
+    IVS_ERROR("Calculate Wrong!");
     system("pause");
     exit(0);
   }

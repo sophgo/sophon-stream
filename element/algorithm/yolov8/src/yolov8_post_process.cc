@@ -528,12 +528,9 @@ void Yolov8PostProcess::postProcessDet(
     std::vector<float> decoded_data;
 
     if (context->min_dim == 3 && context->output_num != 1) {
-      std::cout << "--> WARNING: the current bmodel has redundant outputs"
-                << std::endl;
-      std::cout << "             you can remove the redundant outputs to "
-                   "improve performance"
-                << std::endl;
-      std::cout << std::endl;
+      IVS_WARN("WARNING: the current bmodel has redundant outputs");
+      IVS_WARN("you can remove the redundant outputs to improve performance");
+      IVS_WARN("");
     }
 
     assert(box_num == 0 || box_num == out_tensor->get_shape()->dims[1]);
@@ -1115,12 +1112,9 @@ void Yolov8PostProcess::postProcessObb(
     std::vector<float> decoded_data;
 
     if (context->min_dim == 3 && context->output_num != 1) {
-      std::cout << "--> WARNING: the current bmodel has redundant outputs"
-                << std::endl;
-      std::cout << "             you can remove the redundant outputs to "
-                   "improve performance"
-                << std::endl;
-      std::cout << std::endl;
+      IVS_WARN("WARNING: the current bmodel has redundant outputs");
+      IVS_WARN("you can remove the redundant outputs to improve performance");
+      IVS_WARN("");
     }
 
     assert(box_num == 0 || box_num == out_tensor->get_shape()->dims[1]);

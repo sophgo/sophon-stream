@@ -197,7 +197,7 @@ cv::Mat Distributor::estimateAffine2D(
     const std::vector<cv::Point2f>& src_points,
     const std::vector<cv::Point2f>& dst_points) {
   if (src_points.size() != dst_points.size() || src_points.size() < 3) {
-    std::cerr << "Error: Invalid input points." << std::endl;
+    IVS_ERROR("Error: Invalid input points.");
     return cv::Mat();
   }
 

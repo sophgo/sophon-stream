@@ -18,11 +18,11 @@ int main(int argc, const char** argv) {
 
   HTTP_Interact_Mgr* mgr = HTTP_Interact_Mgr::GetInstance();
   mgr->init(port);
-  std::cout << "  ___           _             " << std::endl;
-  std::cout << " / __| ___ _ __| |_  ___ _ _  " << std::endl;
-  std::cout << " \\__ \\/ _ \\ '_ \\ ' \\/ _ \\ ' \\ " << std::endl;
-  std::cout << " |___/\\___/ .__/|_|_\\___/_||_|" << std::endl;
-  std::cout << "          |_|                  " << std::endl << std::endl;
+  IVS_INFO("  ___           _             \n"
+           " / __| ___ _ __| |_  ___ _ _  \n"
+           " \\__ \\/ _ \\ '_ \\ ' \\/ _ \\ ' \\ \n"
+           " |___/\\___/ .__/|_|_\\___/_||_|\n"
+           "          |_|                  \n");
   IVS_INFO("正在监听端口... listen on: {0}", port);
   IVS_INFO(
       "------------------------------------------------------------------");
