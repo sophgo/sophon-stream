@@ -51,11 +51,14 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [bird_dwa_blend_encode](./samples/bird_dwa_blend_encode/)         | 鸟瞰拼接demo |
 |                         | [dwa_blend_encode](./samples/dwa_blend_encode/)                   | 鱼眼拼接demo |
 |                         | [dwa_dpu_encode](./samples/dwa_dpu_encode/)                       | 双目深度估计demo |
+|                         | [dwa_lightstereo_encode](./samples/dwa_lightstereo_encode/)       | 轻型立体拼接demo |
 |                         | [gdwa_blend_encode](./samples/gdwa_blend_encode/)                 | 广角拼接demo |
 |                         | [license_area_intrusion](./samples/license_area_intrusion/)       | 区域入侵demo |
+|                         | [line_crossing](./samples/line_crossing/)                         | 越线检测demo |
 |                         | [multi_graph](./samples/multi_graph/)                             | 多graph功能demo |
 |                         | [structured_recognition](./samples/structured_recognition/)       | 单路码流配置不同算法demo |
-|                         | [tripware](./samples/tripwire/)                                   | 越线检测demo |
+|                         | [trinocular_panorama_stitch](./samples/trinocular_panorama_stitch/)| 三目全景拼接demo |
+|                         | [tripwire](./samples/tripwire/)                                   | 越线检测demo |
 |                         | [yolox_bytetrack_osd_qt](./samples/yolox_bytetrack_osd_qt/)       | 目标检测-跟踪-绘图-HDMI显示demo |
 
 ## 2 快速入门

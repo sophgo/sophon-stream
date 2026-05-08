@@ -16,6 +16,7 @@
 ├── license_plate_recognition                       # 车辆检测+车牌识别例程
 ├── openpose                                        # 姿态识别例程
 ├── README.md                                       # 用户手册
+├── README_EN.md                                    # 用户手册_英文版
 ├── resnet                                          # 分类例程
 ├── retinaface                                      # 人脸检测例程
 ├── retinaface_distributor_resnet_faiss_converger   # 人脸检测+人脸识别例程
