@@ -30,6 +30,7 @@
 #include "common/logger.h"
 #include "common/object_metadata.h"
 #include "common/posed_object_metadata.h"
+#include "common/segmented_object_metadata.h"
 #include "cvUniText.h"
 #include "element_factory.h"
 extern "C" {
@@ -244,6 +245,32 @@ void draw_opencv_det_result(
                             std::max(detObj->mBox.mY, labelSize.height) - 5),
                   cv::FONT_HERSHEY_SIMPLEX, fontScale, color, thickness);
     }
+  }
+
+  // Draw segmentation masks if available
+  if (!objData->mSegmentedObjectMetadatas.empty()) {
+    cv::Mat mask_canvas = frame.clone();
+    for (auto& segObj : objData->mSegmentedObjectMetadatas) {
+      if (segObj->mask_img.empty()) continue;
+      int classId = segObj->mClassify;
+      cv::Scalar color(colors[classId % colors_num][0],
+                       colors[classId % colors_num][1],
+                       colors[classId % colors_num][2]);
+      int left = segObj->mBox.mX;
+      int top = segObj->mBox.mY;
+      int width = segObj->mBox.mWidth;
+      int height = segObj->mBox.mHeight;
+      if (left < 0) { width += left; left = 0; }
+      if (top < 0) { height += top; top = 0; }
+      if (left + width > frame.cols) width = frame.cols - left;
+      if (top + height > frame.rows) height = frame.rows - top;
+      if (width <= 0 || height <= 0) continue;
+      cv::Rect roi(left, top, width, height);
+      cv::Mat mask_roi;
+      cv::resize(segObj->mask_img, mask_roi, cv::Size(width, height));
+      mask_canvas(roi).setTo(color, mask_roi);
+    }
+    cv::addWeighted(frame, 0.6, mask_canvas, 0.4, 0, frame);
   }
 }
 

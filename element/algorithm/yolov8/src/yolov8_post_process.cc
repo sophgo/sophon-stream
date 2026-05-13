@@ -696,10 +696,9 @@ void Yolov8PostProcess::postProcessSeg(
         {ratio, ratio, static_cast<double>(tx1), static_cast<double>(ty1)}};
 
 #else
-    float ratio = 1;
     ImageInfo para = {cv::Size(frame_width, frame_height),
-                      {context->net_w / frame_width,
-                       context->net_h / frame_height, tx1, ty1}};
+                      {context->net_w / (float)frame_width,
+                       context->net_h / (float)frame_height, (double)tx1, (double)ty1}};
 
 #endif
     int min_idx = 0;
@@ -715,11 +714,20 @@ void Yolov8PostProcess::postProcessSeg(
         context->bmNetwork->outputTensor(1)->get_shape();
 
     int mask_len = segmentation_out_shape->dims[1];
-    int m_class_num =
-        detection_out_shape->dims[1] - mask_len - 4;  // 116 - 32 - 4
-
-    int feat_num = detection_out_shape->dims[2];       // 8400
-    int per_feat_size = detection_out_shape->dims[1];  // 116
+    int per_feat_size = detection_out_shape->dims[1];
+    // Handle transposed output: [1, 8400, 116] vs [1, 116, 8400]
+    int feat_num, m_class_num;
+    bool transposed = false;
+    if (detection_out_shape->dims[1] > detection_out_shape->dims[2]) {
+      // Transposed format: [1, feat_num, per_feat_size]
+      feat_num = detection_out_shape->dims[1];
+      per_feat_size = detection_out_shape->dims[2];
+      transposed = true;
+    } else {
+      // Original format: [1, per_feat_size, feat_num]
+      feat_num = detection_out_shape->dims[2];
+    }
+    m_class_num = per_feat_size - mask_len - 4;  // 116 - 32 - 4 = 80
 
     int max_wh = 7680;  // (pixels) maximum box width and height
     int max_det = 300;
@@ -732,15 +740,18 @@ void Yolov8PostProcess::postProcessSeg(
     segmentation_data = segmentation_out_tensor->get_cpu_data();
 
     // post2:  get detections matrix nx6 (xyxy, score, class_id, mask)
-    float* cls_conf = detection_data + 4 * feat_num;
-
     for (int i = 0; i < feat_num; i++) {
       // best class
       float max_value = 0.0;
       int max_index = 0;
 
       for (int j = 0; j < m_class_num; j++) {
-        float cur_value = cls_conf[i + j * feat_num];
+        float cur_value;
+        if (transposed) {
+          cur_value = detection_data[i * per_feat_size + 4 + j];
+        } else {
+          cur_value = detection_data[i + (4 + j) * feat_num];
+        }
         if (cur_value > max_value) {
           max_value = cur_value;
           max_index = j;
@@ -757,10 +768,18 @@ void Yolov8PostProcess::postProcessSeg(
         box.score = max_value;
         box.class_id = max_index;
         int c = box.class_id * max_wh;
-        float centerX = detection_data[i + 0 * feat_num];
-        float centerY = detection_data[i + 1 * feat_num];
-        float width = detection_data[i + 2 * feat_num];
-        float height = detection_data[i + 3 * feat_num];
+        float centerX, centerY, width, height;
+        if (transposed) {
+          centerX = detection_data[i * per_feat_size + 0];
+          centerY = detection_data[i * per_feat_size + 1];
+          width = detection_data[i * per_feat_size + 2];
+          height = detection_data[i * per_feat_size + 3];
+        } else {
+          centerX = detection_data[i + 0 * feat_num];
+          centerY = detection_data[i + 1 * feat_num];
+          width = detection_data[i + 2 * feat_num];
+          height = detection_data[i + 3 * feat_num];
+        }
 
         box.x1 = centerX - width / 2 + c;
         box.y1 = centerY - height / 2 + c;
@@ -768,8 +787,13 @@ void Yolov8PostProcess::postProcessSeg(
         box.y2 = box.y1 + height;
 
         for (int k = 0; k < mask_len; k++) {
-          box.mask.emplace_back(
-              detection_data[i + (per_feat_size - mask_len + k) * feat_num]);
+          if (transposed) {
+            box.mask.emplace_back(
+                detection_data[i * per_feat_size + (per_feat_size - mask_len + k)]);
+          } else {
+            box.mask.emplace_back(
+                detection_data[i + (per_feat_size - mask_len + k) * feat_num]);
+          }
         }
 
         yolobox_vec.push_back(box);
@@ -792,96 +816,39 @@ void Yolov8PostProcess::postProcessSeg(
       yolobox_vec[i].y2 = yolobox_vec[i].y2 - c;
     }
 
+    // Scale bbox from model space to image space (matching sophon-demo)
+    // para.trans = {ratio_x, ratio_y, tx1, ty1} where ratio = net_size / frame_size
+    float inv_ratio_x = 1.0 / para.trans[0];  // frame_width / net_w
+    float inv_ratio_y = 1.0 / para.trans[1];  // frame_height / net_h
     for (int i = 0; i < yolobox_vec.size(); i++) {
-      float centerx =
-          ((yolobox_vec[i].x2 + yolobox_vec[i].x1) / 2 - tx1) / ratio;
-      float centery =
-          ((yolobox_vec[i].y2 + yolobox_vec[i].y1) / 2 - ty1) / ratio;
-      float width = (yolobox_vec[i].x2 - yolobox_vec[i].x1) / ratio;
-      float height = (yolobox_vec[i].y2 - yolobox_vec[i].y1) / ratio;
-      yolobox_vec[i].x1 = centerx - width / 2;
-      yolobox_vec[i].y1 = centery - height / 2;
-      yolobox_vec[i].x2 = centerx + width / 2;
-      yolobox_vec[i].y2 = centery + height / 2;
+      yolobox_vec[i].x1 = std::round((yolobox_vec[i].x1 - tx1) * inv_ratio_x);
+      yolobox_vec[i].y1 = std::round((yolobox_vec[i].y1 - ty1) * inv_ratio_y);
+      yolobox_vec[i].x2 = std::round((yolobox_vec[i].x2 - tx1) * inv_ratio_x);
+      yolobox_vec[i].y2 = std::round((yolobox_vec[i].y2 - ty1) * inv_ratio_y);
     }
 
     clip_boxes(yolobox_vec, frame_width, frame_height);
 
-    // post 4: get mask
+    // post 4: get mask (CPU)
     YoloV8BoxVec yolobox_vec_final;
 
-    if (context->seg_tpu_opt) {
-      cv::Vec4f trans = para.trans;
-      int r_x =
-          floor(trans[2] / context->net_w * segmentation_out_shape->dims[3]);
-      int r_y =
-          floor(trans[3] / context->net_h * segmentation_out_shape->dims[2]);
+    int dims = 4;
+    int sizes[] = {
+        segmentation_out_shape->dims[0], segmentation_out_shape->dims[1],
+        segmentation_out_shape->dims[2], segmentation_out_shape->dims[3]};
+    cv::Mat segmentation_out_data(dims, sizes, CV_32F, segmentation_data);
 
-      int r_w = segmentation_out_shape->dims[3] - 2 * r_x;
-      int r_h = segmentation_out_shape->dims[2] - 2 * r_y;
+    for (int i = 0; i < yolobox_vec.size(); i++) {
+      if (yolobox_vec[i].x2 > yolobox_vec[i].x1 + 1 &&
+          yolobox_vec[i].y2 > yolobox_vec[i].y1 + 1) {
+        get_mask(context, cv::Mat(yolobox_vec[i].mask).t(),
+                 segmentation_out_data, para,
+                 cv::Rect{yolobox_vec[i].x1, yolobox_vec[i].y1,
+                          yolobox_vec[i].x2 - yolobox_vec[i].x1,
+                          yolobox_vec[i].y2 - yolobox_vec[i].y1},
+                 yolobox_vec[i].mask_img);
 
-      r_w = MAX(r_w, 1);
-      r_h = MAX(r_h, 1);
-
-      struct Paras paras = {
-          r_x, r_y, r_w, r_h, para.raw_size.width, para.raw_size.height};
-
-      YoloV8BoxVec yolobox_valid_vec;
-      for (int i = 0; i < yolobox_vec.size(); i++) {
-        if (yolobox_vec[i].x2 > yolobox_vec[i].x1 + 1 &&
-            yolobox_vec[i].y2 > yolobox_vec[i].y1 + 1) {
-          yolobox_valid_vec.emplace_back(yolobox_vec[i]);
-        }
-      }
-
-      bm_tensor_t segmentation_tensor;
-      bool ok = bmrt_tensor(&segmentation_tensor, context->bmrt,
-                            context->netinfo->input_dtypes[1],
-                            context->netinfo->stages[0].input_shapes[1]);
-      if (!ok) {
-        IVS_ERROR("postProcessSeg bmrt_tensor error");
-      }
-
-      int ret = bm_memcpy_s2d_partial(
-          context->tpu_mask_handle, segmentation_tensor.device_mem,
-          reinterpret_cast<void*>(segmentation_data),
-          bmrt_tensor_bytesize(&segmentation_tensor));
-      if (ret != BM_SUCCESS) {
-        IVS_ERROR("postProcessSeg bm_memcpy_s2d_partial error");
-      }
-
-      if (yolobox_valid_vec.size() > 0) {
-        int mask_times =
-            (yolobox_valid_vec.size() + context->tpu_mask_num - 1) /
-            context->tpu_mask_num;
-
-        for (int i = 0; i < mask_times; i++) {
-          int start = i * context->tpu_mask_num;
-          getmask_tpu(context, yolobox_valid_vec, start, segmentation_tensor,
-                      paras, yolobox_vec_final, context->thresh_conf_min);
-        }
-      }
-
-      bm_free_device(context->tpu_mask_handle, segmentation_tensor.device_mem);
-    } else {
-      int dims = 4;
-      int sizes[] = {
-          segmentation_out_shape->dims[0], segmentation_out_shape->dims[1],
-          segmentation_out_shape->dims[2], segmentation_out_shape->dims[3]};
-      cv::Mat segmentation_out_data(dims, sizes, CV_32F, segmentation_data);
-
-      for (int i = 0; i < yolobox_vec.size(); i++) {
-        if (yolobox_vec[i].x2 > yolobox_vec[i].x1 + 1 &&
-            yolobox_vec[i].y2 > yolobox_vec[i].y1 + 1) {
-          get_mask(context, cv::Mat(yolobox_vec[i].mask).t(),
-                   segmentation_out_data, para,
-                   cv::Rect{yolobox_vec[i].x1, yolobox_vec[i].y1,
-                            yolobox_vec[i].x2 - yolobox_vec[i].x1,
-                            yolobox_vec[i].y2 - yolobox_vec[i].y1},
-                   yolobox_vec[i].mask_img);
-
-          yolobox_vec_final.emplace_back(yolobox_vec[i]);
-        }
+        yolobox_vec_final.emplace_back(yolobox_vec[i]);
       }
     }
 
@@ -908,95 +875,23 @@ void Yolov8PostProcess::postProcessSeg(
       }
 
       obj->mSegmentedObjectMetadatas.push_back(segData);
+
+      // Also populate mDetectedObjectMetadatas for OSD rendering
+      std::shared_ptr<common::DetectedObjectMetadata> detData =
+          std::make_shared<common::DetectedObjectMetadata>();
+      detData->mBox.mX = segData->mBox.mX;
+      detData->mBox.mY = segData->mBox.mY;
+      detData->mBox.mWidth = segData->mBox.mWidth;
+      detData->mBox.mHeight = segData->mBox.mHeight;
+      detData->mScores.push_back(bbox.score);
+      detData->mClassify = bbox.class_id;
+      if (context->class_thresh_valid) {
+        detData->mLabelName = context->class_names[detData->mClassify];
+      }
+      obj->mDetectedObjectMetadatas.push_back(detData);
     }
 
     ++idx;
-  }
-}
-
-void Yolov8PostProcess::getmask_tpu(std::shared_ptr<Yolov8Context> context,
-                                    YoloV8BoxVec& yolov8box_input, int start,
-                                    const bm_tensor_t& segmentation_tensor,
-                                    Paras& paras,
-                                    YoloV8BoxVec& yolov8box_output,
-                                    float confThreshold) {
-  int mask_height = context->m_tpumask_net_h;
-  int mask_width = context->m_tpumask_net_w;
-  int actual_mask_num =
-      MIN(context->tpu_mask_num, yolov8box_input.size() - start);
-
-  context->netinfo->stages[0].input_shapes[0].dims[0] = 1;
-  context->netinfo->stages[0].input_shapes[0].dims[1] = actual_mask_num;
-  context->netinfo->stages[0].input_shapes[0].dims[2] = context->mask_len;
-
-  // 1. prepare bmodel inputs
-  bm_tensor_t detection_tensor;
-  bool ok = bmrt_tensor(&detection_tensor, context->bmrt,
-                        context->netinfo->input_dtypes[0],
-                        context->netinfo->stages[0].input_shapes[0]);
-  if (!ok) {
-    IVS_ERROR("getmask_tpu bmrt_tensor error");
-  }
-
-  for (size_t i = start; i < start + actual_mask_num; i++) {
-    int ret = bm_memcpy_s2d_partial_offset(
-        context->tpu_mask_handle, detection_tensor.device_mem,
-        reinterpret_cast<void*>(yolov8box_input[i].mask.data()), 32 * 4,
-        32 * 4 * (i - start));
-    if (ret != BM_SUCCESS) {
-      IVS_ERROR("getmask_tpu bm_memcpy_s2d_partial_offset error");
-    }
-  }
-
-  std::vector<bm_tensor_t> input_tensors = {detection_tensor,
-                                            segmentation_tensor};
-  std::vector<bm_tensor_t> output_tensors;
-
-  // 2. run bmodel
-  output_tensors.resize(context->netinfo->output_num);
-  ok = bmrt_launch_tensor(context->bmrt, context->netinfo->name,
-                          input_tensors.data(), context->netinfo->input_num,
-                          output_tensors.data(), context->netinfo->output_num);
-  if (!ok) {
-    IVS_ERROR("getmask_tpu bmrt_launch_tensor error");
-  }
-
-  int ret = bm_thread_sync(context->tpu_mask_handle);
-  if (ret != BM_SUCCESS) {
-    IVS_ERROR("getmask_tpu bm_thread_sync error");
-  }
-
-  bm_free_device(context->tpu_mask_handle, input_tensors[0].device_mem);
-
-  // 3. get outputs
-  bm_tensor_t output_tensor = output_tensors[0];
-  float output0[1 * actual_mask_num * mask_height * mask_width];
-  ret = bm_memcpy_d2s_partial(context->tpu_mask_handle, output0,
-                              output_tensor.device_mem,
-                              bmrt_tensor_bytesize(&output_tensor));
-  if (ret != BM_SUCCESS) {
-    IVS_ERROR("getmask_tpu bm_memcpy_d2s_partial error");
-  }
-  for (int i = 0; i < output_tensors.size(); i++) {
-    bm_free_device(context->tpu_mask_handle, output_tensors[i].device_mem);
-  }
-
-  // 4. crop + mask
-  for (int i = 0; i < actual_mask_num; i++) {
-    int yi = start + i;
-    cv::Mat temp_mask(mask_height, mask_width, CV_32FC1,
-                      output0 + i * mask_height * mask_width);
-    cv::Mat masks_feature =
-        temp_mask(cv::Rect(paras.r_x, paras.r_y, paras.r_w, paras.r_h));
-    cv::Mat mask;
-    cv::resize(masks_feature, mask, cv::Size(paras.width, paras.height));
-
-    // crop + mask
-    cv::Rect bound = cv::Rect{yolov8box_input[yi].x1, yolov8box_input[yi].y1,
-                              yolov8box_input[yi].x2 - yolov8box_input[yi].x1,
-                              yolov8box_input[yi].y2 - yolov8box_input[yi].y1};
-    yolov8box_input[yi].mask_img = mask(bound) > confThreshold;
-    yolov8box_output.push_back(yolov8box_input[yi]);
   }
 }
 
@@ -1035,7 +930,7 @@ void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
   cv::Mat mask;
   resize(masks_feature, mask,
          cv::Size(para.raw_size.width, para.raw_size.height));
-  mask_out = mask(bound) > context->thresh_nms;
+  mask_out = mask(bound) > 0.5f;
 }
 
 void Yolov8PostProcess::postProcessObb(

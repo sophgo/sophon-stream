@@ -2,7 +2,7 @@
 
 [English](README_EN.md) | 简体中文
 
-sophon-stream osd element是sophon-stream框架中的一个插件，负责算法结果的可视化，支持目标检测、目标跟踪算法结果可视化
+sophon-stream osd element是sophon-stream框架中的一个插件，负责算法结果的可视化，支持目标检测、目标跟踪、实例分割算法结果可视化
 
 ## 目录
 - [sophon-stream osd element](#sophon-stream-osd-element)
@@ -11,7 +11,9 @@ sophon-stream osd element是sophon-stream框架中的一个插件，负责算法
   - [2. 配置参数](#2-配置参数)
 
 ## 1. 特点
-* 支持目标检测、目标跟踪算法结果的可视化
+* 支持目标检测、目标跟踪、实例分割算法结果的可视化
+* DET模式下，当检测框带有分割掩码（mSegmentedObjectMetadatas）时，自动叠加绘制半透明掩码
+* 分割掩码渲染需要使用 OPENCV draw_utils（BMCV模式不支持掩码渲染）
 
 ![track.jpg](pics/track.jpg)
 
@@ -38,7 +40,7 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 
 |      参数名      |  类型  |              默认值               |                 说明                  |
 | :--------------: | :----: | :-------------------------------: | :-----------------------------------: |
-|     osd_type     | 字符串 |              "TRACK"              | 画图类型，包括 "DET"、"TRACK"、"POSE"、"ALGORITHM"、"TEXT" ，其中ALGORITHM代表使用draw_func_name所对应的osd函数，TEXT代表在原图任意位置使用硬件绘制文字|
+|     osd_type     | 字符串 |              "TRACK"              | 画图类型，包括 "DET"、"TRACK"、"POSE"、"ALGORITHM"、"TEXT" ，其中ALGORITHM代表使用draw_func_name所对应的osd函数，TEXT代表在原图任意位置使用硬件绘制文字。DET模式同时支持实例分割掩码渲染，当检测数据中包含分割掩码时自动叠加绘制|
 | class_names_file | 字符串 |                无                 |         class name文件的路径          |
 | recognice_names_file | 字符串 |                无             |         如果有识别子任务的话，表示识别类别名字文件的路径          |
 |    draw_utils    | 字符串 |             "OPENCV"              |    画图工具，包括 "OPENCV"，"BMCV"    |
@@ -62,3 +64,5 @@ sophon-stream osd插件具有一些可配置的参数，可以根据需求进行
 
 > **注意**：
 1. osd_type为"DET"时，需提供class_names_file文件地址
+2. 实例分割掩码渲染仅支持OPENCV draw_utils，使用BMCV模式时不会绘制掩码
+3. 掩码通过alpha混合叠加在原始图像上（权重：原图0.6，掩码0.4），不同类别使用不同颜色区分

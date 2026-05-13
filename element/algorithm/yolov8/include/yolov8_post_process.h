@@ -85,10 +85,6 @@ class Yolov8PostProcess : public ::sophon_stream::element::PostProcess {
   void get_mask(std::shared_ptr<Yolov8Context> context,
                 const cv::Mat& mask_info, const cv::Mat& mask_data,
                 const ImageInfo& para, cv::Rect bound, cv::Mat& mask_out);
-  void getmask_tpu(std::shared_ptr<Yolov8Context> context,
-                   YoloV8BoxVec& yolov8box_input, int start,
-                   const bm_tensor_t& segmentation_tensor, Paras& paras,
-                   YoloV8BoxVec& yolov8box_output, float confThreshold);
 
   //obb utils.
   void nms_rotated(obbBoxVec& dets, float nmsConfidence = 0.5);

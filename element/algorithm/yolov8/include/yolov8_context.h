@@ -55,16 +55,7 @@ class Yolov8Context : public ::sophon_stream::element::Context {
   bool roi_predefined = false;
   int thread_number;
 
-  // yolov8_seg_tpu_opt
-  bool seg_tpu_opt = false;
-  std::string mask_bmodel_path = "";
-  bm_handle_t tpu_mask_handle;
-  void *bmrt = nullptr;
-  const bm_net_info_t *netinfo;
-  std::vector<std::string> network_names;
   int mask_len = 32;
-  int tpu_mask_num = 32;
-  int m_tpumask_net_h, m_tpumask_net_w;
 
 };
 }  // namespace yolov8

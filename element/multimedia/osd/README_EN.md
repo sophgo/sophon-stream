@@ -2,7 +2,7 @@
 
 English | [简体中文](README.md)
 
-sophon-stream osd element is a plugin within the sophon-stream framework responsible for the visualization of algorithmic results. It supports the visualization of object detection and object tracking algorithm results.
+sophon-stream osd element is a plugin within the sophon-stream framework responsible for the visualization of algorithmic results. It supports the visualization of object detection, object tracking, and instance segmentation algorithm results.
 
 ## Content
 - [sophon-stream osd element](#sophon-stream-osd-element)
@@ -11,7 +11,9 @@ sophon-stream osd element is a plugin within the sophon-stream framework respons
   - [2. Configuration parameters](#2-Configuration-parameters)
 
 ## 1. Feature
-* Supports visualization of object detection and object tracking algorithm results.
+* Supports visualization of object detection, object tracking, and instance segmentation algorithm results.
+* In DET mode, translucent masks are automatically overlaid when detection boxes have segmentation masks (mSegmentedObjectMetadatas).
+* Mask rendering requires OPENCV draw_utils (BMCV mode does not support mask rendering).
 
 ![track.jpg](pics/track.jpg)
 
@@ -38,7 +40,7 @@ The sophon-stream osd plugin has several configurable parameters that can be adj
 
 | Parameter Name   |  name  |        Default value             |                    Description         |
 | :--------------: | :----: | :-------------------------------: | :-----------------------------------: |
-|     osd_type     | string |              "TRACK"              | drawing type,include "DET","TRACK","POSE","ALGORITHM","TEXT" |
+|     osd_type     | string |              "TRACK"              | drawing type,include "DET","TRACK","POSE","ALGORITHM","TEXT". DET mode also supports instance segmentation mask rendering—masks are automatically overlaid when present|
 | class_names_file | string |                \                 |        file path of class name        |
 | recognice_names_file | String | None | If there is a recognition subtask, this represents the path to the file containing names to be recognized |     |
 |    draw_utils    | string |             "OPENCV"              |    drawing function，include "OPENCV"，"BMCV"    |
@@ -61,4 +63,6 @@ The sophon-stream osd plugin has several configurable parameters that can be adj
 |  thread_number   |  int  |                 4                 | Thread number, it should be consistent with the number of streams being processed.  |
 
 > **notes**：
-1. if osd_type is "DET", the address of the class_names_file should be provided.
+1. If osd_type is "DET", the address of the class_names_file should be provided.
+2. Instance segmentation mask rendering is only supported with OPENCV draw_utils; masks will not be drawn in BMCV mode.
+3. Masks are alpha-blended onto the original image (weights: original 0.6, mask 0.4), with different colors for different classes.
