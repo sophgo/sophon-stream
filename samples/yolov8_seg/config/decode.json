@@ -1,0 +1,7 @@
+{
+  "configure": {},
+  "shared_object": "../../build/lib/libdecode.so",
+  "name": "decode",
+  "side": "sophgo",
+  "thread_number": 1
+}

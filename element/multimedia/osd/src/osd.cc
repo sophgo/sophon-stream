@@ -65,7 +65,7 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
       STREAM_CHECK((topIt != configure.end() && topIt->is_array()),
                    "top must be array, please check your osd element "
                    "configuration file");
-      for (auto& top_obj : *leftIt) {
+      for (auto& top_obj : *topIt) {
         int top = top_obj.get<int>();
         tops.push_back(top);
       }

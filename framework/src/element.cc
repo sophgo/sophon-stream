@@ -192,7 +192,9 @@ common::ErrorCode Element::pushInputData(int inputPort, int dataPipeId,
   }
   while (mInputConnectorMap[inputPort]->pushData(dataPipeId, data) !=
          common::ErrorCode::SUCCESS) {
-    listenThreadPtr->report_status(common::ErrorCode::DECODE_CHANNEL_PIPE_FULL);
+    if (listenThreadPtr != nullptr) {
+      listenThreadPtr->report_status(common::ErrorCode::DECODE_CHANNEL_PIPE_FULL);
+    }
     IVS_DEBUG("Input DataPipe is full, now sleeping...");
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
@@ -226,9 +228,23 @@ common::ErrorCode Element::pushOutputData(int outputPort, int dataPipeId,
       }
     }
   }
-  while (mOutputConnectorMap[outputPort].lock()->pushData(dataPipeId, data) !=
+
+  auto it = mOutputConnectorMap.find(outputPort);
+  if (it == mOutputConnectorMap.end()) {
+    IVS_ERROR("Can not find data pipe on output port {}", outputPort);
+    return common::ErrorCode::NO_SUCH_WORKER_PORT;
+  }
+
+  auto connector = it->second.lock();
+  if (!connector) {
+    IVS_ERROR("Output connector has been destroyed on port {}", outputPort);
+    return common::ErrorCode::UNKNOWN;
+  }
+  while (connector->pushData(dataPipeId, data) !=
          common::ErrorCode::SUCCESS && mThreadStatus != ThreadStatus::STOP) {
-    listenThreadPtr->report_status(common::ErrorCode::DATA_PIPE_FULL);
+    if (listenThreadPtr != nullptr) {
+      listenThreadPtr->report_status(common::ErrorCode::DATA_PIPE_FULL);
+    }
     IVS_DEBUG(
         "DataPipe is full, now sleeping. ElementID is {0}, outputPort is {1}, "
         "dataPipeId is {2}",
@@ -236,16 +252,15 @@ common::ErrorCode Element::pushOutputData(int outputPort, int dataPipeId,
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
   return common::ErrorCode::SUCCESS;
-
-  IVS_ERROR(
-      "Can not find data handler or data pipe on output port, output port: "
-      "{0:d}--element id:{1}",
-      outputPort, mId);
-  return common::ErrorCode::NO_SUCH_WORKER_PORT;
 }
 
 int Element::getOutputConnectorCapacity(int outputPort) {
-  return mOutputConnectorMap[outputPort].lock()->getCapacity();
+  auto connector = mOutputConnectorMap[outputPort].lock();
+  if (!connector) {
+    IVS_ERROR("Output connector has been destroyed on port {}", outputPort);
+    return -1;
+  }
+  return connector->getCapacity();
 }
 
 int Element::getInputConnectorCapacity(int inputPort) {

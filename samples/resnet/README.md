@@ -54,29 +54,11 @@ chmod -R +x scripts/
 ```bash
 models/
 ├── BM1684
-│   ├── resnet_pedestrian_gender_fp32_1b.bmodel    # 用于BM1684的FP32 BModel，batch_size=1
-│   ├── resnet_pedestrian_gender_fp32_4b.bmodel    # 用于BM1684的FP32 BModel，batch_size=4
-│   ├── resnet_pedestrian_gender_int8_1b.bmodel    # 用于BM1684的INT8 BModel，batch_size=1
-│   ├── resnet_pedestrian_gender_int8_4b.bmodel    # 用于BM1684的INT8 BModel，batch_size=4
-│   ├── resnet_vehicle_color_fp32_1b.bmodel        # 用于BM1684的FP32 BModel，batch_size=1
-│   ├── resnet_vehicle_color_fp32_4b.bmodel        # 用于BM1684的FP32 BModel，batch_size=4
-│   ├── resnet_vehicle_color_int8_1b.bmodel        # 用于BM1684的INT8 BModel，batch_size=1
-│   ├── resnet_vehicle_color_int8_4b.bmodel        # 用于BM1684的INT8 BModel，batch_size=4
 │   ├── resnet50_fp32_1b.bmodel                    # 用于BM1684的FP32 BModel，batch_size=1
 │   ├── resnet50_fp32_4b.bmodel                    # 用于BM1684的FP32 BModel，batch_size=4
 │   ├── resnet50_int8_1b.bmodel                    # 用于BM1684的INT8 BModel，batch_size=1
 │   └── resnet50_int8_4b.bmodel                    # 用于BM1684的INT8 BModel，batch_size=4
 └── BM1684X
-    ├── resnet_pedestrian_gender_fp32_1b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=1
-    ├── resnet_pedestrian_gender_fp32_4b.bmodel    # 用于BM1684X的FP32 BModel，batch_size=4
-    ├── resnet_pedestrian_gender_fp16_1b.bmodel    # 用于BM1684X的FP16 BModel，batch_size=1
-    ├── resnet_pedestrian_gender_int8_1b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=1
-    ├── resnet_pedestrian_gender_int8_4b.bmodel    # 用于BM1684X的INT8 BModel，batch_size=4
-    ├── resnet_vehicle_color_fp32_1b.bmodel        # 用于BM1684X的FP32 BModel，batch_size=1
-    ├── resnet_vehicle_color_fp32_4b.bmodel        # 用于BM1684X的FP32 BModel，batch_size=4
-    ├── resnet_vehicle_color_fp16_1b.bmodel        # 用于BM1684X的FP16 BModel，batch_size=1
-    ├── resnet_vehicle_color_int8_1b.bmodel        # 用于BM1684X的INT8 BModel，batch_size=1
-    └── resnet_vehicle_color_int8_4b.bmodel        # 用于BM1684X的INT8 BModel，batch_size=4
     ├── resnet50_fp32_1b.bmodel                    # 用于BM1684X的FP32 BModel，batch_size=1
     ├── resnet50_fp32_4b.bmodel                    # 用于BM1684X的FP32 BModel，batch_size=4
     ├── resnet50_fp16_1b.bmodel                    # 用于BM1684X的FP16 BModel，batch_size=1

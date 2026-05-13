@@ -881,6 +881,10 @@ std::shared_ptr<bm_image> bmpDec(bm_handle_t& handle, string input_name) {
     p = nullptr;
   });
   FILE* infile = fopen(input_name.c_str(), "rb+");
+  if (!infile) {
+    fprintf(stderr, "Failed to open file: %s\n", input_name.c_str());
+    exit(1);
+  }
   fseek(infile, 0, SEEK_END);
   int numBytes = ftell(infile);
   fseek(infile, 0, SEEK_SET);
@@ -967,6 +971,10 @@ std::shared_ptr<bm_image> pngDec(bm_handle_t& handle, string input_name) {
     p = nullptr;
   });
   FILE* infile = fopen(input_name.c_str(), "rb+");
+  if (!infile) {
+    fprintf(stderr, "Failed to open file: %s\n", input_name.c_str());
+    exit(1);
+  }
   fseek(infile, 0, SEEK_END);
   int numBytes = ftell(infile);
   fseek(infile, 0, SEEK_SET);

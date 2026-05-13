@@ -168,9 +168,9 @@ void FastposePostProcess::poseNMSBody(
     int num_samples, int num_joints, float area_thresh,
     std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
     std::vector<int>& pick_ids) {
-  float* ref_dists = new float[num_samples];
-  float* human_scores = new float[num_samples];
-  bool* mask = new bool[num_samples];
+  std::vector<float> ref_dists(num_samples);
+  std::vector<float> human_scores(num_samples);
+  std::vector<bool> mask(num_samples);
   int num_valid_samples = num_samples;
   for (int i = 0; i < num_samples; i++) {
     float width = det_data[i]->mBox.mWidth, height = det_data[i]->mBox.mHeight;
@@ -218,11 +218,11 @@ void FastposePostProcess::poseNMSBody(
     }
 
     int keep_num = dist.size() / num_joints;
-    float* final_dist = new float[keep_num];
-    int* num_match_keypoints = new int[keep_num];
+    std::vector<float> final_dist(keep_num);
+    std::vector<int> num_match_keypoints(keep_num);
     getParametricDistance(body_keypoints, dist, dist_indx, pick_id, num_joints,
-                          false, final_dist);
-    PCKMatch(dist, num_joints, ref_dists[pick_id], num_match_keypoints);
+                          false, final_dist.data());
+    PCKMatch(dist, num_joints, ref_dists[pick_id], num_match_keypoints.data());
     std::vector<int> delete_ids;
     for (int i = 0; i < keep_num; i++) {
       if (final_dist[i] > pose_nms_params->gamma ||
@@ -233,8 +233,6 @@ void FastposePostProcess::poseNMSBody(
         num_valid_samples -= 1;
       }
     }
-    delete[] final_dist;
-    delete[] num_match_keypoints;
     if (delete_ids.size() == 0) {
       delete_ids.push_back(relative_pick_id);
       mask[pick_id] = false;
@@ -268,10 +266,6 @@ void FastposePostProcess::poseNMSBody(
     if (1.5 * 1.5 * (xmax - xmin) * (ymax - ymin) < area_thresh) continue;
     pick_ids.push_back(pick_id);
   }
-
-  delete[] ref_dists;
-  delete[] human_scores;
-  delete[] mask;
 }
 
 void FastposePostProcess::getParametricDistance(
@@ -383,8 +377,8 @@ void FastposePostProcess::pMergeFast(
     std::vector<int>& merge_ids, std::vector<float>& dist,
     std::vector<int>& dist_indx, int pick_id, int num_joints, float ref_dist) {
   ref_dist = std::min(ref_dist, 15.f);
-  float* normed_scores = new float[merge_ids.size() * num_joints];
-  float* sum_score = new float[num_joints];
+  std::vector<float> normed_scores(merge_ids.size() * num_joints);
+  std::vector<float> sum_score(num_joints, 0);
   for (int j = 0; j < num_joints; j++) sum_score[j] = 0;
   for (int i = 0; i < merge_ids.size(); i++) {
     for (int j = 0; j < num_joints; j++) {
@@ -421,8 +415,6 @@ void FastposePostProcess::pMergeFast(
     body_keypoints[pick_id]->keypoints[j * 2 + 1] = final_pose2;
     body_keypoints[pick_id]->scores[j] = final_score;
   }
-  delete[] normed_scores;
-  delete[] sum_score;
 }
 
 void FastposePostProcess::poseNMSFullBody(
@@ -430,9 +422,9 @@ void FastposePostProcess::poseNMSFullBody(
     int num_samples, int num_joints, float area_thresh,
     std::vector<std::shared_ptr<common::PosedObjectMetadata>>& body_keypoints,
     std::vector<int>& pick_ids) {
-  float* ref_dists = new float[num_samples];
-  float* human_scores = new float[num_samples];
-  bool* mask = new bool[num_samples];
+  std::vector<float> ref_dists(num_samples);
+  std::vector<float> human_scores(num_samples);
+  std::vector<bool> mask(num_samples);
   int num_valid_samples = num_samples;
   for (int i = 0; i < num_samples; i++) {
     float width = det_data[i]->mBox.mWidth, height = det_data[i]->mBox.mHeight;
@@ -480,12 +472,12 @@ void FastposePostProcess::poseNMSFullBody(
     }
 
     int keep_num = dist.size() / num_joints;
-    float* final_dist = new float[keep_num];
-    int* num_match_keypoints = new int[keep_num];
+    std::vector<float> final_dist(keep_num);
+    std::vector<int> num_match_keypoints(keep_num);
     getParametricDistance(body_keypoints, dist, dist_indx, pick_id, num_joints,
-                          true, final_dist);
+                          true, final_dist.data());
     PCKMatchFullBody(dist, body_keypoints, pick_id, num_joints,
-                     ref_dists[pick_id], num_match_keypoints);
+                     ref_dists[pick_id], num_match_keypoints.data());
     std::vector<int> delete_ids;
     for (int i = 0; i < keep_num; i++) {
       if (final_dist[i] > pose_nms_params->gamma ||
@@ -496,8 +488,6 @@ void FastposePostProcess::poseNMSFullBody(
         num_valid_samples -= 1;
       }
     }
-    delete[] final_dist;
-    delete[] num_match_keypoints;
     if (delete_ids.size() == 0) {
       delete_ids.push_back(relative_pick_id);
       mask[pick_id] = false;
@@ -531,10 +521,6 @@ void FastposePostProcess::poseNMSFullBody(
     if (1.5 * 1.5 * (xmax - xmin) * (ymax - ymin) < area_thresh) continue;
     pick_ids.push_back(pick_id);
   }
-
-  delete[] ref_dists;
-  delete[] human_scores;
-  delete[] mask;
 }
 
 void FastposePostProcess::getKeyPoints(

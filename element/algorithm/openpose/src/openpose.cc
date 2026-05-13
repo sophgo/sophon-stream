@@ -72,7 +72,7 @@ common::ErrorCode Openpose::initContext(const std::string& json) {
       mContext->m_model_type =
           sophon_stream::common::PosedObjectMetadata::EModelType::BODY_25;
     } else {
-      std::cout << "Is not a valid m_model_type! " << std::endl;
+      IVS_ERROR("Is not a valid m_model_type! ");
       exit(1);
     }
     // 4.converto
@@ -101,9 +101,7 @@ common::ErrorCode Openpose::initContext(const std::string& json) {
       mContext->func_id = tpu_kernel_get_function(
           mContext->bmContext->handle(), tpu_module,
           "tpu_kernel_api_openpose_part_nms_postprocess");
-      std::cout
-          << "Using tpu_kernel openpose postprocession, kernel funtion id: "
-          << mContext->func_id << std::endl;
+      IVS_INFO("Using tpu_kernel openpose postprocession, kernel funtion id: {}", mContext->func_id);
     }
     mContext->thread_number = getThreadNumber();
   } while (false);

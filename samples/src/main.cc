@@ -80,8 +80,13 @@ demo_config parse_demo_json(std::string& json_path) {
   if (demo_json.contains(JSON_CONFIG_DOWNLOAD_IMAGE_FILED))
     config.download_image =
         demo_json.find(JSON_CONFIG_DOWNLOAD_IMAGE_FILED)->get<bool>();
-  config.engine_config_file =
-      demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED)->get<std::string>();
+
+  auto engine_config_it = demo_json.find(JSON_CONFIG_ENGINE_CONFIG_PATH_FILED);
+  if (engine_config_it == demo_json.end()) {
+    IVS_ERROR("Missing required config field: {}", JSON_CONFIG_ENGINE_CONFIG_PATH_FILED);
+    throw std::runtime_error("Configuration parsing failed");
+  }
+  config.engine_config_file = engine_config_it->get<std::string>();
   std::string class_names_file;
   if (demo_json.contains(JSON_CONFIG_CLASS_NAMES_FILED))
     class_names_file =
@@ -107,20 +112,19 @@ demo_config parse_demo_json(std::string& json_path) {
     const char* dir_path = "./results";
     struct stat info;
     if (stat(dir_path, &info) == 0 && S_ISDIR(info.st_mode)) {
-      std::cout << "Directory already exists." << std::endl;
+      IVS_INFO("Directory already exists.");
       int new_permissions = S_IRWXU | S_IRWXG | S_IRWXO;
       if (chmod(dir_path, new_permissions) == 0) {
-        std::cout << "Directory permissions modified successfully."
-                  << std::endl;
+        IVS_INFO("Directory permissions modified successfully.");
       } else {
-        std::cerr << "Error modifying directory permissions." << std::endl;
+        IVS_ERROR("Error modifying directory permissions.");
         abort();
       }
     } else {
-      if (mkdir(dir_path, 0777) == 0) {
-        std::cout << "Directory created successfully." << std::endl;
+      if (mkdir(dir_path, 0755) == 0) {
+        IVS_INFO("Directory created successfully.");
       } else {
-        std::cerr << "Error creating directory." << std::endl;
+        IVS_ERROR("Error creating directory.");
         abort();
       }
     }
@@ -217,25 +221,49 @@ demo_config parse_demo_json(std::string& json_path) {
   }
   if (demo_json.contains(JSON_CONFIG_HTTP_REPORT_CONFIG_FILED)) {
     auto http_report_it = demo_json.find(JSON_CONFIG_HTTP_REPORT_CONFIG_FILED);
-    config.report_config["port"] =
-        http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)->get<int>();
-    config.report_config["ip"] =
-        http_report_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
-            ->get<std::string>();
-    config.report_config["path"] =
-        http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
-            ->get<std::string>();
+    auto port_it = http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED);
+    auto ip_it = http_report_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED);
+    auto path_it = http_report_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED);
+
+    if (port_it == http_report_it->end()) {
+      IVS_ERROR("Missing required config field: {}", JSON_CONFIG_HTTP_CONFIG_PORT_FILED);
+      throw std::runtime_error("Configuration parsing failed");
+    }
+    if (ip_it == http_report_it->end()) {
+      IVS_ERROR("Missing required config field: {}", JSON_CONFIG_HTTP_CONFIG_IP_FILED);
+      throw std::runtime_error("Configuration parsing failed");
+    }
+    if (path_it == http_report_it->end()) {
+      IVS_ERROR("Missing required config field: {}", JSON_CONFIG_HTTP_CONFIG_PATH_FILED);
+      throw std::runtime_error("Configuration parsing failed");
+    }
+
+    config.report_config["port"] = port_it->get<int>();
+    config.report_config["ip"] = ip_it->get<std::string>();
+    config.report_config["path"] = path_it->get<std::string>();
   }
   if (demo_json.contains(JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED)) {
     auto http_listen_it = demo_json.find(JSON_CONFIG_HTTP_LISTEN_CONFIG_FILED);
-    config.listen_config["port"] =
-        http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED)->get<int>();
-    config.listen_config["ip"] =
-        http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED)
-            ->get<std::string>();
-    config.listen_config["path"] =
-        http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED)
-            ->get<std::string>();
+    auto port_it = http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PORT_FILED);
+    auto ip_it = http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_IP_FILED);
+    auto path_it = http_listen_it->find(JSON_CONFIG_HTTP_CONFIG_PATH_FILED);
+
+    if (port_it == http_listen_it->end()) {
+      IVS_ERROR("Missing required config field: {}", JSON_CONFIG_HTTP_CONFIG_PORT_FILED);
+      throw std::runtime_error("Configuration parsing failed");
+    }
+    if (ip_it == http_listen_it->end()) {
+      IVS_ERROR("Missing required config field: {}", JSON_CONFIG_HTTP_CONFIG_IP_FILED);
+      throw std::runtime_error("Configuration parsing failed");
+    }
+    if (path_it == http_listen_it->end()) {
+      IVS_ERROR("Missing required config field: {}", JSON_CONFIG_HTTP_CONFIG_PATH_FILED);
+      throw std::runtime_error("Configuration parsing failed");
+    }
+
+    config.listen_config["port"] = port_it->get<int>();
+    config.listen_config["ip"] = ip_it->get<std::string>();
+    config.listen_config["path"] = path_it->get<std::string>();
   }
   return config;
 }
@@ -538,13 +566,12 @@ int main(int argc, char* argv[]) {
     stop_cv.wait(uq);
   }
   for (int i = 0; i < demo_json.num_graphs; i++) {
-    std::cout << "graph stop" << std::endl;
+    IVS_INFO("graph stop");
     engine.stop(i);
   }
   long totalCost = clocker.tell_us();
-  std::cout << " total time cost " << totalCost << " us." << std::endl;
+  IVS_INFO("total time cost {} us.", totalCost);
   double fps = static_cast<double>(frameCount) / totalCost;
-  std::cout << "frame count is " << frameCount << " | fps is " << fps * 1000000
-            << " fps." << std::endl;
+  IVS_INFO("frame count is {} | fps is {} fps.", frameCount, fps * 1000000);
   return 0;
 }

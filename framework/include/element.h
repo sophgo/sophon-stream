@@ -258,7 +258,7 @@ class Element : public ::sophon_stream::common::NoCopyable {
   bool mSinkElementFlag = false;
 
   friend class ListenThread;
-  ListenThread* listenThreadPtr;
+  ListenThread* listenThreadPtr = nullptr;
 };
 
 }  // namespace framework

@@ -72,8 +72,7 @@ void YoloxPostProcess::nms_sorted_bboxes(const std::vector<YoloxBox>& objects,
                                          float nms_threshold) {
   picked.clear();
   const int n = objects.size();
-  int suppressed[n];
-  memset(suppressed, 0, sizeof(float) * n);
+  std::vector<int> suppressed(n, 0);
 
   for (int i = 0; i < n; i++) {
     if (suppressed[i] == 1) continue;

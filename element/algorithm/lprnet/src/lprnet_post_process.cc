@@ -107,7 +107,7 @@ void LprnetPostProcess::postProcess(std::shared_ptr<LprnetContext> context,
         detData->mLabelName = res;
         obj->mRecognizedObjectMetadatas.push_back(detData);
 
-        std::cout << res << std::endl;
+        IVS_DEBUG("{}", res);
         if (res.empty()){
             IVS_WARN("License plate recognition came up empty");
         }else{

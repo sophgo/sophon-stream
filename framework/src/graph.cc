@@ -210,7 +210,7 @@ common::ErrorCode Graph::initElements(const std::string& json) {
     int numElements = elementsConfigure.size();
     for (int elementIndex = 0; elementIndex < numElements; elementIndex++) {
       auto& elementConfigure = elementsConfigure[elementIndex];
-      std::cout << elementConfigure.dump() << "\n";
+      IVS_DEBUG("{}", elementConfigure.dump());
       if (!elementConfigure.is_object()) {
         IVS_ERROR(
             "Element json configure is not object, graph id: {0:d}, json: {1}",

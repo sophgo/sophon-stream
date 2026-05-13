@@ -21,6 +21,11 @@ void bm_dem_read_bin(bm_handle_t handle, bm_device_mem_t* dmem,
                      const char* input_name, unsigned int size) {
   char* input_ptr = (char*)malloc(size);
   FILE* fp_src = fopen(input_name, "rb+");
+  if (!fp_src) {
+    IVS_ERROR("Failed to open file: {}", input_name);
+    free(input_ptr);
+    return;
+  }
 
   if (fread((void*)input_ptr, 1, size, fp_src) < (unsigned int)size) {
     printf("file size is less than %d required bytes\n", size);

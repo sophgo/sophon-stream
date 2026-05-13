@@ -34,7 +34,7 @@ common::ErrorCode Connector::pushData(
 int Connector::getCapacity() const { return mCapacity; }
 
 std::shared_ptr<DataPipe> Connector::getDataPipe(int id) const {
-  if (id < 0 || id > mDataPipes.size()) {
+  if (id < 0 || id >= static_cast<int>(mDataPipes.size())) {
     IVS_ERROR("Error DataPipe Id!");
     return nullptr;
   }

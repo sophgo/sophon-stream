@@ -246,6 +246,8 @@ void Encoder::Encoder_CC::init_writer() {
       avformat_alloc_output_context2(&enc_format_ctx_, NULL, "rtsp",
                                      output_path_.c_str());
       if (!enc_format_ctx_) {
+        IVS_ERROR("avformat_alloc_output_context2 failed for RTSP output: {}", output_path_.c_str());
+        abort();
       }
     } else {
       is_video_file_ = true;
@@ -388,6 +390,8 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
       // IVS_INFO("Encoder idx is {0}, convert cost is {1}", channel_idx,
       //          time_interval2);
       if (BM_SUCCESS != ret) {
+        bm_image_destroy(*yuv_image);
+        free(yuv_image);
         return ret;
       }
     }
@@ -431,13 +435,13 @@ int Encoder::Encoder_CC::bm_image_to_avframe(bm_handle_t& handle,
     av_buffer_unref(&frame->buf[1]);
     av_buffer_unref(&frame->buf[2]);
     free(ImgOut);
-    free(image);
+    free(yuv_image);
     return -1;
   } else if (plane == 2 && !frame->buf[1]) {
     av_buffer_unref(&frame->buf[0]);
     av_buffer_unref(&frame->buf[1]);
     free(ImgOut);
-    free(image);
+    free(yuv_image);
     return -1;
   }
 

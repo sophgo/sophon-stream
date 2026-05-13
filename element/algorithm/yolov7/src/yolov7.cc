@@ -164,8 +164,7 @@ common::ErrorCode Yolov7::initContext(const std::string& json) {
       mContext->func_id =
           tpu_kernel_get_function(mContext->bmContext->handle(), tpu_module,
                                   "tpu_kernel_api_yolov5_detect_out");
-      std::cout << "Using tpu_kernel yolo postprocession, kernel funtion id: "
-                << mContext->func_id << std::endl;
+      IVS_INFO("Using tpu_kernel yolo postprocession, kernel funtion id: {}", mContext->func_id);
     }
 
     // 7. roi

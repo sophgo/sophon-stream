@@ -96,11 +96,11 @@ bm_image convert_fmt(bm_handle_t handle, bm_image input, bm_image_format_ext_ fm
     int ret = 0;
     bm_image output;
     ret = bm_image_create(handle, input.height, input.width, fmt, input.data_type, &output);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bm_image_create failed, ret=", ret);
     ret = bm_image_alloc_dev_mem(output, 1);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bm_image_alloc_dev_mem failed, ret=", ret);
     ret = bmcv_image_storage_convert(handle, 1, &input, &output);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bmcv_image_storage_convert failed, ret=", ret);
     return output;
 }
 
@@ -110,19 +110,19 @@ bm_image dwa_gdc(bm_handle_t handle, bm_image input, bmcv_gdc_attr ldc_attr, int
     bm_image input_, output_;
     if(input.image_format != src_fmt){
         ret = bm_image_create(handle, input.height, input.width, src_fmt, input.data_type, &input_, NULL);
-        assert(ret == BM_SUCCESS);
+        STREAM_CHECK(ret == BM_SUCCESS, "bm_image_create failed, ret=", ret);
         ret = bm_image_alloc_dev_mem(input_, 1);
-        assert(ret == BM_SUCCESS);
+        STREAM_CHECK(ret == BM_SUCCESS, "bm_image_alloc_dev_mem failed, ret=", ret);
         ret = bmcv_image_storage_convert(handle, 1, &input, &input_);
     }else{
         input_ = input;
     }
     ret = bm_image_create(handle, dwa_dst_h, dwa_dst_w, src_fmt, DATA_TYPE_EXT_1N_BYTE, &output_, NULL);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bm_image_create failed, ret=", ret);
     ret = bm_image_alloc_dev_mem(output_, 1);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bm_image_alloc_dev_mem failed, ret=", ret);
     ret = bmcv_dwa_gdc(handle, input_, output_, ldc_attr);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bmcv_dwa_gdc failed, ret=", ret);
     return output_;
 }
 
@@ -164,7 +164,7 @@ int main(){
     int dst_w = 2880;
     bm_handle_t handle;
     ret = bm_dev_request(&handle, 0);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bm_dev_request failed, ret=", ret);
     bm_image left_img_bmi_dwa = dwa_gdc(handle, left_img_bmi, ldc_attr_left, dst_h, dst_w);
     bm_image right_img_bmi_dwa = dwa_gdc(handle, right_img_bmi, ldc_attr_right, dst_h, dst_w);
     bm_image down_img_bmi_dwa = dwa_gdc(handle, down_img_bmi, ldc_attr_down, dst_h, dst_w);
@@ -189,9 +189,9 @@ int main(){
     bm_image blend_input[3] = {left_img_bmi_dwa, right_img_bmi_dwa, down_img_bmi_dwa};
     bm_image blend_output;
     ret = bm_image_create(handle, dst_h, dst_w, blend_input[0].image_format, blend_input[0].data_type, &blend_output);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bm_image_create failed, ret=", ret);
     ret = bm_image_alloc_dev_mem(blend_output, 1);
-    assert(ret == BM_SUCCESS);
+    STREAM_CHECK(ret == BM_SUCCESS, "bm_image_alloc_dev_mem failed, ret=", ret);
     stitch_param stitch_config;
     memset(&stitch_config, 0, sizeof(stitch_config));
     stitch_config.wgt_mode = BM_STITCH_WGT_YUV_SHARE;

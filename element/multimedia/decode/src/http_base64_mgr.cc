@@ -130,8 +130,12 @@ void HTTP_Base64_Mgr::listen_thread() {
 }
 
 void HTTP_Base64_Mgr::setFps(int f) {
+  if (f <= 0) {
+    IVS_ERROR("Invalid fps value: {}", f);
+    return;
+  }
   fps = f;
-  frame_interval_time = 1 / fps * 1000;
+  frame_interval_time = 1000 / fps;
 }
 
 }  // namespace decode
