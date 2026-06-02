@@ -37,6 +37,7 @@ sophon-stream是面向算丰开发平台的数据流处理工具。本软件基�
 |                         | [yolov7](./samples/yolov7)                                        | yolov7 demo                            |
 |                         | [yolov8](./samples/yolov8/)                                       | yolov8 demo                             |
 |                         | [yolov8_obb](./samples/yolov8_obb/)                               | yolov8 obb demo                         |
+|                         | [yolov8_seg](./samples/yolov8_seg/)                               | yolov8 seg demo                         |
 |                         | [yolox](./samples/yolox)                                          | yolox demo                              |
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo                          |
 |                         | [resnet](./samples/resnet)                                        | resnet demo                             |

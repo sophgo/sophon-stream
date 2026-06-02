@@ -85,6 +85,8 @@ void Yolov8PostProcess::postProcess(std::shared_ptr<Yolov8Context> context,
     postProcessCls(context, objectMetadatas);
   else if (context->taskType == TaskType::Seg)
     postProcessSeg(context, objectMetadatas);
+  else if (context->taskType == TaskType::SegFuse)
+    postProcessSegFuse(context, objectMetadatas);
   else if (context->taskType == TaskType::Obb)
     postProcessObb(context, objectMetadatas);
 }
@@ -895,6 +897,165 @@ void Yolov8PostProcess::postProcessSeg(
   }
 }
 
+void Yolov8PostProcess::postProcessSegFuse(
+    std::shared_ptr<Yolov8Context> context,
+    common::ObjectMetadatas& objectMetadatas) {
+  YoloV8BoxVec yolobox_vec;
+
+  for (auto obj : objectMetadatas) {
+    if (obj->mFrame->mEndOfStream) break;
+
+    int frame_width = obj->mFrame->mSpData->width;
+    int frame_height = obj->mFrame->mSpData->height;
+    int tx1 = 0, ty1 = 0;
+
+#ifdef USE_ASPECT_RATIO
+    bool isAlignWidth = false;
+    float ratio =
+        context->roi_predefined
+            ? get_aspect_scaled_ratio(context->roi.crop_w, context->roi.crop_h,
+                                      context->net_w, context->net_h,
+                                      &isAlignWidth)
+            : get_aspect_scaled_ratio(frame_width, frame_height, context->net_w,
+                                      context->net_h, &isAlignWidth);
+    if (isAlignWidth) {
+      ty1 = (int)((context->net_h -
+                   (int)((context->roi_predefined ? context->roi.crop_h
+                                                  : frame_height) *
+                         ratio)) /
+                  2);
+    } else {
+      tx1 = (int)((context->net_w -
+                   (int)((context->roi_predefined ? context->roi.crop_w
+                                                  : frame_width) *
+                         ratio)) /
+                  2);
+    }
+#endif
+
+    // Identify box output (2D) and mask output (3D)
+    int box_tensor_idx = -1;
+    int mask_tensor_idx = -1;
+    for (int i = 0; i < context->output_num; i++) {
+      auto shape = context->bmNetwork->outputTensor(i)->get_shape();
+      if (shape->num_dims == 3) {
+        mask_tensor_idx = i;
+      } else if (shape->num_dims == 2) {
+        box_tensor_idx = i;
+      }
+    }
+
+    auto box_shape = context->bmNetwork->outputTensor(box_tensor_idx)->get_shape();
+    auto mask_shape = context->bmNetwork->outputTensor(mask_tensor_idx)->get_shape();
+    int box_num = box_shape->dims[0];
+    int mask_h = mask_shape->dims[1];
+    int mask_w = mask_shape->dims[2];
+
+    // Get box data via BMNNTensor (float output)
+    std::shared_ptr<BMNNTensor> box_out_tensor = std::make_shared<BMNNTensor>(
+        obj->mOutputBMtensors->handle,
+        context->bmNetwork->m_netinfo->output_names[box_tensor_idx],
+        context->bmNetwork->m_netinfo->output_scales[box_tensor_idx],
+        obj->mOutputBMtensors->tensors[box_tensor_idx].get(),
+        context->bmNetwork->is_soc);
+    float* box_data = (float*)box_out_tensor->get_cpu_data();
+
+    // Get mask data directly from device memory (UINT8, not supported by BMNNTensor)
+    auto& mask_tensor = obj->mOutputBMtensors->tensors[mask_tensor_idx];
+    int mask_total = box_num * mask_h * mask_w;
+    uint8_t* mask_data = new uint8_t[mask_total];
+    bm_memcpy_d2s_partial(context->handle, mask_data,
+                          mask_tensor->device_mem, mask_total);
+
+    yolobox_vec.clear();
+
+    // Parse boxes: [x1, y1, x2, y2, score, class_id]
+    // Skip the last entry (sentinel) to match sophon-demo reference behavior
+    for (int i = 0; i < box_num; i++) {
+      YoloV8Box box;
+      int box_offset = i * 6;
+      box.x1 = box_data[box_offset];
+      box.y1 = box_data[box_offset + 1];
+      box.x2 = box_data[box_offset + 2];
+      box.y2 = box_data[box_offset + 3];
+      box.score = box_data[box_offset + 4];
+      box.class_id = box_data[box_offset + 5];
+      yolobox_vec.push_back(box);
+    }
+
+    // Scale bbox from model space to image space
+    float inv_ratio = 1.0 / ratio;
+    for (int i = 0; i < yolobox_vec.size(); i++) {
+      yolobox_vec[i].x1 = std::round((yolobox_vec[i].x1 - tx1) * inv_ratio);
+      yolobox_vec[i].y1 = std::round((yolobox_vec[i].y1 - ty1) * inv_ratio);
+      yolobox_vec[i].x2 = std::round((yolobox_vec[i].x2 - tx1) * inv_ratio);
+      yolobox_vec[i].y2 = std::round((yolobox_vec[i].y2 - ty1) * inv_ratio);
+    }
+    clip_boxes(yolobox_vec, frame_width, frame_height);
+
+    // Process mask for each valid box
+    ImageInfo para = {cv::Size(frame_width, frame_height),
+                      {static_cast<double>(ratio), static_cast<double>(ratio),
+                       static_cast<double>(tx1), static_cast<double>(ty1)}};
+
+    YoloV8BoxVec yolobox_vec_tmp;
+    for (int i = 0; i < yolobox_vec.size(); i++) {
+      if (yolobox_vec[i].x2 > yolobox_vec[i].x1 + 1 &&
+          yolobox_vec[i].y2 > yolobox_vec[i].y1 + 1) {
+        // Extract per-box mask from the fused mask tensor
+        cv::Mat mask_slice(mask_h, mask_w, CV_8UC1,
+                          mask_data + i * mask_h * mask_w);
+        // Process mask: crop valid region, resize, threshold, crop to bbox
+        get_mask(context, mask_slice,
+                 cv::Rect{yolobox_vec[i].x1, yolobox_vec[i].y1,
+                          yolobox_vec[i].x2 - yolobox_vec[i].x1,
+                          yolobox_vec[i].y2 - yolobox_vec[i].y1},
+                 para, yolobox_vec[i].mask_img);
+        yolobox_vec_tmp.push_back(yolobox_vec[i]);
+      }
+    }
+    delete[] mask_data;
+
+    // Populate results
+    for (auto bbox : yolobox_vec_tmp) {
+      std::shared_ptr<common::SegmentedObjectMetadata> segData =
+          std::make_shared<common::SegmentedObjectMetadata>();
+
+      segData->mBox.mX = std::max(int(bbox.x1), 0);
+      segData->mBox.mY = std::max(int(bbox.y1), 0);
+      segData->mBox.mWidth = bbox.x2 - bbox.x1;
+      segData->mBox.mHeight = bbox.y2 - bbox.y1;
+      segData->mScores.push_back(bbox.score);
+      segData->mClassify = bbox.class_id;
+      segData->mask_img = bbox.mask_img;
+
+      if (context->roi_predefined) {
+        segData->mBox.mX += context->roi.start_x;
+        segData->mBox.mY += context->roi.start_y;
+      }
+
+      if (context->class_thresh_valid) {
+        segData->mLabelName = context->class_names[segData->mClassify];
+      }
+
+      obj->mSegmentedObjectMetadatas.push_back(segData);
+
+      std::shared_ptr<common::DetectedObjectMetadata> detData =
+          std::make_shared<common::DetectedObjectMetadata>();
+      detData->mBox.mX = segData->mBox.mX;
+      detData->mBox.mY = segData->mBox.mY;
+      detData->mBox.mWidth = segData->mBox.mWidth;
+      detData->mBox.mHeight = segData->mBox.mHeight;
+      detData->mScores.push_back(bbox.score);
+      detData->mClassify = bbox.class_id;
+      if (context->class_thresh_valid) {
+        detData->mLabelName = context->class_names[detData->mClassify];
+      }
+      obj->mDetectedObjectMetadatas.push_back(detData);
+    }
+  }
+}
+
 void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
                                  const cv::Mat& mask_info,
                                  const cv::Mat& mask_data,
@@ -931,6 +1092,25 @@ void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
   resize(masks_feature, mask,
          cv::Size(para.raw_size.width, para.raw_size.height));
   mask_out = mask(bound) > 0.5f;
+}
+
+void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
+                                 const cv::Mat& mask_slice, cv::Rect bound,
+                                 const ImageInfo& para, cv::Mat& mask_out) {
+  cv::Vec4f trans = para.trans;
+  int r_x = floor(trans[2] / context->net_w * (context->net_w / 4));
+  int r_y = floor(trans[3] / context->net_h * (context->net_h / 4));
+  int r_w = (context->net_w / 4) - 2 * r_x;
+  int r_h = (context->net_h / 4) - 2 * r_y;
+  r_w = MAX(r_w, 1);
+  r_h = MAX(r_h, 1);
+
+  // Crop valid region from per-box mask and resize to full image
+  cv::Mat valid_region = mask_slice(cv::Rect(r_x, r_y, r_w, r_h)).clone();
+  cv::Mat resized_mask;
+  cv::resize(valid_region, resized_mask,
+             cv::Size(para.raw_size.width, para.raw_size.height));
+  mask_out = resized_mask(bound) > 127;
 }
 
 void Yolov8PostProcess::postProcessObb(

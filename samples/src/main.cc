@@ -306,6 +306,9 @@ drawFuncType getDrawFunc(demo_config& demo_json) {
   else if (demo_json.draw_func_name == "draw_yolov7_results")
     draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir,
                           demo_json.class_names);
+  else if (demo_json.draw_func_name == "draw_yolov8_results")
+    draw_func = std::bind(draw_yolov5_results, std::placeholders::_1, out_dir,
+                          demo_json.class_names);
   else if (demo_json.draw_func_name == "save_only")
     draw_func = std::bind(save_only, std::placeholders::_1, out_dir);
   else if (demo_json.draw_func_name == "draw_yolov5_fastpose_posec3d_results")

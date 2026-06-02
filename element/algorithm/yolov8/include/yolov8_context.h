@@ -18,7 +18,7 @@ namespace yolov8 {
 
 #define USE_ASPECT_RATIO 1
 
-enum class TaskType { Detect = 0, Pose, Cls, Seg, Obb };
+enum class TaskType { Detect = 0, Pose, Cls, Seg, Obb, SegFuse };
 
 class Yolov8Context : public ::sophon_stream::element::Context {
  public:
@@ -56,6 +56,8 @@ class Yolov8Context : public ::sophon_stream::element::Context {
   int thread_number;
 
   int mask_len = 32;
+
+  bool bgr_packed_input = false;
 
 };
 }  // namespace yolov8

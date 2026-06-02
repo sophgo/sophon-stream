@@ -79,12 +79,19 @@ class Yolov8PostProcess : public ::sophon_stream::element::PostProcess {
                       common::ObjectMetadatas& objectMetadatas);
   void postProcessObb(std::shared_ptr<Yolov8Context> context,
                       common::ObjectMetadatas& objectMetadatas);
+  void postProcessSegFuse(std::shared_ptr<Yolov8Context> context,
+                          common::ObjectMetadatas& objectMetadatas);
   void clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w, int src_h);
 
   // yolov8 seg
   void get_mask(std::shared_ptr<Yolov8Context> context,
                 const cv::Mat& mask_info, const cv::Mat& mask_data,
                 const ImageInfo& para, cv::Rect bound, cv::Mat& mask_out);
+
+  // yolov8 seg fuse (per-box uint8 mask)
+  void get_mask(std::shared_ptr<Yolov8Context> context,
+                const cv::Mat& mask_slice, cv::Rect bound,
+                const ImageInfo& para, cv::Mat& mask_out);
 
   //obb utils.
   void nms_rotated(obbBoxVec& dets, float nmsConfidence = 0.5);

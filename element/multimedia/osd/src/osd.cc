@@ -218,6 +218,9 @@ common::ErrorCode Osd::initInternal(const std::string& json) {
       else if (draw_func_name == "draw_yolov7_results")
         draw_func = std::bind(draw_yolov5_results, std::placeholders::_1,
                               std::placeholders::_2, mClassNames);
+      else if (draw_func_name == "draw_yolov8_results")
+        draw_func = std::bind(draw_yolov5_results, std::placeholders::_1,
+                              std::placeholders::_2, mClassNames);
 
       else if (draw_func_name == "draw_yolov5_fastpose_posec3d_results")
         draw_func = std::bind(draw_yolov5_fastpose_posec3d_results,

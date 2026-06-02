@@ -37,6 +37,7 @@ Main Directory Structure and Module Descriptions:
 |                         | [yolov7](./samples/yolov7)                                        | yolov7 demo                            |
 |                         | [yolov8](./samples/yolov8/)                                       | yolov8 demo                             |
 |                         | [yolov8_obb](./samples/yolov8_obb/)                               | yolov8_obb demo                             |
+|                         | [yolov8_seg](./samples/yolov8_seg/)                               | yolov8 seg demo                             |
 |                         | [yolox](./samples/yolox)                                          | yolox demo                              |
 |                         | [bytetrack](./samples/bytetrack)                                  | bytetrack demo                          |
 |                         | [resnet](./samples/resnet)                                        | resnet demo                             |
@@ -51,11 +52,14 @@ Main Directory Structure and Module Descriptions:
 |                         | [bird_dwa_blend_encode](./samples/bird_dwa_blend_encode/)         | bird's-eye view splicing demo |
 |                         | [dwa_blend_encode](./samples/dwa_blend_encode/)                   | fish-eye stitching demo |
 |                         | [dwa_dpu_encode](./samples/dwa_dpu_encode/)                       | binocular depth estimation demo |
+|                         | [dwa_lightstereo_encode](./samples/dwa_lightstereo_encode/)       | light stereo encode demo |
 |                         | [gdwa_blend_encode](./samples/gdwa_blend_encode/)                 | wide-angle stitching demo |
 |                         | [license_area_intrusion](./samples/license_area_intrusion/)       | Regional invasions demo |
+|                         | [line_crossing](./samples/line_crossing/)                         | line crossing detection demo |
 |                         | [multi_graph](./samples/multi_graph/)                             | multi-graph demo |
 |                         | [structured_recognition](./samples/structured_recognition/)       | single stream configuration with different algorithms demo |
-|                         | [tripware](./samples/tripwire/)                                   | crossing the line detection demo |
+|                         | [trinocular_panorama_stitch](./samples/trinocular_panorama_stitch/)| trinocular panorama stitch demo |
+|                         | [tripwire](./samples/tripwire/)                                   | crossing the line detection demo |
 |                         | [yolox_bytetrack_osd_qt](./samples/yolox_bytetrack_osd_qt/)       | detect-track-HDMI demo |
 
 ## 2 Quick Start

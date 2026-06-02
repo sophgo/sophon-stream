@@ -21,7 +21,9 @@ common::ErrorCode Yolov8PreProcess::preProcess(
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
   initTensors(context, objectMetadatas);
 
-  auto jsonPlanner = context->bgr2rgb ? FORMAT_RGB_PLANAR : FORMAT_BGR_PLANAR;
+  auto jsonPlanner = context->bgr_packed_input
+                         ? FORMAT_BGR_PACKED
+                         : (context->bgr2rgb ? FORMAT_RGB_PLANAR : FORMAT_BGR_PLANAR);
   int i = 0;
   for (auto& objMetadata : objectMetadatas) {
     if (objMetadata->mFrame->mSpData == nullptr) continue;
@@ -101,7 +103,18 @@ common::ErrorCode Yolov8PreProcess::preProcess(
     }
 
     int aligned_net_w = FFALIGN(context->net_w, 64);
-    int strides[3] = {aligned_net_w, aligned_net_w, aligned_net_w};
+    int strides[3];
+    if (context->bgr_packed_input) {
+      // BGR_PACKED: single plane, stride = width * 3 bytes
+      int row_stride = FFALIGN(context->net_w * 3, 64);
+      strides[0] = row_stride;
+      strides[1] = row_stride;
+      strides[2] = row_stride;
+    } else {
+      strides[0] = aligned_net_w;
+      strides[1] = aligned_net_w;
+      strides[2] = aligned_net_w;
+    }
     bm_image_create(context->handle, context->net_h, context->net_w,
                     jsonPlanner, DATA_TYPE_EXT_1N_BYTE, &resized_img, strides);
     auto ret = bm_image_alloc_dev_mem_heap_mask(resized_img, STREAM_VPP_HEAP_MASK);
@@ -125,11 +138,19 @@ common::ErrorCode Yolov8PreProcess::preProcess(
     }
     STREAM_CHECK(ret == 0, "Vpp Convert Padding Failed! Program Terminated.")
 
-    if (image0.image_format != FORMAT_BGR_PLANAR) {
+    if (image0.image_format != jsonPlanner) {
       bm_image_destroy(image1);
     }
     if (need_copy) bm_image_destroy(image_aligned);
 
+    if (context->bgr_packed_input) {
+      // Normalization is fused into the model, attach resized_img directly
+      bm_image_get_device_mem(
+          resized_img,
+          &objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem);
+      bm_image_detach(resized_img);
+      bm_image_destroy(resized_img);
+    } else {
     bm_image_data_format_ext img_dtype = DATA_TYPE_EXT_FLOAT32;
     auto tensor = context->bmNetwork->inputTensor(0);
     if (tensor->get_dtype() == BM_INT8) {
@@ -156,6 +177,7 @@ common::ErrorCode Yolov8PreProcess::preProcess(
         &objectMetadatas[i]->mInputBMtensors->tensors[0]->device_mem);
     bm_image_detach(converto_img);
     bm_image_destroy(converto_img);
+    }
     i++;
   }
   return common::ErrorCode::SUCCESS;

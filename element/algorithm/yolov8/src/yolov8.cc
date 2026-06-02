@@ -25,7 +25,8 @@ std::unordered_map<std::string, TaskType> taskMap{{"Detect", TaskType::Detect},
                                                   {"Pose", TaskType::Pose},
                                                   {"Cls", TaskType::Cls},
                                                   {"Seg", TaskType::Seg},
-                                                  {"Obb", TaskType::Obb}};
+                                                  {"Obb", TaskType::Obb},
+                                                  {"SegFuse", TaskType::SegFuse}};
 
 common::ErrorCode Yolov8::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
@@ -110,9 +111,20 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
     mContext->max_batch = mContext->bmNetwork->maxBatch();
     auto inputTensor = mContext->bmNetwork->inputTensor(0);
     mContext->input_num = mContext->bmNetwork->m_netinfo->input_num;
-    mContext->m_net_channel = inputTensor->get_shape()->dims[1];
-    mContext->net_h = inputTensor->get_shape()->dims[2];
-    mContext->net_w = inputTensor->get_shape()->dims[3];
+    // Detect BGR_PACKED format: shape [1, H, W, 3] instead of [1, 3, H, W]
+    {
+      auto* shape = inputTensor->get_shape();
+      if (shape->dims[3] == 3) {
+        mContext->bgr_packed_input = true;
+        mContext->m_net_channel = shape->dims[3];
+        mContext->net_h = shape->dims[1];
+        mContext->net_w = shape->dims[2];
+      } else {
+        mContext->m_net_channel = shape->dims[1];
+        mContext->net_h = shape->dims[2];
+        mContext->net_w = shape->dims[3];
+      }
+    }
 
     // 3. get output
     mContext->output_num = mContext->bmNetwork->outputTensorNum();
@@ -126,7 +138,17 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
       if (mContext->taskType == TaskType::Detect) {
         int ndim1 = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[1];
         int ndim2 = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2];
-        if (ndim1 > ndim2) {
+        // Auto-detect Pose model from output shape when task_type is not
+        // explicitly set. COCO pose model output shape: [1, 56, N] where
+        // 56 = 4(bbox) + 1(person class) + 17*3(keypoints)
+        int smaller_dim = ndim1 > ndim2 ? ndim2 : ndim1;
+        if (smaller_dim - 4 == 1 + 17 * 3) {
+          IVS_INFO(
+              "Auto-detected Pose model from output shape (channels={0:d})",
+              smaller_dim);
+          mContext->taskType = TaskType::Pose;
+          mContext->class_num = 1;
+        } else if (ndim1 > ndim2) {
           mContext->use_post_opt = true;
           mContext->class_num = ndim2 - 4;
         } else {
@@ -151,6 +173,9 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
           abort();
         }
         mContext->class_num = mContext->bmNetwork->outputTensor(0)->get_shape()->dims[2] - 5;
+      } else if (mContext->taskType == TaskType::SegFuse) {
+        mContext->class_num =
+            mContext->class_names.empty() ? 80 : mContext->class_names.size();
       }
     }
 
