@@ -44,6 +44,7 @@ checkAndAddElement(element/algorithm/lprnet)
 checkAndAddElement(element/algorithm/ppocr)
 checkAndAddElement(element/algorithm/yolov8)
 checkAndAddElement(element/algorithm/lightstereo)
+checkAndAddElement(element/algorithm/ppyoloe_plus)
 
 checkAndAddElement(element/multimedia/decode)
 checkAndAddElement(element/multimedia/osd)
