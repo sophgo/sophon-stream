@@ -348,6 +348,8 @@ void Osd::draw(std::shared_ptr<common::ObjectMetadata> objectMetadata) {
       bm_image_create(objectMetadata->mFrame->mHandle, (*imageStorage).height,
                       (*imageStorage).width, FORMAT_YUV420P,
                       (*imageStorage).data_type, &frame);
+      auto ret = bm_image_alloc_dev_mem_heap_mask(frame, STREAM_VPU_HEAP_MASK);
+      STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
       bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1,
                                  &(*imageStorage), &frame);
       bm_image_destroy(*imageStorage);

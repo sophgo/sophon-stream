@@ -64,6 +64,8 @@ static void _gen_storage_image(
   bm_image image = *objectMetadata->mFrame->mSpData;
   bm_image_create(objectMetadata->mFrame->mHandle, height, width,
                   FORMAT_YUV420P, image.data_type, &imageStorage);
+  auto ret = bm_image_alloc_dev_mem_heap_mask(imageStorage, STREAM_VPU_HEAP_MASK);
+  STREAM_CHECK(ret == 0, "Alloc Device Memory Failed! Program Terminated.")
   bmcv_image_storage_convert(objectMetadata->mFrame->mHandle, 1, &image,
                              &imageStorage);
 }
