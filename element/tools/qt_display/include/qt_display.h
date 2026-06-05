@@ -4,6 +4,8 @@
 #include <QLoggingCategory>
 #include <QSharedPointer>
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <unordered_set>
 
 #include "BMLabel.h"
@@ -44,9 +46,14 @@ class QtDisplay : public ::sophon_stream::framework::Element {
 
   std::thread qt_thread;
 
+  std::mutex ui_mutex;
+  std::condition_variable ui_cv;
+  std::atomic<bool> ui_ready{false};
+
   // 停止qt的条件
   std::mutex channel_mutex;
   std::unordered_set<int> channel_ids;
+  std::unordered_map<int, int> channel_id_to_label_idx;
   std::atomic<int> stopped_num;
 
   // std::vector<::sophon_stream::common::FpsProfiler*> mFpsProfilers;

@@ -51,6 +51,12 @@ int QtDisplay::qt_func() {
   qwidget_ptr->setLayout(layout);
   qwidget_ptr->show();
 
+  {
+    std::lock_guard<std::mutex> lock(ui_mutex);
+    ui_ready = true;
+  }
+  ui_cv.notify_all();
+
   return qapp->exec();
 }
 
@@ -64,9 +70,18 @@ common::ErrorCode QtDisplay::initInternal(const std::string& json) {
   rows = configure.find(CONFIG_INTERNAL_ROWS)->get<int>();
   cols = configure.find(CONFIG_INTERNAL_COLS)->get<int>();
   stopped_num = 0;
+  ui_ready = false;
 
   qt_thread = std::thread(&QtDisplay::qt_func, this);
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  {
+    std::unique_lock<std::mutex> lock(ui_mutex);
+    ui_cv.wait_for(lock, std::chrono::seconds(10),
+                   [this] { return ui_ready.load(); });
+  }
+  if (!ui_ready.load()) {
+    IVS_WARN("qt display ui init timeout");
+    return common::ErrorCode::UNKNOWN;
+  }
 
   thread_num = getThreadNumber();
 
@@ -92,18 +107,37 @@ common::ErrorCode QtDisplay::doWork(int dataPipeId) {
   auto objectMetadata = std::static_pointer_cast<common::ObjectMetadata>(data);
 
   int channel_id = objectMetadata->mFrame->mChannelIdInternal;
-  if (channel_ids.find(channel_id) == channel_ids.end()) {
+  int label_idx = 0;
+  {
     std::unique_lock<std::mutex> lock(channel_mutex);
-    channel_ids.insert(channel_id);
+    auto it = channel_id_to_label_idx.find(channel_id);
+    if (it == channel_id_to_label_idx.end()) {
+      label_idx = static_cast<int>(channel_id_to_label_idx.size());
+      channel_id_to_label_idx[channel_id] = label_idx;
+      channel_ids.insert(channel_id);
+    } else {
+      label_idx = it->second;
+    }
   }
   auto bmimg_ptr = objectMetadata->mFrame->mSpDataOsd;
 
   if (bmimg_ptr == nullptr) bmimg_ptr = objectMetadata->mFrame->mSpData;
 
-  if (objectMetadata->mFrame->mEndOfStream)
+  if (objectMetadata->mFrame->mEndOfStream) {
     stopped_num++;
-  else
-    label_vec[channel_id]->show_img(bmimg_ptr);
+  } else {
+    if (!ui_ready.load()) {
+      std::unique_lock<std::mutex> lock(ui_mutex);
+      ui_cv.wait_for(lock, std::chrono::seconds(10),
+                     [this] { return ui_ready.load(); });
+    }
+    if (label_idx < static_cast<int>(label_vec.size()))
+      label_vec[label_idx]->show_img(bmimg_ptr);
+    else
+      IVS_WARN(
+          "label index {0:d} exceeds label count {1:d} for channel {2:d}",
+          label_idx, label_vec.size(), channel_id);
+  }
 
   if (stopped_num == channel_ids.size()) qapp->quit();
 
