@@ -5,6 +5,8 @@ data/
 images/
 models/
 
+.idea/
+
 *.zip
 *.tar
 *.tar.gz
