@@ -1,25 +1,25 @@
-//===----------------------------------------------------------------------===//
+﻿//===----------------------------------------------------------------------===//
 //
 // Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
 //
 // SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
 // third-party components.
-// 参考sophon-demo中的sampls的yolov8 cpp后处理编写
+// 参考sophon-demo中的sampls的yolo8-test cpp后处理编写
 //
 //===----------------------------------------------------------------------===//
 
-#include "yolov8_post_process.h"
+#include "yolo8_test_post_process.h"
 
 namespace sophon_stream {
 namespace element {
-namespace yolov8 {
+namespace yolo8_test {
 
-void Yolov8PostProcess::init(std::shared_ptr<Yolov8Context> context) {}
+void Yolo8TestPostProcess::init(std::shared_ptr<Yolo8TestContext> context) {}
 
-Yolov8PostProcess::~Yolov8PostProcess() {}
+Yolo8TestPostProcess::~Yolo8TestPostProcess() {}
 
 // 返回一段 float 数据中最大值所在的下标，分类后处理会用到类似逻辑。
-int Yolov8PostProcess::argmax(float* data, int num) {
+int Yolo8TestPostProcess::argmax(float* data, int num) {
   float max_value = 0.0;
   int max_index = 0;
   for (int i = 0; i < num; ++i) {
@@ -33,10 +33,10 @@ int Yolov8PostProcess::argmax(float* data, int num) {
   return max_index;
 }
 
-float Yolov8PostProcess::sigmoid(float x) { return 1.0 / (1 + expf(-x)); }
+float Yolo8TestPostProcess::sigmoid(float x) { return 1.0 / (1 + expf(-x)); }
 
 // 普通水平框 NMS。这里先按 score 升序排序，再从高分框向低分框抑制重叠框。
-void Yolov8PostProcess::NMS(YoloV8BoxVec& dets, float nmsConfidence) {
+void Yolo8TestPostProcess::NMS(YoloV8BoxVec& dets, float nmsConfidence) {
   int length = dets.size();
   int index = length - 1;
 
@@ -72,7 +72,7 @@ void Yolov8PostProcess::NMS(YoloV8BoxVec& dets, float nmsConfidence) {
   }
 }
 
-void Yolov8PostProcess::postProcess(std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcess(std::shared_ptr<Yolo8TestContext> context,
                                     common::ObjectMetadatas& objectMetadatas,
                                     int dataPipeId) {
   if (objectMetadatas.size() == 0) return;
@@ -97,7 +97,7 @@ void Yolov8PostProcess::postProcess(std::shared_ptr<Yolov8Context> context,
 }
 
 // 将检测框裁剪到原图范围，避免后续绘制或裁剪时越界。
-void Yolov8PostProcess::clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w,
+void Yolo8TestPostProcess::clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w,
                                    int src_h) {
   for (int i = 0; i < yolobox_vec.size(); i++) {
     if (yolobox_vec[i].x1 < 0)
@@ -119,8 +119,8 @@ void Yolov8PostProcess::clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w,
   }
 }
 
-void Yolov8PostProcess::postProcessCls(
-    std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcessCls(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // 分类后处理：输出通常是 [1, class_num]，取最大分数类别写入 RecognizedObjectMetadata。
   int idx = 0;
@@ -166,8 +166,8 @@ void Yolov8PostProcess::postProcessCls(
   return;
 }
 
-void Yolov8PostProcess::postProcessPose(
-    std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcessPose(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // 姿态后处理：同时输出人体框和关键点。
   // 结果分别写入 mDetectedObjectMetadatas 和 mPosedObjectMetadatas。
@@ -303,8 +303,8 @@ void Yolov8PostProcess::postProcessPose(
   }
 }
 
-void Yolov8PostProcess::postProcessDetOpt(
-    std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcessDetOpt(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // 检测后处理优化分支：适配输出 shape 为 [1, box_num, 4 + class_num] 的模型。
   // initContext 中检测到该格式时会设置 context->use_post_opt = true。
@@ -472,8 +472,8 @@ void Yolov8PostProcess::postProcessDetOpt(
   }
 }
 
-void Yolov8PostProcess::postProcessDet(
-    std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcessDet(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // 标准检测后处理：适配常见 YOLOv8 输出 [1, 4 + class_num, box_num]。
   YoloV8BoxVec yolobox_vec;
@@ -661,8 +661,8 @@ void Yolov8PostProcess::postProcessDet(
   }
 }
 
-void Yolov8PostProcess::postProcessSeg(
-    std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcessSeg(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // 分割后处理：先按检测分支得到 bbox 和 mask 系数，再用 prototype mask 生成实例 mask。
   YoloV8BoxVec yolobox_vec;
@@ -671,11 +671,11 @@ void Yolov8PostProcess::postProcessSeg(
   for (auto obj : objectMetadatas) {
     if (obj->mFrame->mEndOfStream) break;
 
-    // yolov8 seg 通常有两个输出：
+    // yolo8-test seg 通常有两个输出：
     // detection_out: bbox + class + mask coefficient
     // segmentation_out: prototype masks
     std::vector<std::shared_ptr<BMNNTensor>> outputTensors(
-        context->output_num);  // yolov8_seg has 2 outputs
+        context->output_num);  // yolo8-test_seg has 2 outputs
     for (int i = 0; i < context->output_num; i++) {
       outputTensors[i] = std::make_shared<BMNNTensor>(
           obj->mOutputBMtensors->handle,
@@ -921,8 +921,8 @@ void Yolov8PostProcess::postProcessSeg(
   }
 }
 
-void Yolov8PostProcess::postProcessSegFuse(
-    std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcessSegFuse(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // SegFuse 分支适配已经融合/导出为每框 mask 的模型输出，
   // 不再像普通 Seg 一样通过 prototype mask 做矩阵乘法。
@@ -1082,7 +1082,7 @@ void Yolov8PostProcess::postProcessSegFuse(
   }
 }
 
-void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::get_mask(std::shared_ptr<Yolo8TestContext> context,
                                  const cv::Mat& mask_info,
                                  const cv::Mat& mask_data,
                                  const ImageInfo& para, cv::Rect bound,
@@ -1123,7 +1123,7 @@ void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
   mask_out = mask(bound) > 0.5f;
 }
 
-void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::get_mask(std::shared_ptr<Yolo8TestContext> context,
                                  const cv::Mat& mask_slice, cv::Rect bound,
                                  const ImageInfo& para, cv::Mat& mask_out) {
   // SegFuse mask 生成：模型已经输出单框 mask，这里只裁掉 padding 并 resize 回原图。
@@ -1143,8 +1143,8 @@ void Yolov8PostProcess::get_mask(std::shared_ptr<Yolov8Context> context,
   mask_out = resized_mask(bound) > 127;
 }
 
-void Yolov8PostProcess::postProcessObb(
-    std::shared_ptr<Yolov8Context> context,
+void Yolo8TestPostProcess::postProcessObb(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   // OBB 后处理：解析旋转框 (x, y, w, h, angle)，做旋转框 NMS，
   // 最终写入 mObbObjectMetadatas。
@@ -1289,7 +1289,7 @@ void Yolov8PostProcess::postProcessObb(
 }
 
 
-void Yolov8PostProcess::regularize_rbox(obbBoxVec& obbVec){
+void Yolo8TestPostProcess::regularize_rbox(obbBoxVec& obbVec){
   // 归一化旋转框：把长边放到 w，并将 angle 约束到 [0, pi)。
   for(auto& obb : obbVec){
     if(obb.h > obb.w){
@@ -1303,7 +1303,7 @@ void Yolov8PostProcess::regularize_rbox(obbBoxVec& obbVec){
   }
 }
 
-std::tuple<float, float, float> Yolov8PostProcess::convariance_matrix(const obbBox& obb){
+std::tuple<float, float, float> Yolo8TestPostProcess::convariance_matrix(const obbBox& obb){
   // 将旋转框转换成协方差形式，probiou 会基于这个表示计算旋转框相似度。
   float w = obb.w;
   float h = obb.h;
@@ -1318,7 +1318,7 @@ std::tuple<float, float, float> Yolov8PostProcess::convariance_matrix(const obbB
   return std::make_tuple(a_val, b_val, c_val);
 }
 
-float Yolov8PostProcess::probiou(const obbBox& obb1, const obbBox& obb2, float eps){
+float Yolo8TestPostProcess::probiou(const obbBox& obb1, const obbBox& obb2, float eps){
   // Calculate the prob iou between oriented bounding boxes, https://arxiv.org/pdf/2106.06072v1.pdf.
   float a1, b1, c1, a2, b2, c2;
   std::tie(a1, b1, c1) = convariance_matrix(obb1);
@@ -1335,7 +1335,7 @@ float Yolov8PostProcess::probiou(const obbBox& obb1, const obbBox& obb2, float e
 }
 
 
-void Yolov8PostProcess::nms_rotated(obbBoxVec& dets, float nmsConfidence) {
+void Yolo8TestPostProcess::nms_rotated(obbBoxVec& dets, float nmsConfidence) {
     // 旋转框 NMS：按分数升序排序，从高分端开始抑制 probiou 超阈值的低分框。
     int length = dets.size();
     int index = length - 1;
@@ -1357,7 +1357,7 @@ void Yolov8PostProcess::nms_rotated(obbBoxVec& dets, float nmsConfidence) {
     }
 }
 
-common::ObbObjectMetadata Yolov8PostProcess::xywhr2xyxyxyxy(const obbBox& obb){
+common::ObbObjectMetadata Yolo8TestPostProcess::xywhr2xyxyxyxy(const obbBox& obb){
   // 将中心点 + 宽高 + 角度表示转换成四个角点，方便 OSD 绘制旋转框。
   common::ObbObjectMetadata obb_;
   float cos_value = std::cos(obb.angle);
@@ -1383,6 +1383,6 @@ common::ObbObjectMetadata Yolov8PostProcess::xywhr2xyxyxyxy(const obbBox& obb){
   return obb_;
 }
 
-}  // namespace yolov8
+}  // namespace yolo8_test
 }  // namespace element
 }  // namespace sophon_stream

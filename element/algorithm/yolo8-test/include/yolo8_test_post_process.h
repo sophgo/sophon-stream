@@ -1,0 +1,108 @@
+﻿//===----------------------------------------------------------------------===//
+//
+// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+//
+// SOPHON-STREAM is licensed under the 2-Clause BSD License except for the
+// third-party components.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef SOPHON_STREAM_ELEMENT_YOLO8_TEST_POST_PROCESS_H_
+#define SOPHON_STREAM_ELEMENT_YOLO8_TEST_POST_PROCESS_H_
+
+#include "algorithmApi/post_process.h"
+#include "opencv2/opencv.hpp"
+#include "yolo8_test_context.h"
+
+namespace sophon_stream {
+namespace element {
+namespace yolo8_test {
+
+struct YoloV8Box {
+  int x1, y1, x2, y2;
+  float score;
+  int class_id;
+  std::vector<float> kps;
+
+  std::vector<float> mask;  // mask coefficient
+  cv::Mat mask_img;         // seg mask
+};
+
+struct ImageInfo {
+  cv::Size raw_size;
+  cv::Vec4d trans;
+};
+
+struct Paras {
+  int r_x;
+  int r_y;
+  int r_w;
+  int r_h;
+  int width;
+  int height;
+};
+
+using YoloV8BoxVec = std::vector<YoloV8Box>;
+
+struct obbBox{
+  float x, y, w, h, angle, score;
+  int class_id;
+};
+using obbBoxVec = std::vector<obbBox>;
+
+class Yolo8TestPostProcess : public ::sophon_stream::element::PostProcess {
+ public:
+  void init(std::shared_ptr<Yolo8TestContext> context);
+
+  void postProcess(std::shared_ptr<Yolo8TestContext> context,
+                   common::ObjectMetadatas& objectMetadatas, int dataPipeId);
+
+  ~Yolo8TestPostProcess() override;
+
+  int max_det = 300;
+
+ private:
+  std::shared_ptr<Yolo8TestContext> global_context = nullptr;
+
+  float sigmoid(float x);
+  int argmax(float* data, int num);
+  void NMS(YoloV8BoxVec& dets, float nmsConfidence);
+  void postProcessDet(std::shared_ptr<Yolo8TestContext> context,
+                      common::ObjectMetadatas& objectMetadatas);
+  void postProcessDetOpt(std::shared_ptr<Yolo8TestContext> context,
+                         common::ObjectMetadatas& objectMetadatas);
+  void postProcessPose(std::shared_ptr<Yolo8TestContext> context,
+                       common::ObjectMetadatas& objectMetadatas);
+  void postProcessCls(std::shared_ptr<Yolo8TestContext> context,
+                      common::ObjectMetadatas& objectMetadatas);
+  void postProcessSeg(std::shared_ptr<Yolo8TestContext> context,
+                      common::ObjectMetadatas& objectMetadatas);
+  void postProcessObb(std::shared_ptr<Yolo8TestContext> context,
+                      common::ObjectMetadatas& objectMetadatas);
+  void postProcessSegFuse(std::shared_ptr<Yolo8TestContext> context,
+                          common::ObjectMetadatas& objectMetadatas);
+  void clip_boxes(YoloV8BoxVec& yolobox_vec, int src_w, int src_h);
+
+  // yolo8-test seg
+  void get_mask(std::shared_ptr<Yolo8TestContext> context,
+                const cv::Mat& mask_info, const cv::Mat& mask_data,
+                const ImageInfo& para, cv::Rect bound, cv::Mat& mask_out);
+
+  // yolo8-test seg fuse (per-box uint8 mask)
+  void get_mask(std::shared_ptr<Yolo8TestContext> context,
+                const cv::Mat& mask_slice, cv::Rect bound,
+                const ImageInfo& para, cv::Mat& mask_out);
+
+  //obb utils.
+  void nms_rotated(obbBoxVec& dets, float nmsConfidence = 0.5);
+  std::tuple<float, float, float> convariance_matrix(const obbBox& obb);
+  float probiou(const obbBox& obb1, const obbBox& obb2, float eps = 1e-7);
+  void regularize_rbox(obbBoxVec& obb);
+  common::ObbObjectMetadata xywhr2xyxyxyxy(const obbBox& obb);
+};
+
+}  // namespace yolo8_test
+}  // namespace element
+}  // namespace sophon_stream
+
+#endif  // SOPHON_STREAM_ELEMENT_YOLO8_TEST_POST_PROCESS_H_

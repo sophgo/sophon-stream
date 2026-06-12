@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+﻿//===----------------------------------------------------------------------===//
 //
 // Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
 //
@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "yolov8.h"
+#include "yolo8_test.h"
 
 using namespace std::chrono_literals;
 
 namespace sophon_stream {
 namespace element {
-namespace yolov8 {
+namespace yolo8_test {
 
-Yolov8::Yolov8() {}
+Yolo8Test::Yolo8Test() {}
 
-Yolov8::~Yolov8() {}
+Yolo8Test::~Yolo8Test() {}
 
-const std::string Yolov8::elementName = "yolov8";
+const std::string Yolo8Test::elementName = "yolo8-test";
 
 // 配置中的 task_type 字符串会映射到这里的任务类型，
 // 后处理入口据此选择检测、分类、姿态、分割或旋转框分支。
@@ -30,7 +30,7 @@ std::unordered_map<std::string, TaskType> taskMap{{"Detect", TaskType::Detect},
                                                   {"Obb", TaskType::Obb},
                                                   {"SegFuse", TaskType::SegFuse}};
 
-common::ErrorCode Yolov8::initContext(const std::string& json) {
+common::ErrorCode Yolo8Test::initContext(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
     // 解析算法私有配置：模型路径、阈值、预处理参数、ROI 等。
@@ -46,7 +46,7 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
     if (task_it != configure.end()) {
       std::string taskName = task_it->get<std::string>();
       STREAM_CHECK(taskMap.count(taskName) != 0,
-                   "Invalid Task Type in Yolov8 Config File!");
+                   "Invalid Task Type in Yolo8Test Config File!");
       mContext->taskType = taskMap[taskName];
     }
 
@@ -230,7 +230,7 @@ common::ErrorCode Yolov8::initContext(const std::string& json) {
   return common::ErrorCode::SUCCESS;
 }
 
-common::ErrorCode Yolov8::initInternal(const std::string& json) {
+common::ErrorCode Yolo8Test::initInternal(const std::string& json) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   do {
     // 校验 configure JSON。Element 基类已处理 id/name/thread 等通用字段。
@@ -240,7 +240,7 @@ common::ErrorCode Yolov8::initInternal(const std::string& json) {
       break;
     }
 
-    // stage 决定当前 Yolov8 实例负责哪一段。
+    // stage 决定当前 Yolo8Test 实例负责哪一段。
     // group 模式下框架会创建三个内部实例：pre、infer、post。
     auto stageNameIt = configure.find(CONFIG_INTERNAL_STAGE_NAME_FIELD);
     if (configure.end() != stageNameIt && stageNameIt->is_array()) {
@@ -248,26 +248,26 @@ common::ErrorCode Yolov8::initInternal(const std::string& json) {
           stageNameIt->get<std::vector<std::string>>();
       if (std::find(stages.begin(), stages.end(), "pre") != stages.end()) {
         use_pre = true;
-        mFpsProfilerName = "fps_yolov8_pre";
+        mFpsProfilerName = "fps_yolo8-test_pre";
       }
       if (std::find(stages.begin(), stages.end(), "infer") != stages.end()) {
         use_infer = true;
-        mFpsProfilerName = "fps_yolov8_infer";
+        mFpsProfilerName = "fps_yolo8-test_infer";
       }
       if (std::find(stages.begin(), stages.end(), "post") != stages.end()) {
         use_post = true;
-        mFpsProfilerName = "fps_yolov8_post";
+        mFpsProfilerName = "fps_yolo8-test_post";
       }
 
       mFpsProfiler.config(mFpsProfilerName, 100);
     }
 
     // 新建 context、预处理、推理、后处理对象。
-    // Group<Yolov8> 会让三个内部实例共享这些对象和模型上下文。
-    mContext = std::make_shared<Yolov8Context>();
-    mPreProcess = std::make_shared<Yolov8PreProcess>();
-    mInference = std::make_shared<Yolov8Inference>();
-    mPostProcess = std::make_shared<Yolov8PostProcess>();
+    // Group<Yolo8Test> 会让三个内部实例共享这些对象和模型上下文。
+    mContext = std::make_shared<Yolo8TestContext>();
+    mPreProcess = std::make_shared<Yolo8TestPreProcess>();
+    mInference = std::make_shared<Yolo8TestInference>();
+    mPostProcess = std::make_shared<Yolo8TestPostProcess>();
 
     if (!mPreProcess || !mInference || !mPostProcess || !mContext) {
       break;
@@ -286,10 +286,10 @@ common::ErrorCode Yolov8::initInternal(const std::string& json) {
   return errorCode;
 }
 
-void Yolov8::process(common::ObjectMetadatas& objectMetadatas, int dataPipeId) {
+void Yolo8Test::process(common::ObjectMetadatas& objectMetadatas, int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
   // 根据 use_pre/use_infer/use_post 执行当前实例负责的阶段。
-  // 单个 Yolov8 element 可同时执行三段；yolov8_group 通常每个内部 element 只执行一段。
+  // 单个 Yolo8Test element 可同时执行三段；yolo8-test_group 通常每个内部 element 只执行一段。
   if (use_pre) {
     errorCode = mPreProcess->preProcess(mContext, objectMetadatas);
     if (common::ErrorCode::SUCCESS != errorCode) {
@@ -314,11 +314,11 @@ void Yolov8::process(common::ObjectMetadatas& objectMetadatas, int dataPipeId) {
     mPostProcess->postProcess(mContext, objectMetadatas, dataPipeId);
 }
 
-common::ErrorCode Yolov8::doWork(int dataPipeId) {
+common::ErrorCode Yolo8Test::doWork(int dataPipeId) {
   common::ErrorCode errorCode = common::ErrorCode::SUCCESS;
 
   common::ObjectMetadatas objectMetadatas;
-  // Yolov8 插件只使用第一个输入端口和第一个输出端口。
+  // Yolo8Test 插件只使用第一个输入端口和第一个输出端口。
   std::vector<int> inputPorts = getInputPorts();
   int inputPort = inputPorts[0];
   int outputPort = 0;
@@ -376,44 +376,44 @@ common::ErrorCode Yolov8::doWork(int dataPipeId) {
   return common::ErrorCode::SUCCESS;
 }
 
-void Yolov8::setStage(bool pre, bool infer, bool post) {
-  // Group<Yolov8> 调用该函数，为内部三个 element 分配职责。
+void Yolo8Test::setStage(bool pre, bool infer, bool post) {
+  // Group<Yolo8Test> 调用该函数，为内部三个 element 分配职责。
   use_pre = pre;
   use_infer = infer;
   use_post = post;
 }
 
-void Yolov8::initProfiler(std::string name, int interval) {
+void Yolo8Test::initProfiler(std::string name, int interval) {
   mFpsProfiler.config(name, 100);
 }
 
-void Yolov8::setContext(
+void Yolo8Test::setContext(
     std::shared_ptr<::sophon_stream::element::Context> context) {
   // check
-  mContext = std::dynamic_pointer_cast<Yolov8Context>(context);
+  mContext = std::dynamic_pointer_cast<Yolo8TestContext>(context);
 }
 
-void Yolov8::setPreprocess(
+void Yolo8Test::setPreprocess(
     std::shared_ptr<::sophon_stream::element::PreProcess> pre) {
-  mPreProcess = std::dynamic_pointer_cast<Yolov8PreProcess>(pre);
+  mPreProcess = std::dynamic_pointer_cast<Yolo8TestPreProcess>(pre);
 }
 
-void Yolov8::setInference(
+void Yolo8Test::setInference(
     std::shared_ptr<::sophon_stream::element::Inference> infer) {
-  mInference = std::dynamic_pointer_cast<Yolov8Inference>(infer);
+  mInference = std::dynamic_pointer_cast<Yolo8TestInference>(infer);
 }
 
-void Yolov8::setPostprocess(
+void Yolo8Test::setPostprocess(
     std::shared_ptr<::sophon_stream::element::PostProcess> post) {
-  mPostProcess = std::dynamic_pointer_cast<Yolov8PostProcess>(post);
+  mPostProcess = std::dynamic_pointer_cast<Yolo8TestPostProcess>(post);
 }
 
-REGISTER_WORKER("yolov8", Yolov8)
-// 注册 group 版本。JSON 配置 name="yolov8_group" 时会创建 Group<Yolov8>，
+REGISTER_WORKER("yolo8-test", Yolo8Test)
+// 注册 group 版本。JSON 配置 name="yolo8-test_group" 时会创建 Group<Yolo8Test>，
 // 再自动展开成 pre、infer、post 三个内部 Element。
-REGISTER_GROUP_WORKER("yolov8_group", sophon_stream::framework::Group<Yolov8>,
-                      Yolov8)
+REGISTER_GROUP_WORKER("yolo8-test_group", sophon_stream::framework::Group<Yolo8Test>,
+                      Yolo8Test)
 
-}  // namespace yolov8
+}  // namespace yolo8_test
 }  // namespace element
 }  // namespace sophon_stream

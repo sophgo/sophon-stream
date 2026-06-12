@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+﻿//===----------------------------------------------------------------------===//
 //
 // Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
 //
@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "yolov8_inference.h"
+#include "yolo8_test_inference.h"
 
 namespace sophon_stream {
 namespace element {
-namespace yolov8 {
+namespace yolo8_test {
 
-Yolov8Inference::~Yolov8Inference() {}
+Yolo8TestInference::~Yolo8TestInference() {}
 
-void Yolov8Inference::init(std::shared_ptr<Yolov8Context> context) {}
+void Yolo8TestInference::init(std::shared_ptr<Yolo8TestContext> context) {}
 
-common::ErrorCode Yolov8Inference::predict(
-    std::shared_ptr<Yolov8Context> context,
+common::ErrorCode Yolo8TestInference::predict(
+    std::shared_ptr<Yolo8TestContext> context,
     common::ObjectMetadatas& objectMetadatas) {
   if (objectMetadatas.size() == 0) return common::ErrorCode::SUCCESS;
 
@@ -52,6 +52,6 @@ common::ErrorCode Yolov8Inference::predict(
   return common::ErrorCode::SUCCESS;
 }
 
-}  // namespace yolov8
+}  // namespace yolo8_test
 }  // namespace element
 }  // namespace sophon_stream
