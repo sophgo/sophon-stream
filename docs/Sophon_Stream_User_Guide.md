@@ -67,6 +67,15 @@
 ```bash
 sudo apt-get update 
 sudo apt-get install libboost-all-dev
+
+apt update
+apt install -y \
+  build-essential \
+  cmake \
+  pkg-config \
+  gcc-aarch64-linux-gnu \
+  g++-aarch64-linux-gnu \
+  libboost-dev
 ```
 
 完成环境配置后，用户可以参考 [sophon-stream编译指南](./HowToMake.md)，使用如下命令编译。
